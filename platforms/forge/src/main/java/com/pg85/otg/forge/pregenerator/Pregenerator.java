@@ -18,6 +18,7 @@ import com.pg85.otg.common.LocalWorld;
 import com.pg85.otg.configuration.dimensions.DimensionConfig;
 import com.pg85.otg.configuration.standard.WorldStandardValues;
 import com.pg85.otg.forge.ForgeWorld;
+import com.pg85.otg.generator.ChunkProviderOTG;
 import com.pg85.otg.logging.LogMarker;
 import com.pg85.otg.util.ChunkCoordinate;
 
@@ -392,25 +393,15 @@ public class Pregenerator
 		spawnedThisTick++;
 		updateProgressMessage(true);
 		
-		ChunkProviderServer chunkProvider = (ChunkProviderServer) world.getWorld().getChunkProvider();
-
-		Chunk chunk;
-        if (
-        	!(
-   				chunkProvider.chunkExists(currentX, currentZ) ||
-				RegionFileCache.createOrLoadRegionFile(((WorldServer)world.getWorld()).getChunkSaveLocation(), currentX, currentZ).chunkExists(currentX & 0x1F, currentZ & 0x1F)
-			)
-		)
-		{
-        	chunk = chunkProvider.provideChunk(currentX, currentZ);
-        	if(!chunk.isPopulated())
-        	{	        	
-	    		chunk.needsSaving(true);
-	        	chunkProvider.provideChunk(currentX, currentZ + 1).needsSaving(true);
-	        	chunkProvider.provideChunk(currentX + 1, currentZ).needsSaving(true);
-	        	chunkProvider.provideChunk(currentX + 1, currentZ + 1).needsSaving(true);	        	
-        	}
-		}       
+		ChunkProviderServer chunkProvider = (ChunkProviderServer) world.getWorld().getChunkProvider();		
+		Chunk chunk = chunkProvider.provideChunk(currentX, currentZ);
+    	if(!chunk.isPopulated())
+    	{	        	
+    		chunk.needsSaving(true);
+        	chunkProvider.provideChunk(currentX, currentZ + 1).needsSaving(true);
+        	chunkProvider.provideChunk(currentX + 1, currentZ).needsSaving(true);
+        	chunkProvider.provideChunk(currentX + 1, currentZ + 1).needsSaving(true);	        	
+    	}      
 		
 		if(spawned - lastSpawnedWhenSaved > compressCustomStructureCacheThreshHold)
 		{
@@ -597,9 +588,12 @@ public class Pregenerator
 			right = Integer.parseInt(pregeneratedChunksFileValues[3]);
 			bottom = Integer.parseInt(pregeneratedChunksFileValues[4]);
 
-			cycle = Integer.parseInt(pregeneratedChunksFileValues[5]);
+			//cycle = Integer.parseInt(pregeneratedChunksFileValues[5]);
+			// This should hopefully fix corrupted pregendata saves for > v6 < v8.3_r4
+			cycle = Math.min(Math.min(Math.min(left, top), right), bottom) + 1;
+			
 			startTime = System.currentTimeMillis() - Long.parseLong(pregeneratedChunksFileValues[6]); // Elapsed time
-
+		
 			iTop = Integer.parseInt(pregeneratedChunksFileValues[7]);
 			iBottom = Integer.parseInt(pregeneratedChunksFileValues[8]);
 			iLeft = Integer.parseInt(pregeneratedChunksFileValues[9]);
