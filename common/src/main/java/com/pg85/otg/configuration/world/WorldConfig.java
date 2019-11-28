@@ -284,7 +284,7 @@ public class WorldConfig extends ConfigFile
     public boolean playersCanBreakBlocks;
     public boolean explosionsCanBreakBlocks;
     public boolean playersCanPlaceBlocks;
-	//
+    //
 
     public enum TerrainMode
     {
@@ -300,7 +300,7 @@ public class WorldConfig extends ConfigFile
         Repeat,
         Mirror,
         ContinueNormal,
-        FillEmpty,
+        FillEmpty
     }
 
     public enum ImageOrientation
@@ -317,17 +317,9 @@ public class WorldConfig extends ConfigFile
         WriteDisable,
         WriteWithoutComments
     }
-    
-    /**
-     * Creates a WorldConfig from the WorldConfig.ini file found in the given
-     * directory.
-     *
-     * @param settingsDir    The directory the WorldConfig is in.
-     * @param settingsReader The raw settings of the WorldConfig.
-     * @param world          The LocalWorld instance of the world.
-     * @param customObjects  The customs objects of the world.
-     */
-    
+
+
+
     public static class DefaulWorldData
     {
     	public WorldConfig worldConfig;
@@ -339,7 +331,17 @@ public class WorldConfig extends ConfigFile
     		this.settingsMap = settingsMap;
     	}
     }
-        
+
+    /**
+     * Creates a WorldConfig from the WorldConfig.ini file found in the given
+     * directory.
+     *
+     * @param settingsDir    The directory the WorldConfig is in.
+     * @param settingsReader The raw settings of the WorldConfig.
+     * @param world          The LocalWorld instance of the world.
+     * @param biomes         The biomes of the world.
+     */
+
     public WorldConfig(File settingsDir, SettingsMap settingsReader, LocalWorld world, ArrayList<String> biomes)
     {
         super(settingsReader.getName());
@@ -1009,7 +1011,6 @@ public class WorldConfig extends ConfigFile
                 "   West - previous behavior (you should rotate png CCW manually)",
                 "   East - png should be rotated CW manually",
                 "   South - rotate png 180 degrees before generating world");
-
         writer.putSetting(WorldStandardValues.IMAGE_FILL_BIOME, this.imageFillBiome,
                 "Biome name for fill outside image boundaries with FillEmpty mode.");
 
@@ -1487,7 +1488,7 @@ public class WorldConfig extends ConfigFile
         {
             return o1.getValue() - o2.getValue();
         }
-    };    
+    };
     
     private void writeCustomBiomes(SettingsMap writer)
     {

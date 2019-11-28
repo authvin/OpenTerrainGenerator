@@ -9,6 +9,7 @@ import com.pg85.otg.logging.LogMarker;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 
 import javax.imageio.ImageIO;
 
@@ -90,12 +91,17 @@ public class LayerFromImage extends Layer
                 if (config.biomeColorMap.containsKey(color))
                     this.biomeMap[nColor] = config.biomeColorMap.get(color);
                 else
-                    this.biomeMap[nColor] = fillBiome;
+                    if (this.imageMode == WorldConfig.ImageMode.ContinueNormal)
+                        this.biomeMap[nColor] = -1;
+                    else
+                        this.biomeMap[nColor] = fillBiome;
+
+
             }
         }
         catch (IOException ioexception)
         {
-            OTG.log(LogMarker.FATAL, ioexception.getStackTrace().toString());
+            OTG.log(LogMarker.FATAL, Arrays.toString(ioexception.getStackTrace()));
         }
     }
 
@@ -143,6 +149,7 @@ public class LayerFromImage extends Layer
                 return resultBiomes;
             case ContinueNormal:
                 int[] childBiomes = null;
+                int Buffer_i = 0;
                 if (this.child != null)
                     childBiomes = this.child.getInts(world, cache, x, z, xSize, zSize);
                 for (int zi = 0; zi < zSize; zi++)
@@ -150,14 +157,21 @@ public class LayerFromImage extends Layer
                     {
                         int Buffer_x = x + xi - xOffset;
                         int Buffer_z = z + zi - zOffset;
+                        // if X or Z is outside map bounds
                         if (Buffer_x < 0 || Buffer_x >= this.mapWidth || Buffer_z < 0 || Buffer_z >= this.mapHeight)
                         {
                             if (childBiomes != null)
                                 resultBiomes[(xi + zi * xSize)] = childBiomes[(xi + zi * xSize)];
                             else
                                 resultBiomes[(xi + zi * xSize)] = this.fillBiome;
-                        } else
-                            resultBiomes[(xi + zi * xSize)] = this.biomeMap[Buffer_x + Buffer_z * this.mapWidth];
+                        }
+                        else
+                        {
+                            Buffer_i = this.biomeMap[Buffer_x + Buffer_z * this.mapWidth];
+                            if (Buffer_i == -1)
+                                Buffer_i = childBiomes != null ? childBiomes[(xi + zi * xSize)] : fillBiome;
+                            resultBiomes[(xi + zi * xSize)] = Buffer_i;
+                        }
                     }
                 break;
             case FillEmpty:
