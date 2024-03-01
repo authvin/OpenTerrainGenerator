@@ -1,6 +1,6 @@
 package com.pg85.otg.fabric;
 
-import com.pg85.otg.core.OTGEngine;
+import com.pg85.otg.OTGEngine;
 import net.fabricmc.api.ModInitializer;
 
 public class OTGPlugin implements ModInitializer {
