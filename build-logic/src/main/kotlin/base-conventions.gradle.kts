@@ -2,9 +2,9 @@ plugins {
     `java-library`
     `maven-publish`
 }
-
+val javaVersion = project.property("javaVersion").toString().toInt()
 configure<JavaPluginExtension> {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(16))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(javaVersion))
     withSourcesJar()
 }
 
@@ -20,7 +20,7 @@ configure<PublishingExtension> {
 
 tasks {
     withType<JavaCompile> {
-        options.release.set(16)
+        options.release.set(javaVersion)
         options.encoding = Charsets.UTF_8.name()
     }
 

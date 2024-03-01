@@ -1,6 +1,7 @@
 plugins {
     id("platform-conventions")
-    id("dev.architectury.loom") version "0.10.0-SNAPSHOT"
+    id("architectury-plugin") version "3.4-SNAPSHOT"
+    id("dev.architectury.loom") version "1.4-SNAPSHOT"
 }
 
 val mcVersion = "1.18"

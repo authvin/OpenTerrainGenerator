@@ -1,19 +1,20 @@
 plugins {
     id("platform-conventions")
-    id("dev.architectury.loom") version "0.10.0-SNAPSHOT"
+    id("architectury-plugin") version "3.4-SNAPSHOT"
+    id("dev.architectury.loom") version "1.4-SNAPSHOT"
 }
 
 loom {
     silentMojangMappingsLicense()
 }
-
+println("Java version: " + System.getProperty("java.version"))
 dependencies {
-    minecraft("com.mojang:minecraft:1.18")
+    minecraft("com.mojang:minecraft:${rootProject.extra["minecraftVersion"]}")
     mappings(loom.officialMojangMappings())
-    modImplementation("net.fabricmc:fabric-loader:0.12.8")
+    modImplementation("net.fabricmc:fabric-loader:${rootProject.extra["fabricLoaderVersion"]}")
 
     // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation("net.fabricmc.fabric-api:fabric-api:0.44.0+1.18")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${rootProject.extra["fabricApiVersion"]}")
 
     implementation(project(":common:common-core"))
 }
@@ -44,6 +45,11 @@ tasks {
 
     remapSourcesJar {
         fixRemapSourcesDependencies()
+    }
+}
+tasks.register("printRootDir") {
+    doLast {
+        println(rootProject.projectDir)
     }
 }
 
