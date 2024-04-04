@@ -5,7 +5,7 @@ import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IPresetConfig;
+import com.pg85.otg.settings.preset.PresetSettings;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -21,7 +21,7 @@ import java.util.*;
  *
  * <p>This class represents such a biome group.
  */
-public final class BiomeGroupFunction extends ConfigFunction<IPresetConfig>
+public final class BiomeGroupFunction extends ConfigFunction<PresetSettings>
 {
 	private int groupId;
 	private String name;
@@ -36,10 +36,10 @@ public final class BiomeGroupFunction extends ConfigFunction<IPresetConfig>
 	 * @param config The world config.
 	 * @param args	The settings to be parsed.
 	 * @throws InvalidConfigException When the config is invalid.
-	 * @see #BiomeGroupFunction(IPresetConfig, String, int, int, List) Constructor to
+	 * @see #BiomeGroupFunction(PresetSettings, String, int, int, List) Constructor to
 	 * properly initialize this biome group manually.
 	 */
-	public BiomeGroupFunction(IPresetConfig config, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public BiomeGroupFunction(PresetSettings config, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
 	{
 		// Must have at least a GroupName and a Biome that belongs to it
 		assureSize(4, args);
@@ -73,7 +73,7 @@ public final class BiomeGroupFunction extends ConfigFunction<IPresetConfig>
 	 * @param rarity	Rarity value of this biome group.
 	 * @param biomes	List of names of the biomes that spawn in this group.
 	 */
-	public BiomeGroupFunction(IPresetConfig config, String groupName, int size, int rarity, List<String> biomes)
+	public BiomeGroupFunction(PresetSettings config, String groupName, int size, int rarity, List<String> biomes)
 	{
 		this.name = groupName;
 		this.generationDepth = size;
@@ -133,7 +133,7 @@ public final class BiomeGroupFunction extends ConfigFunction<IPresetConfig>
 	 * unrecognized name.
 	 * @param customBiomeNames Set of known custom biomes.
 	 */
-	void filterBiomes(ArrayList<String> customBiomeNames, ILogger logger)
+	void filterBiomes(List<String> customBiomeNames, ILogger logger)
 	{
 		for (Iterator<String> it = this.biomes.iterator(); it.hasNext();)
 		{

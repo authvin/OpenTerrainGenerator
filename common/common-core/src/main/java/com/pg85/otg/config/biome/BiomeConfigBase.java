@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.pg85.otg.config.ConfigFile;
 import com.pg85.otg.config.ConfigFunction;
+import com.pg85.otg.config.world.PresetConfig;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.constants.settings.GrassColorModifier;
 import com.pg85.otg.constants.settings.structure.MineshaftType;
@@ -25,7 +26,7 @@ import com.pg85.otg.interfaces.IBiomeResourceLocation;
 import com.pg85.otg.interfaces.ICustomStructureGen;
 import com.pg85.otg.interfaces.ISaplingSpawner;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
-import com.pg85.otg.interfaces.IPresetConfig;
+import com.pg85.otg.settings.preset.PresetSettings;
 import com.pg85.otg.settings.biome.*;
 import com.pg85.otg.util.biome.ColorSet;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
@@ -45,7 +46,7 @@ import com.pg85.otg.util.minecraft.SaplingType;
  * BiomeConfig should be used only in common-core and platform-specific layers, when reading/writing settings on app start.
  * IBiomeConfig should be used wherever settings are used in code.
  */
-abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
+abstract class BiomeConfigBase implements IBiomeConfig, ConfigFile {
     // Settings Containers
     public BiomeBlockSettings biomeBlockSettings;
     public IdentitySettings identitySettings;
@@ -63,8 +64,15 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
     // biomes in otg worlds.
     protected SettingsContainer settings = new SettingsContainer();
 
+    protected String configName;
+
     protected BiomeConfigBase(String configName) {
-        super(configName);
+        this.configName = configName;
+    }
+
+    @Override
+    public String getConfigName() {
+        return configName;
     }
 
     public List<ConfigFunction<IBiomeConfig>> getResourceQueue() {
@@ -149,7 +157,7 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
     @Override
     public LocalMaterialData getSurfaceBlockReplaced(int y) {
         if (getReplaceBlocks().replacesSurface) {
-            return this.settings.surfaceBlock.parseWithBiomeAndHeight(this.settings.presetConfig.getBiomeSettings().isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
+            return this.settings.surfaceBlock.parseWithBiomeAndHeight(this.settings.presetConfig.isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
         }
         return this.settings.surfaceBlock;
     }
@@ -157,7 +165,7 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
     @Override
     public LocalMaterialData getUnderWaterSurfaceBlockReplaced(int y) {
         if (getReplaceBlocks().replacesUnderWaterSurface) {
-            return this.settings.underWaterSurfaceBlock.parseWithBiomeAndHeight(this.settings.presetConfig.getBiomeSettings().isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
+            return this.settings.underWaterSurfaceBlock.parseWithBiomeAndHeight(this.settings.presetConfig.isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
         }
         return this.settings.underWaterSurfaceBlock;
     }
@@ -165,7 +173,7 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
     @Override
     public LocalMaterialData getGroundBlockReplaced(int y) {
         if (getReplaceBlocks().replacesGround) {
-            return this.settings.groundBlock.parseWithBiomeAndHeight(this.settings.presetConfig.getBiomeSettings().isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
+            return this.settings.groundBlock.parseWithBiomeAndHeight(this.settings.presetConfig.isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
         }
         return this.settings.groundBlock;
     }
@@ -173,7 +181,7 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
     @Override
     public LocalMaterialData getStoneBlockReplaced(int y) {
         if (getReplaceBlocks().replacesStone) {
-            return this.settings.stoneBlock.parseWithBiomeAndHeight(this.settings.presetConfig.getBiomeSettings().isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
+            return this.settings.stoneBlock.parseWithBiomeAndHeight(this.settings.presetConfig.isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
         }
         return this.settings.stoneBlock;
     }
@@ -186,7 +194,7 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
     @Override
     public LocalMaterialData getWaterBlockReplaced(int y) {
         if (getReplaceBlocks().replacesWater) {
-            return this.settings.waterBlock.parseWithBiomeAndHeight(this.settings.presetConfig.getBiomeSettings().isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
+            return this.settings.waterBlock.parseWithBiomeAndHeight(this.settings.presetConfig.isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
         }
         return this.settings.waterBlock;
     }
@@ -194,7 +202,7 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
     @Override
     public LocalMaterialData getSandStoneBlockReplaced(int y) {
         if (getReplaceBlocks().replacesSandStone) {
-            return this.settings.sandStoneBlock.parseWithBiomeAndHeight(this.settings.presetConfig.getBiomeSettings().isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
+            return this.settings.sandStoneBlock.parseWithBiomeAndHeight(this.settings.presetConfig.isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
         }
         return this.settings.sandStoneBlock;
     }
@@ -202,7 +210,7 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
     @Override
     public LocalMaterialData getIceBlockReplaced(int y) {
         if (getReplaceBlocks().replacesIce) {
-            return this.settings.iceBlock.parseWithBiomeAndHeight(this.settings.presetConfig.getBiomeSettings().isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
+            return this.settings.iceBlock.parseWithBiomeAndHeight(this.settings.presetConfig.isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
         }
         return this.settings.iceBlock;
     }
@@ -210,7 +218,7 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
     @Override
     public LocalMaterialData getPackedIceBlockReplaced(int y) {
         if (getReplaceBlocks().replacesPackedIce) {
-            return this.settings.packedIceBlock.parseWithBiomeAndHeight(this.settings.presetConfig.getBiomeSettings().isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
+            return this.settings.packedIceBlock.parseWithBiomeAndHeight(this.settings.presetConfig.isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
         }
         return this.settings.packedIceBlock;
     }
@@ -218,7 +226,7 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
     @Override
     public LocalMaterialData getSnowBlockReplaced(int y) {
         if (getReplaceBlocks().replacesSnow) {
-            return this.settings.snowBlock.parseWithBiomeAndHeight(this.settings.presetConfig.getBiomeSettings().isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
+            return this.settings.snowBlock.parseWithBiomeAndHeight(this.settings.presetConfig.isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
         }
         return this.settings.snowBlock;
     }
@@ -226,7 +234,7 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
     @Override
     public LocalMaterialData getCooledLavaBlockReplaced(int y) {
         if (getReplaceBlocks().replacesCooledLava) {
-            return this.settings.cooledLavaBlock.parseWithBiomeAndHeight(this.settings.presetConfig.getBiomeSettings().isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
+            return this.settings.cooledLavaBlock.parseWithBiomeAndHeight(this.settings.presetConfig.isBiomeConfigsHaveReplacement(), getReplaceBlocks(), y);
         }
         return this.settings.cooledLavaBlock;
     }
@@ -254,7 +262,7 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
 
     @Override
     public List<ICustomStructureGen> getCustomStructures() {
-        return new ArrayList<ICustomStructureGen>(this.settings.customStructures);
+        return new ArrayList<>(this.settings.customStructures);
     }
 
     @Override
@@ -299,7 +307,7 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
 
     @Override
     public boolean biomeConfigsHaveReplacement() {
-        return this.settings.presetConfig.getBiomeSettings().isBiomeConfigsHaveReplacement();
+        return this.settings.presetConfig.isBiomeConfigsHaveReplacement();
     }
 
     @Override
@@ -377,7 +385,7 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
 
         // TODO: Ideally, don't contain presetConfig within biomeconfig,
         // use a parent object that holds both, like a worldgenregion.
-        protected IPresetConfig presetConfig;
+        protected PresetConfig presetConfig;
 
         // Identity
 
@@ -478,7 +486,7 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
 
         // Custom structures
 
-        protected List<CustomStructureResource> customStructures = new ArrayList<CustomStructureResource>(); // Used as a cache for fast querying, not saved
+        protected List<CustomStructureResource> customStructures = new ArrayList<>(); // Used as a cache for fast querying, not saved
         protected boolean strongholdsEnabled;
 
         // Vanilla structures
@@ -504,19 +512,19 @@ abstract class BiomeConfigBase extends ConfigFile implements IBiomeConfig {
         protected float buriedTreasureProbability;
         protected int pillagerOutpostSize;
         protected int bastionRemnantSize;
-        protected List<WeightedMobSpawnGroup> spawnMonstersMerged = new ArrayList<WeightedMobSpawnGroup>();
+        protected List<WeightedMobSpawnGroup> spawnMonstersMerged = new ArrayList<>();
 
         // Mob spawning
-        protected List<WeightedMobSpawnGroup> spawnCreaturesMerged = new ArrayList<WeightedMobSpawnGroup>();
-        protected List<WeightedMobSpawnGroup> spawnWaterCreaturesMerged = new ArrayList<WeightedMobSpawnGroup>();
-        protected List<WeightedMobSpawnGroup> spawnAmbientCreaturesMerged = new ArrayList<WeightedMobSpawnGroup>();
-        protected List<WeightedMobSpawnGroup> spawnWaterAmbientCreaturesMerged = new ArrayList<WeightedMobSpawnGroup>();
-        protected List<WeightedMobSpawnGroup> spawnMiscCreaturesMerged = new ArrayList<WeightedMobSpawnGroup>();
+        protected List<WeightedMobSpawnGroup> spawnCreaturesMerged = new ArrayList<>();
+        protected List<WeightedMobSpawnGroup> spawnWaterCreaturesMerged = new ArrayList<>();
+        protected List<WeightedMobSpawnGroup> spawnAmbientCreaturesMerged = new ArrayList<>();
+        protected List<WeightedMobSpawnGroup> spawnWaterAmbientCreaturesMerged = new ArrayList<>();
+        protected List<WeightedMobSpawnGroup> spawnMiscCreaturesMerged = new ArrayList<>();
         protected String inheritMobsBiomeName;
-        protected List<ConfigFunction<IBiomeConfig>> resourceQueue = new ArrayList<ConfigFunction<IBiomeConfig>>();
+        protected List<ConfigFunction<IBiomeConfig>> resourceQueue = new ArrayList<>();
 
         // Resources
-        protected Map<SaplingType, SaplingResource> saplingGrowers = new EnumMap<SaplingType, SaplingResource>(SaplingType.class);
+        protected Map<SaplingType, SaplingResource> saplingGrowers = new EnumMap<>(SaplingType.class);
 
         // Saplings
         protected Map<LocalMaterialData, SaplingResource> customSaplingGrowers = new HashMap<>();

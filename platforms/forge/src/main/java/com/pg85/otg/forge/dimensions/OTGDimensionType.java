@@ -25,7 +25,7 @@ import com.pg85.otg.config.dimensions.DimensionConfig.OTGOverWorld;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.forge.biome.OTGBiomeProvider;
 import com.pg85.otg.forge.gen.OTGNoiseChunkGenerator;
-import com.pg85.otg.interfaces.IPresetConfig;
+import com.pg85.otg.settings.preset.PresetSettings;
 import com.pg85.otg.presets.Preset;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -218,7 +218,7 @@ public class OTGDimensionType extends DimensionType
 	private static void addDimension(String presetFolderName, SimpleRegistry<Dimension> dimensions, MutableRegistry<DimensionType> dimensionTypeRegistry, RegistryKey<Dimension> dimRegistryKey, ChunkGenerator chunkGenerator, RegistryKey<DimensionType> dimTypeRegistryKey)
 	{
 		Preset preset = OTG.getEngine().getPresetLoader().getPresetByFolderName(presetFolderName);
-		IPresetConfig presetConfig = preset.getPresetConfig();
+		PresetSettings presetConfig = preset.getPresetConfig();
 		
 		// Register OTG DimensionType with settings from PresetConfig
 		DimensionType otgOverWorld = new DimensionType(
@@ -250,7 +250,7 @@ public class OTGDimensionType extends DimensionType
 	
 	// Writes OTG DimensionTypes to world save folder as datapack json files so they're picked up on world load.
 	// Unfortunately there doesn't appear to be a way to persist them via code. Silly, but it works.
-	public static void saveDataPackFile(Path datapackFolder, String dimName, IPresetConfig presetConfig, String presetFolderName)
+	public static void saveDataPackFile(Path datapackFolder, String dimName, PresetSettings presetConfig, String presetFolderName)
 	{
 		File folder = new File(datapackFolder + File.separator + Constants.MOD_ID_SHORT + File.separator);
 		File file = new File(datapackFolder + File.separator + Constants.MOD_ID_SHORT + File.separator + "pack.mcmeta");

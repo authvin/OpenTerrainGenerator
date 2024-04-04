@@ -17,28 +17,16 @@ import java.util.List;
  * settings back to such a map.
  *
  */
-public abstract class ConfigFile
+public interface ConfigFile
 {
-	protected final String configName;
-
-	/**
-	 * Creates a new config file.
-	 *
-	 * @param configName The name of the config. For worlds, this is the world
-	 *					name, for biomes this is the biome name, etc.
-	 */
-	protected ConfigFile(String configName)
-	{
-		this.configName = configName;
-	}
-
+	String getConfigName();
 	/**
 	 * Gets all settings of this config file.
 	 * @return All settings.
 	 */
-	public SettingsMap getSettingsAsMap()
+	default SettingsMap getSettingsAsMap()
 	{
-		SettingsMap settingsMap = new SimpleSettingsMap(configName);
+		SettingsMap settingsMap = new SimpleSettingsMap(getConfigName());
 		writeConfigSettings(settingsMap);
 		return settingsMap;
 	}
@@ -47,27 +35,14 @@ public abstract class ConfigFile
 	 * Methods that subclasses must override to write the actual settings.
 	 * @param settingsMap The map to write the settings to.
 	 */
-	protected abstract void writeConfigSettings(SettingsMap settingsMap);
-
-	/**
-	 * Called once to read all configuration settings from the
-	 * {@link SettingsMap} provided to the constructor.
-	 * @param reader The settings reader.
-	 */
-	protected abstract void readConfigSettings(SettingsMap reader, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader, String presetFolderName);
-
-	/**
-	 * Called directly after {@link #readConfigSettings(SettingsMap)} to fix
-	 * impossible combinations of settings.
-	 */
-	protected abstract void validateAndCorrectSettings(Path settingsDir, ILogger logger);
+	void writeConfigSettings(SettingsMap settingsMap);
 
 	/**
 	 * Called before {@link #readConfigSettings(SettingsMap)} to rewrite
 	 * configs in old formats to the modern format, so that they can be read.
 	 * @param reader The settings reader.
 	 */
-	protected abstract void renameOldSettings(SettingsMap reader, ILogger logger, IMaterialReader materialReader);
+	void renameOldSettings(SettingsMap reader, ILogger logger, IMaterialReader materialReader);
 
 	/**
 	 * Silently corrects the given number so that it is higher than or equal to
@@ -76,30 +51,10 @@ public abstract class ConfigFile
 	 * @param minimumValue The minimum value.
 	 * @return The corrected value.
 	 */
-	protected final int higherThanOrEqualTo(int currentValue, int minimumValue)
+	default int higherThanOrEqualTo(int currentValue, int minimumValue)
 	{
-		if (currentValue < minimumValue)
-		{
-			return minimumValue;
-		}
-		return currentValue;
-	}
-
-	/**
-	 * Silently corrects the given number so that it is higher than or equal
-	 * to the minimum value.
-	 * @param currentValue The current value, will be corrected if needed.
-	 * @param minimumValue The minimum value.
-	 * @return The corrected value.
-	 */
-	protected final double higherThan(double currentValue, double minimumValue)
-	{
-		if (currentValue < minimumValue)
-		{
-			return minimumValue;
-		}
-		return currentValue;
-	}
+        return Math.max(currentValue, minimumValue);
+    }
 
 	/**
 	 * Silently corrects the given number so that it is lower than or equal
@@ -108,7 +63,7 @@ public abstract class ConfigFile
 	 * @param maximumValue The maximum value.
 	 * @return The corrected value.
 	 */
-	protected final int lowerThanOrEqualTo(int currentValue, int maximumValue)
+	default int lowerThanOrEqualTo(int currentValue, int maximumValue)
 	{
 		if (currentValue > maximumValue)
 		{
@@ -117,7 +72,7 @@ public abstract class ConfigFile
 		return currentValue;
 	}
 
-	protected ArrayList<String> filterBiomes(List<String> biomes, ArrayList<String> customBiomes)
+	default List<String> filterBiomes(List<String> biomes, List<String> customBiomes)
 	{
 		ArrayList<String> output = new ArrayList<String>();
 
@@ -136,15 +91,5 @@ public abstract class ConfigFile
 			}
 		}
 		return output;
-	}
-
-	/**
-	 * Gets the name of this config file. For worlds, this is the world name,
-	 * for biomes this is the biome name, etc.
-	 * @return The name of this config file.
-	 */
-	public String getName()
-	{
-		return configName;
 	}
 }

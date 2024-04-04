@@ -13,9 +13,8 @@ import java.util.*;
 public final class BiomeGroupManager
 {
 	static final int MAX_BIOME_GROUP_COUNT = 127;
-	private int cumulativeGroupRarity = 0;
-	private Map<String, BiomeGroupFunction> nameToGroup = new LinkedHashMap<String, BiomeGroupFunction>(4);
-	private Map<Integer, BiomeGroupFunction> idToGroup = new LinkedHashMap<Integer, BiomeGroupFunction>(4);
+    private final Map<String, BiomeGroupFunction> nameToGroup = new LinkedHashMap<String, BiomeGroupFunction>(4);
+	private final Map<Integer, BiomeGroupFunction> idToGroup = new LinkedHashMap<Integer, BiomeGroupFunction>(4);
 
 	public BiomeGroupManager() { }
 
@@ -112,7 +111,7 @@ public final class BiomeGroupManager
 	}
 
 	// TODO: Turn into array?
-	private HashMap<Integer, TreeMap<Integer, BiomeGroupFunction>> cachedGroupDepthMaps = new HashMap<Integer, TreeMap<Integer, BiomeGroupFunction>>();
+	private final HashMap<Integer, TreeMap<Integer, BiomeGroupFunction>> cachedGroupDepthMaps = new HashMap<Integer, TreeMap<Integer, BiomeGroupFunction>>();
 	public SortedMap<Integer, BiomeGroupFunction> getGroupDepthMap(int depth)
 	{
 		TreeMap<Integer, BiomeGroupFunction> map = cachedGroupDepthMaps.get(depth);
@@ -122,13 +121,13 @@ public final class BiomeGroupManager
 		}
 		
 		map = new TreeMap<Integer, BiomeGroupFunction>();
-		this.cumulativeGroupRarity = 0;
+        int cumulativeGroupRarity = 0;
 		for (BiomeGroupFunction group : getGroups())
 		{
 			if (group.getGenerationDepth() == depth)
 			{
-				this.cumulativeGroupRarity += group.getGroupRarity();
-				map.put(this.cumulativeGroupRarity, group);
+				cumulativeGroupRarity += group.getGroupRarity();
+				map.put(cumulativeGroupRarity, group);
 			}
 		}
 		if (cumulativeGroupRarity < map.size() * 100)
@@ -136,7 +135,7 @@ public final class BiomeGroupManager
 			map.put(map.size() * 100, null);
 		}
 		
-		cachedGroupDepthMaps.put(new Integer(depth), map);
+		cachedGroupDepthMaps.put(depth, map);
 		
 		return map;
 	}
@@ -164,7 +163,7 @@ public final class BiomeGroupManager
 	 * removed.
 	 * @param customBiomeNames Set of all custom biomes in the world.
 	 */
-	public void filterBiomes(ArrayList<String> customBiomeNames, ILogger logger)
+	public void filterBiomes(List<String> customBiomeNames, ILogger logger)
 	{
 		for (Iterator<BiomeGroupFunction> it = this.idToGroup.values().iterator(); it.hasNext();)
 		{

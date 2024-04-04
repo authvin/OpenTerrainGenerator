@@ -2,6 +2,7 @@ package com.pg85.otg.interfaces;
 
 import java.util.Random;
 
+import com.pg85.otg.settings.preset.PresetSettings;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.nbt.NamedBinaryTag;
@@ -13,7 +14,7 @@ public interface IWorldGenRegion extends ISurfaceGeneratorNoiseProvider
 {
 	ILogger getLogger();
 	IPluginConfig getPluginConfig();
-	IPresetConfig getPresetConfig();
+	PresetSettings getPresetConfig();
 	String getPresetFolderName();
 	long getSeed();
 	Random getWorldRandom();

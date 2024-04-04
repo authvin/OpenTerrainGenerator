@@ -14,8 +14,7 @@ import com.pg85.otg.interfaces.IPluginConfig;
  * PluginConfig should be used only in common-core and platform-specific layers, when reading/writing settings on app start.
  * IPluginConfig should be used wherever settings are used in code.
  */
-public abstract class PluginConfigBase extends ConfigFile implements IPluginConfig
-{
+public abstract class PluginConfigBase implements IPluginConfig, ConfigFile {
 	protected LogLevels logLevel;
 	protected ConfigMode settingsMode;
 	protected int workerThreads;
@@ -29,10 +28,16 @@ public abstract class PluginConfigBase extends ConfigFile implements IPluginConf
 	protected boolean decorationEnabled;
 	protected boolean logMobs;
 	protected String logPresets;
+	protected String configName;
 	
 	public PluginConfigBase(String configName)
 	{
-		super(configName);
+		this.configName = configName;
+	}
+
+	@Override
+	public String getConfigName() {
+		return configName;
 	}
 
 	@Override

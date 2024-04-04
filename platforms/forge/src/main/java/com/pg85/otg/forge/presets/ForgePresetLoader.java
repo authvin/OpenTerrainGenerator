@@ -34,7 +34,7 @@ import com.pg85.otg.interfaces.IBiomeConfig;
 import com.pg85.otg.interfaces.IBiomeResourceLocation;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IPresetConfig;
+import com.pg85.otg.settings.preset.PresetSettings;
 import com.pg85.otg.presets.LocalPresetLoader;
 import com.pg85.otg.presets.Preset;
 import com.pg85.otg.util.biome.MCBiomeResourceLocation;
@@ -164,7 +164,7 @@ public class ForgePresetLoader extends LocalPresetLoader
 		List<RegistryKey<Biome>> presetBiomes = new ArrayList<>();
 		this.biomesByPresetFolderName.put(preset.getFolderName(), presetBiomes);
 
-		IPresetConfig presetConfig = preset.getPresetConfig();
+		PresetSettings presetConfig = preset.getPresetConfig();
 		IBiomeConfig oceanBiomeConfig = null;
 		int[] oceanTemperatures = new int[]{0, 0, 0, 0};
 		
@@ -406,7 +406,7 @@ public class ForgePresetLoader extends LocalPresetLoader
 		this.presetGenerationData.put(preset.getFolderName(), data);
 	}
 
-	private void processTemplateBiomes(String presetFolderName, IPresetConfig presetConfig, List<IBiomeConfig> biomeConfigs, Map<IBiomeResourceLocation, IBiomeConfig> biomeConfigsByResourceLocation, Map<String, IBiomeConfig> biomeConfigsByName, List<String> blackListedBiomes)
+	private void processTemplateBiomes(String presetFolderName, PresetSettings presetConfig, List<IBiomeConfig> biomeConfigs, Map<IBiomeResourceLocation, IBiomeConfig> biomeConfigsByResourceLocation, Map<String, IBiomeConfig> biomeConfigsByName, List<String> blackListedBiomes)
 	{
 		for (TemplateBiome templateBiome : ((PresetConfig)presetConfig).getTemplateBiomes())
 		{
@@ -765,7 +765,7 @@ public class ForgePresetLoader extends LocalPresetLoader
 		}
 	}
 
-	private Map<Integer, BiomeGroup> processBiomeGroups(String presetFolderName, IPresetConfig presetConfig, Map<IBiomeResourceLocation, IBiomeConfig> biomeConfigsByResourceLocation, Map<String, IBiomeConfig> biomeConfigsByName, List<String> blackListedBiomes, Set<Integer> biomeDepths, Map<Integer, List<BiomeGroup>> groupDepths, BiomeLayerData data)
+	private Map<Integer, BiomeGroup> processBiomeGroups(String presetFolderName, PresetSettings presetConfig, Map<IBiomeResourceLocation, IBiomeConfig> biomeConfigsByResourceLocation, Map<String, IBiomeConfig> biomeConfigsByName, List<String> blackListedBiomes, Set<Integer> biomeDepths, Map<Integer, List<BiomeGroup>> groupDepths, BiomeLayerData data)
 	{
 		int genDepth = presetConfig.getBiomeSettings().getGenerationDepth();
 		Map<Integer, BiomeGroup> groupRegistry = new HashMap<>();

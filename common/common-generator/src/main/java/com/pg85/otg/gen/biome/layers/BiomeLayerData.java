@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.pg85.otg.gen.biome.BiomeData;
 import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.IPresetConfig;
+import com.pg85.otg.settings.preset.PresetSettings;
 import com.pg85.otg.settings.preset.BiomeSettings;
 import com.pg85.otg.settings.preset.ImageSettings;
 import com.pg85.otg.settings.preset.PresetInfo;
@@ -42,7 +42,7 @@ public class BiomeLayerData
 
 
 	public BiomeLayerData(Path presetDir,
-						  IPresetConfig presetConfig,
+						  PresetSettings presetConfig,
 						  IBiomeConfig oceanBiomeConfig,
 						  int[] oceanTemperatures,
 						  Map<Integer, BiomeGroup> groupRegistry,

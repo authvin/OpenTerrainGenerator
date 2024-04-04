@@ -15,7 +15,7 @@ import com.pg85.otg.constants.settings.structure.VillageType;
 import com.pg85.otg.gen.resource.RegistryResource;
 import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.IPresetConfig;
+import com.pg85.otg.settings.preset.PresetSettings;
 import com.pg85.otg.settings.biome.BiomeStructureSettings;
 import com.pg85.otg.settings.biome.BiomeVisualSettings;
 import com.pg85.otg.settings.preset.StructureSettings;
@@ -93,7 +93,7 @@ public class ForgeBiome implements IBiome
 		return biomeBase;
 	}
 
-	public static Biome createOTGBiome(boolean isOceanBiome, IPresetConfig presetConfig, IBiomeConfig biomeConfig)
+	public static Biome createOTGBiome(boolean isOceanBiome, PresetSettings presetConfig, IBiomeConfig biomeConfig)
 	{
 		BiomeGenerationSettings.Builder biomeGenerationSettingsBuilder = new BiomeGenerationSettings.Builder();
 
@@ -284,7 +284,7 @@ public class ForgeBiome implements IBiome
 		}
 	}	
 	
-	private static void addVanillaStructures(Builder biomeGenerationSettingsBuilder, IPresetConfig presetConfig, IBiomeConfig biomeConfig)
+	private static void addVanillaStructures(Builder biomeGenerationSettingsBuilder, PresetSettings presetConfig, IBiomeConfig biomeConfig)
 	{
 		// TODO: Currently we can only enable/disable structures per biome and use any configuration options exposed by the vanilla structure 
 		// classes (size for villages fe). If we want to be able to customise more, we'll need to implement our own structure classes.

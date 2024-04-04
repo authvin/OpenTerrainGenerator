@@ -13,7 +13,7 @@ import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.interfaces.IBiomeConfig;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IPresetConfig;
+import com.pg85.otg.settings.preset.PresetSettings;
 
 public class BiomeResourcesManager implements IConfigFunctionProvider
 {
@@ -40,7 +40,7 @@ public class BiomeResourcesManager implements IConfigFunctionProvider
 	 * @param <T>	Type of the holder of the config function.
 	 * @param name	The name of the config function.
 	 * @param holder The holder of the config function, like
-	 *				{@link IPresetConfig}.
+	 *				{@link PresetSettings}.
 	 * @param args	The args of the function.
 	 * @return A config function with the given name, or null if the config
 	 * function requires another holder. For invalid or non-existing config
@@ -66,10 +66,10 @@ public class BiomeResourcesManager implements IConfigFunctionProvider
 				// Every BiomeConfig resource should have a constructor that conforms to this method signature
 				constructor = clazz.getConstructor(IBiomeConfig.class, List.class, ILogger.class, IMaterialReader.class);
 			}
-			else if(holder instanceof IPresetConfig)
+			else if(holder instanceof PresetSettings)
 			{
 				// Every PresetConfig resource should have a constructor that conforms to this method signature				
-				constructor = clazz.getConstructor(IPresetConfig.class, List.class, ILogger.class, IMaterialReader.class);
+				constructor = clazz.getConstructor(PresetSettings.class, List.class, ILogger.class, IMaterialReader.class);
 			}
 			return (ConfigFunction<T>) constructor.newInstance(holder, args, logger, materialReader);
 		}

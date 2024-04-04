@@ -25,7 +25,7 @@ import com.pg85.otg.gen.surface.SurfaceGeneratorSetting;
 import com.pg85.otg.interfaces.IBiomeConfig;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IPresetConfig;
+import com.pg85.otg.settings.preset.PresetSettings;
 import com.pg85.otg.settings.biome.*;
 import com.pg85.otg.util.biome.ColorSet;
 import com.pg85.otg.util.biome.OTGBiomeResourceLocation;
@@ -103,7 +103,7 @@ public class BiomeConfig extends BiomeConfigBase
 
 	public BiomeConfig(
 			String biomeName, BiomeConfigStub biomeConfigStub, Path presetFolder, SettingsMap settings,
-			IPresetConfig presetConfig, String presetShortName, int presetMajorVersion,
+			PresetSettings presetConfig, String presetShortName, int presetMajorVersion,
 			IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader
 	)
 	{
@@ -138,7 +138,7 @@ public class BiomeConfig extends BiomeConfigBase
 
 		this.renameOldSettings(settings, logger, materialReader);
 		this.readConfigSettings(settings, biomeResourcesManager, logger, materialReader, presetFolder.toFile().getName());
-		this.validateAndCorrectSettings(presetFolder, logger);
+		this.validateAndCorrectSettings();
 
 		// Set water level
 		if (this.settings.useWorldWaterLevel)
@@ -157,7 +157,11 @@ public class BiomeConfig extends BiomeConfigBase
 		}
 	}
 
-	@Override
+	/**
+	 * Called once to read all configuration settings from the
+	 * {@link SettingsMap} provided to the constructor.
+	 * @param reader The settings reader.
+	 */
 	protected void readConfigSettings(SettingsMap reader, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader, String presetFolderName)
 	{
 		this.settings.isTemplateForBiome = reader.getSetting(BiomeStandardValues.TEMPLATE_FOR_BIOME, logger);
@@ -320,10 +324,9 @@ public class BiomeConfig extends BiomeConfigBase
 		{
 			if (res != null)
 			{
-				if (res instanceof SaplingResource)
+				if (res instanceof SaplingResource sapling)
 				{
-					SaplingResource sapling = (SaplingResource) res;
-					if (sapling.saplingType == SaplingType.Custom)
+                    if (sapling.saplingType == SaplingType.Custom)
 					{
 						try
 						{
@@ -365,7 +368,7 @@ public class BiomeConfig extends BiomeConfigBase
 	}
 
 	@Override
-	protected void writeConfigSettings(SettingsMap writer)
+	public void writeConfigSettings(SettingsMap writer)
 	{
 		boolean isTemplateBiome = this.settings.isTemplateForBiome;
 		
@@ -925,8 +928,11 @@ public class BiomeConfig extends BiomeConfigBase
 		}
 	}
 
-	@Override
-	protected void validateAndCorrectSettings(Path settingsDir, ILogger logger)
+	/**
+	 * Called directly after {@link #readConfigSettings(SettingsMap, IConfigFunctionProvider, ILogger, IMaterialReader, String)} to fix
+	 * impossible combinations of settings.
+	 */
+	protected void validateAndCorrectSettings()
 	{
 		this.settings.biomeSize = lowerThanOrEqualTo(this.settings.biomeSize, this.settings.presetConfig.getBiomeSettings().getGenerationDepth());
 		this.settings.biomeSizeWhenIsle = lowerThanOrEqualTo(this.settings.biomeSizeWhenIsle, this.settings.presetConfig.getBiomeSettings().getGenerationDepth());
@@ -945,7 +951,7 @@ public class BiomeConfig extends BiomeConfigBase
 	}
 
 	@Override
-	protected void renameOldSettings(SettingsMap settings, ILogger logger, IMaterialReader materialReader)
+	public void renameOldSettings(SettingsMap settings, ILogger logger, IMaterialReader materialReader)
 	{
 		settings.renameOldSetting("DisableNotchHeightControl", BiomeStandardValues.DISABLE_BIOME_HEIGHT);
 		settings.renameOldSetting("BiomeDictId", BiomeStandardValues.BIOME_DICT_TAGS);
@@ -989,7 +995,7 @@ public class BiomeConfig extends BiomeConfigBase
 	@Override
 	public IBiomeConfig createTemplateBiome()
 	{
-		BiomeConfig biomeConfig = new BiomeConfig(this.configName);
+		BiomeConfig biomeConfig = new BiomeConfig(this.getConfigName());
 		biomeConfig.privateSettings = this.privateSettings;
 		biomeConfig.settings = this.settings;
 		return biomeConfig;

@@ -8,7 +8,7 @@ import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.config.world.PresetConfig;
 import com.pg85.otg.interfaces.IBiomeConfig;
 import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IPresetConfig;
+import com.pg85.otg.settings.preset.PresetSettings;
 import lombok.Getter;
 
 /**
@@ -26,7 +26,7 @@ public class Preset {
     // and caching our worldconfig/biomeconfigs etc, or they won't update when reloaded from disk.
     // BiomeGen and ChunkGen cache some settings during a session, so they'll only update on world exit/rejoin.
     @Getter
-    private IPresetConfig presetConfig;
+    private PresetSettings presetConfig;
     private HashMap<String, IBiomeConfig> biomeConfigs = new HashMap<String, IBiomeConfig>();
     @Getter
     private int majorVersion;

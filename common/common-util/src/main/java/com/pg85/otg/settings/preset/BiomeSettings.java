@@ -3,6 +3,7 @@ package com.pg85.otg.settings.preset;
 import com.pg85.otg.constants.settings.BiomeMode;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +34,6 @@ public class BiomeSettings {
     private final int riverRarity;
     private final int riverSize;
     private final boolean riversEnabled;
-    private final boolean biomeConfigsHaveReplacement;
     private final boolean oldLandRarity;
     private final boolean forceLandAtSpawn;
 }

@@ -3,7 +3,7 @@ package com.pg85.otg.forge.event;
 import com.pg85.otg.config.dimensions.DimensionConfig;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.forge.gen.OTGNoiseChunkGenerator;
-import com.pg85.otg.interfaces.IPresetConfig;
+import com.pg85.otg.settings.preset.PresetSettings;
 
 import com.pg85.otg.settings.preset.GameRuleSettings;
 import com.pg85.otg.settings.preset.SpawnSettings;
@@ -31,7 +31,7 @@ public class WorldHandler
 		if(event.getWorld() instanceof ServerWorld)
 		{
 			// If a fixed spawn point is configured in the PresetConfig, apply it.
-			IPresetConfig presetConfig = null;
+			PresetSettings presetConfig = null;
 			if(((ServerWorld)event.getWorld()).getWorldServer().getChunkSource().generator instanceof OTGNoiseChunkGenerator)
 			{
 				presetConfig = ((OTGNoiseChunkGenerator)((ServerWorld)event.getWorld()).getWorldServer().getChunkSource().generator).getPreset().getPresetConfig(); 

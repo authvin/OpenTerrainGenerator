@@ -15,17 +15,17 @@ import com.pg85.otg.constants.settings.LogLevels;
  */
 public interface IPluginConfig
 {
-	public LogLevels getLogLevel();
-	public int getMaxWorkerThreads();
-	public boolean getDeveloperModeEnabled();
-	public boolean logCustomObjects();
-	public boolean logStructurePlotting();
-	public boolean logConfigs();
-	public boolean logPerformance();	
-	public boolean logDecoration();	
-	public boolean logBiomeRegistry();
-	public boolean getDecorationEnabled();
-	public boolean logMobs();
-	public String logPresets();	
-	public ConfigMode getSettingsMode();
+	LogLevels getLogLevel();
+	int getMaxWorkerThreads();
+	boolean getDeveloperModeEnabled();
+	boolean logCustomObjects();
+	boolean logStructurePlotting();
+	boolean logConfigs();
+	boolean logPerformance();
+	boolean logDecoration();
+	boolean logBiomeRegistry();
+	boolean getDecorationEnabled();
+	boolean logMobs();
+	String logPresets();
+	ConfigMode getSettingsMode();
 }

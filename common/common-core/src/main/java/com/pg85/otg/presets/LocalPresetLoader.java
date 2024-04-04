@@ -19,7 +19,7 @@ import com.pg85.otg.config.world.PresetConfig;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IPresetConfig;
+import com.pg85.otg.settings.preset.PresetSettings;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 import com.pg85.otg.util.minecraft.BiomeRegistryNames;
@@ -160,7 +160,7 @@ public abstract class LocalPresetLoader
 		return biomes;
 	}
 
-	private ArrayList<BiomeConfig> loadBiomeConfigs(String presetShortName, int presetMajorVersion, Path presetDir, Path presetBiomesDir, IPresetConfig presetConfig, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader)
+	private ArrayList<BiomeConfig> loadBiomeConfigs(String presetShortName, int presetMajorVersion, Path presetDir, Path presetBiomesDir, PresetSettings presetConfig, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader)
 	{
 		// Establish folders
 		List<Path> biomeDirs = new ArrayList<Path>(2);
@@ -199,7 +199,7 @@ public abstract class LocalPresetLoader
 		return biomeConfigs;
 	}
 
-	private ArrayList<BiomeConfig> readAndWriteSettings(IPresetConfig presetConfig, Map<String, BiomeConfigStub> biomeConfigStubs, Path presetDir, String presetShortName, int presetMajorVersion, boolean write, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader)
+	private ArrayList<BiomeConfig> readAndWriteSettings(PresetSettings presetConfig, Map<String, BiomeConfigStub> biomeConfigStubs, Path presetDir, String presetShortName, int presetMajorVersion, boolean write, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader)
 	{
 		ArrayList<BiomeConfig> biomeConfigs = new ArrayList<BiomeConfig>();
 
@@ -223,22 +223,22 @@ public abstract class LocalPresetLoader
 		return biomeConfigs;
 	}
 
-	private void processSettings(IPresetConfig presetConfig, ArrayList<BiomeConfig> biomeConfigs)
+	private void processSettings(PresetSettings presetConfig, ArrayList<BiomeConfig> biomeConfigs)
 	{
 		for(BiomeConfig biomeConfig : biomeConfigs)
 		{
 			// Index ReplacedBlocks
-			if (!presetConfig.getBiomeSettings().isBiomeConfigsHaveReplacement())
+			if (!presetConfig.isBiomeConfigsHaveReplacement())
 			{
 				presetConfig.setBiomeConfigsHaveReplacement(biomeConfig.hasReplaceBlocksSettings());
 			}
 
 			// Index maxSmoothRadius
-			if (presetConfig.getTerrainSettings().getMaxSmoothRadius() < biomeConfig.getTerrainSettings().getSmoothRadius())
+			if (presetConfig.getMaxSmoothRadius() < biomeConfig.getTerrainSettings().getSmoothRadius())
 			{
 				presetConfig.setMaxSmoothRadius(biomeConfig.getTerrainSettings().getSmoothRadius());
 			}
-			if (presetConfig.getTerrainSettings().getMaxSmoothRadius() < biomeConfig.getTerrainSettings().getCHCSmoothRadius())
+			if (presetConfig.getMaxSmoothRadius() < biomeConfig.getTerrainSettings().getCHCSmoothRadius())
 			{
 				presetConfig.setMaxSmoothRadius(biomeConfig.getTerrainSettings().getCHCSmoothRadius());
 			}
