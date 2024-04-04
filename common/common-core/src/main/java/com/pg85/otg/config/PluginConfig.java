@@ -5,7 +5,7 @@ import java.nio.file.Path;
 import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.standard.PluginConfigStandardValues;
-import com.pg85.otg.config.standard.WorldStandardValues;
+import com.pg85.otg.config.standard.PresetStandardValues;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 
@@ -13,7 +13,7 @@ import com.pg85.otg.interfaces.IMaterialReader;
  * OTG.ini / PluginConfig classes
  * 
  * IPluginConfig defines anything that's used/exposed between projects.
- * PluginConfigBase implements anything needed for IWorldConfig. 
+ * PluginConfigBase implements anything needed for IPresetConfig. 
  * PluginConfig contains only fields/methods used for io/serialisation/instantiation.
  * 
  * PluginConfig should be used only in common-core and platform-specific layers, when reading/writing settings on app start.
@@ -36,7 +36,7 @@ public final class PluginConfig extends PluginConfigBase
 	@Override
 	protected void readConfigSettings(SettingsMap reader, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader, String presetFolderName)
 	{
-		this.settingsMode = reader.getSetting(WorldStandardValues.SETTINGS_MODE, logger);
+		this.settingsMode = reader.getSetting(PresetStandardValues.SETTINGS_MODE, logger);
 		this.logLevel = reader.getSetting(PluginConfigStandardValues.LOG_LEVEL, logger);
 		this.logCustomObjects = reader.getSetting(PluginConfigStandardValues.LOG_CUSTOM_OBJECTS, logger);
 		this.logStructurePlotting = reader.getSetting(PluginConfigStandardValues.LOG_BO4_PLOTTING, logger);
@@ -56,7 +56,7 @@ public final class PluginConfig extends PluginConfigBase
 	{
 		writer.header1("Open Terrain Generator Config");
 
-		writer.putSetting(WorldStandardValues.SETTINGS_MODE, this.settingsMode,
+		writer.putSetting(PresetStandardValues.SETTINGS_MODE, this.settingsMode,
 			"Possible Config Write Modes:",
 			"	WriteAll			 - Write config files with help comments.",
 			"	WriteWithoutComments - Write config files without help comments.",
@@ -133,7 +133,7 @@ public final class PluginConfig extends PluginConfigBase
 		);
 		
 		writer.putSetting(PluginConfigStandardValues.DEVELOPER_MODE, this.developerMode,
-			"Clears the BO2/BO3 cache and reloads WorldConfig/BiomeConfigs on exit/rejoin.",
+			"Clears the BO2/BO3 cache and reloads PresetConfig/BiomeConfigs on exit/rejoin.",
 			"Use this if you're creating a preset and want to do trial/error quickly.",
 			"Defaults to: false"
 		);

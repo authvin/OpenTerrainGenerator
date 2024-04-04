@@ -5,18 +5,18 @@ import com.pg85.otg.config.settingType.MaterialSetting;
 import com.pg85.otg.config.settingType.Setting;
 import com.pg85.otg.config.settingType.Settings;
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.constants.SettingsEnums.BiomeMode;
-import com.pg85.otg.constants.SettingsEnums.ConfigMode;
-import com.pg85.otg.constants.SettingsEnums.CustomStructureType;
-import com.pg85.otg.constants.SettingsEnums.ImageMode;
-import com.pg85.otg.constants.SettingsEnums.ImageOrientation;
+import com.pg85.otg.constants.settings.BiomeMode;
+import com.pg85.otg.constants.settings.ConfigMode;
+import com.pg85.otg.constants.settings.structure.CustomStructureType;
+import com.pg85.otg.constants.settings.ImageMode;
+import com.pg85.otg.constants.settings.ImageOrientation;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterials;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class WorldStandardValues extends Settings
+public class PresetStandardValues extends Settings
 {
 	public static class BiomeGroupNames
 	{
@@ -216,11 +216,7 @@ public class WorldStandardValues extends Settings
 		BED_WORKS = booleanSetting("BedWorks", true),
 		RESPAWN_ANCHOR_WORKS = booleanSetting("RespawnAnchorWorks", true),
 		HAS_RAIDS = booleanSetting("HasRaids", true),
-		FIXED_SPAWN_POINT = booleanSetting("FixedSpawnPoint", false),
-		IMPROVED_BORDER_DECORATION = booleanSetting("ImprovedBorderDecoration", false),
-
-		// Legacy, only needed for <= 1.12.2 presets, remove when presets have been updated.
-		ISOTGPLUS = booleanSetting("IsOTGPlus", false)
+		FIXED_SPAWN_POINT = booleanSetting("FixedSpawnPoint", false)
 	;
 
 	public static final Setting<LocalMaterialData>
@@ -231,7 +227,7 @@ public class WorldStandardValues extends Settings
 		CARVER_LAVA_BLOCK = new MaterialSetting("CarverLavaBlock", LocalMaterials.LAVA_NAME)
 	;
 
-    public static final Setting<ArrayList<LocalMaterialData>> PORTAL_BLOCKS = new MaterialListSetting("PortalBlocks", new String[] { LocalMaterials.QUARTZ_BLOCK_NAME });	
+    public static final Setting<ArrayList<LocalMaterialData>> PORTAL_BLOCKS = new MaterialListSetting("PortalBlocks", new String[] { LocalMaterials.QUARTZ_BLOCK_NAME });
 	
 	public static final Setting<List<String>>
 		ISLE_BIOMES = stringListSetting("IsleBiomes", "Deep Ocean", "MushroomIsland",
@@ -258,7 +254,7 @@ public class WorldStandardValues extends Settings
 	;
 
 	public static final Setting<Integer>
-		WORLD_FOG_COLOR = colorSetting("WorldFog", "0xC0D8FF")
+			PRESET_FOG_COLOR = colorSetting("WorldFog", "0xC0D8FF")
 	;
 
 	// Deprecated settings

@@ -9,7 +9,7 @@ import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.pg85.otg.OTG;
-import com.pg85.otg.constants.SettingsEnums.CustomStructureType;
+import com.pg85.otg.constants.settings.structure.CustomStructureType;
 import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.bo4.BO4;
 import com.pg85.otg.customobject.structures.CustomStructureCache;
@@ -116,14 +116,14 @@ public class SpawnCommand extends BaseCommand
 			{
 				genRegion = new ForgeWorldGenRegion(
 					preset.getFolderName(), 
-					preset.getWorldConfig(), 
+					preset.getPresetConfig(), 
 					source.getLevel(), 
 					(OTGNoiseChunkGenerator)source.getLevel().getChunkSource().getGenerator()
 				);
 			} else {
 				genRegion = new MCWorldGenRegion(
 					preset.getFolderName(), 
-					preset.getWorldConfig(), 
+					preset.getPresetConfig(), 
 					source.getLevel()
 				);
 			}
@@ -137,7 +137,7 @@ public class SpawnCommand extends BaseCommand
 	        		source.sendSuccess(new StringTextComponent("BO4 objects can only be spawned in OTG worlds/dimensions."), false);
 	        		return 0;					
 				}
-	        	if(preset.getWorldConfig().getCustomStructureType() != CustomStructureType.BO4)
+	        	if(preset.getPresetConfig().getCustomStructureSettings().getCustomStructureType() != CustomStructureType.BO4)
 	        	{
 	        		source.sendSuccess(new StringTextComponent("Cannot spawn a BO4 structure in an isOTGPlus:false world, use a BO3 instead or recreate the world with IsOTGPlus:true in the worldconfig."), false);
 	        		return 0;

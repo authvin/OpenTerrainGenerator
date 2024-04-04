@@ -2,7 +2,7 @@ package com.pg85.otg.config.standard;
 
 import com.pg85.otg.config.settingType.Setting;
 import com.pg85.otg.config.settingType.Settings;
-import com.pg85.otg.constants.SettingsEnums.LogLevels;
+import com.pg85.otg.constants.settings.LogLevels;
 
 public class PluginConfigStandardValues extends Settings
 {

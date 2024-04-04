@@ -1,8 +1,5 @@
-package com.pg85.otg.gen.surface;
+package com.pg85.otg.interfaces;
 
-import com.pg85.otg.interfaces.IBiome;
-import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
 import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.gen.GeneratingChunk;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -18,7 +15,7 @@ import com.pg85.otg.util.materials.LocalMaterialData;
  * are the only blocks that require block data during the initial terrain
  * generation.
  */
-public interface SurfaceGenerator
+public interface ISurfaceGenerator
 {
 	/**
 	 * Spawns this surface layer in the world.

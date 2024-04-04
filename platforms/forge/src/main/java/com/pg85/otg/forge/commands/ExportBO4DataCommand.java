@@ -7,7 +7,7 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.pg85.otg.OTG;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.biome.BiomeConfig;
-import com.pg85.otg.constants.SettingsEnums.CustomStructureType;
+import com.pg85.otg.constants.settings.structure.CustomStructureType;
 import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.bo4.BO4;
 import com.pg85.otg.customobject.bo4.BO4Data;
@@ -62,7 +62,7 @@ public class ExportBO4DataCommand extends BaseCommand
 		}
 
 		Preset preset = ((OTGNoiseChunkGenerator)source.getLevel().getChunkSource().generator).getPreset();
-        if(preset.getWorldConfig().getCustomStructureType() == CustomStructureType.BO4)
+        if(preset.getPresetConfig().getCustomStructureSettings().getCustomStructureType() == CustomStructureType.BO4)
         {	        
         	if(!isRunning)
         	{
@@ -75,7 +75,7 @@ public class ExportBO4DataCommand extends BaseCommand
 			                    
 			        // Make sure all structure starts in the world have been initialised
 			        // so that getMinimumSize has been done and its data can be saved with the BO4Data.
-			        for(IBiomeConfig biomeConfig : preset.getAllBiomeConfigs())
+			        for(IBiomeConfig biomeConfig : preset.getBiomeConfigList())
 			        {
 			        	for(ConfigFunction<IBiomeConfig> res : ((BiomeConfig)biomeConfig).getResourceQueue())
 			        	{
@@ -96,7 +96,7 @@ public class ExportBO4DataCommand extends BaseCommand
 				        	                	try {
 				        	                		// World save folder name may not be identical to level name, fetch it.
 				        	                		Path worldSaveFolder = source.getLevel().getServer().getWorldPath(FolderName.PLAYER_DATA_DIR).getParent();
-				        	                		IWorldGenRegion worldGenRegion = new ForgeWorldGenRegion(preset.getFolderName(), preset.getWorldConfig(), source.getLevel(), (OTGNoiseChunkGenerator)source.getLevel().getChunkSource().getGenerator());
+				        	                		IWorldGenRegion worldGenRegion = new ForgeWorldGenRegion(preset.getFolderName(), preset.getPresetConfig(), source.getLevel(), (OTGNoiseChunkGenerator)source.getLevel().getChunkSource().getGenerator());
 				        	                		structureStart.getMinimumSize(((OTGNoiseChunkGenerator)source.getLevel().getChunkSource().generator).getStructureCache(worldSaveFolder), worldGenRegion, OTG.getEngine().getOTGRootFolder(), OTG.getEngine().getLogger(), OTG.getEngine().getCustomObjectManager(), OTG.getEngine().getPresetLoader().getMaterialReader(preset.getFolderName()), OTG.getEngine().getCustomObjectResourcesManager(), OTG.getEngine().getModLoadedChecker());
 				        						}
 				        	                	catch (InvalidConfigException e)

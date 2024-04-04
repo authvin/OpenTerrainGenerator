@@ -6,16 +6,16 @@ import java.util.Random;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.ICachedBiomeProvider;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
-import com.pg85.otg.interfaces.IWorldConfig;
+import com.pg85.otg.interfaces.IPresetConfig;
 import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.helpers.RandomHelper;
 
 public class CaveCarver extends Carver
 {
-	public CaveCarver(int heightLimit, IWorldConfig worldConfig)
+	public CaveCarver(int heightLimit, IPresetConfig presetConfig)
 	{
-		super(heightLimit, worldConfig);
+		super(heightLimit, presetConfig);
 	}
 
 	@Override
@@ -24,9 +24,9 @@ public class CaveCarver extends Carver
 		int branchFactor = (this.getBranchFactor() * 2 - 1) * Constants.CHUNK_SIZE;
 		int caveCount = random.nextInt(random.nextInt(random.nextInt(this.getMaxCaveCount()) + 1) + 1);
 
-		if (this.worldConfig.isEvenCaveDistribution())
+		if (this.presetConfig.getCarverSettings().isEvenCaveDistribution())
 		{
-			caveCount = this.worldConfig.getCaveFrequency();
+			caveCount = this.presetConfig.getCarverSettings().getCaveFrequency();
 		}
 
 		for (int cave = 0; cave < caveCount; ++cave)
@@ -35,19 +35,19 @@ public class CaveCarver extends Carver
 			double y = this.getCaveY(random);
 			double z = chunkZ * Constants.CHUNK_SIZE + random.nextInt(Constants.CHUNK_SIZE);
 			// Vanilla Behavior: Defaults to 1.
-			int tunnelCount = this.worldConfig.getCaveSystemFrequency();
+			int tunnelCount = this.presetConfig.getCarverSettings().getCaveSystemFrequency();
 
-			if (random.nextInt(100) < this.worldConfig.getIndividualCaveRarity())
+			if (random.nextInt(100) < this.presetConfig.getCarverSettings().getIndividualCaveRarity())
 			{
 				float size = 1.0F + random.nextFloat() * 6.0F;
 				this.carveCave(noiseProvider, chunk, random.nextLong(), mainChunkX, mainChunkZ, x, y, z, size, 0.5D, carvingMask, cachedBiomeProvider);
 				// Vanilla Behavior: Add 0 to 3 more caves when generating a spherical cave.
 				// tunnelCount += random.nextInt(4);
-				tunnelCount += RandomHelper.numberInRange(random, this.worldConfig.getCaveSystemPocketMinSize(), this.worldConfig.getCaveSystemPocketMaxSize());
+				tunnelCount += RandomHelper.numberInRange(random, this.presetConfig.getCarverSettings().getCaveSystemPocketMinSize(), this.presetConfig.getCarverSettings().getCaveSystemPocketMaxSize());
 			}
-			else if (random.nextInt(100) <= this.worldConfig.getCaveSystemPocketChance() - 1)
+			else if (random.nextInt(100) <= this.presetConfig.getCarverSettings().getCaveSystemPocketChance() - 1)
 			{
-				tunnelCount += RandomHelper.numberInRange(random, this.worldConfig.getCaveSystemPocketMinSize(), this.worldConfig.getCaveSystemPocketMaxSize());
+				tunnelCount += RandomHelper.numberInRange(random, this.presetConfig.getCarverSettings().getCaveSystemPocketMinSize(), this.presetConfig.getCarverSettings().getCaveSystemPocketMaxSize());
 			}
 
 			for (int r = 0; r < tunnelCount; ++r)
@@ -66,19 +66,19 @@ public class CaveCarver extends Carver
 	@Override
 	public boolean isStartChunk(Random random, int chunkX, int chunkZ)
 	{
-		if (this.worldConfig.getCaveFrequency() <= 0)
+		if (this.presetConfig.getCarverSettings().getCaveFrequency() <= 0)
 		{
 			return false;
 		}
 
 		// Vanilla uses 0.0-1.0, we use 0-100.
-		return random.nextInt(100) < this.worldConfig.getCaveRarity();
+		return random.nextInt(100) < this.presetConfig.getCarverSettings().getCaveRarity();
 	}
 
 	protected int getMaxCaveCount()
 	{
 		// Vanilla Behavior: Defaults to 15.
-		return this.worldConfig.getCaveFrequency();
+		return this.presetConfig.getCarverSettings().getCaveFrequency();
 	}
 
 	protected float getTunnelSystemWidth(Random random)
@@ -101,11 +101,11 @@ public class CaveCarver extends Carver
 	{
 		// Vanilla Behavior: Random value from 8 to 120, biased downwards.
 		// return random.nextInt(random.nextInt(120) + 8);
-		if (this.worldConfig.isEvenCaveDistribution())
+		if (this.presetConfig.getCarverSettings().isEvenCaveDistribution())
 		{
-			return RandomHelper.numberInRange(random, this.worldConfig.getCaveMinAltitude(), this.worldConfig.getCaveMaxAltitude());
+			return RandomHelper.numberInRange(random, this.presetConfig.getCarverSettings().getCaveMinAltitude(), this.presetConfig.getCarverSettings().getCaveMaxAltitude());
 		} else {
-			return random.nextInt(random.nextInt(this.worldConfig.getCaveMaxAltitude() - this.worldConfig.getCaveMinAltitude() + 1) + 1) + this.worldConfig.getCaveMinAltitude();
+			return random.nextInt(random.nextInt(this.presetConfig.getCarverSettings().getCaveMaxAltitude() - this.presetConfig.getCarverSettings().getCaveMinAltitude() + 1) + 1) + this.presetConfig.getCarverSettings().getCaveMinAltitude();
 		}
 	}
 

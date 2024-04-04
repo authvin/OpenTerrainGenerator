@@ -1,6 +1,6 @@
 package com.pg85.otg.fabric;
 
-import com.pg85.otg.OTGEngine;
+import com.pg85.otg.OTG;
 import net.fabricmc.api.ModInitializer;
 
 public class OTGPlugin implements ModInitializer {
@@ -9,8 +9,13 @@ public class OTGPlugin implements ModInitializer {
 		// This code runs as soon as Minecraft is in a mod-load-ready state.
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
+		OTG.log("OTG Engine starting");
+		OTG.startEngine(new FabricEngine());
 
-		System.out.println(OTGEngine.class); // load a class from core
-		System.out.println("OpenTerrainGenerator-Fabric reporting in... it's dark in here.");
+		OTG.log("Loading presets");
+		// Load presets
+
 	}
+
+
 }

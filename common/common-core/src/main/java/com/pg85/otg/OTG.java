@@ -1,5 +1,9 @@
 package com.pg85.otg;
 
+import com.pg85.otg.interfaces.ILogger;
+import com.pg85.otg.util.logging.LogCategory;
+import com.pg85.otg.util.logging.LogLevel;
+
 /**
  * Main entry-point. Used for logging and to access OTGEngine.
  * OTGEngine is implemented and provided by the platform-specific 
@@ -8,6 +12,7 @@ package com.pg85.otg;
 public class OTG
 {
 	private static OTGEngine Engine;
+	private static ILogger logger;
 
 	private OTG() { }
 
@@ -27,11 +32,30 @@ public class OTG
 
 		Engine = engine;
 		engine.onStart();
+		logger = Engine.getLogger();
 	}
 
 	public static void stopEngine()
 	{
 		Engine.onShutdown();
 		Engine = null;
+	}
+
+	// Logging
+	public static void log(LogLevel logLevel, LogCategory logCategory, String message)
+	{
+		if (logger != null)
+		{
+			logger.log(logLevel, logCategory, message);
+		}
+		if (Engine == null)
+		{
+			throw new IllegalStateException("Engine is not started.");
+		}
+	}
+
+	public static void log(String message)
+	{
+		log(LogLevel.INFO, LogCategory.MAIN, message);
 	}
 }

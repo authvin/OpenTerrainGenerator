@@ -52,7 +52,7 @@ public class SaplingHandler
 			preset = ((OTGNoiseChunkGenerator)((ServerWorld)event.getWorld()).getChunkSource().generator).getPreset();
 			worldGenRegion = new ForgeWorldGenRegion(
 				preset.getFolderName(), 
-				preset.getWorldConfig(), 
+				preset.getPresetConfig(), 
 				(ServerWorld)event.getWorld(), 
 				((OTGNoiseChunkGenerator)((ServerWorld)event.getWorld()).getChunkSource().generator)
 			);
@@ -175,7 +175,7 @@ public class SaplingHandler
 			preset = ((OTGNoiseChunkGenerator)((ServerWorld)event.getWorld()).getChunkSource().generator).getPreset();
 			worldGenRegion = new ForgeWorldGenRegion(
 				preset.getFolderName(), 
-				preset.getWorldConfig(), 
+				preset.getPresetConfig(), 
 				(ServerWorld)event.getWorld(), 
 				((OTGNoiseChunkGenerator)((ServerWorld)event.getWorld()).getChunkSource().generator)
 			);

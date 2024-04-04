@@ -15,13 +15,13 @@ import com.pg85.otg.interfaces.ILayerSampler;
 class BiomeGroupLayer implements ParentedLayer
 {
 	// The sorted map of rarities to biome groups
-	private final TreeMap<Integer, NewBiomeGroup> rarityMap = new TreeMap<>();
+	private final TreeMap<Integer, BiomeGroup> rarityMap = new TreeMap<>();
 	private final int maxRarity;
 
 	BiomeGroupLayer(BiomeLayerData data, int depth)
 	{
-		List<NewBiomeGroup> groups = data.groups.get(depth);
-		if (data.oldGroupRarity)
+		List<BiomeGroup> groups = data.groups.get(depth);
+		if (data.biomeSettings.isOldGroupRarity())
 		{
 			// With oldGroupRarity, the maxRarity is the number of biome groups on this depth * 100
 			// If there are three groups on depth 2, then they will be compared against a max rarity of 300
@@ -35,7 +35,7 @@ class BiomeGroupLayer implements ParentedLayer
 
 		// Iterate through groups and keep a tally of the rarity of each group.
 		// The order doesn't matter all that much, the margin between the values dictates the rarity.
-		for (NewBiomeGroup group : groups)
+		for (BiomeGroup group : groups)
 		{
 			cumulativeRarity += group.rarity;
 			this.rarityMap.put(cumulativeRarity, group);
@@ -53,7 +53,7 @@ class BiomeGroupLayer implements ParentedLayer
 			(sample & BiomeLayers.GROUP_BITS) == 0
 		)
 		{
-			NewBiomeGroup biomeGroup = getGroup(context);
+			BiomeGroup biomeGroup = getGroup(context);
 			if(biomeGroup != null)
 			{
 				// Encode the biome group id into the sample for later use
@@ -64,13 +64,13 @@ class BiomeGroupLayer implements ParentedLayer
 		return sample;
 	}
 
-	private NewBiomeGroup getGroup(LayerRandomnessSource random)
+	private BiomeGroup getGroup(LayerRandomnessSource random)
 	{
 		// Get a random rarity number from our max rarity
 		int chosenRarity = random.nextInt(maxRarity);
 
 		// Iterate through the rarity map and see if the chosen rarity is less than the rarity for each group, if it is then return.
-		for (Map.Entry<Integer, NewBiomeGroup> entry : rarityMap.entrySet())
+		for (Map.Entry<Integer, BiomeGroup> entry : rarityMap.entrySet())
 		{
 			if (chosenRarity < entry.getKey())
 			{

@@ -6,16 +6,16 @@ import java.util.Random;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.ICachedBiomeProvider;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
-import com.pg85.otg.interfaces.IWorldConfig;
+import com.pg85.otg.interfaces.IPresetConfig;
 import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.helpers.RandomHelper;
 
 public class RavineCarver extends Carver
 {
-	public RavineCarver(int heightLimit, IWorldConfig worldConfig)
+	public RavineCarver(int heightLimit, IPresetConfig presetConfig)
 	{
-		super(heightLimit, worldConfig);
+		super(heightLimit, presetConfig);
 	}
 
 	@Override
@@ -23,7 +23,7 @@ public class RavineCarver extends Carver
 	{
 		return			
 			// Vanilla uses 0.0-1.0, we use 0-100.
-			(random.nextInt(100) < this.worldConfig.getRavineRarity());
+			(random.nextInt(100) < this.presetConfig.getCarverSettings().getRavineRarity());
 	}
 
 	@Override
@@ -34,7 +34,7 @@ public class RavineCarver extends Carver
 
 		// Vanilla behavior: Bias ravines downwards, with a min of 20.
 		// double y = random.nextInt(random.nextInt(40) + 8) + 20;
-		double y = RandomHelper.numberInRange(random, this.worldConfig.getRavineMinAltitude(), this.worldConfig.getRavineMaxAltitude());
+		double y = RandomHelper.numberInRange(random, this.presetConfig.getCarverSettings().getRavineMinAltitude(), this.presetConfig.getCarverSettings().getRavineMaxAltitude());
 
 		//float yaw = random.nextFloat() * 6.2831855F;
 		float yaw = random.nextFloat() * ((float)Math.PI * 2F);
@@ -44,9 +44,9 @@ public class RavineCarver extends Carver
 		// Vanilla behavior: Subtract 0% - 25% of the branching factor. Default Branching factor is 112.
 		// int branchingFactor = (this.getBranchFactor() * 2 - 1) * 16;		
 		// int branchCount = branchingFactor - random.nextInt(branchingFactor / 4);
-		int branchCount = RandomHelper.numberInRange(random, this.worldConfig.getRavineMinLength(), this.worldConfig.getRavineMaxLength());
+		int branchCount = RandomHelper.numberInRange(random, this.presetConfig.getCarverSettings().getRavineMinLength(), this.presetConfig.getCarverSettings().getRavineMaxLength());
 		branchCount = branchCount - random.nextInt(branchCount / 4);		
-		double yawPitchRatio = worldConfig.getRavineDepth();
+		double yawPitchRatio = presetConfig.getCarverSettings().getRavineDepth();
 
 		this.carveRavine(noiseProvider, chunk, random.nextLong(), mainChunkX, mainChunkZ, x, y, z, width, yaw, pitch, 0, branchCount, yawPitchRatio, bitSet, cachedBiomeProvider);
 		return true;

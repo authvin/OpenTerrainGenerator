@@ -64,7 +64,7 @@ public class BiomeCommand extends BaseCommand
 		{
 			source.sendSuccess(
 					new StringTextComponent("According to OTG, this biome uses the ").withStyle(TextFormatting.GOLD)
-							.append(new StringTextComponent(config.getName()).withStyle(TextFormatting.GREEN))
+							.append(new StringTextComponent(config.getIdentitySettings().getBiomeName()).withStyle(TextFormatting.GREEN))
 							.append(new StringTextComponent(" template.").withStyle(TextFormatting.GOLD)),
 					false);
 			source.sendSuccess(new StringTextComponent("This biome belongs to either another mod or the vanilla game.")
@@ -73,7 +73,7 @@ public class BiomeCommand extends BaseCommand
 		{
 			source.sendSuccess(
 					new StringTextComponent("According to OTG, you are in the ").withStyle(TextFormatting.GOLD)
-							.append(new StringTextComponent(config.getName()).withStyle(TextFormatting.GREEN))
+							.append(new StringTextComponent(config.getIdentitySettings().getBiomeName()).withStyle(TextFormatting.GREEN))
 							.append(new StringTextComponent(" biome.").withStyle(TextFormatting.GOLD)),
 					false);
 		}
@@ -105,23 +105,23 @@ public class BiomeCommand extends BaseCommand
 		source.sendSuccess(
 				createComponent("Biome Tags: ", String.join(", ", types), TextFormatting.GOLD, TextFormatting.GREEN),
 				false);
-		source.sendSuccess(createComponent("Inherit Mobs: ", config.getInheritMobsBiomeName(), TextFormatting.GOLD,
+		source.sendSuccess(createComponent("Inherit Mobs: ", config.getMobSettings().getInheritMobsBiomeName(), TextFormatting.GOLD,
 				TextFormatting.GREEN), false);
 
-		source.sendSuccess(createComponent("Base Size: ", Integer.toString(config.getBiomeSize()), TextFormatting.GOLD,
+		source.sendSuccess(createComponent("Base Size: ", Integer.toString(config.getPlacementSettings().getBiomeSize()), TextFormatting.GOLD,
 				TextFormatting.GREEN)
-						.append(createComponent(" Biome Rarity: ", Integer.toString(config.getBiomeRarity()),
+						.append(createComponent(" Biome Rarity: ", Integer.toString(config.getPlacementSettings().getBiomeRarity()),
 								TextFormatting.GOLD, TextFormatting.GREEN)),
 				false);
 
-		source.sendSuccess(createComponent("Biome Height: ", String.format("%.2f", config.getBiomeHeight()),
+		source.sendSuccess(createComponent("Biome Height: ", String.format("%.2f", config.getTerrainSettings().getBiomeHeight()),
 				TextFormatting.GOLD, TextFormatting.GREEN), false);
 
-		source.sendSuccess(createComponent("Volatility: ", String.format("%.2f", config.getBiomeVolatility()),
+		source.sendSuccess(createComponent("Volatility: ", String.format("%.2f", config.getTerrainSettings().getBiomeVolatility()),
 				TextFormatting.GOLD, TextFormatting.GREEN)
-						.append(createComponent(" Volatility1: ", String.format("%.2f", config.getVolatility1()),
+						.append(createComponent(" Volatility1: ", String.format("%.2f", config.getTerrainSettings().getVolatility1()),
 								TextFormatting.GOLD, TextFormatting.GREEN))
-						.append(createComponent(" Volatility2: ", String.format("%.2f", config.getVolatility2()),
+						.append(createComponent(" Volatility2: ", String.format("%.2f", config.getTerrainSettings().getVolatility2()),
 								TextFormatting.GOLD, TextFormatting.GREEN)),
 				false);
 

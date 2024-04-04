@@ -51,11 +51,11 @@ public class Constants
 	// World constants
 	
 	// Files and folders
-	public static final String WORLD_CONFIG_FILE = "WorldConfig.ini";
+	public static final String PRESET_CONFIG_FILE = "PresetConfig.ini";
 	public static final String FALLBACK_FILE = "Fallbacks.ini";
-	public static final String WORLD_BIOMES_FOLDER = "Biomes";
+	public static final String BIOMES_FOLDER = "Biomes";
 	public static final String LEGACY_WORLD_BIOMES_FOLDER = "WorldBiomes";
-	public static final String WORLD_OBJECTS_FOLDER = "Objects";
+	public static final String OBJECTS_FOLDER = "Objects";
 	public static final String LEGACY_WORLD_OBJECTS_FOLDER = "WorldObjects";
 	
 	public static final String BackupFileSuffix = "-backup";
@@ -80,7 +80,6 @@ public class Constants
 	// In a 0.2 temp biome, y90 temp is 0.156, y255 temp is -0.12
 	public static final float SNOW_AND_ICE_TEMP = 0.15F;
 	public static final float SNOW_AND_ICE_MAX_TEMP = -0.115f;
-	public static final float ICE_GROUP_MAX_TEMP = 0.33F;
 	
 	// MesaSurfaceGenerator types
 	

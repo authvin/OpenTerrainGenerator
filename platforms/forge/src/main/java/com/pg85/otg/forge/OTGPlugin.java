@@ -124,7 +124,7 @@ public class OTGPlugin
 				Path datapackDir = ((ServerWorld)event.getWorld()).getLevel().getServer().getWorldPath(FolderName.DATAPACK_DIR);
 				Preset preset = ((OTGNoiseChunkGenerator)((ServerWorld)event.getWorld()).getLevel().getChunkSource().generator).getPreset();
 				String dimName = ((ServerWorld)event.getWorld()).getWorldServer().dimension().location().getPath();
-				OTGDimensionType.saveDataPackFile(datapackDir, dimName, preset.getWorldConfig(), preset.getFolderName());
+				OTGDimensionType.saveDataPackFile(datapackDir, dimName, preset.getPresetConfig(), preset.getFolderName());
 			}
 		}
 		((ForgeEngine)OTG.getEngine()).onSave(event.getWorld());

@@ -1,7 +1,7 @@
 package com.pg85.otg.customobject.config;
 
 import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.constants.SettingsEnums.ConfigMode;
+import com.pg85.otg.constants.settings.ConfigMode;
 import com.pg85.otg.customobject.bofunctions.BlockFunction;
 import com.pg85.otg.customobject.config.io.SettingsReaderBO4;
 import com.pg85.otg.customobject.config.io.SettingsWriterBO4;

@@ -19,10 +19,10 @@ public class BiomeSettingSyncWrapper
 
 	public BiomeSettingSyncWrapper(IBiomeConfig config)
 	{
-		this.fogDensity = config.getFogDensity();
-		this.grassColorControl = config.getGrassColorControl();
-		this.foliageColorControl = config.getFoliageColorControl();
-		this.waterColorControl = config.getWaterColorControl();
+		this.fogDensity = config.getVisualSettings().getFogDensity();
+		this.grassColorControl = config.getVisualSettings().getGrassColorControl();
+		this.foliageColorControl = config.getVisualSettings().getFoliageColorControl();
+		this.waterColorControl = config.getVisualSettings().getWaterColorControl();
 	}
 
 	public BiomeSettingSyncWrapper(PacketBuffer buffer)

@@ -71,7 +71,7 @@ public class SaplingResource extends ConfigFunction<IBiomeConfig> implements ISa
 		this.trees = new ArrayList<CustomObject>();
 		this.treeNames = new ArrayList<String>();
 		this.treeChances = new ArrayList<Double>();
-		this.biomeName = biomeConfig.getName();
+		this.biomeName = biomeConfig.getIdentitySettings().getBiomeName();
 		int ind = 1;
 		if (this.saplingType == SaplingType.Custom)
 		{

@@ -117,7 +117,6 @@ public class BiomeBorderLayer implements ParentedLayer
 								center & (
 									BiomeLayers.ISLAND_BIT
 									| BiomeLayers.RIVER_BITS
-									| BiomeLayers.ICE_BIT
 								)
 							)
 							| BiomeLayers.LAND_BIT
@@ -155,7 +154,6 @@ public class BiomeBorderLayer implements ParentedLayer
 										center & (
 											BiomeLayers.ISLAND_BIT
 											| BiomeLayers.RIVER_BITS
-											| BiomeLayers.ICE_BIT
 										)
 									)
 									| BiomeLayers.LAND_BIT

@@ -14,8 +14,8 @@ public final class BiomeGroupManager
 {
 	static final int MAX_BIOME_GROUP_COUNT = 127;
 	private int cumulativeGroupRarity = 0;
-	private Map<String, BiomeGroup> nameToGroup = new LinkedHashMap<String, BiomeGroup>(4);
-	private Map<Integer, BiomeGroup> idToGroup = new LinkedHashMap<Integer, BiomeGroup>(4);
+	private Map<String, BiomeGroupFunction> nameToGroup = new LinkedHashMap<String, BiomeGroupFunction>(4);
+	private Map<Integer, BiomeGroupFunction> idToGroup = new LinkedHashMap<Integer, BiomeGroupFunction>(4);
 
 	public BiomeGroupManager() { }
 
@@ -25,11 +25,11 @@ public final class BiomeGroupManager
 	 * logged and the group is not registered.
 	 * @param newGroup The group to register.
 	 */
-	public void registerGroup(BiomeGroup newGroup, ILogger logger)
+	public void registerGroup(BiomeGroupFunction newGroup, ILogger logger)
 	{
 		if (isRoomForMoreGroups())
 		{
-			BiomeGroup existingWithSameName = nameToGroup.get(newGroup.getName());
+			BiomeGroupFunction existingWithSameName = nameToGroup.get(newGroup.getName());
 			if (existingWithSameName != null)
 			{
 				if(logger.getLogCategoryEnabled(LogCategory.CONFIGS))
@@ -77,7 +77,7 @@ public final class BiomeGroupManager
 	 * @param groupId Id of the group.
 	 * @return The group, or null if no such group exists.
 	 */
-	public BiomeGroup getGroupById(int groupId)
+	public BiomeGroupFunction getGroupById(int groupId)
 	{
 		return idToGroup.get(groupId);
 	}
@@ -87,7 +87,7 @@ public final class BiomeGroupManager
 	 * @param name Name of the group, case sensitive.
 	 * @return The group.
 	 */
-	public BiomeGroup getGroupByName(String name)
+	public BiomeGroupFunction getGroupByName(String name)
 	{
 		return nameToGroup.get(name);
 	}
@@ -96,7 +96,7 @@ public final class BiomeGroupManager
 	 * Gets all groups.
 	 * @return All groups.
 	 */
-	public Collection<BiomeGroup> getGroups()
+	public Collection<BiomeGroupFunction> getGroups()
 	{
 		return idToGroup.values();
 	}
@@ -112,18 +112,18 @@ public final class BiomeGroupManager
 	}
 
 	// TODO: Turn into array?
-	private HashMap<Integer, TreeMap<Integer, BiomeGroup>> cachedGroupDepthMaps = new HashMap<Integer, TreeMap<Integer, BiomeGroup>>();
-	public SortedMap<Integer, BiomeGroup> getGroupDepthMap(int depth)
+	private HashMap<Integer, TreeMap<Integer, BiomeGroupFunction>> cachedGroupDepthMaps = new HashMap<Integer, TreeMap<Integer, BiomeGroupFunction>>();
+	public SortedMap<Integer, BiomeGroupFunction> getGroupDepthMap(int depth)
 	{
-		TreeMap<Integer, BiomeGroup> map = cachedGroupDepthMaps.get(new Integer(depth));
+		TreeMap<Integer, BiomeGroupFunction> map = cachedGroupDepthMaps.get(depth);
 		if(map != null)
 		{
 			return map;
 		}
 		
-		map = new TreeMap<Integer, BiomeGroup>();
+		map = new TreeMap<Integer, BiomeGroupFunction>();
 		this.cumulativeGroupRarity = 0;
-		for (BiomeGroup group : getGroups())
+		for (BiomeGroupFunction group : getGroups())
 		{
 			if (group.getGenerationDepth() == depth)
 			{
@@ -143,7 +143,7 @@ public final class BiomeGroupManager
 
 	public boolean isGroupDepthMapEmpty(int depth)
 	{
-		for (BiomeGroup group : getGroups())
+		for (BiomeGroupFunction group : getGroups())
 		{
 			if (group.getGenerationDepth() == depth)
 			{
@@ -166,9 +166,9 @@ public final class BiomeGroupManager
 	 */
 	public void filterBiomes(ArrayList<String> customBiomeNames, ILogger logger)
 	{
-		for (Iterator<BiomeGroup> it = this.idToGroup.values().iterator(); it.hasNext();)
+		for (Iterator<BiomeGroupFunction> it = this.idToGroup.values().iterator(); it.hasNext();)
 		{
-			BiomeGroup group = it.next();
+			BiomeGroupFunction group = it.next();
 			group.filterBiomes(customBiomeNames, logger);
 			if (group.hasNoBiomes())
 			{

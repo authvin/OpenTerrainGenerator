@@ -106,7 +106,7 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 	
 	/**
 	 * Creates a new settings reader.
-	 * @param name Name of the config file, like "WorldConfig" or "Taiga".
+	 * @param name Name of the config file, like "PresetConfig" or "Taiga".
 	 * @param file File where the settings are stored.
 	 */
 	public FileSettingsReaderBO4(String name, File file, ILogger logger)

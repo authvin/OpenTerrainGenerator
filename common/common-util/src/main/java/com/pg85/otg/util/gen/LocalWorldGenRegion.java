@@ -3,7 +3,7 @@ package com.pg85.otg.util.gen;
 import com.pg85.otg.interfaces.ICachedBiomeProvider;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IPluginConfig;
-import com.pg85.otg.interfaces.IWorldConfig;
+import com.pg85.otg.interfaces.IPresetConfig;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.ChunkCoordinate;
 
@@ -12,28 +12,28 @@ public abstract class LocalWorldGenRegion implements IWorldGenRegion
 {
 	protected final String presetFolderName;
 	private final IPluginConfig pluginConfig;
-	private final IWorldConfig worldConfig;
+	private final IPresetConfig presetConfig;
 	protected final ILogger logger;
 	protected final DecorationBiomeCache decorationBiomeCache;
 	protected final DecorationArea decorationArea;
 
 	/** Creates a LocalWorldGenRegion to be used during chunk decoration */
-	protected LocalWorldGenRegion(String presetFolderName, IPluginConfig pluginConfig, IWorldConfig worldConfig, ILogger logger, int worldRegionCenterX, int worldRegionCenterZ, ICachedBiomeProvider cachedBiomeProvider)
+	protected LocalWorldGenRegion(String presetFolderName, IPluginConfig pluginConfig, IPresetConfig presetConfig, ILogger logger, int worldRegionCenterX, int worldRegionCenterZ, ICachedBiomeProvider cachedBiomeProvider)
 	{
 		this.presetFolderName = presetFolderName;
 		this.pluginConfig = pluginConfig;
-		this.worldConfig = worldConfig;
+		this.presetConfig = presetConfig;
 		this.logger = logger;
 		this.decorationArea = new DecorationArea(ChunkCoordinate.fromChunkCoords(worldRegionCenterX, worldRegionCenterZ));
 		this.decorationBiomeCache = new DecorationBiomeCache(worldRegionCenterX, worldRegionCenterZ, cachedBiomeProvider);		
 	}
 	
 	/** Creates a LocalWorldGenRegion to be used outside of world generation. */	
-	protected LocalWorldGenRegion(String presetFolderName, IPluginConfig pluginConfig, IWorldConfig worldConfig, ILogger logger)
+	protected LocalWorldGenRegion(String presetFolderName, IPluginConfig pluginConfig, IPresetConfig presetConfig, ILogger logger)
 	{
 		this.presetFolderName = presetFolderName;
 		this.pluginConfig = pluginConfig;
-		this.worldConfig = worldConfig;
+		this.presetConfig = presetConfig;
 		this.logger = logger;
 		// TOOD: Don't use this.decorationArea == null for worldgenregions
 		// doing things outside of population, split up worldgenregion
@@ -49,9 +49,9 @@ public abstract class LocalWorldGenRegion implements IWorldGenRegion
 	}	
 	
 	@Override
-	public IWorldConfig getWorldConfig()
+	public IPresetConfig getPresetConfig()
 	{
-		return this.worldConfig;
+		return this.presetConfig;
 	}
 	
 	@Override

@@ -54,7 +54,7 @@ public final class GeneratingChunk
 	/**
 	 * Gets whether bedrock should be created at the given position.
 	 *
-	 * @param worldConfig The worldConfig, for bedrock settings.
+	 * @param presetConfig The presetConfig, for bedrock settings.
 	 * @param y			The y position.
 	 * @return True if bedrock should be created, false otherwise.
 	 */

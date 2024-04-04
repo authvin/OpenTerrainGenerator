@@ -5,7 +5,7 @@ import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IWorldConfig;
+import com.pg85.otg.interfaces.IPresetConfig;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -21,7 +21,7 @@ import java.util.*;
  *
  * <p>This class represents such a biome group.
  */
-public final class BiomeGroup extends ConfigFunction<IWorldConfig>
+public final class BiomeGroupFunction extends ConfigFunction<IPresetConfig>
 {
 	private int groupId;
 	private String name;
@@ -36,15 +36,15 @@ public final class BiomeGroup extends ConfigFunction<IWorldConfig>
 	 * @param config The world config.
 	 * @param args	The settings to be parsed.
 	 * @throws InvalidConfigException When the config is invalid.
-	 * @see #BiomeGroup(IWorldConfig, String, int, int, List) Constructor to
+	 * @see #BiomeGroupFunction(IPresetConfig, String, int, int, List) Constructor to
 	 * properly initialize this biome group manually.
 	 */
-	public BiomeGroup(IWorldConfig config, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public BiomeGroupFunction(IPresetConfig config, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
 	{
 		// Must have at least a GroupName and a Biome that belongs to it
 		assureSize(4, args);
 		this.name = args.get(0);
-		this.generationDepth = readInt(args.get(1), 0, config.getGenerationDepth());
+		this.generationDepth = readInt(args.get(1), 0, config.getBiomeSettings().getGenerationDepth());
 		this.groupRarity = readInt(args.get(2), 1, Integer.MAX_VALUE);
 		
 		try
@@ -67,13 +67,13 @@ public final class BiomeGroup extends ConfigFunction<IWorldConfig>
 
 	/**
 	 * Creates a new <code>BiomeGroup</code>.
-	 * @param config	WorldConfig this biome group is part of.
+	 * @param config	PresetConfig this biome group is part of.
 	 * @param groupName The name of this group.
 	 * @param size	  Size value of this biome group.
 	 * @param rarity	Rarity value of this biome group.
 	 * @param biomes	List of names of the biomes that spawn in this group.
 	 */
-	public BiomeGroup(IWorldConfig config, String groupName, int size, int rarity, List<String> biomes)
+	public BiomeGroupFunction(IPresetConfig config, String groupName, int size, int rarity, List<String> biomes)
 	{
 		this.name = groupName;
 		this.generationDepth = size;

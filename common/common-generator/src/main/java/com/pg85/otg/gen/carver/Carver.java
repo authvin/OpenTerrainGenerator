@@ -7,7 +7,7 @@ import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.IBiomeConfig;
 import com.pg85.otg.interfaces.ICachedBiomeProvider;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
-import com.pg85.otg.interfaces.IWorldConfig;
+import com.pg85.otg.interfaces.IPresetConfig;
 import com.pg85.otg.util.MutableBoolean;
 import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.gen.DecorationArea;
@@ -18,12 +18,12 @@ import com.pg85.otg.util.materials.LocalMaterials;
 public abstract class Carver
 {
 	protected final int heightLimit;
-	protected final IWorldConfig worldConfig;
+	protected final IPresetConfig presetConfig;
 
-	public Carver(int heightLimit, IWorldConfig worldConfig)
+	public Carver(int heightLimit, IPresetConfig presetConfig)
 	{
 		this.heightLimit = heightLimit;
-		this.worldConfig = worldConfig;
+		this.presetConfig = presetConfig;
 	}
 
 	public int getBranchFactor()
@@ -121,10 +121,10 @@ public abstract class Carver
 			}				
 			if (material.isSolid() && !blockAbove.isMaterial(LocalMaterials.WATER))
 			{
-				if (y <= this.worldConfig.getCarverLavaBlockHeight())
+				if (y <= this.presetConfig.getTerrainSettings().getCarverLavaBlockHeight())
 				{
 					// Not sure Why world coords are passed to chunkbuffer, it just does >> 4.
-					chunkBuffer.setBlock(worldX, y, worldZ, this.worldConfig.getCarverLavaBlock());
+					chunkBuffer.setBlock(worldX, y, worldZ, this.presetConfig.getBlockSettings().getCarverLavaBlock());
 				} else {
 					chunkBuffer.setBlock(worldX, y, worldZ, LocalMaterials.CAVE_AIR);
 					if(foundSurface.isValue())

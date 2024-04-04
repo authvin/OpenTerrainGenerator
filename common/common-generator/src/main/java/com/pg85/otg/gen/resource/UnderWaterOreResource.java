@@ -41,7 +41,7 @@ public class UnderWaterOreResource extends FrequencyResourceBase
 			return;
 		}
 
-		if(worldGenRegion.getWorldConfig().isDisableOreGen())
+		if(worldGenRegion.getPresetConfig().getResourceSettings().isDisableOreGen())
 		{
 			if(this.material.isOre())
 			{

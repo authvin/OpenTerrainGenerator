@@ -3,8 +3,10 @@ package com.pg85.otg.forge.event;
 import com.pg85.otg.config.dimensions.DimensionConfig;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.forge.gen.OTGNoiseChunkGenerator;
-import com.pg85.otg.interfaces.IWorldConfig;
+import com.pg85.otg.interfaces.IPresetConfig;
 
+import com.pg85.otg.settings.preset.GameRuleSettings;
+import com.pg85.otg.settings.preset.SpawnSettings;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Dimension;
@@ -18,7 +20,7 @@ import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 
 // Used for:
 // - Allowing sleeping in OTG dimensions.
-// - Setting overworld spawn point from WorldConfig.
+// - Setting overworld spawn point from PresetConfig.
 // - Applying GameRules from dimensionconfig or worldconfig. 
 @EventBusSubscriber(modid = Constants.MOD_ID_SHORT)
 public class WorldHandler
@@ -28,15 +30,16 @@ public class WorldHandler
 	{		
 		if(event.getWorld() instanceof ServerWorld)
 		{
-			// If a fixed spawn point is configured in the WorldConfig, apply it.
-			IWorldConfig worldConfig = null;
+			// If a fixed spawn point is configured in the PresetConfig, apply it.
+			IPresetConfig presetConfig = null;
 			if(((ServerWorld)event.getWorld()).getWorldServer().getChunkSource().generator instanceof OTGNoiseChunkGenerator)
 			{
-				worldConfig = ((OTGNoiseChunkGenerator)((ServerWorld)event.getWorld()).getWorldServer().getChunkSource().generator).getPreset().getWorldConfig(); 
-				if(worldConfig.getSpawnPointSet())
+				presetConfig = ((OTGNoiseChunkGenerator)((ServerWorld)event.getWorld()).getWorldServer().getChunkSource().generator).getPreset().getPresetConfig(); 
+				if(presetConfig.getSpawnSettings().isSpawnPointSet())
 				{
 					event.setCanceled(true);
-					((ServerWorld)event.getWorld()).getWorldServer().setDefaultSpawnPos(new BlockPos(worldConfig.getSpawnPointX(), worldConfig.getSpawnPointY(), worldConfig.getSpawnPointZ()), worldConfig.getSpawnPointAngle());
+					SpawnSettings spawnSettings = presetConfig.getSpawnSettings();
+					((ServerWorld)event.getWorld()).getWorldServer().setDefaultSpawnPos(new BlockPos(spawnSettings.getSpawnPointX(), spawnSettings.getSpawnPointY(), spawnSettings.getSpawnPointZ()), spawnSettings.getSpawnPointAngle());
 				}
 			}
 		
@@ -79,41 +82,42 @@ public class WorldHandler
 				gameRules.getRule(GameRules.RULE_FORGIVE_DEAD_PLAYERS).set(modpackConfig.GameRules.ForgiveDeadPlayers, (MinecraftServer)null);
 				gameRules.getRule(GameRules.RULE_UNIVERSAL_ANGER).set(modpackConfig.GameRules.UniversalAnger, (MinecraftServer)null);
 			}
-			else if(worldConfig != null && worldConfig.getOverrideGameRules())
+			else if(presetConfig != null && presetConfig.getGameRuleSettings().isOverrideGameRules())
 			{
 				GameRules gameRules = ((ServerWorld)event.getWorld()).getGameRules();
 				// TODO: doImmediateRespawn
-				gameRules.getRule(GameRules.RULE_DOFIRETICK).set(worldConfig.getDoFireTick(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_MOBGRIEFING).set(worldConfig.getMobGriefing(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_KEEPINVENTORY).set(worldConfig.getKeepInventory(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_DOMOBSPAWNING).set(worldConfig.getDoMobSpawning(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_DOMOBLOOT).set(worldConfig.getDoMobLoot(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_DOBLOCKDROPS).set(worldConfig.getDoTileDrops(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_DOENTITYDROPS).set(worldConfig.getDoEntityDrops(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_COMMANDBLOCKOUTPUT).set(worldConfig.getCommandBlockOutput(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_NATURAL_REGENERATION).set(worldConfig.getNaturalRegeneration(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_DAYLIGHT).set(worldConfig.getDoDaylightCycle(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_LOGADMINCOMMANDS).set(worldConfig.getLogAdminCommands(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_SHOWDEATHMESSAGES).set(worldConfig.getShowDeathMessages(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_RANDOMTICKING).value = worldConfig.getRandomTickSpeed();
-				gameRules.getRule(GameRules.RULE_SENDCOMMANDFEEDBACK).set(worldConfig.getSendCommandFeedback(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_SPECTATORSGENERATECHUNKS).set(worldConfig.getSpectatorsGenerateChunks(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_SPAWN_RADIUS).value = worldConfig.getSpawnRadius();
-				gameRules.getRule(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK).set(worldConfig.getDisableElytraMovementCheck(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_MAX_ENTITY_CRAMMING).value = worldConfig.getMaxEntityCramming();
-				gameRules.getRule(GameRules.RULE_WEATHER_CYCLE).set(worldConfig.getDoWeatherCycle(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_LIMITED_CRAFTING).set(worldConfig.getDoLimitedCrafting(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH).value = worldConfig.getMaxCommandChainLength();
-				gameRules.getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS).set(worldConfig.getAnnounceAdvancements(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_DISABLE_RAIDS).set(worldConfig.getDisableRaids(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_DOINSOMNIA).set(worldConfig.getDoInsomnia(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_DROWNING_DAMAGE).set(worldConfig.getDrowningDamage(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_FALL_DAMAGE).set(worldConfig.getFallDamage(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_FIRE_DAMAGE).set(worldConfig.getFireDamage(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_DO_PATROL_SPAWNING).set(worldConfig.getDoPatrolSpawning(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_DO_TRADER_SPAWNING).set(worldConfig.getDoTraderSpawning(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_FORGIVE_DEAD_PLAYERS).set(worldConfig.getForgiveDeadPlayers(), (MinecraftServer)null);
-				gameRules.getRule(GameRules.RULE_UNIVERSAL_ANGER).set(worldConfig.getUniversalAnger(), (MinecraftServer)null);
+				GameRuleSettings gameRuleSettings = presetConfig.getGameRuleSettings();
+				gameRules.getRule(GameRules.RULE_DOFIRETICK).set(gameRuleSettings.isDoFireTick(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_MOBGRIEFING).set(gameRuleSettings.isMobGriefing(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_KEEPINVENTORY).set(gameRuleSettings.isKeepInventory(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_DOMOBSPAWNING).set(gameRuleSettings.isDoMobSpawning(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_DOMOBLOOT).set(gameRuleSettings.isDoMobLoot(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_DOBLOCKDROPS).set(gameRuleSettings.isDoTileDrops(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_DOENTITYDROPS).set(gameRuleSettings.isDoEntityDrops(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_COMMANDBLOCKOUTPUT).set(gameRuleSettings.isCommandBlockOutput(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_NATURAL_REGENERATION).set(gameRuleSettings.isNaturalRegeneration(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_DAYLIGHT).set(gameRuleSettings.isDoDaylightCycle(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_LOGADMINCOMMANDS).set(gameRuleSettings.isLogAdminCommands(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_SHOWDEATHMESSAGES).set(gameRuleSettings.isShowDeathMessages(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_RANDOMTICKING).value = gameRuleSettings.getRandomTickSpeed();
+				gameRules.getRule(GameRules.RULE_SENDCOMMANDFEEDBACK).set(gameRuleSettings.isSendCommandFeedback(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_SPECTATORSGENERATECHUNKS).set(gameRuleSettings.isSpectatorsGenerateChunks(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_SPAWN_RADIUS).value = gameRuleSettings.getSpawnRadius();
+				gameRules.getRule(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK).set(gameRuleSettings.isDisableElytraMovementCheck(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_MAX_ENTITY_CRAMMING).value = gameRuleSettings.getMaxEntityCramming();
+				gameRules.getRule(GameRules.RULE_WEATHER_CYCLE).set(gameRuleSettings.isDoWeatherCycle(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_LIMITED_CRAFTING).set(gameRuleSettings.isDoLimitedCrafting(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH).value = gameRuleSettings.getMaxCommandChainLength();
+				gameRules.getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS).set(gameRuleSettings.isAnnounceAdvancements(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_DISABLE_RAIDS).set(gameRuleSettings.isDisableRaids(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_DOINSOMNIA).set(gameRuleSettings.isDoInsomnia(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_DROWNING_DAMAGE).set(gameRuleSettings.isDrowningDamage(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_FALL_DAMAGE).set(gameRuleSettings.isFallDamage(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_FIRE_DAMAGE).set(gameRuleSettings.isFireDamage(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_DO_PATROL_SPAWNING).set(gameRuleSettings.isDoPatrolSpawning(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_DO_TRADER_SPAWNING).set(gameRuleSettings.isDoTraderSpawning(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_FORGIVE_DEAD_PLAYERS).set(gameRuleSettings.isForgiveDeadPlayers(), (MinecraftServer)null);
+				gameRules.getRule(GameRules.RULE_UNIVERSAL_ANGER).set(gameRuleSettings.isUniversalAnger(), (MinecraftServer)null);
 			}
 		}
 	}

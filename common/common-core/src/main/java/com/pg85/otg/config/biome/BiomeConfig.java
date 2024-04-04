@@ -11,10 +11,9 @@ import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settingType.Setting;
 import com.pg85.otg.config.standard.BiomeStandardValues;
-import com.pg85.otg.config.standard.WorldStandardValues;
+import com.pg85.otg.config.standard.PresetStandardValues;
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.constants.SettingsEnums.IceSpikeType;
-import com.pg85.otg.constants.SettingsEnums.TemplateBiomeType;
+import com.pg85.otg.constants.settings.IceSpikeType;
 import com.pg85.otg.customobject.resource.CustomObjectResource;
 import com.pg85.otg.customobject.resource.CustomStructureResource;
 import com.pg85.otg.customobject.resource.SaplingResource;
@@ -26,15 +25,14 @@ import com.pg85.otg.gen.surface.SurfaceGeneratorSetting;
 import com.pg85.otg.interfaces.IBiomeConfig;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IWorldConfig;
+import com.pg85.otg.interfaces.IPresetConfig;
+import com.pg85.otg.settings.biome.*;
 import com.pg85.otg.util.biome.ColorSet;
 import com.pg85.otg.util.biome.OTGBiomeResourceLocation;
 import com.pg85.otg.util.biome.SimpleColorSet;
-import com.pg85.otg.util.biome.WeightedMobSpawnGroup;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
-import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterials;
 import com.pg85.otg.util.minecraft.EntityCategory;
 import com.pg85.otg.util.minecraft.PlantType;
@@ -96,28 +94,7 @@ public class BiomeConfig extends BiomeConfigBase
 	// Settings container, used so we can copy a biomeconfig while 
 	// changing only its id and registry key, used for non-otg 
 	// biomes in otg worlds.
-	private SettingsContainer privateSettings = new SettingsContainer();
-	class SettingsContainer
-	{	
-		private int configWaterLevelMax;
-		private int configWaterLevelMin;
-		
-		private LocalMaterialData configWaterBlock;
-		private LocalMaterialData configIceBlock;
-		private LocalMaterialData configCooledLavaBlock;
-	
-		private double volatilityRaw1;
-		private double volatilityRaw2;
-		private double volatilityWeightRaw1;
-		private double volatilityWeightRaw2;
-	
-		private List<WeightedMobSpawnGroup> spawnMonsters = new ArrayList<WeightedMobSpawnGroup>();
-		private List<WeightedMobSpawnGroup> spawnCreatures = new ArrayList<WeightedMobSpawnGroup>();
-		private List<WeightedMobSpawnGroup> spawnWaterCreatures = new ArrayList<WeightedMobSpawnGroup>();
-		private List<WeightedMobSpawnGroup> spawnAmbientCreatures = new ArrayList<WeightedMobSpawnGroup>();
-		private List<WeightedMobSpawnGroup> spawnWaterAmbientCreatures = new ArrayList<WeightedMobSpawnGroup>();
-		private List<WeightedMobSpawnGroup> spawnMiscCreatures = new ArrayList<WeightedMobSpawnGroup>();
-	}
+	protected com.pg85.otg.config.biome.SettingsContainer privateSettings = new com.pg85.otg.config.biome.SettingsContainer();
 
 	public BiomeConfig(String biomeName)
 	{
@@ -125,9 +102,9 @@ public class BiomeConfig extends BiomeConfigBase
 	}
 
 	public BiomeConfig(
-		String biomeName, BiomeConfigStub biomeConfigStub, Path presetFolder, SettingsMap settings, 
-		IWorldConfig worldConfig, String presetShortName, int presetMajorVersion, 
-		IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader
+			String biomeName, BiomeConfigStub biomeConfigStub, Path presetFolder, SettingsMap settings,
+			IPresetConfig presetConfig, String presetShortName, int presetMajorVersion,
+			IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader
 	)
 	{
 		super(biomeName);
@@ -157,7 +134,7 @@ public class BiomeConfig extends BiomeConfigBase
 			this.settings.spawnMiscCreaturesMerged.addAll(biomeConfigStub.getSpawnerMerged(EntityCategory.MISC));
 		}
 
-		this.settings.worldConfig = worldConfig;
+		this.settings.presetConfig = presetConfig;
 
 		this.renameOldSettings(settings, logger, materialReader);
 		this.readConfigSettings(settings, biomeResourcesManager, logger, materialReader, presetFolder.toFile().getName());
@@ -166,11 +143,11 @@ public class BiomeConfig extends BiomeConfigBase
 		// Set water level
 		if (this.settings.useWorldWaterLevel)
 		{
-			this.settings.waterLevelMax = worldConfig.getWaterLevelMax();
-			this.settings.waterLevelMin = worldConfig.getWaterLevelMin();
-			this.settings.waterBlock = worldConfig.getWaterBlock();
-			this.settings.iceBlock = worldConfig.getIceBlock();
-			this.settings.cooledLavaBlock = worldConfig.getCooledLavaBlock();
+			this.settings.waterLevelMax = presetConfig.getTerrainSettings().getWaterLevelMax();
+			this.settings.waterLevelMin = presetConfig.getTerrainSettings().getWaterLevelMin();
+			this.settings.waterBlock = presetConfig.getBlockSettings().getWaterBlock();
+			this.settings.iceBlock = presetConfig.getBlockSettings().getIceBlock();
+			this.settings.cooledLavaBlock = presetConfig.getBlockSettings().getCooledLavaBlock();
 		} else {
 			this.settings.waterLevelMax = this.privateSettings.configWaterLevelMax;
 			this.settings.waterLevelMin = this.privateSettings.configWaterLevelMin;
@@ -185,146 +162,67 @@ public class BiomeConfig extends BiomeConfigBase
 	{
 		this.settings.isTemplateForBiome = reader.getSetting(BiomeStandardValues.TEMPLATE_FOR_BIOME, logger);
 
-		boolean isTemplateBiome = this.settings.isTemplateForBiome;
-		
-		if(!isTemplateBiome)
+		this.settings.biomeCategory = reader.getSetting(BiomeStandardValues.BIOME_CATEGORY, logger);
+		this.settings.biomeTemperature = reader.getSetting(BiomeStandardValues.BIOME_TEMPERATURE, logger);
+		this.settings.biomeWetness = reader.getSetting(BiomeStandardValues.BIOME_WETNESS, logger);
+		this.settings.stoneBlock = reader.getSetting(BiomeStandardValues.STONE_BLOCK, logger, materialReader);
+		this.settings.surfaceBlock = reader.getSetting(BiomeStandardValues.SURFACE_BLOCK, logger, materialReader);
+		this.settings.groundBlock = reader.getSetting(BiomeStandardValues.GROUND_BLOCK, logger, materialReader);
+		this.settings.underWaterSurfaceBlock = reader.getSetting(BiomeStandardValues.UNDER_WATER_SURFACE_BLOCK, logger, materialReader);
+		if(this.settings.underWaterSurfaceBlock == null)
 		{
-			this.settings.biomeCategory = reader.getSetting(BiomeStandardValues.BIOME_CATEGORY, logger);
-			this.settings.biomeTemperature = reader.getSetting(BiomeStandardValues.BIOME_TEMPERATURE, logger);
-			this.settings.biomeWetness = reader.getSetting(BiomeStandardValues.BIOME_WETNESS, logger);
-			this.settings.stoneBlock = reader.getSetting(BiomeStandardValues.STONE_BLOCK, logger, materialReader);
-			this.settings.surfaceBlock = reader.getSetting(BiomeStandardValues.SURFACE_BLOCK, logger, materialReader);
-			this.settings.groundBlock = reader.getSetting(BiomeStandardValues.GROUND_BLOCK, logger, materialReader);
-			this.settings.underWaterSurfaceBlock = reader.getSetting(BiomeStandardValues.UNDER_WATER_SURFACE_BLOCK, logger, materialReader);		
-			if(this.settings.underWaterSurfaceBlock == null)
-			{
-				this.settings.underWaterSurfaceBlock = this.settings.groundBlock;
-			}
-			this.settings.skyColor = reader.getSetting(BiomeStandardValues.SKY_COLOR, logger);
-			this.settings.waterColor = reader.getSetting(BiomeStandardValues.WATER_COLOR, logger);
-			this.settings.waterColorControl = reader.getSetting(BiomeStandardValues.WATER_COLOR_CONTROL, logger);
-			this.settings.grassColor = reader.getSetting(BiomeStandardValues.GRASS_COLOR, logger);
-			this.settings.grassColorControl = reader.getSetting(BiomeStandardValues.GRASS_COLOR_CONTROL, logger);
-			this.settings.grassColorModifier = reader.getSetting(BiomeStandardValues.GRASS_COLOR_MODIFIER, logger);
-			this.settings.foliageColor = reader.getSetting(BiomeStandardValues.FOLIAGE_COLOR, logger);
-			this.settings.foliageColorControl = reader.getSetting(BiomeStandardValues.FOLIAGE_COLOR_CONTROL, logger);
-			this.settings.fogColor = reader.getSetting(BiomeStandardValues.FOG_COLOR, logger);
-			this.settings.fogDensity = reader.getSetting(BiomeStandardValues.FOG_DENSITY, logger);
-			this.settings.waterFogColor = reader.getSetting(BiomeStandardValues.WATER_FOG_COLOR, logger);
-			this.settings.particleType = reader.getSetting(BiomeStandardValues.PARTICLE_TYPE, logger);
-			this.settings.music = reader.getSetting(BiomeStandardValues.MUSIC, logger);
-			this.settings.musicMinDelay = reader.getSetting(BiomeStandardValues.MUSIC_MIN_DELAY, logger);
-			this.settings.musicMaxDelay = reader.getSetting(BiomeStandardValues.MUSIC_MAX_DELAY, logger);
-			this.settings.replaceCurrentMusic = reader.getSetting(BiomeStandardValues.REPLACE_CURRENT_MUSIC, logger);
-			this.settings.ambientSound = reader.getSetting(BiomeStandardValues.AMBIENT_SOUND, logger);
-			this.settings.moodSound = reader.getSetting(BiomeStandardValues.MOOD_SOUND, logger);
-			this.settings.moodSoundDelay = reader.getSetting(BiomeStandardValues.MOOD_SOUND_DELAY, logger);
-			this.settings.moodSearchRange = reader.getSetting(BiomeStandardValues.MOOD_SEARCH_RANGE, logger);
-			this.settings.moodOffset = reader.getSetting(BiomeStandardValues.MOOD_OFFSET, logger);
-			this.settings.additionsSound = reader.getSetting(BiomeStandardValues.ADDITIONS_SOUND, logger);
-			this.settings.additionsTickChance = reader.getSetting(BiomeStandardValues.ADDITIONS_TICK_CHANCE, logger);
-			this.settings.particleProbability = reader.getSetting(BiomeStandardValues.PARTICLE_PROBABILITY, logger);
-			this.settings.strongholdsEnabled = reader.getSetting(BiomeStandardValues.STRONGHOLDS_ENABLED, logger);
-			this.settings.oceanMonumentsEnabled = reader.getSetting(BiomeStandardValues.OCEAN_MONUMENTS_ENABLED, logger);
-			this.settings.woodLandMansionsEnabled = reader.getSetting(BiomeStandardValues.WOODLAND_MANSIONS_ENABLED, logger);
-			this.settings.netherFortressesEnabled = reader.getSetting(BiomeStandardValues.NETHER_FORTRESSES_ENABLED, logger);
-			this.settings.villageType = reader.getSetting(BiomeStandardValues.VILLAGE_TYPE, logger);
-			this.settings.villageSize = reader.getSetting(BiomeStandardValues.VILLAGE_SIZE, logger);		
-			this.settings.mineshaftType = reader.getSetting(BiomeStandardValues.MINESHAFT_TYPE, logger);
-			this.settings.rareBuildingType = reader.getSetting(BiomeStandardValues.RARE_BUILDING_TYPE, logger);
-			this.settings.buriedTreasureEnabled = reader.getSetting(BiomeStandardValues.BURIED_TREASURE_ENABLED, logger);
-			this.settings.shipWreckEnabled = reader.getSetting(BiomeStandardValues.SHIP_WRECK_ENABLED, logger);
-			this.settings.shipWreckBeachedEnabled = reader.getSetting(BiomeStandardValues.SHIP_WRECK_BEACHED_ENABLED, logger);
-			this.settings.pillagerOutpostEnabled = reader.getSetting(BiomeStandardValues.PILLAGER_OUTPOST_ENABLED, logger);
-			this.settings.bastionRemnantEnabled = reader.getSetting(BiomeStandardValues.BASTION_REMNANT_ENABLED, logger);
-			this.settings.netherFossilEnabled = reader.getSetting(BiomeStandardValues.NETHER_FOSSIL_ENABLED, logger);
-			this.settings.endCityEnabled = reader.getSetting(BiomeStandardValues.END_CITY_ENABLED, logger);		
-			this.settings.mineshaftProbability = reader.getSetting(BiomeStandardValues.MINESHAFT_PROBABILITY, logger);
-			this.settings.ruinedPortalType = reader.getSetting(BiomeStandardValues.RUINED_PORTAL_TYPE, logger);
-			this.settings.oceanRuinsType = reader.getSetting(BiomeStandardValues.OCEAN_RUINS_TYPE, logger);
-			this.settings.oceanRuinsLargeProbability = reader.getSetting(BiomeStandardValues.OCEAN_RUINS_LARGE_PROBABILITY, logger);
-			this.settings.oceanRuinsClusterProbability = reader.getSetting(BiomeStandardValues.OCEAN_RUINS_CLUSTER_PROBABILITY, logger);
-			this.settings.buriedTreasureProbability = reader.getSetting(BiomeStandardValues.BURIED_TREASURE_PROBABILITY, logger);
-			this.settings.pillagerOutpostSize = reader.getSetting(BiomeStandardValues.PILLAGER_OUTPOST_SIZE, logger);
-			this.settings.bastionRemnantSize = reader.getSetting(BiomeStandardValues.BASTION_REMNANT_SIZE, logger);		
-			this.settings.biomeDictTags = reader.getSetting(BiomeStandardValues.BIOME_DICT_TAGS, logger);
-			this.settings.inheritMobsBiomeName = reader.getSetting(BiomeStandardValues.INHERIT_MOBS_BIOME_NAME, logger);
-			this.settings.useFrozenOceanTemperature = reader.getSetting(BiomeStandardValues.USE_FROZEN_OCEAN_TEMPERATURE, logger);
-		} else {
-			this.settings.templateBiomeType = reader.getSetting(BiomeStandardValues.TEMPLATE_BIOME_TYPE, logger);
-			this.settings.biomeCategory = BiomeStandardValues.BIOME_CATEGORY.getDefaultValue();
-			this.settings.biomeTemperature = BiomeStandardValues.BIOME_TEMPERATURE.getDefaultValue();
-			this.settings.biomeWetness = BiomeStandardValues.BIOME_WETNESS.getDefaultValue();
-			if(this.settings.templateBiomeType == TemplateBiomeType.Nether)
-			{
-				this.settings.stoneBlock = LocalMaterials.NETHERRACK;
-				this.settings.surfaceBlock = LocalMaterials.NETHERRACK;
-				this.settings.groundBlock = LocalMaterials.NETHERRACK;
-				this.settings.underWaterSurfaceBlock = LocalMaterials.NETHERRACK;
-			}
-			else if(this.settings.templateBiomeType == TemplateBiomeType.End)
-			{
-				this.settings.stoneBlock = LocalMaterials.END_STONE;
-				this.settings.surfaceBlock = LocalMaterials.END_STONE;
-				this.settings.groundBlock = LocalMaterials.END_STONE;
-				this.settings.underWaterSurfaceBlock = LocalMaterials.END_STONE;
-			} else {
-				this.settings.stoneBlock = LocalMaterials.STONE;
-				this.settings.surfaceBlock = LocalMaterials.STONE;
-				this.settings.groundBlock = LocalMaterials.STONE;
-				this.settings.underWaterSurfaceBlock = LocalMaterials.STONE;
-			}
-			this.settings.skyColor = BiomeStandardValues.SKY_COLOR.getDefaultValue();
-			this.settings.waterColor = BiomeStandardValues.WATER_COLOR.getDefaultValue();
-			this.settings.waterColorControl = BiomeStandardValues.WATER_COLOR_CONTROL.getDefaultValue();
-			this.settings.grassColor = BiomeStandardValues.GRASS_COLOR.getDefaultValue();
-			this.settings.grassColorControl = BiomeStandardValues.GRASS_COLOR_CONTROL.getDefaultValue();
-			this.settings.grassColorModifier = BiomeStandardValues.GRASS_COLOR_MODIFIER.getDefaultValue();
-			this.settings.foliageColor = BiomeStandardValues.FOLIAGE_COLOR.getDefaultValue();
-			this.settings.foliageColorControl = BiomeStandardValues.FOLIAGE_COLOR_CONTROL.getDefaultValue();
-			this.settings.fogColor = BiomeStandardValues.FOG_COLOR.getDefaultValue();
-			this.settings.fogDensity = BiomeStandardValues.FOG_DENSITY.getDefaultValue();
-			this.settings.waterFogColor = BiomeStandardValues.WATER_FOG_COLOR.getDefaultValue();
-			this.settings.particleType = BiomeStandardValues.PARTICLE_TYPE.getDefaultValue();
-			this.settings.music = BiomeStandardValues.MUSIC.getDefaultValue();
-			this.settings.musicMinDelay = BiomeStandardValues.MUSIC_MIN_DELAY.getDefaultValue();
-			this.settings.musicMaxDelay = BiomeStandardValues.MUSIC_MAX_DELAY.getDefaultValue();
-			this.settings.replaceCurrentMusic = BiomeStandardValues.REPLACE_CURRENT_MUSIC.getDefaultValue();
-			this.settings.ambientSound = BiomeStandardValues.AMBIENT_SOUND.getDefaultValue();
-			this.settings.moodSound = BiomeStandardValues.MOOD_SOUND.getDefaultValue();
-			this.settings.moodSoundDelay = BiomeStandardValues.MOOD_SOUND_DELAY.getDefaultValue();
-			this.settings.moodSearchRange = BiomeStandardValues.MOOD_SEARCH_RANGE.getDefaultValue();
-			this.settings.moodOffset = BiomeStandardValues.MOOD_OFFSET.getDefaultValue();
-			this.settings.additionsSound = BiomeStandardValues.ADDITIONS_SOUND.getDefaultValue();
-			this.settings.additionsTickChance = BiomeStandardValues.ADDITIONS_TICK_CHANCE.getDefaultValue();
-			this.settings.particleProbability = BiomeStandardValues.PARTICLE_PROBABILITY.getDefaultValue();
-			this.settings.strongholdsEnabled = BiomeStandardValues.STRONGHOLDS_ENABLED.getDefaultValue();
-			this.settings.oceanMonumentsEnabled = BiomeStandardValues.OCEAN_MONUMENTS_ENABLED.getDefaultValue();
-			this.settings.woodLandMansionsEnabled = BiomeStandardValues.WOODLAND_MANSIONS_ENABLED.getDefaultValue();
-			this.settings.netherFortressesEnabled = BiomeStandardValues.NETHER_FORTRESSES_ENABLED.getDefaultValue();
-			this.settings.villageType = BiomeStandardValues.VILLAGE_TYPE.getDefaultValue();
-			this.settings.villageSize = BiomeStandardValues.VILLAGE_SIZE.getDefaultValue();
-			this.settings.mineshaftType = BiomeStandardValues.MINESHAFT_TYPE.getDefaultValue();
-			this.settings.rareBuildingType = BiomeStandardValues.RARE_BUILDING_TYPE.getDefaultValue();
-			this.settings.buriedTreasureEnabled = BiomeStandardValues.BURIED_TREASURE_ENABLED.getDefaultValue();
-			this.settings.shipWreckEnabled = BiomeStandardValues.SHIP_WRECK_ENABLED.getDefaultValue();
-			this.settings.shipWreckBeachedEnabled = BiomeStandardValues.SHIP_WRECK_BEACHED_ENABLED.getDefaultValue();
-			this.settings.pillagerOutpostEnabled = BiomeStandardValues.PILLAGER_OUTPOST_ENABLED.getDefaultValue();
-			this.settings.bastionRemnantEnabled = BiomeStandardValues.BASTION_REMNANT_ENABLED.getDefaultValue();
-			this.settings.netherFossilEnabled = BiomeStandardValues.NETHER_FOSSIL_ENABLED.getDefaultValue();
-			this.settings.endCityEnabled = BiomeStandardValues.END_CITY_ENABLED.getDefaultValue();
-			this.settings.mineshaftProbability = BiomeStandardValues.MINESHAFT_PROBABILITY.getDefaultValue();
-			this.settings.ruinedPortalType = BiomeStandardValues.RUINED_PORTAL_TYPE.getDefaultValue();
-			this.settings.oceanRuinsType = BiomeStandardValues.OCEAN_RUINS_TYPE.getDefaultValue();
-			this.settings.oceanRuinsLargeProbability = BiomeStandardValues.OCEAN_RUINS_LARGE_PROBABILITY.getDefaultValue();
-			this.settings.oceanRuinsClusterProbability = BiomeStandardValues.OCEAN_RUINS_CLUSTER_PROBABILITY.getDefaultValue();
-			this.settings.buriedTreasureProbability = BiomeStandardValues.BURIED_TREASURE_PROBABILITY.getDefaultValue();
-			this.settings.pillagerOutpostSize = BiomeStandardValues.PILLAGER_OUTPOST_SIZE.getDefaultValue();
-			this.settings.bastionRemnantSize = BiomeStandardValues.BASTION_REMNANT_SIZE.getDefaultValue();
-			this.settings.biomeDictTags = BiomeStandardValues.BIOME_DICT_TAGS.getDefaultValue();
-			this.settings.inheritMobsBiomeName = BiomeStandardValues.INHERIT_MOBS_BIOME_NAME.getDefaultValue();
-			this.settings.useFrozenOceanTemperature = BiomeStandardValues.USE_FROZEN_OCEAN_TEMPERATURE.getDefaultValue();
+			this.settings.underWaterSurfaceBlock = this.settings.groundBlock;
 		}
+		this.settings.skyColor = reader.getSetting(BiomeStandardValues.SKY_COLOR, logger);
+		this.settings.waterColor = reader.getSetting(BiomeStandardValues.WATER_COLOR, logger);
+		this.settings.waterColorControl = reader.getSetting(BiomeStandardValues.WATER_COLOR_CONTROL, logger);
+		this.settings.grassColor = reader.getSetting(BiomeStandardValues.GRASS_COLOR, logger);
+		this.settings.grassColorControl = reader.getSetting(BiomeStandardValues.GRASS_COLOR_CONTROL, logger);
+		this.settings.grassColorModifier = reader.getSetting(BiomeStandardValues.GRASS_COLOR_MODIFIER, logger);
+		this.settings.foliageColor = reader.getSetting(BiomeStandardValues.FOLIAGE_COLOR, logger);
+		this.settings.foliageColorControl = reader.getSetting(BiomeStandardValues.FOLIAGE_COLOR_CONTROL, logger);
+		this.settings.fogColor = reader.getSetting(BiomeStandardValues.FOG_COLOR, logger);
+		this.settings.fogDensity = reader.getSetting(BiomeStandardValues.FOG_DENSITY, logger);
+		this.settings.waterFogColor = reader.getSetting(BiomeStandardValues.WATER_FOG_COLOR, logger);
+		this.settings.particleType = reader.getSetting(BiomeStandardValues.PARTICLE_TYPE, logger);
+		this.settings.music = reader.getSetting(BiomeStandardValues.MUSIC, logger);
+		this.settings.musicMinDelay = reader.getSetting(BiomeStandardValues.MUSIC_MIN_DELAY, logger);
+		this.settings.musicMaxDelay = reader.getSetting(BiomeStandardValues.MUSIC_MAX_DELAY, logger);
+		this.settings.replaceCurrentMusic = reader.getSetting(BiomeStandardValues.REPLACE_CURRENT_MUSIC, logger);
+		this.settings.ambientSound = reader.getSetting(BiomeStandardValues.AMBIENT_SOUND, logger);
+		this.settings.moodSound = reader.getSetting(BiomeStandardValues.MOOD_SOUND, logger);
+		this.settings.moodSoundDelay = reader.getSetting(BiomeStandardValues.MOOD_SOUND_DELAY, logger);
+		this.settings.moodSearchRange = reader.getSetting(BiomeStandardValues.MOOD_SEARCH_RANGE, logger);
+		this.settings.moodOffset = reader.getSetting(BiomeStandardValues.MOOD_OFFSET, logger);
+		this.settings.additionsSound = reader.getSetting(BiomeStandardValues.ADDITIONS_SOUND, logger);
+		this.settings.additionsTickChance = reader.getSetting(BiomeStandardValues.ADDITIONS_TICK_CHANCE, logger);
+		this.settings.particleProbability = reader.getSetting(BiomeStandardValues.PARTICLE_PROBABILITY, logger);
+		this.settings.strongholdsEnabled = reader.getSetting(BiomeStandardValues.STRONGHOLDS_ENABLED, logger);
+		this.settings.oceanMonumentsEnabled = reader.getSetting(BiomeStandardValues.OCEAN_MONUMENTS_ENABLED, logger);
+		this.settings.woodLandMansionsEnabled = reader.getSetting(BiomeStandardValues.WOODLAND_MANSIONS_ENABLED, logger);
+		this.settings.netherFortressesEnabled = reader.getSetting(BiomeStandardValues.NETHER_FORTRESSES_ENABLED, logger);
+		this.settings.villageType = reader.getSetting(BiomeStandardValues.VILLAGE_TYPE, logger);
+		this.settings.villageSize = reader.getSetting(BiomeStandardValues.VILLAGE_SIZE, logger);
+		this.settings.mineshaftType = reader.getSetting(BiomeStandardValues.MINESHAFT_TYPE, logger);
+		this.settings.rareBuildingType = reader.getSetting(BiomeStandardValues.RARE_BUILDING_TYPE, logger);
+		this.settings.buriedTreasureEnabled = reader.getSetting(BiomeStandardValues.BURIED_TREASURE_ENABLED, logger);
+		this.settings.shipWreckEnabled = reader.getSetting(BiomeStandardValues.SHIP_WRECK_ENABLED, logger);
+		this.settings.shipWreckBeachedEnabled = reader.getSetting(BiomeStandardValues.SHIP_WRECK_BEACHED_ENABLED, logger);
+		this.settings.pillagerOutpostEnabled = reader.getSetting(BiomeStandardValues.PILLAGER_OUTPOST_ENABLED, logger);
+		this.settings.bastionRemnantEnabled = reader.getSetting(BiomeStandardValues.BASTION_REMNANT_ENABLED, logger);
+		this.settings.netherFossilEnabled = reader.getSetting(BiomeStandardValues.NETHER_FOSSIL_ENABLED, logger);
+		this.settings.endCityEnabled = reader.getSetting(BiomeStandardValues.END_CITY_ENABLED, logger);
+		this.settings.mineshaftProbability = reader.getSetting(BiomeStandardValues.MINESHAFT_PROBABILITY, logger);
+		this.settings.ruinedPortalType = reader.getSetting(BiomeStandardValues.RUINED_PORTAL_TYPE, logger);
+		this.settings.oceanRuinsType = reader.getSetting(BiomeStandardValues.OCEAN_RUINS_TYPE, logger);
+		this.settings.oceanRuinsLargeProbability = reader.getSetting(BiomeStandardValues.OCEAN_RUINS_LARGE_PROBABILITY, logger);
+		this.settings.oceanRuinsClusterProbability = reader.getSetting(BiomeStandardValues.OCEAN_RUINS_CLUSTER_PROBABILITY, logger);
+		this.settings.buriedTreasureProbability = reader.getSetting(BiomeStandardValues.BURIED_TREASURE_PROBABILITY, logger);
+		this.settings.pillagerOutpostSize = reader.getSetting(BiomeStandardValues.PILLAGER_OUTPOST_SIZE, logger);
+		this.settings.bastionRemnantSize = reader.getSetting(BiomeStandardValues.BASTION_REMNANT_SIZE, logger);
+		this.settings.biomeDictTags = reader.getSetting(BiomeStandardValues.BIOME_DICT_TAGS, logger);
+		this.settings.inheritMobsBiomeName = reader.getSetting(BiomeStandardValues.INHERIT_MOBS_BIOME_NAME, logger);
+		this.settings.useFrozenOceanTemperature = reader.getSetting(BiomeStandardValues.USE_FROZEN_OCEAN_TEMPERATURE, logger);
 
 		this.settings.biomeSize = reader.getSetting(BiomeStandardValues.BIOME_SIZE, logger);
 		this.settings.biomeRarity = reader.getSetting(BiomeStandardValues.BIOME_RARITY, logger);
@@ -363,13 +261,10 @@ public class BiomeConfig extends BiomeConfigBase
 
 		this.readResourceSettings(reader, biomeResourcesManager, logger, materialReader, presetFolderName);
 		
-		this.settings.chcData = new double[this.settings.worldConfig.getWorldHeightCap() / Constants.PIECE_Y_SIZE + 1];
+		this.settings.chcData = new double[this.settings.presetConfig.getTerrainSettings().getWorldHeightCap() / Constants.PIECE_Y_SIZE + 1];
 		this.readHeightSettings(reader, this.settings.chcData, BiomeStandardValues.CUSTOM_HEIGHT_CONTROL, BiomeStandardValues.CUSTOM_HEIGHT_CONTROL.getDefaultValue(), logger);
 	
-		if(!isTemplateBiome)
-		{
-			updateLegacySettings(reader, materialReader, logger);
-		}
+		updateLegacySettings(reader, materialReader, logger);
 	}
 
 	private void updateLegacySettings(SettingsMap reader,IMaterialReader materialReader, ILogger logger)
@@ -409,7 +304,7 @@ public class BiomeConfig extends BiomeConfigBase
 		return Optional.ofNullable(colorSet);
 	}
 
-	private void readHeightSettings(SettingsMap settings, double[] heightMatrix, Setting<double[]> setting, double[] defaultValue, ILogger logger)
+	protected void readHeightSettings(SettingsMap settings, double[] heightMatrix, Setting<double[]> setting, double[] defaultValue, ILogger logger)
 	{
 		double[] keys = settings.getSetting(setting, defaultValue, logger);
 		for (int i = 0; i < heightMatrix.length && i < keys.length; i++)
@@ -418,7 +313,7 @@ public class BiomeConfig extends BiomeConfigBase
 		}
 	}
 
-	private void readResourceSettings(SettingsMap settings, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader, String presetFolderName)
+	protected void readResourceSettings(SettingsMap settings, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader, String presetFolderName)
 	{
 		List<ConfigFunction<IBiomeConfig>> resources = new ArrayList<>(settings.getConfigFunctions(this, biomeResourcesManager, logger, materialReader, presetFolderName, OTG.getEngine().getPluginConfig()));
 		for (ConfigFunction<IBiomeConfig> res : resources)
@@ -442,7 +337,7 @@ public class BiomeConfig extends BiomeConfigBase
 						} catch (NullPointerException e) {
 							if (logger.getLogCategoryEnabled(LogCategory.CONFIGS) && logger.canLogForPreset(presetFolderName))
 							{
-								logger.log(LogLevel.ERROR, LogCategory.CONFIGS, "Unrecognized sapling type in biome " + this.getName());
+								logger.log(LogLevel.ERROR, LogCategory.CONFIGS, "Unrecognized sapling type in biome " + this.getIdentitySettings().getBiomeName());
 							}
 						}
 					} else {
@@ -477,7 +372,7 @@ public class BiomeConfig extends BiomeConfigBase
 		writer.header1("Biome Identity");
 		
 		writer.putSetting(BiomeStandardValues.TEMPLATE_FOR_BIOME, this.settings.isTemplateForBiome,
-			"Set this to true if this biome config is used with non-OTG biomes, configured in the WorldConfig via TemplateBiome()",
+			"Set this to true if this biome config is used with non-OTG biomes, configured in the PresetConfig via TemplateBiome()",
 			"OTG generates the terrain for the biome as configured in this file and spawns resources, but also allows the biome to spawn ",
 			"its own resources and mobs and apply its settings. Because of this, the following OTG settings cannot be used:",
 			"- Colors, Mob spawning, particles, sounds, vanilla structures, wetness, temperature.",
@@ -515,14 +410,14 @@ public class BiomeConfig extends BiomeConfigBase
 		writer.putSetting(BiomeStandardValues.BIOME_SIZE, this.settings.biomeSize,
 			"Biome size from 0 to GenerationDepth. Defines in which biome layer this biome will be generated (see GenerationDepth).",
 			"Higher numbers result in a smaller biome, lower numbers a larger biome.",
-			"How this setting is used depends on the value of BiomeMode in the WorldConfig.",
+			"How this setting is used depends on the value of BiomeMode in the PresetConfig.",
 			"It will be used for:",
 			"- normal biomes, ice biomes, isle biomes and border biomes when BiomeMode is set to NoGroups",
 			"- biomes spawned as part of a BiomeGroup when BiomeMode is set to Normal.",
 			"  For biomes spawned as isles, borders or rivers other settings are available.",
 			"  Isle biomes:	" + BiomeStandardValues.BIOME_SIZE_WHEN_ISLE + " (see below)",
 			"  Border biomes: " + BiomeStandardValues.BIOME_SIZE_WHEN_BORDER + " (see below)",
-			"  River biomes:  " + WorldStandardValues.RIVER_SIZE + " (see WorldConfig)");
+			"  River biomes:  " + PresetStandardValues.RIVER_SIZE + " (see PresetConfig)");
 
 		writer.putSetting(BiomeStandardValues.BIOME_RARITY, this.settings.biomeRarity,
 			"Biome rarity from 100 to 1. If this is normal or ice biome - chance to spawn this biome, then others.",
@@ -537,7 +432,7 @@ public class BiomeConfig extends BiomeConfigBase
 			"and used in the input of BiomeMode: FromImage.");
 
 		writer.header2("Isle biomes", "To spawn a biome as an isle, first add it to the",
-			WorldStandardValues.ISLE_BIOMES + " list in the WorldConfig.", "");
+			PresetStandardValues.ISLE_BIOMES + " list in the PresetConfig.", "");
 
 		writer.putSetting(BiomeStandardValues.ISLE_IN_BIOME, this.settings.isleInBiome,
 			"List of biomes in which this biome will spawn as an isle.",
@@ -554,7 +449,7 @@ public class BiomeConfig extends BiomeConfigBase
 			"Rarity of this biome when spawned as an isle biome in BiomeMode: Normal.");
 
 		writer.smallTitle("Border biomes", "To spawn a biome as a border, first add it to the",
-			WorldStandardValues.BORDER_BIOMES + " list in the WorldConfig.", "");
+			PresetStandardValues.BORDER_BIOMES + " list in the PresetConfig.", "");
 
 		writer.putSetting(BiomeStandardValues.BIOME_IS_BORDER, this.settings.biomeIsBorder,
 			"List of biomes this biome can be a border of.",
@@ -692,7 +587,7 @@ public class BiomeConfig extends BiomeConfigBase
 		writer.putSetting(BiomeStandardValues.SNOW_BLOCK, this.settings.snowBlock,
 			"The block used as snow (block, not tile). Snow blocks only spawn when using Iceberg SurfaceAndGroundControl.");		
 	
-		writer.putSetting(WorldStandardValues.COOLED_LAVA_BLOCK, this.settings.cooledLavaBlock,
+		writer.putSetting(PresetStandardValues.COOLED_LAVA_BLOCK, this.settings.cooledLavaBlock,
 			"The block used as cooled or frozen lava.",
 			"Set this to OBSIDIAN for \"frozen\" lava lakes in cold biomes");
 
@@ -881,7 +776,7 @@ public class BiomeConfig extends BiomeConfigBase
 		if(!isTemplateBiome)
 		{
 			writer.header1("Vanilla structures", "Vanilla structure settings, each structure type has a global on/off",
-				"toggle in the WorldConfig, be sure to enable it to allow biomes to", "spawn structures.",
+				"toggle in the PresetConfig, be sure to enable it to allow biomes to", "spawn structures.",
 				"* Fossils and Dungeons count as resources, not structures.");
 	
 			writer.putSetting(BiomeStandardValues.STRONGHOLDS_ENABLED, this.settings.strongholdsEnabled,
@@ -1033,15 +928,15 @@ public class BiomeConfig extends BiomeConfigBase
 	@Override
 	protected void validateAndCorrectSettings(Path settingsDir, ILogger logger)
 	{
-		this.settings.biomeSize = lowerThanOrEqualTo(this.settings.biomeSize, this.settings.worldConfig.getGenerationDepth());
-		this.settings.biomeSizeWhenIsle = lowerThanOrEqualTo(this.settings.biomeSizeWhenIsle, this.settings.worldConfig.getGenerationDepth());
-		this.settings.biomeSizeWhenBorder = lowerThanOrEqualTo(this.settings.biomeSizeWhenBorder, this.settings.worldConfig.getGenerationDepth());
-		this.settings.biomeRarity = lowerThanOrEqualTo(this.settings.biomeRarity, this.settings.worldConfig.getBiomeRarityScale());
-		this.settings.biomeRarityWhenIsle = lowerThanOrEqualTo(this.settings.biomeRarityWhenIsle, this.settings.worldConfig.getBiomeRarityScale());
-		this.settings.isleInBiome = filterBiomes(this.settings.isleInBiome, this.settings.worldConfig.getWorldBiomes());
-		this.settings.biomeIsBorder = filterBiomes(this.settings.biomeIsBorder, this.settings.worldConfig.getWorldBiomes());
-		this.settings.onlyBorderNear = filterBiomes(this.settings.onlyBorderNear, this.settings.worldConfig.getWorldBiomes());
-		this.settings.notBorderNear = filterBiomes(this.settings.notBorderNear, this.settings.worldConfig.getWorldBiomes());
+		this.settings.biomeSize = lowerThanOrEqualTo(this.settings.biomeSize, this.settings.presetConfig.getBiomeSettings().getGenerationDepth());
+		this.settings.biomeSizeWhenIsle = lowerThanOrEqualTo(this.settings.biomeSizeWhenIsle, this.settings.presetConfig.getBiomeSettings().getGenerationDepth());
+		this.settings.biomeSizeWhenBorder = lowerThanOrEqualTo(this.settings.biomeSizeWhenBorder, this.settings.presetConfig.getBiomeSettings().getGenerationDepth());
+		this.settings.biomeRarity = lowerThanOrEqualTo(this.settings.biomeRarity, this.settings.presetConfig.getBiomeSettings().getBiomeRarityScale());
+		this.settings.biomeRarityWhenIsle = lowerThanOrEqualTo(this.settings.biomeRarityWhenIsle, this.settings.presetConfig.getBiomeSettings().getBiomeRarityScale());
+		this.settings.isleInBiome = filterBiomes(this.settings.isleInBiome, this.settings.presetConfig.getBiomeSettings().getWorldBiomes());
+		this.settings.biomeIsBorder = filterBiomes(this.settings.biomeIsBorder, this.settings.presetConfig.getBiomeSettings().getWorldBiomes());
+		this.settings.onlyBorderNear = filterBiomes(this.settings.onlyBorderNear, this.settings.presetConfig.getBiomeSettings().getWorldBiomes());
+		this.settings.notBorderNear = filterBiomes(this.settings.notBorderNear, this.settings.presetConfig.getBiomeSettings().getWorldBiomes());
 		this.settings.volatility1 = this.privateSettings.volatilityRaw1 < 0.0D ? 1.0D / (Math.abs(this.privateSettings.volatilityRaw1) + 1.0D) : this.privateSettings.volatilityRaw1 + 1.0D;
 		this.settings.volatility2 = this.privateSettings.volatilityRaw2 < 0.0D ? 1.0D / (Math.abs(this.privateSettings.volatilityRaw2) + 1.0D) : this.privateSettings.volatilityRaw2 + 1.0D;
 		this.settings.volatilityWeight1 = (this.privateSettings.volatilityWeightRaw1 - 0.5D) * 24.0D;
@@ -1055,7 +950,42 @@ public class BiomeConfig extends BiomeConfigBase
 		settings.renameOldSetting("DisableNotchHeightControl", BiomeStandardValues.DISABLE_BIOME_HEIGHT);
 		settings.renameOldSetting("BiomeDictId", BiomeStandardValues.BIOME_DICT_TAGS);
 	}
-	
+
+	@Override
+	public BiomeBlockSettings getBlockSettings() {
+		return this.biomeBlockSettings;
+	}
+
+	@Override
+	public IdentitySettings getIdentitySettings() {
+		return this.identitySettings;
+	}
+
+	@Override
+	public MobSettings getMobSettings() {
+		return this.mobSettings;
+	}
+
+	@Override
+	public PlacementSettings getPlacementSettings() {
+		return this.placementSettings;
+	}
+
+	@Override
+	public BiomeStructureSettings getStructureSettings() {
+		return this.biomeStructureSettings;
+	}
+
+	@Override
+	public BiomeTerrainSettings getTerrainSettings() {
+		return this.biomeTerrainSettings;
+	}
+
+	@Override
+	public BiomeVisualSettings getVisualSettings() {
+		return this.visualSettings;
+	}
+
 	@Override
 	public IBiomeConfig createTemplateBiome()
 	{

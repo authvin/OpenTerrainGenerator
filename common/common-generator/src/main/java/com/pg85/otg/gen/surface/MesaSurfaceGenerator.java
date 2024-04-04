@@ -8,6 +8,7 @@ import com.pg85.otg.gen.noise.legacy.NoiseGeneratorPerlinMesaBlocks;
 import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.interfaces.IBiomeConfig;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
+import com.pg85.otg.interfaces.ISurfaceGenerator;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.gen.GeneratingChunk;
@@ -15,7 +16,7 @@ import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterials;
 
 @SuppressWarnings("deprecation")
-class MesaSurfaceGenerator implements SurfaceGenerator
+class MesaSurfaceGenerator implements ISurfaceGenerator
 {
 	private LocalMaterialData[] clayBands;
 	private long worldSeed;

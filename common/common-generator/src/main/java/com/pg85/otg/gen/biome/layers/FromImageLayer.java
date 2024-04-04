@@ -5,17 +5,19 @@ import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 
-import com.pg85.otg.constants.SettingsEnums.ImageMode;
+import com.pg85.otg.constants.settings.ImageMode;
 import com.pg85.otg.gen.biome.layers.type.ParentedLayer;
 import com.pg85.otg.gen.biome.layers.util.LayerSampleContext;
 import com.pg85.otg.interfaces.ILayerSampler;
 import com.pg85.otg.interfaces.ILogger;
+import com.pg85.otg.settings.preset.ImageSettings;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 
 public class FromImageLayer implements ParentedLayer
 {
 	private final BiomeLayerData data;
+	private final ImageSettings imageSettings;
 	private int[] biomeMap;
 	private int mapHeight;
 	private int mapWidth;
@@ -23,11 +25,12 @@ public class FromImageLayer implements ParentedLayer
 	FromImageLayer(BiomeLayerData data, ILogger logger)
 	{
 		this.data = data;
+		this.imageSettings = data.imageSettings;
 
 		// Read from file
 		try
 		{
-			final File image = new File(data.presetDir.toFile(), data.imageFile);
+			final File image = new File(data.presetDir.toFile(), imageSettings.getImageFile());
 			final BufferedImage map = ImageIO.read(image);
 
 			this.mapWidth = map.getWidth(null);
@@ -37,7 +40,7 @@ public class FromImageLayer implements ParentedLayer
 			map.getRGB(0, 0, this.mapWidth, this.mapHeight, colorMap, 0, this.mapWidth);
 
 			// Rotate RGBs if need
-			switch (data.imageOrientation)
+			switch (imageSettings.getImageOrientation())
 			{
 				case North:
 					// Default behavior - nothing to rotate
@@ -95,7 +98,7 @@ public class FromImageLayer implements ParentedLayer
 					this.biomeMap[nColor] = data.biomeColorMap.get(color);
 				} else {
 					// ContinueNormal interprets a -1 as "Use the childLayer"
-					if (this.data.imageMode == ImageMode.ContinueNormal)
+					if (this.data.imageSettings.getImageMode() == ImageMode.ContinueNormal)
 					{
 						this.biomeMap[nColor] = -1;
 					} else {
@@ -118,11 +121,11 @@ public class FromImageLayer implements ParentedLayer
 		int Buffer_z;
 		int Buffer_xq;
 		int Buffer_zq;
-		switch (this.data.imageMode)
+		switch (this.imageSettings.getImageMode())
 		{
 			case Repeat:
-				Buffer_x = (x - this.data.imageXOffset) % this.mapWidth;
-				Buffer_z = (z - this.data.imageZOffset) % this.mapHeight;
+				Buffer_x = (x - this.imageSettings.getImageXOffset()) % this.mapWidth;
+				Buffer_z = (z - this.imageSettings.getImageZOffset()) % this.mapHeight;
 
 				// Take care of negatives
 				if (Buffer_x < 0)
@@ -136,8 +139,8 @@ public class FromImageLayer implements ParentedLayer
 				return this.biomeMap[Buffer_x + Buffer_z * this.mapWidth];
 			case Mirror:
 				// Improved repeat mode
-				Buffer_xq = (x - this.data.imageXOffset) % (2 * this.mapWidth);
-				Buffer_zq = (z - this.data.imageZOffset) % (2 * this.mapHeight);
+				Buffer_xq = (x - this.imageSettings.getImageXOffset()) % (2 * this.mapWidth);
+				Buffer_zq = (z - this.imageSettings.getImageZOffset()) % (2 * this.mapHeight);
 				if (Buffer_xq < 0)
 				{
 					Buffer_xq += 2 * this.mapWidth;
@@ -159,8 +162,8 @@ public class FromImageLayer implements ParentedLayer
 				return this.biomeMap[Buffer_x + Buffer_z * this.mapWidth];
 			case ContinueNormal:
 				int childBiome = 0;
-				Buffer_x = x - this.data.imageXOffset;
-				Buffer_z = z - this.data.imageZOffset;
+				Buffer_x = x - this.imageSettings.getImageXOffset();
+				Buffer_z = z - this.imageSettings.getImageZOffset();
 				// if X or Z is outside map bounds
 				if (Buffer_x < 0 || Buffer_x >= this.mapWidth || Buffer_z < 0 || Buffer_z >= this.mapHeight)
 				{
@@ -188,8 +191,8 @@ public class FromImageLayer implements ParentedLayer
 				}
 			case FillEmpty:
 				// Some fastened version
-				Buffer_x = x - this.data.imageXOffset;
-				Buffer_z = z - this.data.imageZOffset;
+				Buffer_x = x - this.data.imageSettings.getImageXOffset();
+				Buffer_z = z - this.data.imageSettings.getImageZOffset();
 				if (Buffer_x < 0 || Buffer_x >= this.mapWidth || Buffer_z < 0 || Buffer_z >= this.mapHeight)
 				{
 					return this.data.imageFillBiome;

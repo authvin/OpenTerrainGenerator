@@ -1,14 +1,14 @@
 package com.pg85.otg.config;
 
-import com.pg85.otg.constants.SettingsEnums.ConfigMode;
-import com.pg85.otg.constants.SettingsEnums.LogLevels;
+import com.pg85.otg.constants.settings.ConfigMode;
+import com.pg85.otg.constants.settings.LogLevels;
 import com.pg85.otg.interfaces.IPluginConfig;
 
 /**
  * OTG.ini / PluginConfig classes
  * 
  * IPluginConfig defines anything that's used/exposed between projects.
- * PluginConfigBase implements anything needed for IWorldConfig. 
+ * PluginConfigBase implements anything needed for IPresetConfig. 
  * PluginConfig contains only fields/methods used for io/serialisation/instantiation.
  * 
  * PluginConfig should be used only in common-core and platform-specific layers, when reading/writing settings on app start.

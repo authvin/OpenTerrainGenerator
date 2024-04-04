@@ -7,15 +7,18 @@ import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.config.standard.BiomeStandardValues;
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.constants.SettingsEnums.MineshaftType;
-import com.pg85.otg.constants.SettingsEnums.OceanRuinsType;
-import com.pg85.otg.constants.SettingsEnums.RareBuildingType;
-import com.pg85.otg.constants.SettingsEnums.RuinedPortalType;
-import com.pg85.otg.constants.SettingsEnums.VillageType;
+import com.pg85.otg.constants.settings.structure.MineshaftType;
+import com.pg85.otg.constants.settings.structure.OceanRuinsType;
+import com.pg85.otg.constants.settings.structure.RareBuildingType;
+import com.pg85.otg.constants.settings.structure.RuinedPortalType;
+import com.pg85.otg.constants.settings.structure.VillageType;
 import com.pg85.otg.gen.resource.RegistryResource;
 import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.IWorldConfig;
+import com.pg85.otg.interfaces.IPresetConfig;
+import com.pg85.otg.settings.biome.BiomeStructureSettings;
+import com.pg85.otg.settings.biome.BiomeVisualSettings;
+import com.pg85.otg.settings.preset.StructureSettings;
 import com.pg85.otg.util.biome.OTGBiomeResourceLocation;
 import com.pg85.otg.util.biome.WeightedMobSpawnGroup;
 import com.pg85.otg.util.logging.LogCategory;
@@ -90,7 +93,7 @@ public class ForgeBiome implements IBiome
 		return biomeBase;
 	}
 
-	public static Biome createOTGBiome(boolean isOceanBiome, IWorldConfig worldConfig, IBiomeConfig biomeConfig)
+	public static Biome createOTGBiome(boolean isOceanBiome, IPresetConfig presetConfig, IBiomeConfig biomeConfig)
 	{
 		BiomeGenerationSettings.Builder biomeGenerationSettingsBuilder = new BiomeGenerationSettings.Builder();
 
@@ -120,16 +123,16 @@ public class ForgeBiome implements IBiome
 				} else {
 					if(OTG.getEngine().getLogger().getLogCategoryEnabled(LogCategory.DECORATION))
 					{
-						OTG.getEngine().getLogger().log(LogLevel.ERROR, LogCategory.DECORATION, "Registry() " + registryResource.getFeatureKey() + " could not be found for biomeconfig " + biomeConfig.getName());
+						OTG.getEngine().getLogger().log(LogLevel.ERROR, LogCategory.DECORATION, "Registry() " + registryResource.getFeatureKey() + " could not be found for biomeconfig " + biomeConfig.getIdentitySettings().getBiomeName());
 					}
 				}				
 			}
 		}
 
 		// Default structures
-		addVanillaStructures(biomeGenerationSettingsBuilder, worldConfig, biomeConfig);
-		
-		float safeTemperature = biomeConfig.getBiomeTemperature();
+		addVanillaStructures(biomeGenerationSettingsBuilder, presetConfig, biomeConfig);
+		BiomeVisualSettings biomeVisualSettings = biomeConfig.getVisualSettings();
+		float safeTemperature = biomeConfig.getVisualSettings().getBiomeTemperature();
 		if (safeTemperature >= 0.1 && safeTemperature <= 0.2)
 		{
 			// Avoid temperatures between 0.1 and 0.2, Minecraft restriction
@@ -138,60 +141,60 @@ public class ForgeBiome implements IBiome
 
 		BiomeAmbience.Builder biomeAmbienceBuilder =
 			new BiomeAmbience.Builder()			
-				.fogColor(biomeConfig.getFogColor() != BiomeStandardValues.FOG_COLOR.getDefaultValue() ? biomeConfig.getFogColor() : worldConfig.getFogColor())
-				.waterFogColor(biomeConfig.getWaterFogColor() != BiomeStandardValues.WATER_FOG_COLOR.getDefaultValue() ? biomeConfig.getWaterFogColor() : 329011)
-				.waterColor(biomeConfig.getWaterColor() != BiomeStandardValues.WATER_COLOR.getDefaultValue() ? biomeConfig.getWaterColor() : 4159204)
-				.skyColor(biomeConfig.getSkyColor() != BiomeStandardValues.SKY_COLOR.getDefaultValue() ? biomeConfig.getSkyColor() : getSkyColorForTemp(safeTemperature)) // TODO: Sky color is normally based on temp, make a setting for that?
+				.fogColor(biomeVisualSettings.getFogColor() != BiomeStandardValues.FOG_COLOR.getDefaultValue() ? biomeVisualSettings.getFogColor() : presetConfig.getVisualSettings().getFogColor())
+				.waterFogColor(biomeVisualSettings.getWaterFogColor() != BiomeStandardValues.WATER_FOG_COLOR.getDefaultValue() ? biomeVisualSettings.getWaterFogColor() : 329011)
+				.waterColor(biomeVisualSettings.getWaterColor() != BiomeStandardValues.WATER_COLOR.getDefaultValue() ? biomeVisualSettings.getWaterColor() : 4159204)
+				.skyColor(biomeVisualSettings.getSkyColor() != BiomeStandardValues.SKY_COLOR.getDefaultValue() ? biomeVisualSettings.getSkyColor() : getSkyColorForTemp(safeTemperature)) // TODO: Sky color is normally based on temp, make a setting for that?
 		;
 
 		@SuppressWarnings("deprecation")
-		Optional<ParticleType<?>> particleType = Registry.PARTICLE_TYPE.getOptional(new ResourceLocation(biomeConfig.getParticleType()));
+		Optional<ParticleType<?>> particleType = Registry.PARTICLE_TYPE.getOptional(new ResourceLocation(biomeVisualSettings.getParticleType()));
 		if(particleType.isPresent() && particleType.get() instanceof IParticleData)
 		{
-			biomeAmbienceBuilder.ambientParticle(new ParticleEffectAmbience((IParticleData)particleType.get(), biomeConfig.getParticleProbability()));	
+			biomeAmbienceBuilder.ambientParticle(new ParticleEffectAmbience((IParticleData)particleType.get(), biomeVisualSettings.getParticleProbability()));	
 		}
 
-		SoundEvent event = ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(biomeConfig.getMusic()));
+		SoundEvent event = ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(biomeVisualSettings.getMusic()));
 		if (event != null)
 		{
 			biomeAmbienceBuilder.backgroundMusic(new BackgroundMusicSelector(event,
-				biomeConfig.getMusicMinDelay(),
-				biomeConfig.getMusicMaxDelay(),
-				biomeConfig.isReplaceCurrentMusic()));
+				biomeVisualSettings.getMusicMinDelay(),
+				biomeVisualSettings.getMusicMaxDelay(),
+				biomeVisualSettings.isReplaceCurrentMusic()));
 		}
 
-		event = ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(biomeConfig.getAmbientSound()));
+		event = ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(biomeVisualSettings.getAmbientSound()));
 		if (event != null)
 		{
 			biomeAmbienceBuilder.ambientLoopSound(event);
 		}
 
-		event = ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(biomeConfig.getMoodSound()));
+		event = ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(biomeVisualSettings.getMoodSound()));
 		if (event != null)
 		{
 			biomeAmbienceBuilder.ambientMoodSound(new MoodSoundAmbience(event,
-				biomeConfig.getMoodSoundDelay(),
-				biomeConfig.getMoodSearchRange(),
-				biomeConfig.getMoodOffset()));
+				biomeVisualSettings.getMoodSoundDelay(),
+				biomeVisualSettings.getMoodSearchRange(),
+				biomeVisualSettings.getMoodOffset()));
 		}
 
-		event = ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(biomeConfig.getAdditionsSound()));
+		event = ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation(biomeVisualSettings.getAdditionsSound()));
 		if (event != null)
 		{
-			biomeAmbienceBuilder.ambientAdditionsSound(new SoundAdditionsAmbience(event, biomeConfig.getAdditionsTickChance()));
+			biomeAmbienceBuilder.ambientAdditionsSound(new SoundAdditionsAmbience(event, biomeVisualSettings.getAdditionsTickChance()));
 		}
 
-		if(biomeConfig.getFoliageColor() != 0xffffff)
+		if(biomeVisualSettings.getFoliageColor() != 0xffffff)
 		{
-			biomeAmbienceBuilder.foliageColorOverride(biomeConfig.getFoliageColor());
+			biomeAmbienceBuilder.foliageColorOverride(biomeVisualSettings.getFoliageColor());
 		}
 
-		if(biomeConfig.getGrassColor() != 0xffffff)
+		if(biomeVisualSettings.getGrassColor() != 0xffffff)
 		{
-			biomeAmbienceBuilder.grassColorOverride(biomeConfig.getGrassColor());
+			biomeAmbienceBuilder.grassColorOverride(biomeVisualSettings.getGrassColor());
 		}
 		
-		switch(biomeConfig.getGrassColorModifier())
+		switch(biomeVisualSettings.getGrassColorModifier())
 		{
 			case Swamp:
 				biomeAmbienceBuilder.grassColorModifier(BiomeAmbience.GrassColorModifier.SWAMP);
@@ -204,25 +207,25 @@ public class ForgeBiome implements IBiome
 		}
 		
 		ResourceLocation registryName = new ResourceLocation(biomeConfig.getRegistryKey().toResourceLocationString());
-		Biome.Category category = Biome.Category.byName(biomeConfig.getBiomeCategory());
+		Biome.Category category = Biome.Category.byName(biomeConfig.getIdentitySettings().getBiomeCategory());
 		if (category == null)
 		{
 			if(OTG.getEngine().getLogger().getLogCategoryEnabled(LogCategory.CONFIGS))
 			{
-				OTG.getEngine().getLogger().log(LogLevel.ERROR, LogCategory.CONFIGS, "Could not parse biome category " + biomeConfig.getBiomeCategory());
+				OTG.getEngine().getLogger().log(LogLevel.ERROR, LogCategory.CONFIGS, "Could not parse biome category " + biomeConfig.getIdentitySettings().getBiomeCategory());
 			}
 			category = isOceanBiome ? Biome.Category.OCEAN : Biome.Category.NONE;
 		}
 		Biome.RainType rainType = 
-			biomeConfig.getBiomeWetness() <= 0.0001 ? Biome.RainType.NONE : 
-			biomeConfig.getBiomeTemperature() > Constants.SNOW_AND_ICE_TEMP ? Biome.RainType.RAIN : 
+			biomeVisualSettings.getBiomeWetness() <= 0.0001 ? Biome.RainType.NONE :
+			biomeVisualSettings.getBiomeTemperature() > Constants.SNOW_AND_ICE_TEMP ? Biome.RainType.RAIN :
 			Biome.RainType.SNOW
 		;
 
 		// Fire Forge BiomeLoadingEvent to allow other mods to enrich otg biomes with decoration features, structure features and mob spawns.
 		BiomeGenerationSettingsBuilder genBuilder = new BiomeGenerationSettingsBuilder(biomeGenerationSettingsBuilder.build());
 		MobSpawnInfoBuilder spawnBuilder = new MobSpawnInfoBuilder(mobSpawnInfoBuilder.build());
-		BiomeLoadingEvent event1 = new BiomeLoadingEvent(registryName, new Biome.Climate(rainType, safeTemperature, TemperatureModifier.NONE, biomeConfig.getBiomeWetness()), category, biomeConfig.getBiomeHeight(), biomeConfig.getBiomeVolatility(), biomeAmbienceBuilder.build(), genBuilder, spawnBuilder);
+		BiomeLoadingEvent event1 = new BiomeLoadingEvent(registryName, new Biome.Climate(rainType, safeTemperature, TemperatureModifier.NONE, biomeConfig.getVisualSettings().getBiomeWetness()), category, biomeConfig.getTerrainSettings().getBiomeHeight(), biomeConfig.getTerrainSettings().getBiomeVolatility(), biomeAmbienceBuilder.build(), genBuilder, spawnBuilder);
 		MinecraftForge.EVENT_BUS.post(event1);
 		BiomeAmbience biomeAmbienceBuilder2 = event1.getEffects();
 		BiomeGenerationSettingsBuilder biomeGenerationSettingsBuilder2 = event1.getGeneration();
@@ -232,10 +235,10 @@ public class ForgeBiome implements IBiome
 		Biome.Builder biomeBuilder = 
 			new Biome.Builder()
 			.precipitation(rainType)
-			.depth(biomeConfig.getBiomeHeight())
-			.scale(biomeConfig.getBiomeVolatility())
+			.depth(biomeConfig.getTerrainSettings().getBiomeHeight())
+			.scale(biomeConfig.getTerrainSettings().getBiomeVolatility())
 			.temperature(safeTemperature)
-			.downfall(biomeConfig.getBiomeWetness())
+			.downfall(biomeConfig.getVisualSettings().getBiomeWetness())
 			.specialEffects(biomeAmbienceBuilder2)
 			.mobSpawnSettings(mobSpawnInfoBuilder2.build())
 			.generationSettings(biomeGenerationSettingsBuilder2.build())
@@ -254,12 +257,12 @@ public class ForgeBiome implements IBiome
 	private static MobSpawnInfo.Builder createMobSpawnInfo(IBiomeConfig biomeConfig)
 	{
 		MobSpawnInfo.Builder mobSpawnInfoBuilder = new MobSpawnInfo.Builder();
-		addMobGroup(EntityClassification.MONSTER, mobSpawnInfoBuilder, biomeConfig.getMonsters(), biomeConfig.getName());
-		addMobGroup(EntityClassification.CREATURE, mobSpawnInfoBuilder, biomeConfig.getCreatures(), biomeConfig.getName());
-		addMobGroup(EntityClassification.WATER_CREATURE, mobSpawnInfoBuilder, biomeConfig.getWaterCreatures(), biomeConfig.getName());
-		addMobGroup(EntityClassification.AMBIENT, mobSpawnInfoBuilder, biomeConfig.getAmbientCreatures(), biomeConfig.getName());
-		addMobGroup(EntityClassification.WATER_AMBIENT, mobSpawnInfoBuilder, biomeConfig.getWaterAmbientCreatures(), biomeConfig.getName());
-		addMobGroup(EntityClassification.MISC, mobSpawnInfoBuilder, biomeConfig.getMiscCreatures(), biomeConfig.getName());
+		addMobGroup(EntityClassification.MONSTER, mobSpawnInfoBuilder, biomeConfig.getMobSettings().getMonsters(), biomeConfig.getIdentitySettings().getBiomeName());
+		addMobGroup(EntityClassification.CREATURE, mobSpawnInfoBuilder, biomeConfig.getMobSettings().getCreatures(), biomeConfig.getIdentitySettings().getBiomeName());
+		addMobGroup(EntityClassification.WATER_CREATURE, mobSpawnInfoBuilder, biomeConfig.getMobSettings().getWaterCreatures(), biomeConfig.getIdentitySettings().getBiomeName());
+		addMobGroup(EntityClassification.AMBIENT, mobSpawnInfoBuilder, biomeConfig.getMobSettings().getAmbientCreatures(), biomeConfig.getIdentitySettings().getBiomeName());
+		addMobGroup(EntityClassification.WATER_AMBIENT, mobSpawnInfoBuilder, biomeConfig.getMobSettings().getWaterAmbientCreatures(), biomeConfig.getIdentitySettings().getBiomeName());
+		addMobGroup(EntityClassification.MISC, mobSpawnInfoBuilder, biomeConfig.getMobSettings().getMiscCreatures(), biomeConfig.getIdentitySettings().getBiomeName());
 		mobSpawnInfoBuilder.setPlayerCanSpawn();
 		return mobSpawnInfoBuilder;
 	}
@@ -281,19 +284,20 @@ public class ForgeBiome implements IBiome
 		}
 	}	
 	
-	private static void addVanillaStructures(Builder biomeGenerationSettingsBuilder, IWorldConfig worldConfig, IBiomeConfig biomeConfig)
+	private static void addVanillaStructures(Builder biomeGenerationSettingsBuilder, IPresetConfig presetConfig, IBiomeConfig biomeConfig)
 	{
 		// TODO: Currently we can only enable/disable structures per biome and use any configuration options exposed by the vanilla structure 
 		// classes (size for villages fe). If we want to be able to customise more, we'll need to implement our own structure classes.
 		// TODO: Allow users to create their own jigsaw patterns (for villages, end cities, pillager outposts etc)?
 		// TODO: Amethyst Geodes (1.17?)	
-
+		StructureSettings structureSettings = presetConfig.getStructureSettings();
+		BiomeStructureSettings biomeStructureSettings = biomeConfig.getStructureSettings();
 		// Villages
 		// TODO: Allow spawning multiple types in a single biome?
-		if(worldConfig.getVillagesEnabled() && biomeConfig.getVillageType() != VillageType.disabled)
+		if(structureSettings.isVillagesEnabled() && biomeStructureSettings.getVillageType() != VillageType.disabled)
 		{
-			int villageSize = biomeConfig.getVillageSize();
-			VillageType villageType = biomeConfig.getVillageType();
+			int villageSize = biomeStructureSettings.getVillageSize();
+			VillageType villageType = biomeStructureSettings.getVillageType();
 			StructureFeature<VillageConfig, ? extends Structure<VillageConfig>> customVillage = register(
 				((OTGBiomeResourceLocation)biomeConfig.getRegistryKey()).withBiomeResource("village").toResourceLocationString(),
 				Structure.VILLAGE.configured(
@@ -324,22 +328,22 @@ public class ForgeBiome implements IBiome
 		}
 		
 		// Strongholds
-		if(worldConfig.getStrongholdsEnabled() && biomeConfig.getStrongholdsEnabled())
+		if(structureSettings.isStrongholdsEnabled() && biomeStructureSettings.isStrongholdsEnabled())
 		{
 			biomeGenerationSettingsBuilder.addStructureStart(StructureFeatures.STRONGHOLD);
 		}
 
 		// Ocean Monuments
-		if(worldConfig.getOceanMonumentsEnabled() && biomeConfig.getOceanMonumentsEnabled())
+		if(structureSettings.isOceanMonumentsEnabled() && biomeStructureSettings.isOceanMonumentsEnabled())
 		{
 			biomeGenerationSettingsBuilder.addStructureStart(StructureFeatures.OCEAN_MONUMENT);
 		}
 		
 		// Rare buildings
 		// TODO: Allow spawning multiple types in a single biome?
-		if(worldConfig.getRareBuildingsEnabled() && biomeConfig.getRareBuildingType() != RareBuildingType.disabled)
+		if(structureSettings.isRareBuildingsEnabled() && biomeStructureSettings.getRareBuildingType() != RareBuildingType.disabled)
 		{
-			switch(biomeConfig.getRareBuildingType())
+			switch(biomeStructureSettings.getRareBuildingType())
 			{
 				case desertPyramid:
 					biomeGenerationSettingsBuilder.addStructureStart(StructureFeatures.DESERT_PYRAMID);
@@ -359,22 +363,22 @@ public class ForgeBiome implements IBiome
 		}
 		
 		// Woodland Mansions
-		if(worldConfig.getWoodlandMansionsEnabled() && biomeConfig.getWoodlandMansionsEnabled())
+		if(structureSettings.isWoodlandMansionsEnabled() && biomeStructureSettings.isWoodlandMansionsEnabled())
 		{
 			biomeGenerationSettingsBuilder.addStructureStart(StructureFeatures.WOODLAND_MANSION);
 		}
 		
 		// Nether Fortresses
-		if(worldConfig.getNetherFortressesEnabled() && biomeConfig.getNetherFortressesEnabled())
+		if(structureSettings.isNetherFortressesEnabled() && biomeStructureSettings.isNetherFortressesEnabled())
 		{
 			biomeGenerationSettingsBuilder.addStructureStart(StructureFeatures.NETHER_BRIDGE);
 		}
 
 		// Mineshafts
-		if(worldConfig.getMineshaftsEnabled() && biomeConfig.getMineShaftType() != MineshaftType.disabled)
+		if(structureSettings.isMineshaftsEnabled() && biomeStructureSettings.getMineshaftType() != MineshaftType.disabled)
 		{
-			float mineShaftProbability = biomeConfig.getMineShaftProbability();
-			MineshaftType mineShaftType = biomeConfig.getMineShaftType();
+			float mineShaftProbability = biomeStructureSettings.getMineshaftProbability();
+			MineshaftType mineShaftType = biomeStructureSettings.getMineshaftType();
 			StructureFeature<MineshaftConfig, ? extends Structure<MineshaftConfig>> customMineShaft = register(
 				((OTGBiomeResourceLocation)biomeConfig.getRegistryKey()).withBiomeResource("mineshaft").toResourceLocationString(),
 				Structure.MINESHAFT.configured(
@@ -388,9 +392,9 @@ public class ForgeBiome implements IBiome
 		}
 		
 		// Buried Treasure
-		if(worldConfig.getBuriedTreasureEnabled() && biomeConfig.getBuriedTreasureEnabled())
+		if(structureSettings.isBuriedTreasureEnabled() && biomeStructureSettings.isBuriedTreasureEnabled())
 		{
-			float buriedTreasureProbability = biomeConfig.getBuriedTreasureProbability();
+			float buriedTreasureProbability = biomeStructureSettings.getBuriedTreasureProbability();
 			StructureFeature<ProbabilityConfig, ? extends Structure<ProbabilityConfig>> customBuriedTreasure = register(
 				((OTGBiomeResourceLocation)biomeConfig.getRegistryKey()).withBiomeResource("buried_treasure").toResourceLocationString(),
 				Structure.BURIED_TREASURE.configured(new ProbabilityConfig(buriedTreasureProbability))
@@ -399,11 +403,11 @@ public class ForgeBiome implements IBiome
 		}
 		
 		// Ocean Ruins
-		if(worldConfig.getOceanRuinsEnabled() && biomeConfig.getOceanRuinsType() != OceanRuinsType.disabled)
+		if(structureSettings.isOceanRuinsEnabled() && biomeStructureSettings.getOceanRuinsType() != OceanRuinsType.disabled)
 		{
-			float oceanRuinsLargeProbability = biomeConfig.getOceanRuinsLargeProbability();
-			float oceanRuinsClusterProbability = biomeConfig.getOceanRuinsClusterProbability();
-			OceanRuinsType oceanRuinsType = biomeConfig.getOceanRuinsType();
+			float oceanRuinsLargeProbability = biomeStructureSettings.getOceanRuinsLargeProbability();
+			float oceanRuinsClusterProbability = biomeStructureSettings.getOceanRuinsClusterProbability();
+			OceanRuinsType oceanRuinsType = biomeStructureSettings.getOceanRuinsType();
 			StructureFeature<OceanRuinConfig, ? extends Structure<OceanRuinConfig>> customOceanRuins = register(
 				((OTGBiomeResourceLocation)biomeConfig.getRegistryKey()).withBiomeResource("ocean_ruin").toResourceLocationString(),
 				Structure.OCEAN_RUIN.configured(
@@ -419,22 +423,22 @@ public class ForgeBiome implements IBiome
 
 		// Shipwrecks
 		// TODO: Allowing both types in the same biome, make sure this won't cause problems.
-		if(worldConfig.getShipWrecksEnabled())
+		if(structureSettings.isShipWrecksEnabled())
 		{
-			if(biomeConfig.getShipWreckEnabled())
+			if(biomeStructureSettings.isShipWreckEnabled())
 			{
 				biomeGenerationSettingsBuilder.addStructureStart(StructureFeatures.SHIPWRECK);
 			}
-			if(biomeConfig.getShipWreckBeachedEnabled())
+			if(biomeStructureSettings.isShipWreckBeachedEnabled())
 			{
 				biomeGenerationSettingsBuilder.addStructureStart(StructureFeatures.SHIPWRECH_BEACHED);
 			}			
 		}
 		
 		// Pillager Outpost
-		if(worldConfig.getPillagerOutpostsEnabled() && biomeConfig.getPillagerOutpostEnabled())
+		if(structureSettings.isPillagerOutpostsEnabled() && biomeStructureSettings.isPillagerOutpostEnabled())
 		{
-			int outpostSize = biomeConfig.getPillagerOutPostSize();
+			int outpostSize = biomeStructureSettings.getPillagerOutPostSize();
 			StructureFeature<VillageConfig, ? extends Structure<VillageConfig>> customOutpost = register(
 				((OTGBiomeResourceLocation)biomeConfig.getRegistryKey()).withBiomeResource("pillager_outpost").toResourceLocationString(), 
 				Structure.PILLAGER_OUTPOST.configured(
@@ -450,9 +454,9 @@ public class ForgeBiome implements IBiome
 		}
 		
 		// Bastion Remnants
-		if(worldConfig.getBastionRemnantsEnabled() && biomeConfig.getBastionRemnantEnabled())
+		if(structureSettings.isBastionRemnantsEnabled() && biomeStructureSettings.isBastionRemnantEnabled())
 		{
-			int bastionRemnantSize = biomeConfig.getBastionRemnantSize();
+			int bastionRemnantSize = biomeStructureSettings.getBastionRemnantSize();
 			StructureFeature<VillageConfig, ? extends Structure<VillageConfig>> customBastionRemnant = register(
 				((OTGBiomeResourceLocation)biomeConfig.getRegistryKey()).withBiomeResource("bastion_remnant").toResourceLocationString(), 
 				Structure.BASTION_REMNANT.configured(
@@ -468,21 +472,21 @@ public class ForgeBiome implements IBiome
 		}
 		
 		// Nether Fossils
-		if(worldConfig.getNetherFossilsEnabled() && biomeConfig.getNetherFossilEnabled())
+		if(structureSettings.isNetherFossilsEnabled() && biomeStructureSettings.isNetherFossilEnabled())
 		{
 			biomeGenerationSettingsBuilder.addStructureStart(StructureFeatures.NETHER_FOSSIL);
 		}
 		
 		// End Cities
-		if(worldConfig.getEndCitiesEnabled() && biomeConfig.getEndCityEnabled())
+		if(structureSettings.isEndCitiesEnabled() && biomeStructureSettings.isEndCityEnabled())
 		{
 			biomeGenerationSettingsBuilder.addStructureStart(StructureFeatures.END_CITY);
 		}
 		
 		// Ruined Portals
-		if(worldConfig.getRuinedPortalsEnabled() && biomeConfig.getRuinedPortalType() != RuinedPortalType.disabled)
+		if(structureSettings.isRuinedPortalsEnabled() && biomeStructureSettings.getRuinedPortalType() != RuinedPortalType.disabled)
 		{
-			switch(biomeConfig.getRuinedPortalType())
+			switch(biomeStructureSettings.getRuinedPortalType())
 			{
 				case normal:
 					biomeGenerationSettingsBuilder.addStructureStart(StructureFeatures.RUINED_PORTAL_STANDARD);

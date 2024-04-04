@@ -101,7 +101,7 @@ public class OreResource extends BiomeResourceBase implements IBasicResource
 	
 	public boolean spawn(IWorldGenRegion worldGenRegion, Random rand, boolean villageInChunk, int x, int z, byte[] highestBlocksCache, int width, int height, int startX, int startZ)
 	{
-		if(worldGenRegion.getWorldConfig().isDisableOreGen())
+		if(worldGenRegion.getPresetConfig().getResourceSettings().isDisableOreGen())
 		{
 			if(this.material.isOre())
 			{

@@ -11,7 +11,7 @@ import com.pg85.otg.forge.materials.ForgeMaterialData;
 import com.pg85.otg.forge.util.ForgeNBTHelper;
 import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.IWorldConfig;
+import com.pg85.otg.interfaces.IPresetConfig;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.nbt.NamedBinaryTag;
@@ -21,7 +21,6 @@ import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.minecraft.TreeType;
 
 import net.minecraft.block.BlockState;
-import net.minecraft.nbt.*;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.ISeedReader;
@@ -35,9 +34,9 @@ public class MCWorldGenRegion extends ForgeWorldGenRegion
 	 * Creates a LocalWorldGenRegion to be used for non-OTG worlds, used for /otg spawn/edit/export.
 	 * Cannot use any functionality requiring OTGNoiseChhunkGenerator or OTGBiomeProvider 
 	 * */
-	public MCWorldGenRegion(String presetFolderName, IWorldConfig worldConfig, ISeedReader worldGenRegion)
+	public MCWorldGenRegion(String presetFolderName, IPresetConfig presetConfig, ISeedReader worldGenRegion)
 	{
-		super(presetFolderName, worldConfig, worldGenRegion);
+		super(presetFolderName, presetConfig, worldGenRegion);
 	}
 
 	@Override

@@ -937,7 +937,7 @@ public class BO4CustomStructure extends CustomStructure
 
 						if(!minimumSize && canSpawn)
 						{
-							if(!checkYBounds(worldGenRegion.getWorldConfig().getBedrockDisabled(), childBranchDataItem.branch, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker))
+							if(!checkYBounds(worldGenRegion.getPresetConfig().getBedrockSettings().isBedrockDisabled(), childBranchDataItem.branch, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker))
 							{
 								canSpawn = false;
 								chunkIsIneligible = true;
@@ -1970,7 +1970,7 @@ public class BO4CustomStructure extends CustomStructure
 				if(targetBiomes.size() > 0)
 				{
 					IBiomeConfig biomeConfig3 = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(branchData.chunkCoordinate.getChunkX() * 16 + DecorationArea.BO_CHUNK_CENTER_X, branchData.chunkCoordinate.getChunkZ() * 16 + DecorationArea.BO_CHUNK_CENTER_Z);
-					if(!targetBiomes.contains(biomeConfig3.getName()))
+					if(!targetBiomes.contains(biomeConfig3.getIdentitySettings().getBiomeName()))
 					{
 						return null;
 					}
@@ -2040,7 +2040,7 @@ public class BO4CustomStructure extends CustomStructure
 								if(targetBiomes.size() > 0)
 								{
 									IBiomeConfig biomeConfig3 = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x * 16 + DecorationArea.BO_CHUNK_CENTER_X, z * 16 + DecorationArea.BO_CHUNK_CENTER_Z);
-									if(!targetBiomes.contains(biomeConfig3.getName()))
+									if(!targetBiomes.contains(biomeConfig3.getIdentitySettings().getBiomeName()))
 									{
 										return null;
 									}					

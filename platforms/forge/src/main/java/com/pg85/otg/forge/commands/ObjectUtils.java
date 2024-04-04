@@ -40,7 +40,7 @@ public class ObjectUtils
 		{
 			objectPath = OTG.getEngine().getGlobalObjectsFolder();
 		} else {
-			objectPath = presetFolder.resolve(Constants.WORLD_OBJECTS_FOLDER);
+			objectPath = presetFolder.resolve(Constants.OBJECTS_FOLDER);
 		}
 
 		if (!objectPath.toFile().exists() && objectPath.resolve("..").resolve("WorldObjects").toFile().exists())
@@ -262,14 +262,14 @@ public class ObjectUtils
 		{
 			return new ForgeWorldGenRegion(
 				preset.getFolderName(),
-				preset.getWorldConfig(),
+				preset.getPresetConfig(),
 				level,
 				(OTGNoiseChunkGenerator)level.getChunkSource().getGenerator()
 			);
 		} else {
 			return new MCWorldGenRegion(
 				preset.getFolderName(),
-				preset.getWorldConfig(),
+				preset.getPresetConfig(),
 				level
 			);
 		}

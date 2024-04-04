@@ -6,8 +6,8 @@ import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.config.biome.BiomeResourcesManager;
 import com.pg85.otg.config.io.FileSettingsReader;
 import com.pg85.otg.config.io.FileSettingsWriter;
-import com.pg85.otg.config.standard.WorldStandardValues;
-import com.pg85.otg.config.world.WorldConfig;
+import com.pg85.otg.config.standard.PresetStandardValues;
+import com.pg85.otg.config.world.PresetConfig;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
@@ -128,7 +128,7 @@ public abstract class OTGEngine
 		// Create BiomeResourcesManager, pass all config resources
 
 		HashMap<String, Class<? extends ConfigFunction<?>>> configFunctions = new HashMap<>();
-		configFunctions.putAll(WorldConfig.CONFIG_FUNCTIONS);
+		configFunctions.putAll(PresetConfig.CONFIG_FUNCTIONS);
 		configFunctions.putAll(BiomeConfig.RESOURCE_QUEUE_RESOURCES);
 		this.biomeResourcesManager = new BiomeResourcesManager(configFunctions);
 
@@ -152,7 +152,7 @@ public abstract class OTGEngine
 				// Unpack default preset if none present
 				if (new File(presetsDir.getPath() + File.separator + "Default").exists())
 				{
-					File wc = new File(presetsDir.getPath() + File.separator+ "Default" + File.separator + Constants.WORLD_CONFIG_FILE);
+					File wc = new File(presetsDir.getPath() + File.separator+ "Default" + File.separator + Constants.PRESET_CONFIG_FILE);
 					if (wc.exists())
 					{
 						BufferedReader reader = new BufferedReader(new FileReader(wc));
@@ -164,7 +164,7 @@ public abstract class OTGEngine
 						while (entries.hasMoreElements())
 						{
 							JarEntry jarEntry = entries.nextElement();
-							if (jarEntry.getName().contains("Default/" + Constants.WORLD_CONFIG_FILE))
+							if (jarEntry.getName().contains("Default/" + Constants.PRESET_CONFIG_FILE))
 							{
 								reader = new BufferedReader(new BufferedReader(new InputStreamReader(jarFile.getInputStream(jarEntry))));
 								newMajorVer = parseMajorVersion(reader);
@@ -233,12 +233,12 @@ public abstract class OTGEngine
 	
 	private int parseMajorVersion(BufferedReader reader) throws IOException
 	{
-		return parseVersion(reader, WorldStandardValues.MAJOR_VERSION.getName());
+		return parseVersion(reader, PresetStandardValues.MAJOR_VERSION.getName());
 	}
 	
 	private int parseMinorVersion(BufferedReader reader) throws IOException
 	{
-		return parseVersion(reader, WorldStandardValues.MINOR_VERSION.getName());
+		return parseVersion(reader, PresetStandardValues.MINOR_VERSION.getName());
 	}
 	
 	private int parseVersion(BufferedReader reader, String name) throws IOException

@@ -2,15 +2,8 @@ package com.pg85.otg.interfaces;
 
 import java.util.List;
 
-import com.pg85.otg.constants.SettingsEnums.GrassColorModifier;
-import com.pg85.otg.constants.SettingsEnums.MineshaftType;
-import com.pg85.otg.constants.SettingsEnums.OceanRuinsType;
-import com.pg85.otg.constants.SettingsEnums.RareBuildingType;
-import com.pg85.otg.constants.SettingsEnums.RuinedPortalType;
-import com.pg85.otg.constants.SettingsEnums.VillageType;
-import com.pg85.otg.util.biome.ColorSet;
+import com.pg85.otg.settings.biome.*;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
-import com.pg85.otg.util.biome.WeightedMobSpawnGroup;
 import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.gen.GeneratingChunk;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -28,21 +21,27 @@ import com.pg85.otg.util.minecraft.SaplingType;
  */
 public interface IBiomeConfig
 {
+	BiomeBlockSettings getBlockSettings();
+	IdentitySettings getIdentitySettings();
+	MobSettings getMobSettings();
+	PlacementSettings getPlacementSettings();
+	BiomeStructureSettings getStructureSettings();
+	BiomeTerrainSettings getTerrainSettings();
+	BiomeVisualSettings getVisualSettings();
+
+
 	// Misc
 
-	String getName();
 	IBiomeResourceLocation getRegistryKey();
 	void setOTGBiomeId(int id);
 	int getOTGBiomeId();
 	void setRegistryKey(IBiomeResourceLocation registryKey);
 
-	// WorldConfig getters
-	// TODO: Ideally, don't contain worldConfig within biomeconfig,  
+	// PresetConfig getters
+	// TODO: Ideally, don't contain presetConfig within biomeconfig,  
 	// use a parent object that holds both, like a worldgenregion.
 
 	boolean biomeConfigsHaveReplacement();
-	double getFractureHorizontal();
-	double getFractureVertical();
 	boolean isFlatBedrock();
 	boolean isCeilingBedrock();
 	boolean isBedrockDisabled();
@@ -51,37 +50,9 @@ public interface IBiomeConfig
 	// Inheritance
 
 	List<String> getBiomeDictTags();
-	String getBiomeCategory();
 	boolean getIsTemplateForBiome();
 	
-	// Placement
-
-	int getBiomeSize();
-	int getBiomeRarity();
-	int getBiomeColor();
-	boolean isIsleBiome();
-	List<String> getIsleInBiomes();
-	int getBiomeSizeWhenIsle();
-	int getBiomeRarityWhenIsle();
-	boolean isBorderBiome();
-	List<String> getBorderInBiomes();
-	List<String> getOnlyBorderNearBiomes();
-	List<String> getNotBorderNearBiomes();
-	int getBiomeSizeWhenBorder();
-	
 	// Height / volatility
-	
-	float getBiomeHeight();
-	float getBiomeVolatility();
-	int getSmoothRadius();	
-	int getCHCSmoothRadius();
-	double getMaxAverageDepth();
-	double getMaxAverageHeight();
-	double getVolatility1();
-	double getVolatility2();
-	double getVolatilityWeight1();
-	double getVolatilityWeight2();
-	boolean disableBiomeHeight();
 	double getCHCData(int y);
 	
 	// Rivers
@@ -124,78 +95,17 @@ public interface IBiomeConfig
 	LocalMaterialData getCooledLavaBlockReplaced(int y);
 	
 	// Visuals / weather
-	
-	float getBiomeTemperature();
+
 	boolean useFrozenOceanTemperature();
-	float getBiomeWetness();
-	int getFogColor();
-	float getFogDensity();
-	int getWaterFogColor();
-	int getFoliageColor();
-	ColorSet getFoliageColorControl();
-	int getGrassColor();
-	ColorSet getGrassColorControl();
-	GrassColorModifier getGrassColorModifier();
-	int getSkyColor();
-	int getWaterColor();
-	ColorSet getWaterColorControl();
-	String getParticleType();
-	float getParticleProbability();	
 	int getSnowHeight(float tempAtBlockToFreeze);
-	String getMusic();
-	int getMusicMinDelay();
-	int getMusicMaxDelay();
-	boolean isReplaceCurrentMusic();
-	String getAmbientSound();
-	String getMoodSound();
-	int getMoodSoundDelay();
-	int getMoodSearchRange();
-	double getMoodOffset();
-	String getAdditionsSound();
-	double getAdditionsTickChance();
-	
+
 	// OTG Custom structures (BO's)
 	
 	List<List<String>> getCustomStructureNames();
 	List<ICustomStructureGen> getCustomStructures();
 	ICustomStructureGen getStructureGen();
 	void setStructureGen(ICustomStructureGen customStructureGen);
-	
-	// Structures
-	
-	VillageType getVillageType();
-	int getVillageSize();
-	MineshaftType getMineShaftType();
-	float getMineShaftProbability();
-	OceanRuinsType getOceanRuinsType();
-	float getOceanRuinsLargeProbability();
-	float getOceanRuinsClusterProbability();
-	boolean getBuriedTreasureEnabled();
-	float getBuriedTreasureProbability();
-	boolean getPillagerOutpostEnabled();
-	int getPillagerOutPostSize();
-	boolean getBastionRemnantEnabled();
-	int getBastionRemnantSize();
-	RareBuildingType getRareBuildingType();
-	RuinedPortalType getRuinedPortalType();
-	boolean getWoodlandMansionsEnabled();
-	boolean getNetherFortressesEnabled();	
-	boolean getShipWreckEnabled();
-	boolean getShipWreckBeachedEnabled();
-	boolean getNetherFossilEnabled();
-	boolean getEndCityEnabled();
-	boolean getStrongholdsEnabled();
-	boolean getOceanMonumentsEnabled();	
 
-	// Mob spawning
-	String getInheritMobsBiomeName();
-	
-	List<WeightedMobSpawnGroup> getMonsters();
-	List<WeightedMobSpawnGroup> getCreatures();
-	List<WeightedMobSpawnGroup> getWaterCreatures();
-	List<WeightedMobSpawnGroup> getAmbientCreatures();	
-	List<WeightedMobSpawnGroup> getWaterAmbientCreatures();
-	List<WeightedMobSpawnGroup> getMiscCreatures();
 	
 	// Saplings
 	

@@ -1,6 +1,6 @@
 package com.pg85.otg.config.io;
 
-import com.pg85.otg.constants.SettingsEnums.ConfigMode;
+import com.pg85.otg.constants.settings.ConfigMode;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;

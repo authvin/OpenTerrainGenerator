@@ -89,8 +89,7 @@ public class BiomeIsleLayer implements DiagonalCrossSamplingLayer
 				)
 				{
 					sample = 
-						(sample & BiomeLayers.ICE_BIT) | 
-						(sample & BiomeLayers.RIVER_BITS) | 
+						(sample & BiomeLayers.RIVER_BITS) |
 						BiomeLayers.LAND_BIT | 
 						isle.biomeId | 
 						BiomeLayers.ISLAND_BIT
@@ -117,8 +116,7 @@ public class BiomeIsleLayer implements DiagonalCrossSamplingLayer
 				)
 				{
 					sample = 
-						(sample & BiomeLayers.LAND_BIT) | 
-						(sample & BiomeLayers.ICE_BIT) | 
+						(sample & BiomeLayers.LAND_BIT) |
 						(sample & BiomeLayers.RIVER_BITS) | 
 						isle.biomeId |
 						BiomeLayers.ISLAND_BIT

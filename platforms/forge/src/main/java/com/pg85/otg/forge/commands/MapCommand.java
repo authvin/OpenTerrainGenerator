@@ -310,7 +310,7 @@ public class MapCommand extends BaseCommand
 					if(noiseX < this.width && noiseZ < this.height)
 					{
 						// TODO: Fetch biome data per chunk, not per column, probably very slow atm.
-						int biomeColor = this.generator.getCachedBiomeProvider().getNoiseBiomeConfig(noiseX, noiseZ, true).getBiomeColor();
+						int biomeColor = this.generator.getCachedBiomeProvider().getNoiseBiomeConfig(noiseX, noiseZ, true).getPlacementSettings().getBiomeColor();
 						synchronized(imgLock)
 						{
 							this.img.setRGB(noiseX, noiseZ, biomeColor);

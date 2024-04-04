@@ -323,7 +323,7 @@ public class CustomObjectCollection
 				{
 					// TODO: Rename folders
 					String objectsFolderName = 
-						new File(otgRootFolder + File.separator + Constants.PRESETS_FOLDER + File.separator + presetFolderName + File.separator + Constants.WORLD_OBJECTS_FOLDER).exists() ? Constants.WORLD_OBJECTS_FOLDER :
+						new File(otgRootFolder + File.separator + Constants.PRESETS_FOLDER + File.separator + presetFolderName + File.separator + Constants.OBJECTS_FOLDER).exists() ? Constants.OBJECTS_FOLDER :
 						new File(otgRootFolder + File.separator + Constants.PRESETS_FOLDER + File.separator + presetFolderName + File.separator + Constants.LEGACY_WORLD_OBJECTS_FOLDER).exists() ? Constants.LEGACY_WORLD_OBJECTS_FOLDER : null
 					;					
 					if(objectsFolderName != null)

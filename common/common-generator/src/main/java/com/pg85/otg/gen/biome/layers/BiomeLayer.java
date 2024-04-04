@@ -15,16 +15,16 @@ import com.pg85.otg.interfaces.ILayerSampler;
  */
 class BiomeLayer extends BiomeLayerBase
 {
-	protected final Map<NewBiomeGroup, Map<Integer, BiomeData>> groupBiomes = new HashMap<>();
+	protected final Map<BiomeGroup, Map<Integer, BiomeData>> groupBiomes = new HashMap<>();
 
 	BiomeLayer(BiomeLayerData data, int depth)
 	{
 		super(data, depth);
 
 		// Iterate through all of the groups
-		for (Map.Entry<Integer, List<NewBiomeGroup>> entry : data.groups.entrySet())
+		for (Map.Entry<Integer, List<BiomeGroup>> entry : data.groups.entrySet())
 		{
-			for (NewBiomeGroup group : entry.getValue())
+			for (BiomeGroup group : entry.getValue())
 			{
 				int cumulativeRarity = 0;
 
@@ -61,14 +61,11 @@ class BiomeLayer extends BiomeLayerBase
 			int biomeGroupId = BiomeLayers.getGroupId(sample);
 			if (biomeGroupId > 0)
 			{
-				NewBiomeGroup group = this.data.groupRegistry.get(biomeGroupId);
+				BiomeGroup group = this.data.groupRegistry.get(biomeGroupId);
 				if (group.maxRarityPerDepth[depth] != 0 && this.groupBiomes.containsKey(group))
 				{
 					BiomeData biomeData = getBiomeFromGroup(context, group.maxRarityPerDepth[depth], this.groupBiomes.get(group));
-					return sample | biomeData.id |
-						// Set IceBit based on Biome Temperature
-						(biomeData.biomeTemperature <= this.data.frozenOceanTemperature ? BiomeLayers.ICE_BIT : 0)
-					;
+					return sample | biomeData.id;
 				}
 			}
 		}

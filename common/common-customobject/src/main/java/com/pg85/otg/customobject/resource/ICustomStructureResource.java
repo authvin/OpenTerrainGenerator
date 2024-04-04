@@ -3,7 +3,7 @@ package com.pg85.otg.customobject.resource;
 import java.nio.file.Path;
 import java.util.Random;
 
-import com.pg85.otg.constants.SettingsEnums.CustomStructureType;
+import com.pg85.otg.constants.settings.structure.CustomStructureType;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.CustomStructureCache;
@@ -27,10 +27,10 @@ public interface ICustomStructureResource
 	default void spawnForChunkDecoration(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		// Don't process BO4's, they're plotted and spawned separately from other resources.
-		if(worldGenRegion.getWorldConfig().getCustomStructureType() != CustomStructureType.BO4)
+		if(worldGenRegion.getPresetConfig().getCustomStructureSettings().getCustomStructureType() != CustomStructureType.BO4)
 		{
 			// Find all structures that reach this chunk, and spawn them
-			int searchRadius = worldGenRegion.getWorldConfig().getMaximumCustomStructureRadius();
+			int searchRadius = worldGenRegion.getPresetConfig().getCustomStructureSettings().getMaximumCustomStructureRadius();
 			int currentChunkX = worldGenRegion.getDecorationArea().getChunkBeingDecorated().getChunkX();
 			int currentChunkZ = worldGenRegion.getDecorationArea().getChunkBeingDecorated().getChunkZ();
 			BO3CustomStructure structureStart;

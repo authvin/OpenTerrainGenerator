@@ -25,7 +25,7 @@ import com.pg85.otg.config.dimensions.DimensionConfig.OTGOverWorld;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.forge.biome.OTGBiomeProvider;
 import com.pg85.otg.forge.gen.OTGNoiseChunkGenerator;
-import com.pg85.otg.interfaces.IWorldConfig;
+import com.pg85.otg.interfaces.IPresetConfig;
 import com.pg85.otg.presets.Preset;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -218,26 +218,26 @@ public class OTGDimensionType extends DimensionType
 	private static void addDimension(String presetFolderName, SimpleRegistry<Dimension> dimensions, MutableRegistry<DimensionType> dimensionTypeRegistry, RegistryKey<Dimension> dimRegistryKey, ChunkGenerator chunkGenerator, RegistryKey<DimensionType> dimTypeRegistryKey)
 	{
 		Preset preset = OTG.getEngine().getPresetLoader().getPresetByFolderName(presetFolderName);
-		IWorldConfig worldConfig = preset.getWorldConfig();
+		IPresetConfig presetConfig = preset.getPresetConfig();
 		
-		// Register OTG DimensionType with settings from WorldConfig
+		// Register OTG DimensionType with settings from PresetConfig
 		DimensionType otgOverWorld = new DimensionType(
-			worldConfig.getFixedTime(),
-			worldConfig.getHasSkyLight(),
-			worldConfig.getHasCeiling(),
-			worldConfig.getUltraWarm(),
-			worldConfig.getNatural(),
-			worldConfig.getCoordinateScale(),
-			worldConfig.getCreateDragonFight(),
-			worldConfig.getPiglinSafe(),
-			worldConfig.getBedWorks(),
-			worldConfig.getRespawnAnchorWorks(),
-			worldConfig.getHasRaids(),
-			worldConfig.getLogicalHeight(),
+			presetConfig.getDimensionSettings().getFixedTime(),
+			presetConfig.getDimensionSettings().isHasSkyLight(),
+			presetConfig.getDimensionSettings().isHasCeiling(),
+			presetConfig.getDimensionSettings().isUltraWarm(),
+			presetConfig.getDimensionSettings().isNatural(),
+			presetConfig.getDimensionSettings().getCoordinateScale(),
+			presetConfig.getDimensionSettings().isCreateDragonFight(),
+			presetConfig.getDimensionSettings().isPiglinSafe(),
+			presetConfig.getDimensionSettings().isBedWorks(),
+			presetConfig.getDimensionSettings().isRespawnAnchorWorks(),
+			presetConfig.getDimensionSettings().isHasRaids(),
+			presetConfig.getDimensionSettings().getLogicalHeight(),
 			ColumnFuzzedBiomeMagnifier.INSTANCE,
-			new ResourceLocation(worldConfig.getInfiniburn()),
-			new ResourceLocation(worldConfig.getEffectsLocation()),
-			worldConfig.getAmbientLight()
+			new ResourceLocation(presetConfig.getDimensionSettings().getInfiniburn()),
+			new ResourceLocation(presetConfig.getDimensionSettings().getEffectsLocation()),
+			presetConfig.getDimensionSettings().getAmbientLight()
 		);
 		dimensionTypeRegistry.registerOrOverride(OptionalInt.empty(), dimTypeRegistryKey, otgOverWorld, Lifecycle.stable());
 		
@@ -250,7 +250,7 @@ public class OTGDimensionType extends DimensionType
 	
 	// Writes OTG DimensionTypes to world save folder as datapack json files so they're picked up on world load.
 	// Unfortunately there doesn't appear to be a way to persist them via code. Silly, but it works.
-	public static void saveDataPackFile(Path datapackFolder, String dimName, IWorldConfig worldConfig, String presetFolderName)
+	public static void saveDataPackFile(Path datapackFolder, String dimName, IPresetConfig presetConfig, String presetFolderName)
 	{
 		File folder = new File(datapackFolder + File.separator + Constants.MOD_ID_SHORT + File.separator);
 		File file = new File(datapackFolder + File.separator + Constants.MOD_ID_SHORT + File.separator + "pack.mcmeta");
@@ -288,7 +288,21 @@ public class OTGDimensionType extends DimensionType
 		}
 		// TODO: Make height/min_y configurable? Add name?
 		//\"name\": \"\", \"height\":256, \"min_y\": 0,
-		data = "{ \"ultrawarm\": " + worldConfig.getUltraWarm() + ", \"infiniburn\": \"" + worldConfig.getInfiniburn() + "\", \"logical_height\": " + worldConfig.getLogicalHeight() + ", \"has_raids\": " + worldConfig.getHasRaids() + ", \"respawn_anchor_works\": " + worldConfig.getRespawnAnchorWorks() + ", \"bed_works\": " + worldConfig.getBedWorks() + ", \"piglin_safe\": " + worldConfig.getPiglinSafe() + ", \"natural\": " + worldConfig.getNatural() + ", \"coordinate_scale\": " + worldConfig.getCoordinateScale() + ", \"ambient_light\": " + worldConfig.getAmbientLight() + ", \"has_skylight\": " + worldConfig.getHasSkyLight() + ", \"has_ceiling\": " + worldConfig.getHasCeiling() + ", \"effects\": \"" + worldConfig.getEffectsLocation() + "\"" + (worldConfig.getFixedTime().isPresent() ? ", \"fixed_time\": " + worldConfig.getFixedTime().getAsLong() : "") + " }";
+		data = "{ \"ultrawarm\": " + presetConfig.getDimensionSettings().isUltraWarm()
+				+ ", \"infiniburn\": \"" + presetConfig.getDimensionSettings().getInfiniburn() 
+				+ "\", \"logical_height\": " + presetConfig.getDimensionSettings().getLogicalHeight() 
+				+ ", \"has_raids\": " + presetConfig.getDimensionSettings().isHasRaids()
+				+ ", \"respawn_anchor_works\": " + presetConfig.getDimensionSettings().isRespawnAnchorWorks()
+				+ ", \"bed_works\": " + presetConfig.getDimensionSettings().isBedWorks()
+				+ ", \"piglin_safe\": " + presetConfig.getDimensionSettings().isPiglinSafe()
+				+ ", \"natural\": " + presetConfig.getDimensionSettings().isNatural()
+				+ ", \"coordinate_scale\": " + presetConfig.getDimensionSettings().getCoordinateScale() 
+				+ ", \"ambient_light\": " + presetConfig.getDimensionSettings().getAmbientLight() 
+				+ ", \"has_skylight\": " + presetConfig.getDimensionSettings().isHasSkyLight()
+				+ ", \"has_ceiling\": " + presetConfig.getDimensionSettings().isHasCeiling()
+				+ ", \"effects\": \"" + presetConfig.getDimensionSettings().getEffectsLocation() 
+				+ "\"" + (presetConfig.getDimensionSettings().getFixedTime().isPresent() ? ", \"fixed_time\": " + presetConfig.getDimensionSettings().getFixedTime().getAsLong() : "") 
+				+ " }";
         try(    		        	
     		FileOutputStream fos = new FileOutputStream(file);
     		BufferedOutputStream bos = new BufferedOutputStream(fos)

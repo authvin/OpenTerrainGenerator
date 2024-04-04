@@ -7,7 +7,7 @@ import java.util.HashSet;
 import java.util.Random;
 
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.constants.SettingsEnums.ConfigMode;
+import com.pg85.otg.constants.settings.ConfigMode;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.bo3.bo3function.BO3BlockFunction;
 import com.pg85.otg.customobject.bo3.bo3function.BO3EntityFunction;

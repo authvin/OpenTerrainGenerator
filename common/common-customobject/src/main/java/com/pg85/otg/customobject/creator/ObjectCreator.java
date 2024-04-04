@@ -1,6 +1,6 @@
 package com.pg85.otg.customobject.creator;
 
-import com.pg85.otg.constants.SettingsEnums;
+import com.pg85.otg.constants.settings.ConfigMode;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.bo3.BO3;
 import com.pg85.otg.customobject.bo3.BO3Config;
@@ -337,8 +337,8 @@ public class ObjectCreator
 				BO3Config config = ((BO3Config) template).cloneConfigValues(reader);
 				if (branches != null)
 					config.setBranches(branches);
-				if (config.settingsMode == SettingsEnums.ConfigMode.WriteDisable)
-					config.settingsMode = SettingsEnums.ConfigMode.WriteWithoutComments;
+				if (config.settingsMode == ConfigMode.WriteDisable)
+					config.settingsMode = ConfigMode.WriteWithoutComments;
 				BoundingBox box = BoundingBox.newEmptyBox();
 				box.expandToFit(min.x - center.x, min.y - center.y, min.z - center.z);
 				box.expandToFit(max.x - center.x, max.y - center.y, max.z - center.z);
@@ -351,8 +351,8 @@ public class ObjectCreator
 			case BO4:
 			{
 				BO4Config config = (BO4Config) template;
-				if (config.settingsMode == SettingsEnums.ConfigMode.WriteDisable)
-					config.settingsMode = SettingsEnums.ConfigMode.WriteWithoutComments;
+				if (config.settingsMode == ConfigMode.WriteDisable)
+					config.settingsMode = ConfigMode.WriteWithoutComments;
 				config.reader = reader;
 				// Write and read the file, as otherwise we'd be doing a *lot* of extra work
 				if (branches == null && config.getbranches() != null)

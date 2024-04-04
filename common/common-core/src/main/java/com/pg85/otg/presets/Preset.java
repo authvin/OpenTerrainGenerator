@@ -5,101 +5,70 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.pg85.otg.config.biome.BiomeConfig;
-import com.pg85.otg.config.world.WorldConfig;
+import com.pg85.otg.config.world.PresetConfig;
 import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.IWorldConfig;
+import com.pg85.otg.interfaces.IMaterialReader;
+import com.pg85.otg.interfaces.IPresetConfig;
+import lombok.Getter;
 
 /**
  * Represents an OTG preset, with all its world and biome configs, stored in /config/OpenTerrainGenerator/Presets/\<PresetName\>/.
  */
-public class Preset
-{
-	private final Path presetFolder;
-	private String presetFolderName;
-	private String shortPresetName;
-	
-	// Note: Since we're not using Supplier<>, we need to be careful about any classes fetching 
-	// and caching our worldconfig/biomeconfigs etc, or they won't update when reloaded from disk.
-	// BiomeGen and ChunkGen cache some settings during a session, so they'll only update on world exit/rejoin.
-	private WorldConfig worldConfig;
-	private HashMap<String, IBiomeConfig> biomeConfigs = new HashMap<String, IBiomeConfig>();
-	private int majorVersion;
-	private String author;
-	private String description;
-	
-	public Preset(Path presetFolder, String shortPresetName, WorldConfig worldConfig, ArrayList<BiomeConfig> biomeConfigs)
-	{
-		this.presetFolder = presetFolder;
-		this.presetFolderName = presetFolder.toFile().getName();
-		this.shortPresetName = shortPresetName;
-		this.worldConfig = worldConfig;
-		this.author = worldConfig.getAuthor();
-		this.description = worldConfig.getDescription();
-		this.majorVersion = worldConfig.getMajorVersion();
+public class Preset {
+    @Getter
+    private final Path presetFolder;
+    @Getter
+    private String folderName;
+    @Getter
+    private String shortPresetName;
 
-		for(BiomeConfig biomeConfig : biomeConfigs)
-		{
-			this.biomeConfigs.put(biomeConfig.getName(), biomeConfig);
-		}		
-	}
+    // Note: Since we're not using Supplier<>, we need to be careful about any classes fetching
+    // and caching our worldconfig/biomeconfigs etc, or they won't update when reloaded from disk.
+    // BiomeGen and ChunkGen cache some settings during a session, so they'll only update on world exit/rejoin.
+    @Getter
+    private IPresetConfig presetConfig;
+    private HashMap<String, IBiomeConfig> biomeConfigs = new HashMap<String, IBiomeConfig>();
+    @Getter
+    private int majorVersion;
+    @Getter
+    private String author;
+    @Getter
+    private String description;
+    @Getter
+    private IMaterialReader materialReader;
 
-	public void update(Preset preset)
-	{
-		this.worldConfig = preset.worldConfig;
-		this.biomeConfigs = preset.biomeConfigs;
-		this.author = preset.author;
-		this.description = preset.description; 
-		this.majorVersion = preset.majorVersion;
-	}
+    public Preset(Path presetFolder, String shortPresetName, PresetConfig presetConfig, ArrayList<BiomeConfig> biomeConfigs) {
+        this.presetFolder = presetFolder;
+        this.folderName = presetFolder.toFile().getName();
+        this.shortPresetName = shortPresetName;
+        this.presetConfig = presetConfig;
+        this.author = presetConfig.getPresetInfo().getAuthor();
+        this.description = presetConfig.getPresetInfo().getDescription();
+        this.majorVersion = presetConfig.getPresetInfo().getMajorVersion();
 
-	public Path getPresetFolder()
-	{
-		return this.presetFolder;
-	}
+        for (BiomeConfig biomeConfig : biomeConfigs) {
+            this.biomeConfigs.put(biomeConfig.getIdentitySettings().getBiomeName(), biomeConfig);
+        }
+    }
 
-	public String getFolderName()
-	{
-		return this.presetFolderName;
-	}
+    public void update(Preset preset) {
+        this.presetConfig = preset.presetConfig;
+        this.biomeConfigs = preset.biomeConfigs;
+        this.author = preset.author;
+        this.description = preset.description;
+        this.majorVersion = preset.majorVersion;
+    }
 
-	public String getShortPresetName()
-	{
-		return this.shortPresetName;
-	}
+    public IBiomeConfig getBiomeConfig(String biomeName) {
+        return this.biomeConfigs.get(biomeName);
+    }
 
-	public IWorldConfig getWorldConfig()
-	{
-		return this.worldConfig;
-	}
-	
-	public IBiomeConfig getBiomeConfig(String biomeName)
-	{
-		return this.biomeConfigs.get(biomeName);
-	}
+    public ArrayList<IBiomeConfig> getBiomeConfigList() {
+        return new ArrayList<>(this.biomeConfigs.values());
+    }
 
-	public ArrayList<IBiomeConfig> getAllBiomeConfigs()
-	{
-		return new ArrayList<IBiomeConfig>(this.biomeConfigs.values());
-	}
-	
-	public ArrayList<String> getAllBiomeNames()
-	{
-		return new ArrayList<String>(this.biomeConfigs.keySet());
-		
-	}
-	
-	public int getMajorVersion()
-	{
-		return this.majorVersion;
-	}
+    public ArrayList<String> getAllBiomeNames() {
+        return new ArrayList<>(this.biomeConfigs.keySet());
 
-	public String getAuthor()
-	{
-		return this.author;
-	}
-
-	public String getDescription()
-	{
-		return this.description;
-	}
+    }
 }

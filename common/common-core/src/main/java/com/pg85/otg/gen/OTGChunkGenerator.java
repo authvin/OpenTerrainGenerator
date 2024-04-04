@@ -22,6 +22,8 @@ import com.pg85.otg.interfaces.ILayerSource;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
 import com.pg85.otg.presets.Preset;
+import com.pg85.otg.settings.biome.BiomeTerrainSettings;
+import com.pg85.otg.settings.preset.TerrainSettings;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.gen.DecorationArea;
@@ -108,7 +110,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 		// Setup noises
 		Random random = new Random(seed);
 
-		this.noiseSizeY = preset.getWorldConfig().getWorldHeightCap() / 8;
+		this.noiseSizeY = preset.getPresetConfig().getTerrainSettings().getWorldHeightCap() / 8;
 
 		this.interpolationNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-7, 0));
 		this.lowerInterpolatedNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-15, 0));
@@ -119,8 +121,8 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 
 		this.biomeBlocksNoiseGen = new NoiseGeneratorPerlinMesaBlocks(random, 4);
 
-		this.caves = new CaveCarver(Constants.WORLD_HEIGHT, preset.getWorldConfig());
-		this.ravines = new RavineCarver(Constants.WORLD_HEIGHT, preset.getWorldConfig());
+		this.caves = new CaveCarver(Constants.WORLD_HEIGHT, preset.getPresetConfig());
+		this.ravines = new RavineCarver(Constants.WORLD_HEIGHT, preset.getPresetConfig());
 	}
 	
 	public ICachedBiomeProvider getCachedBiomeProvider()
@@ -285,7 +287,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 	{
 		IBiomeConfig center = this.cachedBiomeProvider.getNoiseBiomeConfig(noiseX, noiseZ, true);
 
-		final int usedYSections = this.preset.getWorldConfig().getWorldHeightScale() / 8 + 1;
+		final int usedYSections = this.preset.getPresetConfig().getTerrainSettings().getWorldHeightScale() / 8 + 1;
 		float height = 0; // depth
 		float volatility = 0; // scale
 		double volatility1 = 0;
@@ -299,22 +301,25 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 		double[] chc = new double[this.noiseSizeY + 1];
 		float weight = 0;
 		
-		int radius = Math.max(center.getSmoothRadius(), center.getCHCSmoothRadius());
+		int radius = Math.max(center.getTerrainSettings().getSmoothRadius(), center.getTerrainSettings().getCHCSmoothRadius());
 		int areaSize = radius * 2 + 1;
 		IBiomeConfig biomes[] = this.cachedBiomeProvider.getNoiseBiomeConfigsForRegion(noiseX - radius, noiseZ - radius, areaSize);
 		IBiomeConfig biome;
+		BiomeTerrainSettings biomeTerrainSettings;
+		TerrainSettings terrainSettings = this.preset.getPresetConfig().getTerrainSettings();
 		float heightAt;
 		float weightAt;
 		int cacheX;
 		int cacheZ;
-		for (int x1 = -center.getSmoothRadius(); x1 <= center.getSmoothRadius(); ++x1)
+		for (int x1 = -center.getTerrainSettings().getSmoothRadius(); x1 <= center.getTerrainSettings().getSmoothRadius(); ++x1)
 		{
 			cacheX = x1 + radius;
-			for (int z1 = -center.getSmoothRadius(); z1 <= center.getSmoothRadius(); ++z1)
+			for (int z1 = -center.getTerrainSettings().getSmoothRadius(); z1 <= center.getTerrainSettings().getSmoothRadius(); ++z1)
 			{
 				cacheZ = z1 + radius;
 				biome = biomes[cacheX * areaSize + cacheZ];
-				heightAt = biome.getBiomeHeight();
+				biomeTerrainSettings = biome.getTerrainSettings();
+				heightAt = biomeTerrainSettings.getBiomeHeight();
 				// TODO: vanilla reduces the weight by half when the depth here is greater than the center depth, but OTG doesn't do that?
 				weightAt = BIOME_WEIGHT_TABLE[x1 + 32 + (z1 + 32) * 65] / (heightAt + 2.0F);
 				weightAt = Math.abs(weightAt); // This is required to prevent seams when height goes below -2
@@ -322,29 +327,29 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 				weight += weightAt;
 
 				height += heightAt * weightAt;
-				volatility += biome.getBiomeVolatility() * weightAt;
-				volatility1 += biome.getVolatility1() * weightAt;
-				volatility2 += biome.getVolatility2() * weightAt;
-				horizontalFracture += biome.getFractureHorizontal() * weightAt;
-				verticalFracture += biome.getFractureVertical() * weightAt;
-				volatilityWeight1 += biome.getVolatilityWeight1() * weightAt;
-				volatilityWeight2 += biome.getVolatilityWeight2() * weightAt;
-				maxAverageDepth += biome.getMaxAverageDepth() * weightAt;
-				maxAverageHeight += biome.getMaxAverageHeight() * weightAt;
+				volatility += biomeTerrainSettings.getBiomeVolatility() * weightAt;
+				volatility1 += biomeTerrainSettings.getVolatility1() * weightAt;
+				volatility2 += biomeTerrainSettings.getVolatility2() * weightAt;
+				horizontalFracture += terrainSettings.getFractureHorizontal() * weightAt;
+				verticalFracture += terrainSettings.getFractureVertical() * weightAt;
+				volatilityWeight1 += biomeTerrainSettings.getVolatilityWeight1() * weightAt;
+				volatilityWeight2 += biomeTerrainSettings.getVolatilityWeight2() * weightAt;
+				maxAverageDepth += biomeTerrainSettings.getMaxAverageDepth() * weightAt;
+				maxAverageHeight += biomeTerrainSettings.getMaxAverageHeight() * weightAt;
 			}
 		}
 
 		// CHC Smoothing
 		double chcWeight = 0;
-		for (int x1 = -center.getCHCSmoothRadius(); x1 <= center.getCHCSmoothRadius(); ++x1)
+		for (int x1 = -center.getTerrainSettings().getCHCSmoothRadius(); x1 <= center.getTerrainSettings().getCHCSmoothRadius(); ++x1)
 		{
 			cacheX = x1 + radius;
-			for (int z1 = -center.getCHCSmoothRadius(); z1 <= center.getCHCSmoothRadius(); ++z1)
+			for (int z1 = -center.getTerrainSettings().getCHCSmoothRadius(); z1 <= center.getTerrainSettings().getCHCSmoothRadius(); ++z1)
 			{
 				cacheZ = z1 + radius;
 				biome = biomes[cacheX * areaSize + cacheZ];
 
-				heightAt = biome.getBiomeHeight();
+				heightAt = biome.getTerrainSettings().getBiomeHeight();
 				weightAt = BIOME_WEIGHT_TABLE[x1 + 32 + (z1 + 32) * 65] / (heightAt + 2.0F);
 				weightAt = Math.abs(weightAt);
 
@@ -392,7 +397,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 		for (int y = 0; y <= this.noiseSizeY; ++y)
 		{
 			// Calculate falloff
-			falloff = (height - y) * 12.0D * 128.0D / this.preset.getWorldConfig().getWorldHeightCap() / volatility;
+			falloff = (height - y) * 12.0D * 128.0D / this.preset.getPresetConfig().getTerrainSettings().getWorldHeightCap() / volatility;
 			if (falloff > 0.0)
 			{
 				falloff *= 4.0;
@@ -402,7 +407,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 			verticalScale = WORLD_GEN_CONSTANT * verticalFracture;
 			noise = sampleNoise(noiseX, y, noiseZ, horizontalScale, verticalScale, horizontalScale / 80, verticalScale / 160, volatility1, volatility2, volatilityWeight1, volatilityWeight2);
 
-			if (!center.disableBiomeHeight())
+			if (!center.getTerrainSettings().isDisableBiomeHeight())
 			{
 				// Add the falloff at this height
 				noise += falloff;

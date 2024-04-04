@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Random;
 
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.constants.SettingsEnums.ConfigMode;
+import com.pg85.otg.constants.settings.ConfigMode;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.bo4.bo4function.BO4BlockFunction;
 import com.pg85.otg.customobject.bo4.bo4function.BO4RandomBlockFunction;

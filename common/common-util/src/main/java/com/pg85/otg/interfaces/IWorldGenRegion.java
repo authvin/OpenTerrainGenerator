@@ -13,7 +13,7 @@ public interface IWorldGenRegion extends ISurfaceGeneratorNoiseProvider
 {
 	ILogger getLogger();
 	IPluginConfig getPluginConfig();
-	IWorldConfig getWorldConfig();
+	IPresetConfig getPresetConfig();
 	String getPresetFolderName();
 	long getSeed();
 	Random getWorldRandom();

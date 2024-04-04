@@ -6,8 +6,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import com.pg85.otg.config.standard.WorldStandardValues;
-import com.pg85.otg.constants.SettingsEnums.ConfigMode;
+import com.pg85.otg.config.standard.PresetStandardValues;
+import com.pg85.otg.constants.settings.ConfigMode;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.bo2.BO2;
 import com.pg85.otg.customobject.bo3.bo3function.BO3BlockFunction;
@@ -348,8 +348,8 @@ public class BO3Config extends CustomObjectConfigFile
 		writer.comment("The BO3 version, don't change this! It can be used by external applications to do a version check.");
 		writer.setting(BO3Settings.VERSION, "3");
 
-		writer.comment("The settings mode, WriteAll, WriteWithoutComments or WriteDisable. See WorldConfig.");
-		writer.setting(WorldStandardValues.SETTINGS_MODE_BO3, this.settingsMode);
+		writer.comment("The settings mode, WriteAll, WriteWithoutComments or WriteDisable. See PresetConfig.");
+		writer.setting(PresetStandardValues.SETTINGS_MODE_BO3, this.settingsMode);
 
 		// Main settings
 		writer.bigTitle("Main settings");
@@ -452,7 +452,7 @@ public class BO3Config extends CustomObjectConfigFile
 
 		this.author = readSettings(BO3Settings.AUTHOR, logger, null, null);
 		this.description = readSettings(BO3Settings.DESCRIPTION, logger, null, null);
-		this.settingsMode = readSettings(WorldStandardValues.SETTINGS_MODE_BO3, logger, null, null);
+		this.settingsMode = readSettings(PresetStandardValues.SETTINGS_MODE_BO3, logger, null, null);
 
 		this.tree = readSettings(BO3Settings.TREE, logger, null, null);
 		this.frequency = readSettings(BO3Settings.FREQUENCY, logger, null, null);

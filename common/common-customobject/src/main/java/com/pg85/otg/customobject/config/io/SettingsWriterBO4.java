@@ -1,7 +1,7 @@
 package com.pg85.otg.customobject.config.io;
 
 import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.constants.SettingsEnums.ConfigMode;
+import com.pg85.otg.constants.settings.ConfigMode;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
 import com.pg85.otg.interfaces.ILogger;
 

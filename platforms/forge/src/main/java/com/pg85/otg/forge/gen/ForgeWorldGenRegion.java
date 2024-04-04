@@ -15,7 +15,7 @@ import com.pg85.otg.interfaces.IBiomeConfig;
 import com.pg85.otg.interfaces.ICachedBiomeProvider;
 import com.pg85.otg.interfaces.IEntityFunction;
 import com.pg85.otg.interfaces.ILogger;
-import com.pg85.otg.interfaces.IWorldConfig;
+import com.pg85.otg.interfaces.IPresetConfig;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.FifoMap;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
@@ -37,7 +37,6 @@ import net.minecraft.entity.ILivingEntityData;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.SpawnReason;
 import net.minecraft.entity.monster.GuardianEntity;
-import net.minecraft.nbt.*;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.StringTextComponent;
@@ -64,25 +63,25 @@ public class ForgeWorldGenRegion extends LocalWorldGenRegion
 	private final FifoMap<ChunkCoordinate, Boolean> cachedHasDefaultStructureChunks = new FifoMap<ChunkCoordinate, Boolean>(2048);
 
 	/** Creates a LocalWorldGenRegion to be used during decoration for OTG worlds. */
-	public ForgeWorldGenRegion(String presetFolderName, IWorldConfig worldConfig, WorldGenRegion worldGenRegion, OTGNoiseChunkGenerator chunkGenerator)
+	public ForgeWorldGenRegion(String presetFolderName, IPresetConfig presetConfig, WorldGenRegion worldGenRegion, OTGNoiseChunkGenerator chunkGenerator)
 	{
-		super(presetFolderName, OTG.getEngine().getPluginConfig(), worldConfig, OTG.getEngine().getLogger(), worldGenRegion.getCenterX(), worldGenRegion.getCenterZ(), chunkGenerator.getCachedBiomeProvider());
+		super(presetFolderName, OTG.getEngine().getPluginConfig(), presetConfig, OTG.getEngine().getLogger(), worldGenRegion.getCenterX(), worldGenRegion.getCenterZ(), chunkGenerator.getCachedBiomeProvider());
 		this.worldGenRegion = worldGenRegion;
 		this.chunkGenerator = chunkGenerator;
 	}
 	
 	/** Creates a LocalWorldGenRegion to be used for OTG worlds outside of decoration, only used for /otg spawn/edit/export. */
-	public ForgeWorldGenRegion(String presetFolderName, IWorldConfig worldConfig, ISeedReader worldGenRegion, OTGNoiseChunkGenerator chunkGenerator)
+	public ForgeWorldGenRegion(String presetFolderName, IPresetConfig presetConfig, ISeedReader worldGenRegion, OTGNoiseChunkGenerator chunkGenerator)
 	{
-		super(presetFolderName, OTG.getEngine().getPluginConfig(), worldConfig, OTG.getEngine().getLogger());
+		super(presetFolderName, OTG.getEngine().getPluginConfig(), presetConfig, OTG.getEngine().getLogger());
 		this.worldGenRegion = worldGenRegion;
 		this.chunkGenerator = chunkGenerator;
 	}
 	
 	/** Creates a LocalWorldGenRegion to be used for non-OTG worlds outside of decoration, only used for /otg spawn/edit/export. */
-	public ForgeWorldGenRegion(String presetFolderName, IWorldConfig worldConfig, ISeedReader worldGenRegion)
+	public ForgeWorldGenRegion(String presetFolderName, IPresetConfig presetConfig, ISeedReader worldGenRegion)
 	{
-		super(presetFolderName, OTG.getEngine().getPluginConfig(), worldConfig, OTG.getEngine().getLogger());
+		super(presetFolderName, OTG.getEngine().getPluginConfig(), presetConfig, OTG.getEngine().getLogger());
 		this.worldGenRegion = worldGenRegion;
 		this.chunkGenerator = null;
 	}
@@ -108,9 +107,9 @@ public class ForgeWorldGenRegion extends LocalWorldGenRegion
 	@Override
 	public ChunkCoordinate getSpawnChunk()
 	{
-		if(this.getWorldConfig().getSpawnPointSet())
+		if(this.getPresetConfig().getSpawnSettings().isSpawnPointSet())
 		{
-			return ChunkCoordinate.fromBlockCoords(this.getWorldConfig().getSpawnPointX(), this.getWorldConfig().getSpawnPointZ());
+			return ChunkCoordinate.fromBlockCoords(this.getPresetConfig().getSpawnSettings().getSpawnPointX(), this.getPresetConfig().getSpawnSettings().getSpawnPointZ());
 		} else {
 			BlockPos spawnPos = this.worldGenRegion.getLevel().getSharedSpawnPos();
 			return ChunkCoordinate.fromBlockCoords(spawnPos.getX(), spawnPos.getZ());
@@ -360,7 +359,7 @@ public class ForgeWorldGenRegion extends LocalWorldGenRegion
 		IBiomeConfig biomeConfig = this.getCachedBiomeProvider().getBiomeConfig(x, z, true);
 		if(biomeConfig.getReplaceBlocks() != null)
 		{
-			material = material.parseWithBiomeAndHeight(this.getWorldConfig().getBiomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), y);
+			material = material.parseWithBiomeAndHeight(this.getPresetConfig().getBiomeSettings().isBiomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), y);
 		}
 		this.worldGenRegion.setBlock(new BlockPos(x, y, z), ((ForgeMaterialData)material).internalBlock(), 3);
 	}
@@ -407,7 +406,7 @@ public class ForgeWorldGenRegion extends LocalWorldGenRegion
 		{
 			if(replaceBlocksMatrix != null)
 			{
-				material = material.parseWithBiomeAndHeight(this.getWorldConfig().getBiomeConfigsHaveReplacement(), replaceBlocksMatrix, y);
+				material = material.parseWithBiomeAndHeight(this.getPresetConfig().getBiomeSettings().isBiomeConfigsHaveReplacement(), replaceBlocksMatrix, y);
 			}
 
 			BlockPos pos = new BlockPos(x, y, z);
