@@ -21,9 +21,9 @@ public class IcebergResource extends BiomeResourceBase implements IBasicResource
 	private final double[] rarities;
 	private final double totalRarity;
 
-	public IcebergResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public IcebergResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(4, args);
 
 		int size = (int) Math.floor(args.size() / 3);
@@ -43,7 +43,7 @@ public class IcebergResource extends BiomeResourceBase implements IBasicResource
 	}
 
 	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion world, Random random, ILogger logger, IMaterialReader materialReader)
+	public void spawnForChunkDecoration(IWorldGenRegion world, Random random, IMaterialReader materialReader)
 	{
 		LocalMaterialData material = null;
 		LocalMaterialData material2 = null;

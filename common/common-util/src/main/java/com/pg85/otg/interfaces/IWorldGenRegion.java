@@ -2,7 +2,7 @@ package com.pg85.otg.interfaces;
 
 import java.util.Random;
 
-import com.pg85.otg.settings.preset.PresetSettings;
+import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.nbt.NamedBinaryTag;

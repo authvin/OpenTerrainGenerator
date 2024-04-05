@@ -16,9 +16,9 @@ public class DungeonResource extends FrequencyResourceBase
 	private final int maxAltitude;
 	private final int minAltitude;
 
-	public DungeonResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public DungeonResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(3, args);
 
 		this.frequency = 1;

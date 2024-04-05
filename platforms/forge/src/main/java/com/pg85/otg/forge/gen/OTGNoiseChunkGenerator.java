@@ -32,7 +32,7 @@ import com.pg85.otg.interfaces.ICachedBiomeProvider;
 import com.pg85.otg.interfaces.ILayerSource;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.presets.Preset;
-import com.pg85.otg.settings.preset.StructureSettings;
+import com.pg85.otg.config.settings.preset.StructureSettings;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.gen.JigsawStructureData;

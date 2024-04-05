@@ -21,9 +21,9 @@ public class UnderWaterOreResource extends FrequencyResourceBase
 	private final int size;
 	private final MaterialSet sourceBlocks;
 
-	public UnderWaterOreResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public UnderWaterOreResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(5, args);
 		this.material = materialReader.readMaterial(args.get(0));
 		this.size = readInt(args.get(1), 1, 8);

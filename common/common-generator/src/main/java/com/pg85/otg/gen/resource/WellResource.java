@@ -21,9 +21,9 @@ public class WellResource extends FrequencyResourceBase
 	private final LocalMaterialData material;
 	private final MaterialSet sourceBlocks;
 
-	public WellResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public WellResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(8, args);
 
 		this.material = readMaterial(args.get(0), materialReader);

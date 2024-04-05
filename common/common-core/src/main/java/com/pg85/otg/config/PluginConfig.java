@@ -1,7 +1,5 @@
 package com.pg85.otg.config;
 
-import java.nio.file.Path;
-
 import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.standard.PluginConfigStandardValues;
@@ -32,19 +30,19 @@ public final class PluginConfig extends PluginConfigBase
 
 	private void readConfigSettings(SettingsMap reader, ILogger logger)
 	{
-		this.settingsMode = reader.getSetting(PresetStandardValues.SETTINGS_MODE, logger);
-		this.logLevel = reader.getSetting(PluginConfigStandardValues.LOG_LEVEL, logger);
-		this.logCustomObjects = reader.getSetting(PluginConfigStandardValues.LOG_CUSTOM_OBJECTS, logger);
-		this.logStructurePlotting = reader.getSetting(PluginConfigStandardValues.LOG_BO4_PLOTTING, logger);
-		this.logConfigs = reader.getSetting(PluginConfigStandardValues.LOG_CONFIGS, logger);
-		this.logBiomeRegistry = reader.getSetting(PluginConfigStandardValues.LOG_BIOME_REGISTRY, logger);
-		this.logPerformance = reader.getSetting(PluginConfigStandardValues.LOG_PERFORMANCE, logger);		
-		this.logDecoration = reader.getSetting(PluginConfigStandardValues.LOG_DECORATION, logger);
-		this.logMobs = reader.getSetting(PluginConfigStandardValues.LOG_MOBS, logger);
-		this.logPresets = reader.getSetting(PluginConfigStandardValues.LOG_PRESETS, logger);
-		this.decorationEnabled = reader.getSetting(PluginConfigStandardValues.DECORATION_ENABLED, logger);
-		this.developerMode = reader.getSetting(PluginConfigStandardValues.DEVELOPER_MODE, logger);
-		this.workerThreads = reader.getSetting(PluginConfigStandardValues.WORKER_THREADS, logger);
+		this.settingsMode = reader.getSetting(PresetStandardValues.SETTINGS_MODE);
+		this.logLevel = reader.getSetting(PluginConfigStandardValues.LOG_LEVEL);
+		this.logCustomObjects = reader.getSetting(PluginConfigStandardValues.LOG_CUSTOM_OBJECTS);
+		this.logStructurePlotting = reader.getSetting(PluginConfigStandardValues.LOG_BO4_PLOTTING);
+		this.logConfigs = reader.getSetting(PluginConfigStandardValues.LOG_CONFIGS);
+		this.logBiomeRegistry = reader.getSetting(PluginConfigStandardValues.LOG_BIOME_REGISTRY);
+		this.logPerformance = reader.getSetting(PluginConfigStandardValues.LOG_PERFORMANCE);
+		this.logDecoration = reader.getSetting(PluginConfigStandardValues.LOG_DECORATION);
+		this.logMobs = reader.getSetting(PluginConfigStandardValues.LOG_MOBS);
+		this.logPresets = reader.getSetting(PluginConfigStandardValues.LOG_PRESETS);
+		this.decorationEnabled = reader.getSetting(PluginConfigStandardValues.DECORATION_ENABLED);
+		this.developerMode = reader.getSetting(PluginConfigStandardValues.DEVELOPER_MODE);
+		this.workerThreads = reader.getSetting(PluginConfigStandardValues.WORKER_THREADS);
 	}
 
 	@Override

@@ -17,9 +17,9 @@ public final class FossilResource extends FrequencyResourceBase
 	private final int maxAltitude;
 	private final int minAltitude;
 	
-	public FossilResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public FossilResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(3, args);
 
 		this.frequency = 1;
@@ -29,7 +29,7 @@ public final class FossilResource extends FrequencyResourceBase
 	}
 
 	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, ILogger logger, IMaterialReader materialReader)
+	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, IMaterialReader materialReader)
 	{
 	}
 

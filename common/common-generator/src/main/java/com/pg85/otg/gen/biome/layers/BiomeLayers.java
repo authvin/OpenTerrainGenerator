@@ -12,7 +12,7 @@ import com.pg85.otg.gen.biome.layers.util.LayerFactory;
 import com.pg85.otg.gen.biome.layers.util.LayerSampleContext;
 import com.pg85.otg.interfaces.ILayerSampler;
 import com.pg85.otg.interfaces.ILogger;
-import com.pg85.otg.settings.preset.BiomeSettings;
+import com.pg85.otg.config.settings.preset.BiomeSettings;
 
 /**
  * Holds the factory and utils needed for OTG's biome layers to work.

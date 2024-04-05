@@ -1,6 +1,8 @@
 package com.pg85.otg.fabric;
 
 import com.pg85.otg.OTG;
+import com.pg85.otg.fabric.util.FabricLogger;
+import com.pg85.otg.util.OTGLog;
 import net.fabricmc.api.ModInitializer;
 
 public class OTGPlugin implements ModInitializer {
@@ -10,6 +12,7 @@ public class OTGPlugin implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 		OTG.log("OTG Engine starting");
+		OTGLog.setLogger(new FabricLogger());
 		OTG.startEngine(new FabricEngine());
 
 		OTG.log("Loading presets");

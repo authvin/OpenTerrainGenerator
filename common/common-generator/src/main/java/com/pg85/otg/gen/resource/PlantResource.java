@@ -24,9 +24,9 @@ public class PlantResource extends FrequencyResourceBase
 	private final MaterialSet sourceBlocks;
 	private SparseOption sparseOption = null;
 
-	public PlantResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public PlantResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(6, args);
 
 		this.plant = PlantType.getPlant(args.get(0), materialReader);

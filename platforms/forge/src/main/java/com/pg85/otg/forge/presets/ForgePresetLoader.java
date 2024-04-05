@@ -20,7 +20,7 @@ import com.pg85.otg.config.biome.BiomeConfigFinder.BiomeConfigStub;
 import com.pg85.otg.config.biome.BiomeGroupFunction;
 import com.pg85.otg.config.biome.TemplateBiome;
 import com.pg85.otg.config.io.IConfigFunctionProvider;
-import com.pg85.otg.config.world.PresetConfig;
+import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.forge.biome.ForgeBiome;
 import com.pg85.otg.forge.materials.ForgeMaterialReader;
@@ -34,7 +34,7 @@ import com.pg85.otg.interfaces.IBiomeConfig;
 import com.pg85.otg.interfaces.IBiomeResourceLocation;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.settings.preset.PresetSettings;
+import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.presets.LocalPresetLoader;
 import com.pg85.otg.presets.Preset;
 import com.pg85.otg.util.biome.MCBiomeResourceLocation;
@@ -408,7 +408,7 @@ public class ForgePresetLoader extends LocalPresetLoader
 
 	private void processTemplateBiomes(String presetFolderName, PresetSettings presetConfig, List<IBiomeConfig> biomeConfigs, Map<IBiomeResourceLocation, IBiomeConfig> biomeConfigsByResourceLocation, Map<String, IBiomeConfig> biomeConfigsByName, List<String> blackListedBiomes)
 	{
-		for (TemplateBiome templateBiome : ((PresetConfig)presetConfig).getTemplateBiomes())
+		for (TemplateBiome templateBiome : ((PresetConfig)presetConfig).getBiomeSettings().getTemplateBiomes())
 		{
 			if(OTG.getEngine().getLogger().getLogCategoryEnabled(LogCategory.BIOME_REGISTRY))
 			{
@@ -770,7 +770,7 @@ public class ForgePresetLoader extends LocalPresetLoader
 		int genDepth = presetConfig.getBiomeSettings().getGenerationDepth();
 		Map<Integer, BiomeGroup> groupRegistry = new HashMap<>();
 		// TODO: Refactor BiomeGroupManager to IBiomeGroupManager/IBiomeGroup to avoid PresetConfig cast?
-		for (BiomeGroupFunction group : ((PresetConfig)presetConfig).getBiomeGroupManager().getGroups())
+		for (BiomeGroupFunction group : ((PresetConfig)presetConfig).getBiomeSettings().getBiomeGroupManager().getGroups())
 		{
 			if(OTG.getEngine().getLogger().getLogCategoryEnabled(LogCategory.BIOME_REGISTRY))
 			{

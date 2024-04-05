@@ -22,9 +22,9 @@ public class UnderWaterPlantResource extends FrequencyResourceBase
 	private final PlantType plant;
 	private final MaterialSet sourceBlocks;
 
-	public UnderWaterPlantResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public UnderWaterPlantResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(6, args);
 
 		this.plant = PlantType.getPlant(args.get(0), materialReader);

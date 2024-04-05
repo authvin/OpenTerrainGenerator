@@ -23,9 +23,9 @@ public class IceSpikeResource extends FrequencyResourceBase
 	private final MaterialSet sourceBlocks;
 	private IceSpikeType type;
 
-	public IceSpikeResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public IceSpikeResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(2, args);
 
 		this.material = materialReader.readMaterial(args.get(0));

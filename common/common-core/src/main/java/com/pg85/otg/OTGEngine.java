@@ -7,7 +7,7 @@ import com.pg85.otg.config.biome.BiomeResourcesManager;
 import com.pg85.otg.config.io.FileSettingsReader;
 import com.pg85.otg.config.io.FileSettingsWriter;
 import com.pg85.otg.config.standard.PresetStandardValues;
-import com.pg85.otg.config.world.PresetConfig;
+import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;

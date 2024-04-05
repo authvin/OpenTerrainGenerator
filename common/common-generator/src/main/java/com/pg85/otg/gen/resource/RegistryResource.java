@@ -13,9 +13,9 @@ public class RegistryResource  extends BiomeResourceBase
 	private final String registryKey;
 	private final String decorationStage;
 
-	public RegistryResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public RegistryResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(1, args);
 
 		this.registryKey = args.get(0);

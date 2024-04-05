@@ -19,9 +19,9 @@ public class BoulderResource extends FrequencyResourceBase
 	private final int minAltitude;
 	private final int maxAltitude;
 
-	public BoulderResource(IBiomeConfig config, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public BoulderResource(IBiomeConfig config, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(config, args, logger, materialReader);
+		super(config, args, materialReader);
 		assureSize(6, args);
 
 		this.material = materialReader.readMaterial(args.get(0));

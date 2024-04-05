@@ -8,7 +8,8 @@ import java.util.Map;
 
 import com.pg85.otg.config.ConfigFile;
 import com.pg85.otg.config.ConfigFunction;
-import com.pg85.otg.config.world.PresetConfig;
+import com.pg85.otg.config.settings.biome.*;
+import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.constants.settings.GrassColorModifier;
 import com.pg85.otg.constants.settings.structure.MineshaftType;
@@ -26,8 +27,6 @@ import com.pg85.otg.interfaces.IBiomeResourceLocation;
 import com.pg85.otg.interfaces.ICustomStructureGen;
 import com.pg85.otg.interfaces.ISaplingSpawner;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
-import com.pg85.otg.settings.preset.PresetSettings;
-import com.pg85.otg.settings.biome.*;
 import com.pg85.otg.util.biome.ColorSet;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.biome.WeightedMobSpawnGroup;

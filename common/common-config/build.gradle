@@ -1,5 +1,0 @@
-description = "Core files of OpenTerrainGenerator"
-
-dependencies {
-    api(project(":common:common-util"))
-}

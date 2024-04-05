@@ -2,7 +2,6 @@ package com.pg85.otg.gen.resource;
 
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -14,9 +13,9 @@ public class AboveWaterResource extends FrequencyResourceBase
 {
 	private final LocalMaterialData material;
 	
-	public AboveWaterResource(IBiomeConfig config, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public AboveWaterResource(IBiomeConfig config, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(config, args, logger, materialReader);
+		super(config, args, materialReader);
 		assureSize(3, args);
 
 		this.material = materialReader.readMaterial(args.get(0));

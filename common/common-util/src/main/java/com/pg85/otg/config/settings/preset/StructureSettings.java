@@ -1,0 +1,127 @@
+package com.pg85.otg.config.settings.preset;
+
+import com.pg85.otg.config.io.SettingsMap;
+import com.pg85.otg.config.standard.PresetStandardValues;
+import lombok.Builder;
+import lombok.Getter;
+
+@Builder
+@Getter
+public class StructureSettings {
+    private final boolean woodlandMansionsEnabled;
+    private final boolean netherFortressesEnabled;
+    private final boolean buriedTreasureEnabled;
+    private final boolean oceanRuinsEnabled;
+    private final boolean pillagerOutpostsEnabled;
+    private final boolean bastionRemnantsEnabled;
+    private final boolean netherFossilsEnabled;
+    private final boolean endCitiesEnabled;
+    private final boolean ruinedPortalsEnabled;
+    private final boolean shipwrecksEnabled;
+    private final boolean strongholdsEnabled;
+    private final boolean villagesEnabled;
+    private final boolean mineshaftsEnabled;
+    private final boolean oceanMonumentsEnabled;
+    private final boolean rareBuildingsEnabled;
+
+    private final int villageSpacing;
+    private final int villageSeparation;
+    private final int desertPyramidSpacing;
+    private final int desertPyramidSeparation;
+    private final int iglooSpacing;
+    private final int iglooSeparation;
+    private final int jungleTempleSpacing;
+    private final int jungleTempleSeparation;
+    private final int swampHutSpacing;
+    private final int swampHutSeparation;
+    private final int pillagerOutpostSpacing;
+    private final int pillagerOutpostSeparation;
+    private final int strongholdSpacing;
+    private final int strongholdSeparation;
+    private final int strongholdDistance;
+    private final int strongholdSpread;
+    private final int strongholdCount;
+    private final int oceanMonumentSpacing;
+    private final int oceanMonumentSeparation;
+    private final int woodlandMansionSpacing;
+    private final int woodlandMansionSeparation;
+    private final int buriedTreasureSpacing;
+    private final int buriedTreasureSeparation;
+    private final int mineshaftSpacing;
+    private final int mineshaftSeparation;
+    private final int ruinedPortalSpacing;
+    private final int ruinedPortalSeparation;
+    private final int shipwreckSpacing;
+    private final int shipwreckSeparation;
+    private final int oceanRuinSpacing;
+    private final int oceanRuinSeparation;
+    private final int endCitySpacing;
+    private final int endCitySeparation;
+    private final int bastionRemnantSpacing;
+    private final int bastionRemnantSeparation;
+    private final int netherFortressSpacing;
+    private final int netherFortressSeparation;
+    private final int netherFossilSpacing;
+    private final int netherFossilSeparation;
+
+    public static StructureSettings getStructureSettings(SettingsMap reader) {
+        var structureSettingsBuilder = builder();
+        structureSettingsBuilder.villageSpacing(reader.getSetting(PresetStandardValues.VILLAGE_SPACING));
+        structureSettingsBuilder.villageSeparation(reader.getSetting(PresetStandardValues.VILLAGE_SEPARATION));
+        structureSettingsBuilder.desertPyramidSpacing(reader.getSetting(PresetStandardValues.DESERTPYRAMID_SPACING));
+        structureSettingsBuilder.desertPyramidSeparation(reader.getSetting(PresetStandardValues.DESERTPYRAMID_SEPARATION));
+        structureSettingsBuilder.iglooSpacing(reader.getSetting(PresetStandardValues.IGLOO_SPACING));
+        structureSettingsBuilder.iglooSeparation(reader.getSetting(PresetStandardValues.IGLOO_SEPARATION));
+        structureSettingsBuilder.jungleTempleSpacing(reader.getSetting(PresetStandardValues.JUNGLETEMPLE_SPACING));
+        structureSettingsBuilder.jungleTempleSeparation(reader.getSetting(PresetStandardValues.JUNGLETEMPLE_SEPARATION));
+        structureSettingsBuilder.swampHutSpacing(reader.getSetting(PresetStandardValues.SWAMPHUT_SPACING));
+        structureSettingsBuilder.swampHutSeparation(reader.getSetting(PresetStandardValues.SWAMPHUT_SEPARATION));
+        structureSettingsBuilder.pillagerOutpostSpacing(reader.getSetting(PresetStandardValues.PILLAGEROUTPOST_SPACING));
+        structureSettingsBuilder.pillagerOutpostSeparation(reader.getSetting(PresetStandardValues.PILLAGEROUTPOST_SEPARATION));
+        structureSettingsBuilder.strongholdSpacing(reader.getSetting(PresetStandardValues.STRONGHOLD_SPACING));
+        structureSettingsBuilder.strongholdSeparation(reader.getSetting(PresetStandardValues.STRONGHOLD_SEPARATION));
+        structureSettingsBuilder.strongholdDistance(reader.getSetting(PresetStandardValues.STRONGHOLD_DISTANCE));
+        structureSettingsBuilder.strongholdSpread(reader.getSetting(PresetStandardValues.STRONGHOLD_SPREAD));
+        structureSettingsBuilder.strongholdCount(reader.getSetting(PresetStandardValues.STRONGHOLD_COUNT));
+        structureSettingsBuilder.oceanMonumentSpacing(reader.getSetting(PresetStandardValues.OCEANMONUMENT_SPACING));
+        structureSettingsBuilder.oceanMonumentSeparation(reader.getSetting(PresetStandardValues.OCEANMONUMENT_SEPARATION));
+        structureSettingsBuilder.endCitySpacing(reader.getSetting(PresetStandardValues.ENDCITY_SPACING));
+        structureSettingsBuilder.endCitySeparation(reader.getSetting(PresetStandardValues.ENDCITY_SEPARATION));
+        structureSettingsBuilder.woodlandMansionSpacing(reader.getSetting(PresetStandardValues.WOODLANDMANSION_SPACING));
+        structureSettingsBuilder.woodlandMansionSeparation(reader.getSetting(PresetStandardValues.WOODLANDMANSION_SEPARATION));
+        structureSettingsBuilder.buriedTreasureSpacing(reader.getSetting(PresetStandardValues.BURIEDTREASURE_SPACING));
+        structureSettingsBuilder.buriedTreasureSeparation(reader.getSetting(PresetStandardValues.BURIEDTREASURE_SEPARATION));
+        structureSettingsBuilder.mineshaftSpacing(reader.getSetting(PresetStandardValues.MINESHAFT_SPACING));
+        structureSettingsBuilder.mineshaftSeparation(reader.getSetting(PresetStandardValues.MINESHAFT_SEPARATION));
+        structureSettingsBuilder.ruinedPortalSpacing(reader.getSetting(PresetStandardValues.RUINEDPORTAL_SPACING));
+        structureSettingsBuilder.ruinedPortalSeparation(reader.getSetting(PresetStandardValues.RUINEDPORTAL_SEPARATION));
+        structureSettingsBuilder.shipwreckSpacing(reader.getSetting(PresetStandardValues.SHIPWRECK_SPACING));
+        structureSettingsBuilder.shipwreckSeparation(reader.getSetting(PresetStandardValues.SHIPWRECK_SEPARATION));
+        structureSettingsBuilder.oceanRuinSpacing(reader.getSetting(PresetStandardValues.OCEANRUIN_SPACING));
+        structureSettingsBuilder.oceanRuinSeparation(reader.getSetting(PresetStandardValues.OCEANRUIN_SEPARATION));
+        structureSettingsBuilder.bastionRemnantSpacing(reader.getSetting(PresetStandardValues.BASTIONREMNANT_SPACING));
+        structureSettingsBuilder.bastionRemnantSeparation(reader.getSetting(PresetStandardValues.BASTIONREMNANT_SEPARATION));
+        structureSettingsBuilder.netherFortressSpacing(reader.getSetting(PresetStandardValues.NETHERFORTRESS_SPACING));
+        structureSettingsBuilder.netherFortressSeparation(reader.getSetting(PresetStandardValues.NETHERFORTRESS_SEPARATION));
+        structureSettingsBuilder.netherFossilSpacing(reader.getSetting(PresetStandardValues.NETHERFOSSIL_SPACING));
+        structureSettingsBuilder.netherFossilSeparation(reader.getSetting(PresetStandardValues.NETHERFOSSIL_SEPARATION));
+
+        structureSettingsBuilder.woodlandMansionsEnabled(reader.getSetting(PresetStandardValues.WOODLAND_MANSIONS_ENABLED));
+        structureSettingsBuilder.netherFortressesEnabled(reader.getSetting(PresetStandardValues.NETHER_FORTRESSES_ENABLED));
+        structureSettingsBuilder.buriedTreasureEnabled(reader.getSetting(PresetStandardValues.BURIED_TREASURE_ENABLED));
+        structureSettingsBuilder.oceanRuinsEnabled(reader.getSetting(PresetStandardValues.OCEAN_RUINS_ENABLED));
+        structureSettingsBuilder.pillagerOutpostsEnabled(reader.getSetting(PresetStandardValues.PILLAGER_OUTPOSTS_ENABLED));
+        structureSettingsBuilder.bastionRemnantsEnabled(reader.getSetting(PresetStandardValues.BASTION_REMNANTS_ENABLED));
+        structureSettingsBuilder.netherFossilsEnabled(reader.getSetting(PresetStandardValues.NETHER_FOSSILS_ENABLED));
+        structureSettingsBuilder.endCitiesEnabled(reader.getSetting(PresetStandardValues.END_CITIES_ENABLED));
+        structureSettingsBuilder.ruinedPortalsEnabled(reader.getSetting(PresetStandardValues.RUINED_PORTALS_ENABLED));
+        structureSettingsBuilder.shipwrecksEnabled(reader.getSetting(PresetStandardValues.SHIPWRECKS_ENABLED));
+        structureSettingsBuilder.strongholdsEnabled(reader.getSetting(PresetStandardValues.STRONGHOLDS_ENABLED));
+        structureSettingsBuilder.villagesEnabled(reader.getSetting(PresetStandardValues.VILLAGES_ENABLED));
+        structureSettingsBuilder.mineshaftsEnabled(reader.getSetting(PresetStandardValues.MINESHAFTS_ENABLED));
+        structureSettingsBuilder.oceanMonumentsEnabled(reader.getSetting(PresetStandardValues.OCEAN_MONUMENTS_ENABLED));
+        structureSettingsBuilder.rareBuildingsEnabled(reader.getSetting(PresetStandardValues.RARE_BUILDINGS_ENABLED));
+        var structureSettings = structureSettingsBuilder.build();
+        return structureSettings;
+    }
+}

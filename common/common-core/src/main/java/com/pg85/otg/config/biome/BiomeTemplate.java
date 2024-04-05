@@ -18,7 +18,7 @@ public class BiomeTemplate extends BiomeConfig {
 
     @Override
     protected void readConfigSettings(SettingsMap reader, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader, String presetFolderName) {
-        this.settings.templateBiomeType = reader.getSetting(BiomeStandardValues.TEMPLATE_BIOME_TYPE, logger);
+        this.settings.templateBiomeType = reader.getSetting(BiomeStandardValues.TEMPLATE_BIOME_TYPE);
         this.settings.biomeCategory = BiomeStandardValues.BIOME_CATEGORY.getDefaultValue();
         this.settings.biomeTemperature = BiomeStandardValues.BIOME_TEMPERATURE.getDefaultValue();
         this.settings.biomeWetness = BiomeStandardValues.BIOME_WETNESS.getDefaultValue();
@@ -92,44 +92,44 @@ public class BiomeTemplate extends BiomeConfig {
         this.settings.inheritMobsBiomeName = BiomeStandardValues.INHERIT_MOBS_BIOME_NAME.getDefaultValue();
         this.settings.useFrozenOceanTemperature = BiomeStandardValues.USE_FROZEN_OCEAN_TEMPERATURE.getDefaultValue();
 
-        this.settings.biomeSize = reader.getSetting(BiomeStandardValues.BIOME_SIZE, logger);
-        this.settings.biomeRarity = reader.getSetting(BiomeStandardValues.BIOME_RARITY, logger);
-        this.settings.biomeRarityWhenIsle = reader.getSetting(BiomeStandardValues.BIOME_RARITY_WHEN_ISLE, logger);
-        this.settings.biomeColor = reader.getSetting(BiomeStandardValues.BIOME_COLOR, logger);
-        this.settings.riverBiome = reader.getSetting(BiomeStandardValues.RIVER_BIOME, logger);
-        this.settings.isleInBiome = reader.getSetting(BiomeStandardValues.ISLE_IN_BIOME, logger);
-        this.settings.biomeSizeWhenIsle = reader.getSetting(BiomeStandardValues.BIOME_SIZE_WHEN_ISLE, logger);
-        this.settings.biomeIsBorder = reader.getSetting(BiomeStandardValues.BIOME_IS_BORDER, logger);
-        this.settings.onlyBorderNear = reader.getSetting(BiomeStandardValues.ONLY_BORDER_NEAR, logger);
-        this.settings.notBorderNear = reader.getSetting(BiomeStandardValues.NOT_BORDER_NEAR, logger);
-        this.settings.biomeSizeWhenBorder = reader.getSetting(BiomeStandardValues.BIOME_SIZE_WHEN_BORDER, logger);
-        this.settings.biomeHeight = reader.getSetting(BiomeStandardValues.BIOME_HEIGHT, logger);
-        this.settings.biomeVolatility = reader.getSetting(BiomeStandardValues.BIOME_VOLATILITY, logger);
-        this.settings.smoothRadius = reader.getSetting(BiomeStandardValues.SMOOTH_RADIUS, logger);
-        this.settings.CHCSmoothRadius = reader.getSetting(BiomeStandardValues.CUSTOM_HEIGHT_CONTROL_SMOOTH_RADIUS, logger);
-        this.privateSettings.configWaterBlock = reader.getSetting(BiomeStandardValues.WATER_BLOCK, logger, materialReader);
-        this.privateSettings.configIceBlock = reader.getSetting(BiomeStandardValues.ICE_BLOCK, logger, materialReader);
-        this.settings.packedIceBlock = reader.getSetting(BiomeStandardValues.PACKED_ICE_BLOCK, logger, materialReader);
-        this.settings.snowBlock = reader.getSetting(BiomeStandardValues.SNOW_BLOCK, logger, materialReader);
-        this.privateSettings.configCooledLavaBlock = reader.getSetting(BiomeStandardValues.COOLED_LAVA_BLOCK, logger, materialReader);
-        this.settings.replacedBlocks = reader.getSetting(BiomeStandardValues.REPLACED_BLOCKS, logger, materialReader);
+        this.settings.biomeSize = reader.getSetting(BiomeStandardValues.BIOME_SIZE);
+        this.settings.biomeRarity = reader.getSetting(BiomeStandardValues.BIOME_RARITY);
+        this.settings.biomeRarityWhenIsle = reader.getSetting(BiomeStandardValues.BIOME_RARITY_WHEN_ISLE);
+        this.settings.biomeColor = reader.getSetting(BiomeStandardValues.BIOME_COLOR);
+        this.settings.riverBiome = reader.getSetting(BiomeStandardValues.RIVER_BIOME);
+        this.settings.isleInBiome = reader.getSetting(BiomeStandardValues.ISLE_IN_BIOME);
+        this.settings.biomeSizeWhenIsle = reader.getSetting(BiomeStandardValues.BIOME_SIZE_WHEN_ISLE);
+        this.settings.biomeIsBorder = reader.getSetting(BiomeStandardValues.BIOME_IS_BORDER);
+        this.settings.onlyBorderNear = reader.getSetting(BiomeStandardValues.ONLY_BORDER_NEAR);
+        this.settings.notBorderNear = reader.getSetting(BiomeStandardValues.NOT_BORDER_NEAR);
+        this.settings.biomeSizeWhenBorder = reader.getSetting(BiomeStandardValues.BIOME_SIZE_WHEN_BORDER);
+        this.settings.biomeHeight = reader.getSetting(BiomeStandardValues.BIOME_HEIGHT);
+        this.settings.biomeVolatility = reader.getSetting(BiomeStandardValues.BIOME_VOLATILITY);
+        this.settings.smoothRadius = reader.getSetting(BiomeStandardValues.SMOOTH_RADIUS);
+        this.settings.CHCSmoothRadius = reader.getSetting(BiomeStandardValues.CUSTOM_HEIGHT_CONTROL_SMOOTH_RADIUS);
+        this.privateSettings.configWaterBlock = reader.getSetting(BiomeStandardValues.WATER_BLOCK, materialReader);
+        this.privateSettings.configIceBlock = reader.getSetting(BiomeStandardValues.ICE_BLOCK, materialReader);
+        this.settings.packedIceBlock = reader.getSetting(BiomeStandardValues.PACKED_ICE_BLOCK, materialReader);
+        this.settings.snowBlock = reader.getSetting(BiomeStandardValues.SNOW_BLOCK, materialReader);
+        this.privateSettings.configCooledLavaBlock = reader.getSetting(BiomeStandardValues.COOLED_LAVA_BLOCK, materialReader);
+        this.settings.replacedBlocks = reader.getSetting(BiomeStandardValues.REPLACED_BLOCKS, materialReader);
         this.settings.sandStoneBlock = LocalMaterials.SANDSTONE;
         this.settings.redSandStoneBlock = LocalMaterials.RED_SANDSTONE;
-        this.settings.surfaceAndGroundControl = reader.getSetting(SurfaceGeneratorSetting.SURFACE_AND_GROUND_CONTROL, new SimpleSurfaceGenerator(), logger, materialReader);
-        this.settings.useWorldWaterLevel = reader.getSetting(BiomeStandardValues.USE_WORLD_WATER_LEVEL, logger);
-        this.privateSettings.configWaterLevelMax = reader.getSetting(BiomeStandardValues.WATER_LEVEL_MAX, logger);
-        this.privateSettings.configWaterLevelMin = reader.getSetting(BiomeStandardValues.WATER_LEVEL_MIN, logger);
-        this.privateSettings.volatilityRaw1 = reader.getSetting(BiomeStandardValues.VOLATILITY_1, logger);
-        this.privateSettings.volatilityRaw2 = reader.getSetting(BiomeStandardValues.VOLATILITY_2, logger);
-        this.privateSettings.volatilityWeightRaw1 = reader.getSetting(BiomeStandardValues.VOLATILITY_WEIGHT_1, logger);
-        this.privateSettings.volatilityWeightRaw2 = reader.getSetting(BiomeStandardValues.VOLATILITY_WEIGHT_2, logger);
-        this.settings.disableBiomeHeight = reader.getSetting(BiomeStandardValues.DISABLE_BIOME_HEIGHT, logger);
-        this.settings.maxAverageHeight = reader.getSetting(BiomeStandardValues.MAX_AVERAGE_HEIGHT, logger);
-        this.settings.maxAverageDepth = reader.getSetting(BiomeStandardValues.MAX_AVERAGE_DEPTH, logger);
+        this.settings.surfaceAndGroundControl = reader.getSetting(SurfaceGeneratorSetting.SURFACE_AND_GROUND_CONTROL, new SimpleSurfaceGenerator(), materialReader);
+        this.settings.useWorldWaterLevel = reader.getSetting(BiomeStandardValues.USE_WORLD_WATER_LEVEL);
+        this.privateSettings.configWaterLevelMax = reader.getSetting(BiomeStandardValues.WATER_LEVEL_MAX);
+        this.privateSettings.configWaterLevelMin = reader.getSetting(BiomeStandardValues.WATER_LEVEL_MIN);
+        this.privateSettings.volatilityRaw1 = reader.getSetting(BiomeStandardValues.VOLATILITY_1);
+        this.privateSettings.volatilityRaw2 = reader.getSetting(BiomeStandardValues.VOLATILITY_2);
+        this.privateSettings.volatilityWeightRaw1 = reader.getSetting(BiomeStandardValues.VOLATILITY_WEIGHT_1);
+        this.privateSettings.volatilityWeightRaw2 = reader.getSetting(BiomeStandardValues.VOLATILITY_WEIGHT_2);
+        this.settings.disableBiomeHeight = reader.getSetting(BiomeStandardValues.DISABLE_BIOME_HEIGHT);
+        this.settings.maxAverageHeight = reader.getSetting(BiomeStandardValues.MAX_AVERAGE_HEIGHT);
+        this.settings.maxAverageDepth = reader.getSetting(BiomeStandardValues.MAX_AVERAGE_DEPTH);
 
-        this.readResourceSettings(reader, biomeResourcesManager, logger, materialReader, presetFolderName);
+        this.readResourceSettings(reader, biomeResourcesManager, materialReader, presetFolderName);
 
         this.settings.chcData = new double[this.settings.presetConfig.getTerrainSettings().getWorldHeightCap() / Constants.PIECE_Y_SIZE + 1];
-        this.readHeightSettings(reader, this.settings.chcData, BiomeStandardValues.CUSTOM_HEIGHT_CONTROL, BiomeStandardValues.CUSTOM_HEIGHT_CONTROL.getDefaultValue(), logger);
+        this.readHeightSettings(reader, this.settings.chcData, BiomeStandardValues.CUSTOM_HEIGHT_CONTROL, BiomeStandardValues.CUSTOM_HEIGHT_CONTROL.getDefaultValue());
     }
 }

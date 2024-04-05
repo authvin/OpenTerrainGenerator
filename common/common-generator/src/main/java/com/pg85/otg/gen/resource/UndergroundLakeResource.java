@@ -21,9 +21,9 @@ public class UndergroundLakeResource extends FrequencyResourceBase
 	private final int minAltitude;
 	private final int minSize;
 
-	public UndergroundLakeResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public UndergroundLakeResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(6, args);
 		this.minSize = readInt(args.get(0), 1, 25);
 		this.maxSize = readInt(args.get(1), this.minSize, 60);

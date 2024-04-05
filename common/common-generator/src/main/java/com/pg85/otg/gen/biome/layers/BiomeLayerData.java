@@ -12,10 +12,10 @@ import com.google.common.collect.ImmutableList;
 import com.pg85.otg.gen.biome.BiomeData;
 import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.settings.preset.PresetSettings;
-import com.pg85.otg.settings.preset.BiomeSettings;
-import com.pg85.otg.settings.preset.ImageSettings;
-import com.pg85.otg.settings.preset.PresetInfo;
+import com.pg85.otg.config.settings.preset.PresetSettings;
+import com.pg85.otg.config.settings.preset.BiomeSettings;
+import com.pg85.otg.config.settings.preset.ImageSettings;
+import com.pg85.otg.config.settings.preset.PresetInfo;
 
 public class BiomeLayerData
 {

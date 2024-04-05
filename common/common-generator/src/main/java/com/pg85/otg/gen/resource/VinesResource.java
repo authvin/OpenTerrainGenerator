@@ -25,9 +25,9 @@ public class VinesResource extends FrequencyResourceBase
 	private final int maxAltitude;
 	private final int minAltitude;
 
-	public VinesResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public VinesResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 
 		assureSize(4, args);
 		this.frequency = readInt(args.get(0), 1, 100);

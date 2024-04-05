@@ -18,11 +18,11 @@ import com.pg85.otg.interfaces.IWorldGenRegion;
 // the common-customobject project.
 public interface IBasicResource
 {
-	default void processForChunkDecoration(IWorldGenRegion worldGenregion, Random random, ILogger logger, IMaterialReader materialReader)
+	default void processForChunkDecoration(IWorldGenRegion worldGenregion, Random random, IMaterialReader materialReader)
 	{
 		// TODO: Fire Forge resource decoration events, when they're available.
-		spawnForChunkDecoration(worldGenregion, random, logger, materialReader);
+		spawnForChunkDecoration(worldGenregion, random, materialReader);
 	}
 
-	void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, ILogger logger, IMaterialReader materialReader);
+	void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, IMaterialReader materialReader);
 }

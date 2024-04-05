@@ -24,10 +24,10 @@ public class BasaltColumnResource extends FrequencyResourceBase
 	private LocalMaterialData material;
 	private final MaterialSet sourceBlocks;
 
-	public BasaltColumnResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader)
+	public BasaltColumnResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader)
 			throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(8, args);
 
 		this.material = readMaterial(args.get(0), materialReader);

@@ -15,11 +15,10 @@ import com.pg85.otg.config.io.FileSettingsWriter;
 import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.standard.BiomeStandardValues;
-import com.pg85.otg.config.world.PresetConfig;
+import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.settings.preset.PresetSettings;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 import com.pg85.otg.util.minecraft.BiomeRegistryNames;
@@ -131,12 +130,11 @@ public abstract class LocalPresetLoader
 		String presetFolderName = presetDir.toFile().getName();
 		
 		SettingsMap presetConfigSettings = FileSettingsReader.read(presetFolderName, presetConfigFile, logger);
-		PresetConfig presetConfig = new PresetConfig(presetDir, presetConfigSettings, addBiomesFromDirRecursive(biomesDirectory), biomeResourcesManager, logger, getMaterialReader(presetFolderName), presetFolderName);
+		PresetConfig presetConfig = new PresetConfig(presetDir, presetConfigSettings, addBiomesFromDirRecursive(biomesDirectory), biomeResourcesManager, logger, getMaterialReader(presetFolderName));
 		FileSettingsWriter.writeToFile(presetConfig.getSettingsAsMap(), presetConfigFile, presetConfig.getPresetInfo().getSettingsMode(), logger);
 
 		// use shortPresetName to register the biomes, instead of presetName
 		ArrayList<BiomeConfig> biomeConfigs = loadBiomeConfigs(presetConfig.getPresetInfo().getShortPresetName(), presetConfig.getPresetInfo().getMajorVersion(), presetDir, biomesDirectory.toPath(), presetConfig, biomeResourcesManager, logger, getMaterialReader(presetFolderName));
-
 		return new Preset(presetDir, presetConfig.getPresetInfo().getShortPresetName(), presetConfig, biomeConfigs);
 	}
 	
@@ -160,7 +158,7 @@ public abstract class LocalPresetLoader
 		return biomes;
 	}
 
-	private ArrayList<BiomeConfig> loadBiomeConfigs(String presetShortName, int presetMajorVersion, Path presetDir, Path presetBiomesDir, PresetSettings presetConfig, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader)
+	private ArrayList<BiomeConfig> loadBiomeConfigs(String presetShortName, int presetMajorVersion, Path presetDir, Path presetBiomesDir, PresetConfig presetConfig, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader)
 	{
 		// Establish folders
 		List<Path> biomeDirs = new ArrayList<Path>(2);
@@ -199,7 +197,7 @@ public abstract class LocalPresetLoader
 		return biomeConfigs;
 	}
 
-	private ArrayList<BiomeConfig> readAndWriteSettings(PresetSettings presetConfig, Map<String, BiomeConfigStub> biomeConfigStubs, Path presetDir, String presetShortName, int presetMajorVersion, boolean write, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader)
+	private ArrayList<BiomeConfig> readAndWriteSettings(PresetConfig presetConfig, Map<String, BiomeConfigStub> biomeConfigStubs, Path presetDir, String presetShortName, int presetMajorVersion, boolean write, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader)
 	{
 		ArrayList<BiomeConfig> biomeConfigs = new ArrayList<BiomeConfig>();
 
@@ -223,7 +221,7 @@ public abstract class LocalPresetLoader
 		return biomeConfigs;
 	}
 
-	private void processSettings(PresetSettings presetConfig, ArrayList<BiomeConfig> biomeConfigs)
+	private void processSettings(PresetConfig presetConfig, ArrayList<BiomeConfig> biomeConfigs)
 	{
 		for(BiomeConfig biomeConfig : biomeConfigs)
 		{
@@ -253,7 +251,7 @@ public abstract class LocalPresetLoader
 			return;
 		}
 
-		String stubInheritMobsBiomeName = biomeConfigStub.getSettings().getSetting(BiomeStandardValues.INHERIT_MOBS_BIOME_NAME, BiomeStandardValues.INHERIT_MOBS_BIOME_NAME.getDefaultValue(), logger, null);
+		String stubInheritMobsBiomeName = biomeConfigStub.getSettings().getSetting(BiomeStandardValues.INHERIT_MOBS_BIOME_NAME, BiomeStandardValues.INHERIT_MOBS_BIOME_NAME.getDefaultValue(), null);
 
 		if(stubInheritMobsBiomeName != null && stubInheritMobsBiomeName.length() > 0)
 		{

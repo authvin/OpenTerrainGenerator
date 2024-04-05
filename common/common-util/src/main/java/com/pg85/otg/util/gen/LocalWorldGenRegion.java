@@ -3,7 +3,7 @@ package com.pg85.otg.util.gen;
 import com.pg85.otg.interfaces.ICachedBiomeProvider;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IPluginConfig;
-import com.pg85.otg.settings.preset.PresetSettings;
+import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.ChunkCoordinate;
 

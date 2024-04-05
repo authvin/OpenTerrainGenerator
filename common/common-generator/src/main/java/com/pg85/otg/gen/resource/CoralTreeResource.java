@@ -22,9 +22,9 @@ public class CoralTreeResource extends FrequencyResourceBase
 		OTGDirection.WEST
 	};
 
-	public CoralTreeResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public CoralTreeResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		this.frequency = readInt(args.get(0), 1, 500);
 		this.rarity = readRarity(args.get(1));
 	}

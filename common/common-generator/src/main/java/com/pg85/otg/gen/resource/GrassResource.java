@@ -28,9 +28,9 @@ public class GrassResource  extends BiomeResourceBase implements IBasicResource
 	private PlantType plant;
 	private final MaterialSet sourceBlocks;
 
-	public GrassResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public GrassResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(5, args);
 
 		// The syntax for the first two arguments used to be blockId,blockData
@@ -60,7 +60,7 @@ public class GrassResource  extends BiomeResourceBase implements IBasicResource
 	}
 
 	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, ILogger logger, IMaterialReader materialReader)
+	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, IMaterialReader materialReader)
 	{
 		switch (this.groupOption)
 		{

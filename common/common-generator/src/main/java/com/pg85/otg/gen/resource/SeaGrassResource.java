@@ -15,9 +15,9 @@ public class SeaGrassResource extends FrequencyResourceBase
 {
 	private final double tallChance;
 
-	public SeaGrassResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public SeaGrassResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		this.frequency = readInt(args.get(0), 1, 500);
 		this.rarity = readRarity(args.get(1));
 		this.tallChance = readDouble(args.get(2), 0.0, 1.0);

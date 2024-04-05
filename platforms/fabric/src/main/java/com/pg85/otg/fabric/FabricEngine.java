@@ -6,6 +6,7 @@ import com.pg85.otg.constants.Constants;
 import com.pg85.otg.fabric.presets.FabricPresetLoader;
 import com.pg85.otg.fabric.util.FabricLogger;
 import com.pg85.otg.fabric.util.FabricModLoadedChecker;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 import net.fabricmc.loader.api.FabricLoader;
@@ -17,10 +18,10 @@ import java.util.List;
 public class FabricEngine extends OTGEngine {
     protected FabricEngine() {
         super(
-            new FabricLogger(),
-            FabricLoader.getInstance().getConfigDir().resolve(Constants.MOD_ID),
-            new FabricModLoadedChecker(),
-            new FabricPresetLoader(FabricLoader.getInstance().getConfigDir().resolve(Constants.MOD_ID))
+                OTGLog.getLogger(),
+                FabricLoader.getInstance().getConfigDir().resolve(Constants.MOD_ID),
+                new FabricModLoadedChecker(),
+                new FabricPresetLoader(FabricLoader.getInstance().getConfigDir().resolve(Constants.MOD_ID))
         );
     }
 

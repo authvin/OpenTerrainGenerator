@@ -34,7 +34,7 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 
 	public TreeResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(3, args);
 
 		this.frequency = readInt(args.get(0), 1, 100);

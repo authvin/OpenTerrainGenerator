@@ -17,9 +17,9 @@ public class BambooResource extends FrequencyResourceBase
 	private final double podzolChance;
 	private final MaterialSet sourceBlocks;
 
-	public BambooResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public BambooResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 
 		this.frequency = readInt(args.get(0), 1, 500);
 		this.rarity = readRarity(args.get(1));

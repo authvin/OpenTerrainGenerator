@@ -30,9 +30,9 @@ public class OreResource extends BiomeResourceBase implements IBasicResource
 	private final boolean useExtendedParams;	
 	private final int maxSpawn;	
 
-	public OreResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public OreResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(7, args);
 
 		this.material = materialReader.readMaterial(args.get(0));
@@ -63,7 +63,7 @@ public class OreResource extends BiomeResourceBase implements IBasicResource
 	}
 
 	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, ILogger logger, IMaterialReader materialReader)
+	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, IMaterialReader materialReader)
 	{
 		// Override spawnForChunkDecoration so we can add a cache.
 		

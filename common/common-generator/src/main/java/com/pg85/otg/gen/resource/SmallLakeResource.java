@@ -3,7 +3,6 @@ package com.pg85.otg.gen.resource;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.helpers.RandomHelper;
@@ -22,9 +21,9 @@ public class SmallLakeResource extends FrequencyResourceBase
 	private final int maxAltitude;
 	private final int minAltitude;
 
-	public SmallLakeResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public SmallLakeResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(5, args);
 		this.material = materialReader.readMaterial(args.get(0));
 		this.frequency = readInt(args.get(1), 1, 100);
@@ -34,14 +33,14 @@ public class SmallLakeResource extends FrequencyResourceBase
 	}
 
 	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, ILogger logger, IMaterialReader materialReader)
+	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, IMaterialReader materialReader)
 	{
 		// TODO: This only checks for a structure start, need to expose the MC method for finding villages on worldGenRegion.
 		if(worldGenRegion.chunkHasDefaultStructure(random, worldGenRegion.getDecorationArea().getChunkBeingDecorated()))
 		{
 			return;
 		}
-		super.spawnForChunkDecoration(worldGenRegion, random, logger, materialReader);
+		super.spawnForChunkDecoration(worldGenRegion, random, materialReader);
 	}	
 	
 	@Override

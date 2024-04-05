@@ -28,9 +28,9 @@ public class VeinResource extends BiomeResourceBase implements IBasicResource
 	private final int minSizeInBlocks;		
 	private final double veinRarity;
 
-	public VeinResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public VeinResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(9, args);
 
 		this.material = materialReader.readMaterial(args.get(0));
@@ -66,7 +66,7 @@ public class VeinResource extends BiomeResourceBase implements IBasicResource
 	}
 
 	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, ILogger logger, IMaterialReader materialReader)
+	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, IMaterialReader materialReader)
 	{
 		// Find all veins that reach this chunk, and spawn them
 		int searchRadius = (this.maxSizeInBlocks + 15) / 16;

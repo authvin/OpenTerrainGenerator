@@ -2,5 +2,4 @@ description = "Core files of OpenTerrainGenerator"
 
 dependencies {
     api(project(":common:common-util"))
-    api(project(":common:common-config"))
 }

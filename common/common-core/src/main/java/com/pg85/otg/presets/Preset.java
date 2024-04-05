@@ -5,10 +5,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import com.pg85.otg.config.biome.BiomeConfig;
-import com.pg85.otg.config.world.PresetConfig;
+import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.interfaces.IBiomeConfig;
 import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.settings.preset.PresetSettings;
+import com.pg85.otg.config.settings.preset.PresetSettings;
 import lombok.Getter;
 
 /**

@@ -3,6 +3,7 @@ package com.pg85.otg;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
+import lombok.Getter;
 
 /**
  * Main entry-point. Used for logging and to access OTGEngine.
@@ -11,17 +12,14 @@ import com.pg85.otg.util.logging.LogLevel;
  */
 public class OTG
 {
+	@Getter
 	private static OTGEngine Engine;
+	@Getter
 	private static ILogger logger;
 
 	private OTG() { }
 
 	// Engine
-
-	public static OTGEngine getEngine()
-	{
-		return Engine;
-	}
 
 	public static void startEngine(OTGEngine engine)
 	{
@@ -50,12 +48,14 @@ public class OTG
 		}
 		if (Engine == null)
 		{
-			throw new IllegalStateException("Engine is not started.");
+			throw new IllegalStateException("Engine is not started, tried to log: " + message);
 		}
+		logger = Engine.getLogger();
 	}
 
 	public static void log(String message)
 	{
 		log(LogLevel.INFO, LogCategory.MAIN, message);
 	}
+
 }

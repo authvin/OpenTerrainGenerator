@@ -13,7 +13,6 @@ dependencies {
     // Remove the next line if you don't want to depend on the API
     modApi "dev.architectury:architectury:${rootProject.architectury_version}"
     implementation project(':common:common-util')
-    implementation project(':common:common-config')
     implementation project(':common:common-customobject')
     implementation project(':common:common-generator')
     implementation project(':common:common-core')

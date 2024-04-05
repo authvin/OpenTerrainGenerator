@@ -19,9 +19,9 @@ public class ReedResource extends FrequencyResourceBase
 	private final int minAltitude;
 	private final MaterialSet sourceBlocks;
 	
-	public ReedResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public ReedResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		assureSize(6, args);
 
 		this.material = materialReader.readMaterial(args.get(0));

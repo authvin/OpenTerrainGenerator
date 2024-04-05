@@ -26,7 +26,7 @@ public class CustomStructureResource extends BiomeResourceBase implements ICusto
 
 	public CustomStructureResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		this.objectNames = new ArrayList<String>();
 		this.objectChances = new ArrayList<Double>();
 		for (int i = 0; i < args.size() - 1; i += 2)

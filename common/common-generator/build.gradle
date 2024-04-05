@@ -2,7 +2,6 @@ description = "Core files of OpenTerrainGenerator"
 
 dependencies {
     api(project(":common:common-util"))
-    api(project(":common:common-config"))
 
     // Provided by Minecraft
     compileOnlyApi("it.unimi.dsi:fastutil:8.2.1")

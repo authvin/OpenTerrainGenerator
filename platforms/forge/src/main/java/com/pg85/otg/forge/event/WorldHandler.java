@@ -3,10 +3,10 @@ package com.pg85.otg.forge.event;
 import com.pg85.otg.config.dimensions.DimensionConfig;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.forge.gen.OTGNoiseChunkGenerator;
-import com.pg85.otg.settings.preset.PresetSettings;
+import com.pg85.otg.config.settings.preset.PresetSettings;
 
-import com.pg85.otg.settings.preset.GameRuleSettings;
-import com.pg85.otg.settings.preset.SpawnSettings;
+import com.pg85.otg.config.settings.preset.GameRuleSettings;
+import com.pg85.otg.config.settings.preset.SpawnSettings;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Dimension;

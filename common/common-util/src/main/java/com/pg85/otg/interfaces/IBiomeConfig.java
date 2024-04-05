@@ -2,7 +2,7 @@ package com.pg85.otg.interfaces;
 
 import java.util.List;
 
-import com.pg85.otg.settings.biome.*;
+import com.pg85.otg.config.settings.biome.*;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.gen.GeneratingChunk;

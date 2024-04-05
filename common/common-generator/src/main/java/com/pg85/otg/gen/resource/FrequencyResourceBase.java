@@ -6,7 +6,6 @@ import java.util.Random;
 import com.pg85.otg.config.biome.BiomeResourceBase;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 
@@ -20,13 +19,13 @@ public abstract class FrequencyResourceBase extends BiomeResourceBase implements
 	protected int frequency;
 	protected double rarity;
 	
-	public FrequencyResourceBase(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader)
+	public FrequencyResourceBase(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader)
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 	}
 
 	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, ILogger logger, IMaterialReader materialReader)
+	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, IMaterialReader materialReader)
 	{
 		int blockX = worldGenRegion.getDecorationArea().getChunkBeingDecoratedCenterX();
 		int blockZ = worldGenRegion.getDecorationArea().getChunkBeingDecoratedCenterZ();		

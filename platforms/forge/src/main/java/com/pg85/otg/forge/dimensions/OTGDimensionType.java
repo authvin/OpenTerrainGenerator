@@ -25,7 +25,7 @@ import com.pg85.otg.config.dimensions.DimensionConfig.OTGOverWorld;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.forge.biome.OTGBiomeProvider;
 import com.pg85.otg.forge.gen.OTGNoiseChunkGenerator;
-import com.pg85.otg.settings.preset.PresetSettings;
+import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.presets.Preset;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;

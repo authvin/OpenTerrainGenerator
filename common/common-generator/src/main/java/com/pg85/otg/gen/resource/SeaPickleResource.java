@@ -16,9 +16,9 @@ public class SeaPickleResource extends FrequencyResourceBase
 {
 	private final int attempts;
 
-	public SeaPickleResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public SeaPickleResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, logger, materialReader);
+		super(biomeConfig, args, materialReader);
 		this.frequency = readInt(args.get(0), 1, 500);
 		this.rarity = readRarity(args.get(1));
 		this.attempts = readInt(args.get(2), 1, 256);
