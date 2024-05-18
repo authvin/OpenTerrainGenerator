@@ -11,7 +11,7 @@ import com.pg85.otg.constants.Constants;
 import com.pg85.otg.forge.materials.ForgeMaterialData;
 import com.pg85.otg.forge.util.ForgeNBTHelper;
 import com.pg85.otg.interfaces.IBiome;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ICachedBiomeProvider;
 import com.pg85.otg.interfaces.IEntityFunction;
 import com.pg85.otg.interfaces.ILogger;
@@ -137,7 +137,7 @@ public class ForgeWorldGenRegion extends LocalWorldGenRegion
 	}
 
 	@Override
-	public IBiomeConfig getBiomeConfigForDecoration(int x, int z)
+	public BiomeSettings getBiomeConfigForDecoration(int x, int z)
 	{
 		// TOOD: Don't use this.decorationArea == null for worldgenregions
 		// doing things outside of population, split up worldgenregion
@@ -356,10 +356,10 @@ public class ForgeWorldGenRegion extends LocalWorldGenRegion
 	@Override
 	public void setBlockDirect(int x, int y, int z, LocalMaterialData material)
 	{
-		IBiomeConfig biomeConfig = this.getCachedBiomeProvider().getBiomeConfig(x, z, true);
-		if(biomeConfig.getReplaceBlocks() != null)
+		BiomeSettings biomeConfig = this.getCachedBiomeProvider().getBiomeConfig(x, z, true);
+		if(biomeConfig.getSurfaceSettings().getReplacedBlocks() != null)
 		{
-			material = material.parseWithBiomeAndHeight(this.getPresetConfig().isBiomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), y);
+			material = material.parseWithBiomeAndHeight(this.getPresetConfig().isBiomeConfigsHaveReplacement(), biomeConfig.getSurfaceSettings().getReplacedBlocks(), y);
 		}
 		this.worldGenRegion.setBlock(new BlockPos(x, y, z), ((ForgeMaterialData)material).internalBlock(), 3);
 	}

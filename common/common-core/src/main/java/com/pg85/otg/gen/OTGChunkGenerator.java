@@ -16,7 +16,7 @@ import com.pg85.otg.gen.noise.OctavePerlinNoiseSampler;
 import com.pg85.otg.gen.noise.PerlinNoiseSampler;
 import com.pg85.otg.gen.noise.legacy.NoiseGeneratorPerlinMesaBlocks;
 import com.pg85.otg.interfaces.IBiome;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ICachedBiomeProvider;
 import com.pg85.otg.interfaces.ILayerSource;
 import com.pg85.otg.interfaces.ILogger;
@@ -285,7 +285,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 
 	private void generateNoiseColumn(double[] noiseColumn, int noiseX, int noiseZ)
 	{
-		IBiomeConfig center = this.cachedBiomeProvider.getNoiseBiomeConfig(noiseX, noiseZ, true);
+		BiomeSettings center = this.cachedBiomeProvider.getNoiseBiomeConfig(noiseX, noiseZ, true);
 
 		final int usedYSections = this.preset.getPresetConfig().getTerrainSettings().getWorldHeightScale() / 8 + 1;
 		float height = 0; // depth
@@ -303,8 +303,8 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 		
 		int radius = Math.max(center.getTerrainSettings().getSmoothRadius(), center.getTerrainSettings().getCHCSmoothRadius());
 		int areaSize = radius * 2 + 1;
-		IBiomeConfig biomes[] = this.cachedBiomeProvider.getNoiseBiomeConfigsForRegion(noiseX - radius, noiseZ - radius, areaSize);
-		IBiomeConfig biome;
+		BiomeSettings biomes[] = this.cachedBiomeProvider.getNoiseBiomeConfigsForRegion(noiseX - radius, noiseZ - radius, areaSize);
+		BiomeSettings biome;
 		BiomeTerrainSettings biomeTerrainSettings;
 		TerrainSettings terrainSettings = this.preset.getPresetConfig().getTerrainSettings();
 		float heightAt;
@@ -450,7 +450,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 			for (int z = 0; z < Constants.CHUNK_SIZE; z++)
 			{
 				// TODO: water levels used to be interpolated via bilinear interpolation. Do we still need to do that?
-				waterLevel[x * Constants.CHUNK_SIZE + z] = biomes[x * Constants.CHUNK_SIZE + z].getBiomeConfig().getWaterLevelMax();
+				waterLevel[x * Constants.CHUNK_SIZE + z] = biomes[x * Constants.CHUNK_SIZE + z].getBiomeConfig().getSurfaceSettings().getWaterLevelMax();
 			}
 		}
 
@@ -470,7 +470,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 			noiseData[1][noiseZ] = new double[this.noiseSizeY + 1];
 		}
 
-		IBiomeConfig biomeConfig;
+		BiomeSettings biomeConfig;
 		// [0, 4] -> x noise chunks
 		int noiseZ;
 		double x0z0y0;
@@ -599,12 +599,12 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 
 								if (density > 0.0)
 								{
-									buffer.setBlock(localX, realY, localZ, biomeConfig.getStoneBlockReplaced(realY));
+									buffer.setBlock(localX, realY, localZ, biomeConfig.getSurfaceSettings().getStoneBlockReplaced(realY));
 									buffer.setHighestBlockForColumn(pieceX + noiseX * 4, noiseZ * 4 + pieceZ, realY);
 								}
-								else if (realY < waterLevel[localX * 16 + localZ] && realY > biomeConfig.getWaterLevelMin())
+								else if (realY < waterLevel[localX * 16 + localZ] && realY > biomeConfig.getSurfaceSettings().getWaterLevelMin())
 								{
-									buffer.setBlock(localX, realY, localZ, biomeConfig.getWaterBlockReplaced(realY));
+									buffer.setBlock(localX, realY, localZ, biomeConfig.getSurfaceSettings().getWaterBlockReplaced(realY));
 									buffer.setHighestBlockForColumn(pieceX + noiseX * 4, noiseZ * 4 + pieceZ, realY);
 								}
 							}
@@ -684,7 +684,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 			{
 				// Get the current biome config and some properties
 				biome = biomes[x * Constants.CHUNK_SIZE + z];
-				biome.getBiomeConfig().doSurfaceAndGroundControl(worldSeed, generatingChunk, chunkBuffer, chunkCoord.getBlockX() + x, chunkCoord.getBlockZ() + z, biome);
+				biome.getBiomeConfig().getSurfaceSettings().doSurfaceAndGroundControl(worldSeed, generatingChunk, chunkBuffer, chunkCoord.getBlockX() + x, chunkCoord.getBlockZ() + z, biome);
 			}
 		}
 	}

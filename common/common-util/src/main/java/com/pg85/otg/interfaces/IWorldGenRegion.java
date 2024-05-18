@@ -2,6 +2,7 @@ package com.pg85.otg.interfaces;
 
 import java.util.Random;
 
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
@@ -27,7 +28,7 @@ public interface IWorldGenRegion extends ISurfaceGeneratorNoiseProvider
 
 	ICachedBiomeProvider getCachedBiomeProvider();
 	IBiome getBiomeForDecoration(int x, int z);
-	IBiomeConfig getBiomeConfigForDecoration(int worldX, int worldZ);
+	BiomeSettings getBiomeConfigForDecoration(int worldX, int worldZ);
 	boolean placeTree(TreeType type, Random rand, int x, int y, int z);
 	LocalMaterialData getMaterial(int x, int y, int z);
 	LocalMaterialData getMaterialDirect(int x, int y, int z);

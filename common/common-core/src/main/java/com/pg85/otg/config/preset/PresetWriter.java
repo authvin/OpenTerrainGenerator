@@ -55,7 +55,7 @@ public class PresetWriter {
 
         writer.header2("Biome Modes");
 
-        writer.putSetting(PresetStandardValues.BIOME_MODE, presetConfig.getBiomeSettings().getBiomeMode(),
+        writer.putSetting(PresetStandardValues.BIOME_MODE, presetConfig.getGenerationSettings().getBiomeMode(),
                 "Possible biome modes:",
                 "	Normal - standard random generation with biome groups, uses all features.",
                 "	FromImage - biome layout defined by an image file."
@@ -63,7 +63,7 @@ public class PresetWriter {
 
         writer.header1("Settings for BiomeMode: Normal");
 
-        writer.putSetting(PresetStandardValues.GENERATION_DEPTH, presetConfig.getBiomeSettings().getGenerationDepth(),
+        writer.putSetting(PresetStandardValues.GENERATION_DEPTH, presetConfig.getGenerationSettings().getGenerationDepth(),
                 "Defines the maximum number BiomeSize, RiverSize and LandSize can be set to.",
                 "All size settings such as Biome Group Size, RiverSize, LandSize (in the PresetConfig.ini), and BiomeSize (in Biome Configs) must be between 0 (largest) and GenerationDepth (smallest).",
                 "Increasing GenerationDepth by one will roughly double the size of all biomes, similarly decreasing it by 1 will half the size of all biomes.",
@@ -71,15 +71,15 @@ public class PresetWriter {
                 "This setting is also used in BiomeMode:FromImage when ImageMode is set to ContinueNormal"
         );
 
-        writer.putSetting(PresetStandardValues.BIOME_RARITY_SCALE, presetConfig.getBiomeSettings().getBiomeRarityScale(),
+        writer.putSetting(PresetStandardValues.BIOME_RARITY_SCALE, presetConfig.getGenerationSettings().getBiomeRarityScale(),
                 "Max biome rarity from 1 to infinity. By default this is 100, but you can raise it for fine-grained control, or to create biomes with a chance of occurring smaller than 1/100."
         );
 
-        writer.putSetting(PresetStandardValues.OLD_GROUP_RARITY, presetConfig.getBiomeSettings().isOldGroupRarity(),
+        writer.putSetting(PresetStandardValues.OLD_GROUP_RARITY, presetConfig.getGenerationSettings().isOldGroupRarity(),
                 "Whether or not OTG should use the old group rarity"
         );
 
-        writer.putSetting(PresetStandardValues.OLD_LAND_RARITY, presetConfig.getBiomeSettings().isOldLandRarity(),
+        writer.putSetting(PresetStandardValues.OLD_LAND_RARITY, presetConfig.getGenerationSettings().isOldLandRarity(),
                 "Whether or not OTG should use the old land rarity. Disabling this will make LandRarity work as a percentage"
         );
 
@@ -113,35 +113,7 @@ public class PresetWriter {
                 "When using BiomeRegistryName to include or exclude a biome, it must have its own entry. For example: \",minecraft:forest,-minecraft:plains,\""
         );
 
-        writer.addConfigFunctions(presetConfig.getBiomeSettings().getTemplateBiomes());
-
-        writer.header2("Biome Groups",
-                "Biome groups group similar biomes together so that they spawn next to each other.",
-                "Only standard biomes are required to be part of biome groups, isle, border and river biomes are configured separately.",
-                "",
-                "Syntax: BiomeGroup(GroupName, GroupSize, GroupRarity, BiomeName or Tags/Categories[, AnotherName[, ...]], minTemperature, maxTemperature)",
-                "GroupName - must be unique, choose something descriptive.",
-                "Size - from 0 to GenerationDepth. Lower number = larger. All biomes in the group must be smaller (higher BiomeSize number) or equal to this value.",
-                "Rarity - relative spawn chance.",
-                "BiomeName - Name of a corresponding biome config. Case sensitive. Can also be a registry name (minecraft:plains), if there is a associated TemplateBiome().",
-                "If the biome config is a template biome, all associated non-otg biomes are added to the group.",
-                "Tags/Categories - Instead of BiomeName, Forge Biome Dictionary id's and/or MC Biome Categories. ",
-                "OTG fetches all non-OTG biomes that match the specified category/tags and adds them to the biome group.",
-                "A TemplateBiome() that targets the biome must exist, or it is ignored.",
-                "Example: BiomeGroup(NormalBiomes, 1, 100, category.plains tag.overworld, tag.hot tag.dry)",
-                "Adds 2 entries; all plains biomes in the overworld, all hot+dry biomes. Biomes are never added twice.",
-                "- Use space as an AND operator, in the above example \"category.plains tag.overworld\" matches biomes with category plains AND tag overworld.",
-                "To target both minecraft and modded biomes, use \"category.\" or \"tag.\".",
-                "To target only modded biomes, use \"modcategory.\" or \"modtag.\".",
-                "To target only minecraft biomes, use \"mccategory.\" or \"mctag.\".",
-                "To filter biomes for a specific mod, add \"mod.<namespace>\", for example \"mod.byg category.plains tag.overworld\".",
-                "To exclude specific biome registry names, tags, categories or mods, use \"-\", for example -tag.overworld to exclude overworld biomes.",
-                "MinTemperature/MaxTemperature - Optional, when using Tags/Categories, only biomes within this temperature range are used.",
-                "Example: BiomeGroup(NormalBiomes, 1, 100, category.plains tag.overworld, tag.hot tag.dry, -1.0, 1.0)",
-                "Same example as before, but only includes biomes with temperature between -1.0 and 1.0.",
-                "Note:",
-                "When using BiomeRegistryName to include or exclude a biome, it must have its own entry, for example: \",minecraft:forest,-minecraft:plains,\""
-        );
+        writer.addConfigFunctions(presetConfig.getGenerationSettings().getTemplateBiomes());
 
         writer.header2("Biome Groups",
                 "Biome groups are a way to group similar biomes together, ensuring they spawn adjacent to each other. Only standard biomes need to be part of these groups, while isle, border, and river biomes are configured separately.",
@@ -174,90 +146,90 @@ public class PresetWriter {
                 "When using BiomeRegistryName to include or exclude a biome, it must have its own entry. For example: \",minecraft:forest,-minecraft:plains,\""
         );
 
-        writer.addConfigFunctions(presetConfig.getBiomeSettings().getBiomeGroupManager().getGroups());
+        writer.addConfigFunctions(presetConfig.getGenerationSettings().getBiomeGroupManager().getGroups());
 
-        writer.putSetting(PresetStandardValues.BLACKLISTED_BIOMES, presetConfig.getBiomeSettings().getBlackListedBiomes(),
+        writer.putSetting(PresetStandardValues.BLACKLISTED_BIOMES, presetConfig.getGenerationSettings().getBlackListedBiomes(),
                 "When using biome dictionary tags and/or biome categories with biome groups, these (non-OTG) biomes are excluded. Example: minecraft:plains."
         );
 
         writer.header2("Isle & Border Biomes");
 
-        writer.putSetting(PresetStandardValues.ISLE_BIOMES, presetConfig.getBiomeSettings().getIsleBiomes(),
+        writer.putSetting(PresetStandardValues.ISLE_BIOMES, presetConfig.getGenerationSettings().getIsleBiomes(),
                 "Isle biomes are biomes which spawn inside another biome (e.g. an island in an ocean). As well as listing every isle biome here, you must set IsleInBiome in each biome config too. Biome name is case sensitive."
         );
 
-        writer.putSetting(PresetStandardValues.BORDER_BIOMES, presetConfig.getBiomeSettings().getBorderBiomes(),
+        writer.putSetting(PresetStandardValues.BORDER_BIOMES, presetConfig.getGenerationSettings().getBorderBiomes(),
                 "Biomes used as borders of other biomes. As well as listing every border biome here, you must set BiomeIsBorder in each biome config too. Biome name is case sensitive."
         );
 
         writer.header2("Landmass Settings");
 
-        writer.putSetting(PresetStandardValues.LAND_RARITY, presetConfig.getBiomeSettings().getLandRarity(),
+        writer.putSetting(PresetStandardValues.LAND_RARITY, presetConfig.getGenerationSettings().getLandRarity(),
                 "Land rarity from 100 to 1. Higher numbers result in more land."
         );
 
-        writer.putSetting(PresetStandardValues.LAND_SIZE, presetConfig.getBiomeSettings().getLandSize(),
+        writer.putSetting(PresetStandardValues.LAND_SIZE, presetConfig.getGenerationSettings().getLandSize(),
                 "Land size from 0 to GenerationDepth. Higher LandSize numbers will make the size of the land smaller. Landsize number should always be lower than any biome groups."
         );
 
-        writer.putSetting(PresetStandardValues.FORCE_LAND_AT_SPAWN, presetConfig.getBiomeSettings().isForceLandAtSpawn(),
+        writer.putSetting(PresetStandardValues.FORCE_LAND_AT_SPAWN, presetConfig.getGenerationSettings().isForceLandAtSpawn(),
                 "If enabled, land will always spawn at or near 0,0"
         );
 
-        writer.putSetting(PresetStandardValues.OCEAN_BIOME_SIZE, presetConfig.getBiomeSettings().getOceanBiomeSize(),
+        writer.putSetting(PresetStandardValues.OCEAN_BIOME_SIZE, presetConfig.getGenerationSettings().getOceanBiomeSize(),
                 "Ocean biome size 0 to GenerationDepth. Higher OceanBiomeSize numbers will make the size of the ocean biomes smaller."
         );
 
-        writer.putSetting(PresetStandardValues.LAND_FUZZY, presetConfig.getBiomeSettings().getLandFuzzy(),
+        writer.putSetting(PresetStandardValues.LAND_FUZZY, presetConfig.getGenerationSettings().getLandFuzzy(),
                 "Generates more lakes (via small ocean biomes) at the edges of continents. As a side effect, the continent will also get a bit larger. Must be from 0 to GenerationDepth minus LandSize."
         );
 
-        writer.putSetting(PresetStandardValues.DEFAULT_OCEAN_BIOME, presetConfig.getBiomeSettings().getDefaultOceanBiome(),
+        writer.putSetting(PresetStandardValues.DEFAULT_OCEAN_BIOME, presetConfig.getGenerationSettings().getDefaultOceanBiome(),
                 "Set the default Ocean biome for this world."
         );
 
-        writer.putSetting(PresetStandardValues.DEFAULT_WARM_OCEAN_BIOME, presetConfig.getBiomeSettings().getDefaultWarmOceanBiome(),
+        writer.putSetting(PresetStandardValues.DEFAULT_WARM_OCEAN_BIOME, presetConfig.getGenerationSettings().getDefaultWarmOceanBiome(),
                 "Set the default Warm Ocean biome for this world."
         );
 
-        writer.putSetting(PresetStandardValues.DEFAULT_LUKEWARM_OCEAN_BIOME, presetConfig.getBiomeSettings().getDefaultLukewarmOceanBiome(),
+        writer.putSetting(PresetStandardValues.DEFAULT_LUKEWARM_OCEAN_BIOME, presetConfig.getGenerationSettings().getDefaultLukewarmOceanBiome(),
                 "Set the default Lukewarm Ocean biome for this world."
         );
 
-        writer.putSetting(PresetStandardValues.DEFAULT_COLD_OCEAN_BIOME, presetConfig.getBiomeSettings().getDefaultColdOceanBiome(),
+        writer.putSetting(PresetStandardValues.DEFAULT_COLD_OCEAN_BIOME, presetConfig.getGenerationSettings().getDefaultColdOceanBiome(),
                 "Set the default Cold Ocean biome for this world."
         );
 
-        writer.putSetting(PresetStandardValues.DEFAULT_FROZEN_OCEAN_BIOME, presetConfig.getBiomeSettings().getDefaultFrozenOceanBiome(),
+        writer.putSetting(PresetStandardValues.DEFAULT_FROZEN_OCEAN_BIOME, presetConfig.getGenerationSettings().getDefaultFrozenOceanBiome(),
                 "The default Frozen Ocean biome for this world."
         );
 
         writer.header2("Ice Area Settings");
 
-        writer.putSetting(PresetStandardValues.FROZEN_OCEAN, presetConfig.getBiomeSettings().isFrozenOcean(),
+        writer.putSetting(PresetStandardValues.FROZEN_OCEAN, presetConfig.getGenerationSettings().isFrozenOcean(),
                 "Can be true or false, makes the water of the oceans near a cold biome frozen. The definition of 'cold' is controlled by the next setting.",
                 "Set this to false to stop the ocean from freezing near when an \"ice area\" intersects with an ocean."
         );
 
-        writer.putSetting(PresetStandardValues.FROZEN_OCEAN_TEMPERATURE, presetConfig.getBiomeSettings().getFrozenOceanTemperature(),
+        writer.putSetting(PresetStandardValues.FROZEN_OCEAN_TEMPERATURE, presetConfig.getGenerationSettings().getFrozenOceanTemperature(),
                 "This is the maximum biome temperature when a biome is still considered cold. Water in oceans nearby cold biomes freezes if FrozenOcean is set to true.",
                 "Temperature reference from vanilla Minecraft: < 0.15 for snow, 0.15 - 0.95 for rain, or > 1.0 for dry."
         );
 
         writer.header2("Rivers");
 
-        writer.putSetting(PresetStandardValues.RIVERS_ENABLED, presetConfig.getBiomeSettings().isRiversEnabled(),
+        writer.putSetting(PresetStandardValues.RIVERS_ENABLED, presetConfig.getGenerationSettings().isRiversEnabled(),
                 "Set this to false to prevent the river generator from doing anything."
         );
 
-        writer.putSetting(PresetStandardValues.RANDOM_RIVERS, presetConfig.getBiomeSettings().isRandomRivers(),
+        writer.putSetting(PresetStandardValues.RANDOM_RIVERS, presetConfig.getGenerationSettings().isRandomRivers(),
                 "When this setting is false, rivers follow the biome borders most of the time. Set this setting to true to disable this behavior."
         );
-        writer.putSetting(PresetStandardValues.RIVER_RARITY, presetConfig.getBiomeSettings().getRiverRarity(),
+        writer.putSetting(PresetStandardValues.RIVER_RARITY, presetConfig.getGenerationSettings().getRiverRarity(),
                 "Controls the rarity of rivers. Must be from 0 to GenerationDepth. A higher number means more rivers. To define which rivers flow through which biomes see the individual biome configs."
         );
 
-        writer.putSetting(PresetStandardValues.RIVER_SIZE, presetConfig.getBiomeSettings().getRiverSize(),
+        writer.putSetting(PresetStandardValues.RIVER_SIZE, presetConfig.getGenerationSettings().getRiverSize(),
                 "Controls the size of rivers. Can range from 0 to GenerationDepth minus RiverRarity. Making this larger will make the rivers larger, without affecting how often rivers will spawn."
         );
 
@@ -334,15 +306,15 @@ public class PresetWriter {
                 "Block used as bedrock."
         );
 
-        writer.putSetting(PresetStandardValues.DISABLE_BEDROCK, presetConfig.getBedrockSettings().isBedrockDisabled(),
+        writer.putSetting(PresetStandardValues.DISABLE_BEDROCK, presetConfig.getBlockSettings().isBedrockDisabled(),
                 "Disable bottom of map bedrock generation. Doesn't affect bedrock on the ceiling of the map."
         );
 
-        writer.putSetting(PresetStandardValues.CEILING_BEDROCK, presetConfig.getBedrockSettings().isCeilingBedrock(),
+        writer.putSetting(PresetStandardValues.CEILING_BEDROCK, presetConfig.getBlockSettings().isCeilingBedrock(),
                 "Enable ceiling of map bedrock generation."
         );
 
-        writer.putSetting(PresetStandardValues.FLAT_BEDROCK, presetConfig.getBedrockSettings().isFlatBedrock(),
+        writer.putSetting(PresetStandardValues.FLAT_BEDROCK, presetConfig.getBlockSettings().isFlatBedrock(),
                 "Make a single flat layer of bedrock."
         );
 
@@ -446,7 +418,7 @@ public class PresetWriter {
 
         writer.header2("OTG Custom structures and objects (BO2/BO3/BO4)");
 
-        writer.putSetting(PresetStandardValues.CUSTOM_STRUCTURE_TYPE, presetConfig.getCustomStructureSettings().getCustomStructureType(),
+        writer.putSetting(PresetStandardValues.CUSTOM_STRUCTURE_TYPE, presetConfig.getResourceSettings().getCustomStructureType(),
                 "Sets the type of structures the world should spawn, BO3 or BO4.",
                 "Allowed values: BO3/BO4.",
                 "BO4's allow for collision detection, fine control over structure distribution, advanced branching mechanics for",
@@ -455,25 +427,25 @@ public class PresetWriter {
                 "Worlds currently can only use one type of structure."
         );
 
-        writer.putSetting(PresetStandardValues.BO3_AT_SPAWN, presetConfig.getCustomStructureSettings().getBO3AtSpawn(),
+        writer.putSetting(PresetStandardValues.BO3_AT_SPAWN, presetConfig.getResourceSettings().getBO3AtSpawn(),
                 "This BO3 will be spawned at the world's spawn point as a CustomObject (Max size 32x32)."
         );
 
         writer.header2("BO3 Custom structures");
 
-        writer.putSetting(PresetStandardValues.USE_OLD_BO3_STRUCTURE_RARITY, presetConfig.getCustomStructureSettings().isUseOldBO3StructureRarity(),
+        writer.putSetting(PresetStandardValues.USE_OLD_BO3_STRUCTURE_RARITY, presetConfig.getResourceSettings().isUseOldBO3StructureRarity(),
                 "For 1.12.2 v9.0_r11 and earlier, BO3 customstructures used 2 rarity rolls,",
                 "one for the rarity in the CustomStructure() tag, one for the rarity in the BO3 itself.",
                 "For 1.16, we use only the rarity roll from the CustomStructure() tag. Set this to true",
                 "to use the old system."
         );
 
-        writer.putSetting(PresetStandardValues.MAXIMUM_CUSTOM_STRUCTURE_RADIUS, presetConfig.getCustomStructureSettings().getMaximumCustomStructureRadius(),
+        writer.putSetting(PresetStandardValues.MAXIMUM_CUSTOM_STRUCTURE_RADIUS, presetConfig.getResourceSettings().getMaximumCustomStructureRadius(),
                 "Maximum radius of custom structures in chunks. Custom structures are spawned by",
                 "the CustomStructure resource in the biome configuration files. Not used for BO4's."
         );
 
-        writer.putSetting(PresetStandardValues.DECORATION_BOUNDS_CHECK, presetConfig.getCustomStructureSettings().isDecorationBoundsCheck(),
+        writer.putSetting(PresetStandardValues.DECORATION_BOUNDS_CHECK, presetConfig.getResourceSettings().isDecorationBoundsCheck(),
                 "Set this to false to disable the bounds check during chunk decoration.",
                 "While this allows you to spawn objects larger than 32x32, it also makes terrain generation dependent on the direction you explored the world in."
         );

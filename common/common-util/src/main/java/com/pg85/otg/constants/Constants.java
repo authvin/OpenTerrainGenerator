@@ -1,5 +1,9 @@
 package com.pg85.otg.constants;
 
+import com.pg85.otg.config.settingType.IntSetting;
+import com.pg85.otg.config.settingType.Setting;
+import com.pg85.otg.config.settingType.Settings;
+
 import java.io.File;
 
 public class Constants
@@ -26,6 +30,11 @@ public class Constants
 	
 	public static final String ChannelName = "OpenTerrainGenerator";
 	public static final int ProtocolVersion = 6;
+
+	// Config constants
+
+	public static final int ConfigVersion = 2;
+	public static final Setting<Integer> ConfigVersionSetting = Settings.intSetting("ConfigVersion", ConfigVersion, 0, Integer.MAX_VALUE);
 	
 	// Plugin Defaults
 	

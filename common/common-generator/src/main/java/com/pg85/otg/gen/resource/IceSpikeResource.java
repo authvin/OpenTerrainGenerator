@@ -3,8 +3,7 @@ package com.pg85.otg.gen.resource;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.constants.settings.IceSpikeType;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.ILogger;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.helpers.MathHelper;
@@ -23,7 +22,7 @@ public class IceSpikeResource extends FrequencyResourceBase
 	private final MaterialSet sourceBlocks;
 	private IceSpikeType type;
 
-	public IceSpikeResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public IceSpikeResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
 		super(biomeConfig, args, materialReader);
 		assureSize(2, args);
@@ -97,7 +96,7 @@ public class IceSpikeResource extends FrequencyResourceBase
 		int one = 1;
 		int deltaX;
 		int deltaZ;
-		IBiomeConfig biomeConfig;
+		BiomeSettings biomeConfig;
 		for (int actualX = x - radius; actualX <= x + radius; actualX++)
 		{
 			for (int actualZ = z - radius; actualZ <= z + radius; actualZ++)
@@ -112,7 +111,7 @@ public class IceSpikeResource extends FrequencyResourceBase
 						worldMaterial = worldGenRegion.getMaterial(actualX, deltaY, actualZ);
 						if (worldMaterial != null && this.sourceBlocks.contains(worldMaterial))
 						{
-							worldGenRegion.setBlock(actualX, deltaY, actualZ, this.material, biomeConfig.getReplaceBlocks());
+							worldGenRegion.setBlock(actualX, deltaY, actualZ, this.material, biomeConfig.getSurfaceSettings().getReplacedBlocks());
 						}
 					}
 				}
@@ -156,7 +155,7 @@ public class IceSpikeResource extends FrequencyResourceBase
 		int var11;
 		float var12;
 		float var14;
-		IBiomeConfig biomeConfig;
+		BiomeSettings biomeConfig;
 		for (var8 = 0; var8 < var6; ++var8)
 		{
 			var9 = (1.0F - (float) var8 / (float) var6) * var7;
@@ -178,7 +177,7 @@ public class IceSpikeResource extends FrequencyResourceBase
 							(worldMaterial.isAir() || this.sourceBlocks.contains(worldMaterial))
 						)
 						{
-							worldGenRegion.setBlock(x + var11, y + var8, z + var13, this.material, biomeConfig.getReplaceBlocks());
+							worldGenRegion.setBlock(x + var11, y + var8, z + var13, this.material, biomeConfig.getSurfaceSettings().getReplacedBlocks());
 						}
 
 						if (var8 != 0 && var10 > 1)
@@ -188,7 +187,7 @@ public class IceSpikeResource extends FrequencyResourceBase
 								(worldMaterial.isAir() || this.sourceBlocks.contains(worldMaterial))
 							)
 							{
-								worldGenRegion.setBlock(x + var11, y - var8, z + var13, this.material, biomeConfig.getReplaceBlocks());
+								worldGenRegion.setBlock(x + var11, y - var8, z + var13, this.material, biomeConfig.getSurfaceSettings().getReplacedBlocks());
 							}							
 						}
 					}
@@ -235,7 +234,7 @@ public class IceSpikeResource extends FrequencyResourceBase
 							)
 						)
 						{
-							worldGenRegion.setBlock(x + var16, var11, z + var10, this.material, worldGenRegion.getBiomeConfigForDecoration(x + var16, z + var10).getReplaceBlocks());
+							worldGenRegion.setBlock(x + var16, var11, z + var10, this.material, worldGenRegion.getBiomeConfigForDecoration(x + var16, z + var10).getSurfaceSettings().getReplacedBlocks());
 							--var11;
 							--var17;
 

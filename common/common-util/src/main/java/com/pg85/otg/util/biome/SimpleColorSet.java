@@ -3,13 +3,12 @@ package com.pg85.otg.util.biome;
 import java.util.List;
 
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
 
 public class SimpleColorSet extends ColorSet
 {
 
-	public SimpleColorSet(String[] args, IMaterialReader materialReader) throws InvalidConfigException
+	public SimpleColorSet(String[] args) throws InvalidConfigException
 	{
 		for (int i = 0; i < args.length - 1; i += 2)
 		{

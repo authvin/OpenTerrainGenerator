@@ -48,7 +48,7 @@ public class BiomeStandardValues extends Settings
 		END_CITY_ENABLED = Settings.booleanSetting("EndCityEnabled", false),
 		REPLACE_CURRENT_MUSIC = Settings.booleanSetting("ReplaceCurrentMusic", false),
 		USE_FROZEN_OCEAN_TEMPERATURE = Settings.booleanSetting("UseFrozenOceanTemperature", false),
-		TEMPLATE_FOR_BIOME = Settings.booleanSetting("TemplateForBiome", false)
+		IS_TEMPLATE_FOR_BIOME = Settings.booleanSetting("TemplateForBiome", false)
 	;
 
 	public static final Setting<String>
@@ -95,15 +95,15 @@ public class BiomeStandardValues extends Settings
 
 	public static final Setting<List<String>>
 		BIOME_DICT_TAGS = Settings.stringListSetting("BiomeDictTags", ""),
-		ISLE_IN_BIOME = Settings.stringListSetting("IsleInBiome", "Ocean"),
-		BIOME_IS_BORDER = Settings.stringListSetting("BiomeIsBorder"),
+		ISLE_IN_BIOMES = Settings.stringListSetting("IsleInBiomes", "Ocean"),
+		BORDER_IN_BIOMES = Settings.stringListSetting("BorderInBiomes"),
 		ONLY_BORDER_NEAR = Settings.stringListSetting("OnlyBorderNear"),
 		NOT_BORDER_NEAR = Settings.stringListSetting("NotBorderNear")
 	;
 
 	public static final Setting<Double>
-		VOLATILITY_1 = Settings.doubleSetting("Volatility1", 0, -1000, 1000),
-		VOLATILITY_2 = Settings.doubleSetting("Volatility2", 0, -1000, 1000),
+		VOLATILITY_1 = Settings.doubleSetting("Volatility1", 0, -10000, 1000),
+		VOLATILITY_2 = Settings.doubleSetting("Volatility2", 0, -10000, 1000),
 		VOLATILITY_WEIGHT_1 = Settings.doubleSetting("VolatilityWeight1", 0.5, -1000, 1000),
 		VOLATILITY_WEIGHT_2 = Settings.doubleSetting("VolatilityWeight2", 0.45, -1000, 1000),
 		MAX_AVERAGE_HEIGHT = Settings.doubleSetting("MaxAverageHeight", 0, -1000, 1000),
@@ -117,6 +117,8 @@ public class BiomeStandardValues extends Settings
 		SURFACE_BLOCK = new MaterialSetting("SurfaceBlock", LocalMaterials.GRASS_NAME),
 		UNDER_WATER_SURFACE_BLOCK = new MaterialSetting("UnderWaterSurfaceBlock", ""),				
 		GROUND_BLOCK = new MaterialSetting("GroundBlock", LocalMaterials.DIRT_NAME),
+		SANDSTONE_BLOCK = new MaterialSetting("SandstoneBlock", LocalMaterials.SANDSTONE_NAME),
+		RED_SANDSTONE_BLOCK = new MaterialSetting("RedSandstoneBlock", LocalMaterials.RED_SANDSTONE_NAME),
 		COOLED_LAVA_BLOCK = PresetStandardValues.COOLED_LAVA_BLOCK,
 		WATER_BLOCK = PresetStandardValues.WATER_BLOCK,
 		ICE_BLOCK = PresetStandardValues.ICE_BLOCK,

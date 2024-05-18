@@ -6,7 +6,7 @@ import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.StructuredCustomObject;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ICustomObjectManager;
 import com.pg85.otg.interfaces.ICustomObjectResourcesManager;
 import com.pg85.otg.interfaces.ICustomStructureGen;
@@ -24,7 +24,7 @@ public class CustomStructureResource extends BiomeResourceBase implements ICusto
 	private final List<Double> objectChances;
 	public final List<String> objectNames;
 
-	public CustomStructureResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public CustomStructureResource(BiomeSettings biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
 	{
 		super(biomeConfig, args, materialReader);
 		this.objectNames = new ArrayList<String>();

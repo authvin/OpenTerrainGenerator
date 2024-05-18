@@ -45,7 +45,7 @@ public final class BiomeGroupFunction extends ConfigFunction<PresetSettings>
 		// Must have at least a GroupName and a Biome that belongs to it
 		assureSize(4, args);
 		this.name = args.get(0);
-		this.generationDepth = readInt(args.get(1), 0, config.getBiomeSettings().getGenerationDepth());
+		this.generationDepth = readInt(args.get(1), 0, config.getGenerationSettings().getGenerationDepth());
 		this.groupRarity = readInt(args.get(2), 1, Integer.MAX_VALUE);
 		
 		try

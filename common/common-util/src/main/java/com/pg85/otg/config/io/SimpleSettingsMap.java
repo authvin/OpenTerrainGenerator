@@ -4,6 +4,9 @@ import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.ErroredFunction;
 import com.pg85.otg.config.io.RawSettingValue.ValueType;
 import com.pg85.otg.config.settingType.Setting;
+import com.pg85.otg.config.standard.PluginConfigStandardValues;
+import com.pg85.otg.config.standard.PresetStandardValues;
+import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
@@ -12,6 +15,7 @@ import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
+import lombok.Getter;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -138,6 +142,32 @@ public final class SimpleSettingsMap implements SettingsMap
 	public String getName()
 	{
 		return name;
+	}
+
+	@Override
+	public int getVersion()
+	{
+		RawSettingValue val = settingsCache.get(Constants.ConfigVersionSetting.getName().toLowerCase());
+		if (val == null)
+		{
+			// ConfigVersion is introduced as of version 2, so anything before 2 is considered version 1
+			return 1;
+		}
+		try {
+			return Integer.parseInt(val.getRawValue().split(":", 2)[1].trim());
+		} catch (NumberFormatException e) {
+			OTGLog.getLogger().log(
+				LogLevel.ERROR,
+				LogCategory.CONFIGS,
+				MessageFormat.format(
+					"Failed to parse the version number in {0} on line {1}: {2}",
+					name,
+					val.getLineNumber(),
+					e.getMessage()
+				)
+			);
+			return 1;
+		}
 	}
 
 	@Override

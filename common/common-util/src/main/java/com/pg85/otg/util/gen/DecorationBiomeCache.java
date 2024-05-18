@@ -3,7 +3,7 @@ package com.pg85.otg.util.gen;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.interfaces.ICachedBiomeProvider;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.util.ChunkCoordinate;
 
 public class DecorationBiomeCache
@@ -28,7 +28,7 @@ public class DecorationBiomeCache
 		return this.biomes[internalX * DecorationArea.HEIGHT + internalZ];
 	}
 
-	public IBiomeConfig getBiomeConfig(int x, int z)
+	public BiomeSettings getBiomeConfig(int x, int z)
 	{
 		return getBiome(x, z).getBiomeConfig();
 	}

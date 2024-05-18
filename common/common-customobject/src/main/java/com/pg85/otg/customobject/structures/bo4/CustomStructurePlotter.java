@@ -17,7 +17,7 @@ import com.pg85.otg.customobject.structures.CustomStructureCache;
 import com.pg85.otg.customobject.structures.CustomStructureFileManager;
 import com.pg85.otg.customobject.structures.PlottedChunksRegion;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ICustomStructureGen;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
@@ -261,12 +261,12 @@ public class CustomStructurePlotter
 		long startTime = System.currentTimeMillis();
 		if (!isBo4ChunkPlotted(chunkCoord))
 		{
-			IBiomeConfig biomeConfig = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(chunkCoord.getBlockX() + DecorationArea.BO_CHUNK_CENTER_X, chunkCoord.getBlockZ() + DecorationArea.BO_CHUNK_CENTER_Z);		  
+			BiomeSettings biomeConfig = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(chunkCoord.getBlockX() + DecorationArea.BO_CHUNK_CENTER_X, chunkCoord.getBlockZ() + DecorationArea.BO_CHUNK_CENTER_Z);
 			List<ICustomStructureGen> customStructureGens = new ArrayList<>();
 			if(targetStructure == null && !worldGenRegion.chunkHasDefaultStructure(rand, chunkCoord))
 			{
 				// Get Bo4's for this biome
-				for (ICustomStructureGen res : biomeConfig.getCustomStructures())
+				for (ICustomStructureGen res : biomeConfig.getResourceSettings().getCustomStructures())
 				{
 					//TODO: Check for res.error?
 					customStructureGens.add(res);
@@ -452,7 +452,7 @@ public class CustomStructurePlotter
 									}
 
 									ArrayList<String> biomeStructures;
-									IBiomeConfig biomeConfig3;
+									BiomeSettings biomeConfig3;
 									ArrayList<String> structuresToSpawn;
 									boolean canSpawnHere;
 
@@ -994,7 +994,7 @@ public class CustomStructurePlotter
 												
 												if(logger.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
 												{
-													IBiomeConfig biomeConfig4 = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(chunkCoord.getBlockX() + DecorationArea.BO_CHUNK_CENTER_X, chunkCoord.getBlockZ() + DecorationArea.BO_CHUNK_CENTER_Z);
+													BiomeSettings biomeConfig4 = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(chunkCoord.getBlockX() + DecorationArea.BO_CHUNK_CENTER_X, chunkCoord.getBlockZ() + DecorationArea.BO_CHUNK_CENTER_Z);
 													logger.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Plotting BO4's for biome " +  biomeConfig4.getIdentitySettings().getBiomeName() + " at " + (chunkCoord.getBlockX() + DecorationArea.BO_CHUNK_CENTER_X) + " ~ " + (chunkCoord.getBlockZ() + DecorationArea.BO_CHUNK_CENTER_Z)  + " took " + (System.currentTimeMillis() - startTime) + " Ms.");
 													startTime = System.currentTimeMillis(); 
 												}
@@ -1028,7 +1028,7 @@ public class CustomStructurePlotter
 		
 		if(logger.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
 		{
-			IBiomeConfig biomeConfig4 = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(chunkCoord.getBlockX() + DecorationArea.BO_CHUNK_CENTER_X, chunkCoord.getBlockZ() + DecorationArea.BO_CHUNK_CENTER_Z);
+			BiomeSettings biomeConfig4 = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(chunkCoord.getBlockX() + DecorationArea.BO_CHUNK_CENTER_X, chunkCoord.getBlockZ() + DecorationArea.BO_CHUNK_CENTER_Z);
 			logger.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Plotting BO4's for biome " +  biomeConfig4.getIdentitySettings().getBiomeName() + " at " + (chunkCoord.getBlockX() + DecorationArea.BO_CHUNK_CENTER_X) + " ~ " + (chunkCoord.getBlockZ() + DecorationArea.BO_CHUNK_CENTER_Z)  + " took " + (System.currentTimeMillis() - startTime) + " Ms.");
 		}
 

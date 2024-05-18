@@ -52,6 +52,8 @@ public interface SettingsMap
 	 */
 	String getName();
 
+	int getVersion();
+
 	/**
 	 * Gets all settings in this config file in an unparsed state.
 	 *
@@ -78,7 +80,7 @@ public interface SettingsMap
 	 * @return The setting value.
 	 */
 	<S> S getSetting(Setting<S> setting);
-	
+
 	/**
 	 * Reads a setting. This method allows you to provide another default
 	 * value. If the setting has an invalid value, a message is logged and

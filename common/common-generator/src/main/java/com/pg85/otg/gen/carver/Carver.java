@@ -4,7 +4,7 @@ import java.util.BitSet;
 import java.util.Random;
 
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ICachedBiomeProvider;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
 import com.pg85.otg.config.settings.preset.PresetSettings;
@@ -37,7 +37,7 @@ public abstract class Carver
 		double d = chunkX * Constants.CHUNK_SIZE + DecorationArea.CARVER_OFFSET;
 		double e = chunkZ * Constants.CHUNK_SIZE + DecorationArea.CARVER_OFFSET;
 		boolean bl;
-		IBiomeConfig[] biomeConfigs = cachedBiomeProvider.getBiomeConfigsForChunk(chunkBuffer.getChunkCoordinate());
+		BiomeSettings[] biomeConfigs = cachedBiomeProvider.getBiomeConfigsForChunk(chunkBuffer.getChunkCoordinate());
 		if (
 			!(x < d - 16.0D - yaw * 2.0D) && 
 			!(z < e - 16.0D - yaw * 2.0D) && 
@@ -56,7 +56,7 @@ public abstract class Carver
 			int worldZ;
 			double g;
 			double h;
-			IBiomeConfig biomeConfig;
+			BiomeSettings biomeConfig;
 			MutableBoolean foundSurface;
 			if (this.isRegionUncarvable(chunkBuffer, chunkX, chunkZ, i, j, k, l, m, n))
 			{
@@ -81,7 +81,7 @@ public abstract class Carver
 								h = ((double) s - 0.5D - y) / pitch;
 								if (!this.isPositionExcluded(cache, f, h, g, s))
 								{								
-									bl |= this.carveAtPoint(noiseProvider, chunkBuffer, carvingMask, random, biomeConfig.getWaterLevelMax(), chunkX, chunkZ, worldX, worldZ, o, s, q, foundSurface, biomeConfig);
+									bl |= this.carveAtPoint(noiseProvider, chunkBuffer, carvingMask, random, biomeConfig.getSurfaceSettings().getWaterLevelMax(), chunkX, chunkZ, worldX, worldZ, o, s, q, foundSurface, biomeConfig);
 								}
 							}
 						}
@@ -94,7 +94,7 @@ public abstract class Carver
 		}
 	}
 
-	protected boolean carveAtPoint(ISurfaceGeneratorNoiseProvider noiseProvider, ChunkBuffer chunkBuffer, BitSet carvingMask, Random random, int seaLevel, int mainChunkX, int mainChunkZ, int worldX, int worldZ, int relativeX, int y, int relativeZ, MutableBoolean foundSurface, IBiomeConfig biomeConfig)
+	protected boolean carveAtPoint(ISurfaceGeneratorNoiseProvider noiseProvider, ChunkBuffer chunkBuffer, BitSet carvingMask, Random random, int seaLevel, int mainChunkX, int mainChunkZ, int worldX, int worldZ, int relativeX, int y, int relativeZ, MutableBoolean foundSurface, BiomeSettings biomeConfig)
 	{
 		int i = relativeX | relativeZ << 4 | y << 8;
 		if (carvingMask.get(i))
@@ -115,7 +115,7 @@ public abstract class Carver
 			// TODO: Search a larger height up instead of just the current carving sphere?
 			// Vanilla logic
 			// Normally doesn't see sand as surface?
-			if(material.isMaterial(biomeConfig.getSurfaceBlockAtHeight(noiseProvider, worldX, y - 1, worldZ)))
+			if(material.isMaterial(biomeConfig.getSurfaceSettings().getSurfaceBlockAtHeight(noiseProvider, worldX, y - 1, worldZ)))
 			{
 				foundSurface.setValue(true);
 			}				
@@ -130,9 +130,9 @@ public abstract class Carver
 					if(foundSurface.isValue())
 					{
 						LocalMaterialData blockBelow = chunkBuffer.getBlock(worldX, y - 1, worldZ);
-						if(blockBelow.isMaterial(biomeConfig.getGroundBlockAtHeight(noiseProvider, worldX, y - 1, worldZ)))
+						if(blockBelow.isMaterial(biomeConfig.getSurfaceSettings().getGroundBlockAtHeight(noiseProvider, worldX, y - 1, worldZ)))
 						{
-							chunkBuffer.setBlock(worldX, y - 1, worldZ, biomeConfig.getSurfaceBlockAtHeight(noiseProvider, worldX, y - 1, worldZ));
+							chunkBuffer.setBlock(worldX, y - 1, worldZ, biomeConfig.getSurfaceSettings().getSurfaceBlockAtHeight(noiseProvider, worldX, y - 1, worldZ));
 						}
 					}
 				}			

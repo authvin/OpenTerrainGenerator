@@ -5,5 +5,5 @@ dependencies {
 
     // Provided by Minecraft
     compileOnlyApi("it.unimi.dsi:fastutil:8.2.1")
-    compileOnlyApi("com.google.guava:guava:23.0")
+    compileOnlyApi('com.google.guava:guava:33.0.0-jre')
 }

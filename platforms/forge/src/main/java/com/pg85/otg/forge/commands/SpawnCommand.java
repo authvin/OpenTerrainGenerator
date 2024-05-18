@@ -137,7 +137,7 @@ public class SpawnCommand extends BaseCommand
 	        		source.sendSuccess(new StringTextComponent("BO4 objects can only be spawned in OTG worlds/dimensions."), false);
 	        		return 0;					
 				}
-	        	if(preset.getPresetConfig().getCustomStructureSettings().getCustomStructureType() != CustomStructureType.BO4)
+	        	if(preset.getPresetConfig().getResourceSettings().getCustomStructureType() != CustomStructureType.BO4)
 	        	{
 	        		source.sendSuccess(new StringTextComponent("Cannot spawn a BO4 structure in an isOTGPlus:false world, use a BO3 instead or recreate the world with IsOTGPlus:true in the worldconfig."), false);
 	        		return 0;
@@ -175,7 +175,7 @@ public class SpawnCommand extends BaseCommand
         				null,
         				null,
         				false, 
-        				genRegion.getCachedBiomeProvider().getBiomeConfig(x, z).getWaterLevelMax(),
+        				genRegion.getCachedBiomeProvider().getBiomeConfig(x, z).getSurfaceSettings().getWaterLevelMax(),
         				false, 
         				false, 
         				false

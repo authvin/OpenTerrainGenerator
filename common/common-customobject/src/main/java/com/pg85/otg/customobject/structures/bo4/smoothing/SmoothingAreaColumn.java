@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.pg85.otg.customobject.bo4.BO4Config;
 import com.pg85.otg.customobject.structures.bo4.smoothing.SmoothingAreaBlock.enumSmoothingBlockType;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
@@ -70,7 +70,7 @@ class SmoothingAreaColumn
 	
 	private void spawn(IWorldGenRegion worldGenRegion, BO4Config bo4Config, ILogger logger, IMaterialReader materialReader)
 	{
-		IBiomeConfig biomeConfig = worldGenRegion.getBiomeConfigForDecoration(this.x, this.z);
+		BiomeSettings biomeConfig = worldGenRegion.getBiomeConfigForDecoration(this.x, this.z);
 
 		LocalMaterialData replaceAboveMaterial = null;
 		if(bo4Config.replaceAbove != null && !bo4Config.replaceAbove.trim().isEmpty())
@@ -149,15 +149,15 @@ class SmoothingAreaColumn
 						blockAbove = worldGenRegion.getMaterial(this.x, this.lowestCuttingBlock.y + 1, this.z);
 						if(blockAbove != null && (blockAbove.isSolid() || blockAbove.isLiquid()))
 						{
-							surfaceBlock = biomeConfig.getGroundBlockAtHeight(worldGenRegion, this.x, this.lowestCuttingBlock.y, this.z);																	
+							surfaceBlock = biomeConfig.getSurfaceSettings().getGroundBlockAtHeight(worldGenRegion, this.x, this.lowestCuttingBlock.y, this.z);
 						} else {
-							surfaceBlock = biomeConfig.getSurfaceBlockAtHeight(worldGenRegion, this.x, this.lowestCuttingBlock.y, this.z);
+							surfaceBlock = biomeConfig.getSurfaceSettings().getSurfaceBlockAtHeight(worldGenRegion, this.x, this.lowestCuttingBlock.y, this.z);
 						}
 						needsReplaceBlocks = false;
 						if(surfaceBlock.isAir())
 						{
 							if(
-								this.lowestCuttingBlock.y < (biomeConfig.getWaterLevelMax()) &&
+								this.lowestCuttingBlock.y < (biomeConfig.getSurfaceSettings().getWaterLevelMax()) &&
 								worldGenRegion.getMaterial(this.x, this.lowestCuttingBlock.y, this.z).isAir()
 							)
 							{
@@ -171,7 +171,7 @@ class SmoothingAreaColumn
 					{						
 						if(needsReplaceBlocks)
 						{
-							worldGenRegion.setBlock(this.x, this.lowestCuttingBlock.y, this.z, surfaceBlock, biomeConfig.getReplaceBlocks());
+							worldGenRegion.setBlock(this.x, this.lowestCuttingBlock.y, this.z, surfaceBlock, biomeConfig.getSurfaceSettings().getReplacedBlocks());
 						} else {
 							worldGenRegion.setBlock(this.x, this.lowestCuttingBlock.y, this.z, surfaceBlock);
 						}
@@ -210,16 +210,16 @@ class SmoothingAreaColumn
 				blockAbove = worldGenRegion.getMaterial(this.x, this.highestFillingBlock.y + 1, this.z);
 				if(blockAbove != null && (blockAbove.isSolid() || blockAbove.isLiquid()))
 				{
-					surfaceBlock = biomeConfig.getGroundBlockAtHeight(worldGenRegion, this.x, this.highestFillingBlock.y, this.z);																	
+					surfaceBlock = biomeConfig.getSurfaceSettings().getGroundBlockAtHeight(worldGenRegion, this.x, this.highestFillingBlock.y, this.z);
 				} else {
-					surfaceBlock = biomeConfig.getSurfaceBlockAtHeight(worldGenRegion, this.x, this.highestFillingBlock.y, this.z);
+					surfaceBlock = biomeConfig.getSurfaceSettings().getSurfaceBlockAtHeight(worldGenRegion, this.x, this.highestFillingBlock.y, this.z);
 				}				
 				
 				needsReplaceBlocks = false;
 				if(surfaceBlock.isAir())
 				{
 					if(
-						this.highestFillingBlock.y < biomeConfig.getWaterLevelMax() &&
+						this.highestFillingBlock.y < biomeConfig.getSurfaceSettings().getWaterLevelMax() &&
 						worldGenRegion.getMaterial(this.x, this.highestFillingBlock.y, this.z).isAir()
 					)
 					{
@@ -235,7 +235,7 @@ class SmoothingAreaColumn
 				{
 					if(needsReplaceBlocks)
 					{
-						worldGenRegion.setBlock(this.x, this.highestFillingBlock.y, this.z, surfaceBlock, biomeConfig.getReplaceBlocks());
+						worldGenRegion.setBlock(this.x, this.highestFillingBlock.y, this.z, surfaceBlock, biomeConfig.getSurfaceSettings().getReplacedBlocks());
 					} else {
 						worldGenRegion.setBlock(this.x, this.highestFillingBlock.y, this.z, surfaceBlock);
 					}
@@ -253,7 +253,7 @@ class SmoothingAreaColumn
 						needsReplaceBlocks = bo4Config.doReplaceBlocks;
 						if(groundBlock.isAir())
 						{
-							if(y < biomeConfig.getWaterLevelMax())
+							if(y < biomeConfig.getSurfaceSettings().getWaterLevelMax())
 							{
 								groundBlock = LocalMaterials.WATER;
 								needsReplaceBlocks = false;
@@ -261,7 +261,7 @@ class SmoothingAreaColumn
 						}
 						if(needsReplaceBlocks)
 						{
-							worldGenRegion.setBlock(this.x, y, this.z, groundBlock, biomeConfig.getReplaceBlocks());
+							worldGenRegion.setBlock(this.x, y, this.z, groundBlock, biomeConfig.getSurfaceSettings().getReplacedBlocks());
 						} else {
 							worldGenRegion.setBlock(this.x, y, this.z, groundBlock);
 						}
@@ -272,10 +272,10 @@ class SmoothingAreaColumn
 				{
 					if(y > 0)
 					{
-						groundBlock = biomeConfig.getGroundBlockAtHeight(worldGenRegion, this.x, (short)y, this.z);
+						groundBlock = biomeConfig.getSurfaceSettings().getGroundBlockAtHeight(worldGenRegion, this.x, (short)y, this.z);
 						if(groundBlock.isAir())
 						{
-							if(y < biomeConfig.getWaterLevelMax())
+							if(y < biomeConfig.getSurfaceSettings().getWaterLevelMax())
 							{
 								groundBlock = LocalMaterials.WATER;
 							}

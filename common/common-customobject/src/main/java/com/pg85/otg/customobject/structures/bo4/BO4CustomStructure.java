@@ -13,7 +13,7 @@ import com.pg85.otg.customobject.structures.bo4.smoothing.SmoothingAreaGenerator
 import com.pg85.otg.customobject.structures.bo4.smoothing.SmoothingAreaLine;
 import com.pg85.otg.customobject.util.BO3Enums.SpawnHeightEnum;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
@@ -370,7 +370,7 @@ public class BO4CustomStructure extends CustomStructure
 			{
 				if(config.spawnAtWaterLevel)
 				{
-					startY = (short) (worldGenRegion.getCachedBiomeProvider().getBiomeConfig(centerX, centerZ).getWaterLevelMax());
+					startY = (short) (worldGenRegion.getCachedBiomeProvider().getBiomeConfig(centerX, centerZ).getSurfaceSettings().getWaterLevelMax());
 				} else {
 					int highestBlock = worldGenRegion.getHighestBlockYAtWithoutLoading(centerX, centerZ, true, !config.spawnUnderWater, config.spawnUnderWater, true, true);
 					if(highestBlock < 0)
@@ -937,7 +937,7 @@ public class BO4CustomStructure extends CustomStructure
 
 						if(!minimumSize && canSpawn)
 						{
-							if(!checkYBounds(worldGenRegion.getPresetConfig().getBedrockSettings().isBedrockDisabled(), childBranchDataItem.branch, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker))
+							if(!checkYBounds(worldGenRegion.getPresetConfig().getBlockSettings().isBedrockDisabled(), childBranchDataItem.branch, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker))
 							{
 								canSpawn = false;
 								chunkIsIneligible = true;
@@ -1969,7 +1969,7 @@ public class BO4CustomStructure extends CustomStructure
 				// If targetbiomes size is 0, allow all biomes.
 				if(targetBiomes.size() > 0)
 				{
-					IBiomeConfig biomeConfig3 = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(branchData.chunkCoordinate.getChunkX() * 16 + DecorationArea.BO_CHUNK_CENTER_X, branchData.chunkCoordinate.getChunkZ() * 16 + DecorationArea.BO_CHUNK_CENTER_Z);
+					BiomeSettings biomeConfig3 = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(branchData.chunkCoordinate.getChunkX() * 16 + DecorationArea.BO_CHUNK_CENTER_X, branchData.chunkCoordinate.getChunkZ() * 16 + DecorationArea.BO_CHUNK_CENTER_Z);
 					if(!targetBiomes.contains(biomeConfig3.getIdentitySettings().getBiomeName()))
 					{
 						return null;
@@ -1981,7 +1981,7 @@ public class BO4CustomStructure extends CustomStructure
 			{
 				ArrayList<String> biomeStructures;
 
-				IBiomeConfig biomeConfig3 = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(branchData.chunkCoordinate.getChunkX() * 16 + DecorationArea.BO_CHUNK_CENTER_X, branchData.chunkCoordinate.getChunkZ() * 16 + DecorationArea.BO_CHUNK_CENTER_Z);
+				BiomeSettings biomeConfig3 = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(branchData.chunkCoordinate.getChunkX() * 16 + DecorationArea.BO_CHUNK_CENTER_X, branchData.chunkCoordinate.getChunkZ() * 16 + DecorationArea.BO_CHUNK_CENTER_Z);
 				// Get Bo3's for this biome
 				ArrayList<String> structuresToSpawn = new ArrayList<String>();
 				for (List<String> res : biomeConfig3.getCustomStructureNames())
@@ -2039,7 +2039,7 @@ public class BO4CustomStructure extends CustomStructure
 								// If targetbiomes size is 0, allow all biomes.
 								if(targetBiomes.size() > 0)
 								{
-									IBiomeConfig biomeConfig3 = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x * 16 + DecorationArea.BO_CHUNK_CENTER_X, z * 16 + DecorationArea.BO_CHUNK_CENTER_Z);
+									BiomeSettings biomeConfig3 = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x * 16 + DecorationArea.BO_CHUNK_CENTER_X, z * 16 + DecorationArea.BO_CHUNK_CENTER_Z);
 									if(!targetBiomes.contains(biomeConfig3.getIdentitySettings().getBiomeName()))
 									{
 										return null;
@@ -2051,7 +2051,7 @@ public class BO4CustomStructure extends CustomStructure
 								// Check if the structure can spawn in this biome
 								ArrayList<String> biomeStructures;
 
-								IBiomeConfig biomeConfig3 = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x * 16 + DecorationArea.BO_CHUNK_CENTER_X, z * 16 + DecorationArea.BO_CHUNK_CENTER_Z);
+								BiomeSettings biomeConfig3 = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x * 16 + DecorationArea.BO_CHUNK_CENTER_X, z * 16 + DecorationArea.BO_CHUNK_CENTER_Z);
 								// Get Bo3's for this biome
 								ArrayList<String> structuresToSpawn = new ArrayList<String>();
 								for (List<String> res : biomeConfig3.getCustomStructureNames())
@@ -2213,7 +2213,7 @@ public class BO4CustomStructure extends CustomStructure
 		BO4Config config = ((BO4)this.start.getObject(otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker)).getConfig();
 		if (objectsInChunk != null)
 		{
-			IBiomeConfig biomeConfig = null;
+			BiomeSettings biomeConfig = null;
 			if(config.spawnUnderWater)
 			{
 				biomeConfig = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(this.start.getX() + DecorationArea.BO_CHUNK_CENTER_X, this.start.getZ() + DecorationArea.BO_CHUNK_CENTER_Z);
@@ -2257,7 +2257,7 @@ public class BO4CustomStructure extends CustomStructure
 						config.overrideChildSettings && objectConfig.overrideChildSettings ? config.replaceWithGroundBlock : objectConfig.replaceWithGroundBlock,
 						config.overrideChildSettings && objectConfig.overrideChildSettings ? config.replaceWithStoneBlock : objectConfig.replaceWithStoneBlock,
 						config.spawnUnderWater,  
-						!config.spawnUnderWater ? -1 : biomeConfig.getWaterLevelMax(), 
+						!config.spawnUnderWater ? -1 : biomeConfig.getSurfaceSettings().getWaterLevelMax(), 
 						false, 
 						true,
 						objectConfig.doReplaceBlocks
@@ -2313,7 +2313,7 @@ public class BO4CustomStructure extends CustomStructure
 						config.overrideChildSettings && objectConfig.overrideChildSettings ? config.replaceWithGroundBlock : objectConfig.replaceWithGroundBlock,
 						config.overrideChildSettings && objectConfig.overrideChildSettings ? config.replaceWithStoneBlock : objectConfig.replaceWithStoneBlock,
 						config.spawnUnderWater,  
-						!config.spawnUnderWater ? -1 : biomeConfig.getWaterLevelMax(), 
+						!config.spawnUnderWater ? -1 : biomeConfig.getSurfaceSettings().getWaterLevelMax(), 
 						false, 
 						false, 
 						objectConfig.doReplaceBlocks

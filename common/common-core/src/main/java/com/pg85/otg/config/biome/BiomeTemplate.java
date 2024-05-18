@@ -97,9 +97,9 @@ public class BiomeTemplate extends BiomeConfig {
         this.settings.biomeRarityWhenIsle = reader.getSetting(BiomeStandardValues.BIOME_RARITY_WHEN_ISLE);
         this.settings.biomeColor = reader.getSetting(BiomeStandardValues.BIOME_COLOR);
         this.settings.riverBiome = reader.getSetting(BiomeStandardValues.RIVER_BIOME);
-        this.settings.isleInBiome = reader.getSetting(BiomeStandardValues.ISLE_IN_BIOME);
+        this.settings.isleInBiome = reader.getSetting(BiomeStandardValues.ISLE_IN_BIOMES);
         this.settings.biomeSizeWhenIsle = reader.getSetting(BiomeStandardValues.BIOME_SIZE_WHEN_ISLE);
-        this.settings.biomeIsBorder = reader.getSetting(BiomeStandardValues.BIOME_IS_BORDER);
+        this.settings.biomeIsBorder = reader.getSetting(BiomeStandardValues.BORDER_IN_BIOMES);
         this.settings.onlyBorderNear = reader.getSetting(BiomeStandardValues.ONLY_BORDER_NEAR);
         this.settings.notBorderNear = reader.getSetting(BiomeStandardValues.NOT_BORDER_NEAR);
         this.settings.biomeSizeWhenBorder = reader.getSetting(BiomeStandardValues.BIOME_SIZE_WHEN_BORDER);

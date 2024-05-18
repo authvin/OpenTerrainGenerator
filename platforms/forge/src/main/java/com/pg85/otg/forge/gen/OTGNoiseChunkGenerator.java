@@ -421,7 +421,7 @@ public final class OTGNoiseChunkGenerator extends NoiseChunkGenerator
 				{
 					i2 = chunk.getHeight(Heightmap.Type.WORLD_SURFACE_WG, xInChunk, zInChunk) + 1;
 					d1 = this.surfaceNoise.getSurfaceNoiseValue((double)worldX * 0.0625D, (double)worldZ * 0.0625D, 0.0625D, (double)xInChunk * 0.0625D) * 15.0D;
-					((ForgeBiome)biome).getBiomeBase().buildSurfaceAt(sharedseedrandom, chunk, worldX, worldZ, i2, d1, ((ForgeMaterialData)biome.getBiomeConfig().getDefaultStoneBlock()).internalBlock(), ((ForgeMaterialData)biome.getBiomeConfig().getDefaultWaterBlock()).internalBlock(), this.getSeaLevel(), worldGenRegion.getSeed());
+					((ForgeBiome)biome).getBiomeBase().buildSurfaceAt(sharedseedrandom, chunk, worldX, worldZ, i2, d1, ((ForgeMaterialData)biome.getBiomeConfig().getSurfaceSettings().getStoneBlock()).internalBlock(), ((ForgeMaterialData)biome.getBiomeConfig().getSurfaceSettings().getWaterBlock()).internalBlock(), this.getSeaLevel(), worldGenRegion.getSeed());
 				}
 			}
 		}
@@ -670,7 +670,7 @@ public final class OTGNoiseChunkGenerator extends NoiseChunkGenerator
 	{
 		if(this.structureCache == null)
 		{
-			this.structureCache = OTG.getEngine().createCustomStructureCache(this.preset.getFolderName(), worldSaveFolder, this.seed, this.preset.getPresetConfig().getCustomStructureSettings().getCustomStructureType() == CustomStructureType.BO4);
+			this.structureCache = OTG.getEngine().createCustomStructureCache(this.preset.getFolderName(), worldSaveFolder, this.seed, this.preset.getPresetConfig().getResourceSettings().getCustomStructureType() == CustomStructureType.BO4);
 		}
 		return this.structureCache;
 	}

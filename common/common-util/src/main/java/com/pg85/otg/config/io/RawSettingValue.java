@@ -125,7 +125,7 @@ public final class RawSettingValue
 			return this;
 		}
 
-		List<String> commentsList = Collections.unmodifiableList(Arrays.asList(comments));
+		List<String> commentsList = List.of(comments);
 		return new RawSettingValue(value, valueType, line, commentsList);
 	}
 

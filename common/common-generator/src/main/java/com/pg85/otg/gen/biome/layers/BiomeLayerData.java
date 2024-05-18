@@ -9,18 +9,18 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
+import com.pg85.otg.config.settings.preset.GenerationSettings;
 import com.pg85.otg.gen.biome.BiomeData;
 import com.pg85.otg.interfaces.IBiome;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.config.settings.preset.PresetSettings;
-import com.pg85.otg.config.settings.preset.BiomeSettings;
 import com.pg85.otg.config.settings.preset.ImageSettings;
 import com.pg85.otg.config.settings.preset.PresetInfo;
 
 public class BiomeLayerData
 {
 	public final ImageSettings imageSettings;
-	public final BiomeSettings biomeSettings;
+	public final GenerationSettings biomeSettings;
 	public final PresetInfo presetInfo;
 	public final Path presetDir;
 	public final int[] oceanTemperatures;
@@ -43,7 +43,7 @@ public class BiomeLayerData
 
 	public BiomeLayerData(Path presetDir,
 						  PresetSettings presetConfig,
-						  IBiomeConfig oceanBiomeConfig,
+						  BiomeSettings oceanBiomeConfig,
 						  int[] oceanTemperatures,
 						  Map<Integer, BiomeGroup> groupRegistry,
 						  Set<Integer> biomeDepths,
@@ -55,7 +55,7 @@ public class BiomeLayerData
 						  IBiome[] biomes)
 	{
 		this.presetDir = presetDir;
-		this.biomeSettings = presetConfig.getBiomeSettings();
+		this.biomeSettings = presetConfig.getGenerationSettings();
 		this.imageSettings = presetConfig.getImageSettings();
 		this.presetInfo = presetConfig.getPresetInfo();
 
@@ -71,13 +71,13 @@ public class BiomeLayerData
 		} else {
 			this.oceanBiomeData = new BiomeData(
 				0,
-				oceanBiomeConfig.getPlacementSettings().getBiomeRarity(),
-				oceanBiomeConfig.getPlacementSettings().getBiomeSize(),
+				oceanBiomeConfig.getGenerationSettings().getBiomeRarity(),
+				oceanBiomeConfig.getGenerationSettings().getBiomeSize(),
 				oceanBiomeConfig.getVisualSettings().getBiomeTemperature(),
-				oceanBiomeConfig.getPlacementSettings().getIsleInBiomes(),
-				oceanBiomeConfig.getPlacementSettings().getBorderInBiomes(),
-				oceanBiomeConfig.getPlacementSettings().getOnlyBorderNearBiomes(),
-				oceanBiomeConfig.getPlacementSettings().getNotBorderNearBiomes()
+				oceanBiomeConfig.getGenerationSettings().getIsleInBiomes(),
+				oceanBiomeConfig.getGenerationSettings().getBorderInBiomes(),
+				oceanBiomeConfig.getGenerationSettings().getOnlyBorderNearBiomes(),
+				oceanBiomeConfig.getGenerationSettings().getNotBorderNearBiomes()
 			);
 		}
 

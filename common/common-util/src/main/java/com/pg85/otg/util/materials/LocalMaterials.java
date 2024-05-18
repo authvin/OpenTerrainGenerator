@@ -15,6 +15,8 @@ public class LocalMaterials
 	public static final String AIR_NAME = getRegistryKey("air");
 	public static final String GRASS_NAME = getRegistryKey("grass_block");
 	public static final String DIRT_NAME = getRegistryKey("dirt");
+	public static final String SANDSTONE_NAME = getRegistryKey("sandstone");
+	public static final String RED_SANDSTONE_NAME = getRegistryKey("red_sandstone");
 	public static final String STONE_NAME = getRegistryKey("stone");
 	public static final String BEDROCK_NAME = getRegistryKey("bedrock");
 	public static final String WATER_NAME = getRegistryKey("water");

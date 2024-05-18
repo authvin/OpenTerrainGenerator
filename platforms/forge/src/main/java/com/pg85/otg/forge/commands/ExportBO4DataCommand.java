@@ -17,7 +17,7 @@ import com.pg85.otg.customobject.structures.bo4.BO4CustomStructureCoordinate;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.forge.gen.ForgeWorldGenRegion;
 import com.pg85.otg.forge.gen.OTGNoiseChunkGenerator;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IStructuredCustomObject;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.presets.Preset;
@@ -62,7 +62,7 @@ public class ExportBO4DataCommand extends BaseCommand
 		}
 
 		Preset preset = ((OTGNoiseChunkGenerator)source.getLevel().getChunkSource().generator).getPreset();
-        if(preset.getPresetConfig().getCustomStructureSettings().getCustomStructureType() == CustomStructureType.BO4)
+        if(preset.getPresetConfig().getResourceSettings().getCustomStructureType() == CustomStructureType.BO4)
         {	        
         	if(!isRunning)
         	{
@@ -75,9 +75,9 @@ public class ExportBO4DataCommand extends BaseCommand
 			                    
 			        // Make sure all structure starts in the world have been initialised
 			        // so that getMinimumSize has been done and its data can be saved with the BO4Data.
-			        for(IBiomeConfig biomeConfig : preset.getBiomeConfigList())
+			        for(BiomeSettings biomeConfig : preset.getBiomeConfigList())
 			        {
-			        	for(ConfigFunction<IBiomeConfig> res : ((BiomeConfig)biomeConfig).getResourceQueue())
+			        	for(ConfigFunction<BiomeSettings> res : ((BiomeConfig)biomeConfig).getResourceQueue())
 			        	{
 			        		if(res instanceof CustomStructureResource)
 			        		{

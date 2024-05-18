@@ -1,8 +1,8 @@
 package com.pg85.otg.gen.surface;
 
+import com.pg85.otg.config.settings.biome.SurfaceSettings;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.IBiome;
-import com.pg85.otg.interfaces.IBiomeConfig;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
 import com.pg85.otg.util.gen.ChunkBuffer;
@@ -53,7 +53,7 @@ class MultipleLayersSurfaceGenerator extends SimpleSurfaceGenerator
 	}
 
 	@Override
-	public LocalMaterialData getSurfaceBlockAtHeight(ISurfaceGeneratorNoiseProvider noiseProvider, IBiomeConfig biomeConfig, int xInWorld, int yInWorld, int zInWorld)
+	public LocalMaterialData getSurfaceBlockAtHeight(ISurfaceGeneratorNoiseProvider noiseProvider, SurfaceSettings surfaceSettings, int xInWorld, int yInWorld, int zInWorld)
 	{
 		if(this.layers.size() > 0)
 		{
@@ -62,15 +62,15 @@ class MultipleLayersSurfaceGenerator extends SimpleSurfaceGenerator
 			{
 				if (noise <= layer.maxNoise)
 				{
-					return layer.getSurfaceBlockReplaced(yInWorld, biomeConfig);
+					return layer.getSurfaceBlockReplaced(yInWorld, surfaceSettings);
 				}
 			}
 		}
-		return biomeConfig.getSurfaceBlockReplaced(yInWorld);
+		return surfaceSettings.getSurfaceBlockReplaced(yInWorld);
 	}
 
 	@Override
-	public LocalMaterialData getGroundBlockAtHeight(ISurfaceGeneratorNoiseProvider noiseProvider, IBiomeConfig biomeConfig, int xInWorld, int yInWorld, int zInWorld)
+	public LocalMaterialData getGroundBlockAtHeight(ISurfaceGeneratorNoiseProvider noiseProvider, SurfaceSettings surfaceSettings, int xInWorld, int yInWorld, int zInWorld)
 	{
 		if(this.layers.size() > 0)
 		{
@@ -79,11 +79,11 @@ class MultipleLayersSurfaceGenerator extends SimpleSurfaceGenerator
 			{
 				if (noise <= layer.maxNoise)
 				{
-					return layer.getGroundBlockReplaced(yInWorld, biomeConfig);
+					return layer.getGroundBlockReplaced(yInWorld, surfaceSettings);
 				}
 			}
 		}
-		return biomeConfig.getGroundBlockReplaced(yInWorld);
+		return surfaceSettings.getGroundBlockReplaced(yInWorld);
 	}
 
 	@Override

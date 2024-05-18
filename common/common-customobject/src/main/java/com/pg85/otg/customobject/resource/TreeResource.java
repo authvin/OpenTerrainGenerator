@@ -7,7 +7,7 @@ import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.CustomStructureCache;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
@@ -32,7 +32,7 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 	private final boolean useExtendedParams;	
 	private final int maxSpawn;
 
-	public TreeResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public TreeResource(BiomeSettings biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
 	{
 		super(biomeConfig, args, materialReader);
 		assureSize(3, args);

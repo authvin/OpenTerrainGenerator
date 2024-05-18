@@ -5,7 +5,7 @@ import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
@@ -23,7 +23,7 @@ import java.util.*;
 /**
  * Represents a custom sapling generator, which can grow vanilla trees or custom objects.
  */
-public class SaplingResource extends ConfigFunction<IBiomeConfig> implements ISaplingSpawner
+public class SaplingResource extends ConfigFunction<BiomeSettings> implements ISaplingSpawner
 {
 	private static final Map<Rotation, int[]> TREE_OFFSET;
 	static
@@ -46,7 +46,7 @@ public class SaplingResource extends ConfigFunction<IBiomeConfig> implements ISa
 	public LocalMaterialData saplingMaterial;
 	public boolean wideTrunk;
 	
-	public SaplingResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public SaplingResource(BiomeSettings biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
 	{
 		assureSize(3, args);
 
@@ -59,7 +59,8 @@ public class SaplingResource extends ConfigFunction<IBiomeConfig> implements ISa
 			} catch (InvalidConfigException e) {
 				if(logger.getLogCategoryEnabled(LogCategory.DECORATION))
 				{
-					logger.log(LogLevel.ERROR, LogCategory.DECORATION, "Invalid custom sapling configuration! Syntax: Sapling(Custom, material, widetrunk, TreeName, TreeChance, ...)");
+					logger.log(LogLevel.ERROR, LogCategory.DECORATION,
+							"Invalid custom sapling configuration! Syntax: Sapling(Custom, material, widetrunk, TreeName, TreeChance, ...)");
 				}
 			}
 		}
@@ -101,7 +102,17 @@ public class SaplingResource extends ConfigFunction<IBiomeConfig> implements ISa
 	{
 		return this.wideTrunk;
 	}
-	
+
+	@Override
+	public SaplingType getSaplingType() {
+		return saplingType;
+	}
+
+	@Override
+	public LocalMaterialData getSaplingMaterial() {
+		return saplingMaterial;
+	}
+
 	private static CustomObject getTreeObject(String objectName, String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException
 	{
 		CustomObject maybeTree = customObjectManager.getGlobalObjects().getObjectByName(objectName, presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);

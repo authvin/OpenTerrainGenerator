@@ -18,6 +18,7 @@ import com.pg85.otg.interfaces.IPluginConfig;
 import com.pg85.otg.presets.LocalPresetLoader;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
+import lombok.Getter;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -41,19 +42,25 @@ public abstract class OTGEngine
 {
 	// Classes implemented/provided by the platform-specific layer.
 	
-	protected final LocalPresetLoader presetLoader;
-	protected final ILogger logger;
-	private final IModLoadedChecker modLoadedChecker;
+	@Getter
+    protected final LocalPresetLoader presetLoader;
+	@Getter
+    protected final ILogger logger;
+	@Getter
+    private final IModLoadedChecker modLoadedChecker;
 
 	// Common classes
 	
 	private final Path otgRootFolder;
-	private final Path globalObjectsFolder;
+	@Getter
+    private final Path globalObjectsFolder;
 	protected PluginConfig pluginConfig;
 
 	protected BiomeResourcesManager biomeResourcesManager;
-	private CustomObjectResourcesManager customObjectResourcesManager;
-	private CustomObjectManager customObjectManager;
+	@Getter
+    private CustomObjectResourcesManager customObjectResourcesManager;
+	@Getter
+    private CustomObjectManager customObjectManager;
 	
 	protected OTGEngine(ILogger logger, Path otgRootFolder, IModLoadedChecker modLoadedChecker, LocalPresetLoader presetLoader)
 	{
@@ -274,28 +281,8 @@ public abstract class OTGEngine
 	{
 		return this.biomeResourcesManager;
 	}
-	
-	public CustomObjectResourcesManager getCustomObjectResourcesManager()
-	{
-		return this.customObjectResourcesManager;
-	}
-	
-	public CustomObjectManager getCustomObjectManager()
-	{
-		return this.customObjectManager;
-	}
-	
-	public LocalPresetLoader getPresetLoader()
-	{
-		return this.presetLoader;
-	}
-	
-	public IModLoadedChecker getModLoadedChecker()
-	{
-		return this.modLoadedChecker;
-	}
 
-	// OTG Configs
+    // OTG Configs
 	
 	public IPluginConfig getPluginConfig()
 	{
@@ -309,24 +296,14 @@ public abstract class OTGEngine
 		return this.otgRootFolder;
 	}
 
-	public Path getGlobalObjectsFolder()
-	{
-		return this.globalObjectsFolder;
-	}
-
-	public Path getPresetsDirectory()
+    public Path getPresetsDirectory()
 	{
 		return Paths.get(this.getOTGRootFolder().toString(), Constants.PRESETS_FOLDER);
 	}
 
 	// Logging
 
-	public ILogger getLogger()
-	{
-		return this.logger;
-	}
-		
-	// Builders/Factories
+    // Builders/Factories
 	
 	public CustomStructureCache createCustomStructureCache(String presetFolderName, Path worldSavepath, long worldSeed, boolean isBo4Enabled)
 	{

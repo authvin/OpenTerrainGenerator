@@ -10,8 +10,7 @@ import java.util.Map.Entry;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.ErroredFunction;
 import com.pg85.otg.config.io.IConfigFunctionProvider;
-import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.ILogger;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.config.settings.preset.PresetSettings;
 
@@ -62,10 +61,10 @@ public class BiomeResourcesManager implements IConfigFunctionProvider
 		try
 		{
 			Constructor<? extends ConfigFunction<?>> constructor = null;
-			if(holder instanceof IBiomeConfig)
+			if(holder instanceof BiomeSettings)
 			{
 				// Every BiomeConfig resource should have a constructor that conforms to this method signature
-				constructor = clazz.getConstructor(IBiomeConfig.class, List.class, IMaterialReader.class);
+				constructor = clazz.getConstructor(BiomeSettings.class, List.class, IMaterialReader.class);
 			}
 			else if(holder instanceof PresetSettings)
 			{

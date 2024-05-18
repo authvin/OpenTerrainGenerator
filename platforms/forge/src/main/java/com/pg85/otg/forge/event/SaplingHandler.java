@@ -12,7 +12,7 @@ import com.pg85.otg.customobject.resource.SaplingResource;
 import com.pg85.otg.forge.gen.ForgeWorldGenRegion;
 import com.pg85.otg.forge.gen.OTGNoiseChunkGenerator;
 import com.pg85.otg.forge.materials.ForgeMaterialData;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
@@ -67,7 +67,7 @@ public class SaplingHandler
 		IModLoadedChecker modLoadedChecker = OTG.getEngine().getModLoadedChecker();		
 		IMaterialReader materialReader = OTG.getEngine().getPresetLoader().getMaterialReader(preset.getFolderName());
 
-        IBiomeConfig biomeConfig = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(blockPos.getX(), blockPos.getZ());
+        BiomeSettings biomeConfig = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(blockPos.getX(), blockPos.getZ());
         ForgeMaterialData material = (ForgeMaterialData)worldGenRegion.getMaterial(blockPos.getX(), blockPos.getY(), blockPos.getZ());
 
         BlockPos result = findFourSaplings(blockPos, material, worldGenRegion);
@@ -190,7 +190,7 @@ public class SaplingHandler
 		IModLoadedChecker modLoadedChecker = OTG.getEngine().getModLoadedChecker();		
 		IMaterialReader materialReader = OTG.getEngine().getPresetLoader().getMaterialReader(preset.getFolderName());		
 		
-        IBiomeConfig biomeConfig = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(blockPos.getX(), blockPos.getZ());	
+        BiomeSettings biomeConfig = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(blockPos.getX(), blockPos.getZ());
 
         // Get sapling gen
         ISaplingSpawner sapling = null;

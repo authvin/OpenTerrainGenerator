@@ -1,8 +1,10 @@
 package com.pg85.otg.interfaces;
 
+import com.pg85.otg.config.settings.biome.BiomeSettings;
+
 public interface IBiome
 {
-	IBiomeConfig getBiomeConfig();
+	BiomeSettings getBiomeConfig();
 
 	/**
 	 * Gets the temperature at the given position, if this biome would be

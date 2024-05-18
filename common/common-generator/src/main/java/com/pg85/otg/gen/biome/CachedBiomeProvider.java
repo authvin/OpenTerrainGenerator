@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.interfaces.ICachedBiomeProvider;
 import com.pg85.otg.interfaces.ILayerSource;
@@ -35,10 +35,10 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 	private boolean locked = false;
 	private boolean locked2 = false;
 	private final FifoMap<ChunkCoordinate, IBiome[]> biomesCache = new FifoMap<>(256);
-	private final FifoMap<ChunkCoordinate, IBiomeConfig[]> biomeConfigsCache = new FifoMap<>(256);
+	private final FifoMap<ChunkCoordinate, BiomeSettings[]> biomeConfigsCache = new FifoMap<>(256);
 	
 	private final Object noiseLock = new Object();
-	private final FifoMap<ChunkCoordinate, IBiomeConfig[]> noiseBiomeConfigsCache = new FifoMap<>(1024);	
+	private final FifoMap<ChunkCoordinate, BiomeSettings[]> noiseBiomeConfigsCache = new FifoMap<>(1024);
 
 	public CachedBiomeProvider(long seed, ILayerSource biomeProvider, IBiome[] biomesById, ILogger logger)
 	{
@@ -52,9 +52,9 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 	// rather than making separate requests for each column. 
 	// TODO: Allow regions rather than chunks.
 	@Override
-	public IBiomeConfig[] getBiomeConfigsForChunk(ChunkCoordinate chunkCoord)
+	public BiomeSettings[] getBiomeConfigsForChunk(ChunkCoordinate chunkCoord)
 	{
-		IBiomeConfig[] biomeConfigs;
+		BiomeSettings[] biomeConfigs;
 		synchronized(this.lock)
 		{
 			this.locked = true;
@@ -62,7 +62,7 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 			if(biomeConfigs == null)
 			{
 				IBiome[] biomes = new IBiome[Constants.CHUNK_SIZE * Constants.CHUNK_SIZE];
-				biomeConfigs = new IBiomeConfig[Constants.CHUNK_SIZE * Constants.CHUNK_SIZE];
+				biomeConfigs = new BiomeSettings[Constants.CHUNK_SIZE * Constants.CHUNK_SIZE];
 				int biomeId;
 				IBiome biome;
 				for (int x = 0; x < Constants.CHUNK_SIZE; x++)
@@ -100,7 +100,7 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 			if(biomes == null)
 			{
 				biomes = new IBiome[Constants.CHUNK_SIZE * Constants.CHUNK_SIZE];
-				IBiomeConfig[]  biomeConfigs = new IBiomeConfig[Constants.CHUNK_SIZE * Constants.CHUNK_SIZE];
+				BiomeSettings[]  biomeConfigs = new BiomeSettings[Constants.CHUNK_SIZE * Constants.CHUNK_SIZE];
 				int biomeId;
 				IBiome biome;
 				for (int x = 0; x < Constants.CHUNK_SIZE; x++)
@@ -159,11 +159,11 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 	// ideally all the callers should request entire regions up
 	// front instead of relying on this method to cache them.
 	@Override
-	public IBiomeConfig getBiomeConfig(int x, int z, boolean cacheChunk)
+	public BiomeSettings getBiomeConfig(int x, int z, boolean cacheChunk)
 	{
 		ChunkCoordinate chunkCoord = ChunkCoordinate.fromBlockCoords(x, z);
 		// TODO: Do we want/need a lock here? Overhead of the lock would be big.
-		IBiomeConfig[] biomeConfigs = null;
+		BiomeSettings[] biomeConfigs = null;
 		if(!this.locked && !this.locked2)
 		{
 			biomeConfigs = this.biomeConfigsCache.get(chunkCoord);
@@ -190,7 +190,7 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 	// of locking likely wouldn't be worth the cache hits.
 	
 	@Override
-	public IBiomeConfig getBiomeConfig(int x, int z)
+	public BiomeSettings getBiomeConfig(int x, int z)
 	{
 		return getBiome(x, z).getBiomeConfig();
 	}	
@@ -208,7 +208,7 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 	// making separate requests for each column. Regions are requested and cached per 8x8, 
 	// each cell equal to 4x4 blocks in the world.
 	@Override
-	public IBiomeConfig[] getNoiseBiomeConfigsForRegion(int noiseStartX, int noiseStartZ, int widthHeight)
+	public BiomeSettings[] getNoiseBiomeConfigsForRegion(int noiseStartX, int noiseStartZ, int widthHeight)
 	{
 		int regionSize = 8;
 		int regionStartX = noiseStartX >> 3;
@@ -217,10 +217,10 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 		int cacheOffsetZ = noiseStartZ - (regionStartZ << 3);
 		int regionWidth = (int)Math.ceil((((regionStartX >> 3) + widthHeight) - (regionStartX >> 3)) / 8f);
 		int regionHeight = (int)Math.ceil((((regionStartZ >> 3) + widthHeight) - (regionStartZ >> 3)) / 8f);
-		IBiomeConfig[] biomeConfigs = new IBiomeConfig[widthHeight * widthHeight];
+		BiomeSettings[] biomeConfigs = new BiomeSettings[widthHeight * widthHeight];
 
 		IBiome biome;
-		IBiomeConfig[] region;
+		BiomeSettings[] region;
 		ChunkCoordinate regionCoord;
 		List<ChunkCoordinate> regionsToHandle = new ArrayList<ChunkCoordinate>();
 		int cacheX;
@@ -264,10 +264,10 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 				}
 			}
 		}
-		Map<ChunkCoordinate, IBiomeConfig[]> regionsHandled = new HashMap<ChunkCoordinate, IBiomeConfig[]>();
+		Map<ChunkCoordinate, BiomeSettings[]> regionsHandled = new HashMap<ChunkCoordinate, BiomeSettings[]>();
 		for(ChunkCoordinate regionTohandle : regionsToHandle)
 		{
-			region = new IBiomeConfig[regionSize * regionSize];
+			region = new BiomeSettings[regionSize * regionSize];
 			for(int x = 0; x < regionSize; x++)
 			{
 				for(int z = 0; z < regionSize; z++)
@@ -298,7 +298,7 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 	}
 
 	@Override
-	public IBiomeConfig getNoiseBiomeConfig(int noiseX, int noiseZ, boolean cacheChunk)
+	public BiomeSettings getNoiseBiomeConfig(int noiseX, int noiseZ, boolean cacheChunk)
 	{
 		return getNoiseBiome(noiseX, noiseZ, cacheChunk).getBiomeConfig();
 	}

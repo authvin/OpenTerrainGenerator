@@ -8,7 +8,7 @@ import com.pg85.otg.customobject.structures.bo3.BO3CustomStructure;
 import com.pg85.otg.customobject.structures.bo3.BO3CustomStructureCoordinate;
 import com.pg85.otg.customobject.structures.bo4.BO4CustomStructure;
 import com.pg85.otg.customobject.structures.bo4.CustomStructurePlotter;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IChunkDecorator;
 import com.pg85.otg.interfaces.ICustomObjectManager;
 import com.pg85.otg.interfaces.ICustomObjectResourcesManager;
@@ -164,7 +164,7 @@ public class CustomStructureCache
 
 		// No structure found, create one
 		Random random = RandomHelper.getRandomForCoords(chunkX ^ 2, (chunkZ + 1) * 2, worldGenRegion.getSeed());
-		IBiomeConfig biomeConfig = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(chunkX * 16 + 15, chunkZ * 16 + 15);
+		BiomeSettings biomeConfig = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(chunkX * 16 + 15, chunkZ * 16 + 15);
 		ICustomStructureGen structureGen = biomeConfig.getStructureGen();
 
 		if (structureGen != null)
@@ -195,11 +195,11 @@ public class CustomStructureCache
 				IStructuredCustomObject object = structureGen.getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder, worldGenRegion.getLogger(), customObjectManager, materialReader, manager, modLoadedChecker).get(objectNumber);
 				if(object != null && object instanceof BO3)
 				{
-					return (BO3CustomStructureCoordinate)((BO3)object).makeCustomStructureCoordinate(worldGenRegion.getPresetFolderName(), worldGenRegion.getPresetConfig().getCustomStructureSettings().isUseOldBO3StructureRarity(), random, chunkX, chunkZ);
+					return (BO3CustomStructureCoordinate)((BO3)object).makeCustomStructureCoordinate(worldGenRegion.getPresetFolderName(), worldGenRegion.getPresetConfig().getResourceSettings().isUseOldBO3StructureRarity(), random, chunkX, chunkZ);
 				} else {
 					if(worldGenRegion.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 					{
-						IBiomeConfig biomeConfig = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(chunkX * 16 + 15, chunkZ * 16 + 15);
+						BiomeSettings biomeConfig = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(chunkX * 16 + 15, chunkZ * 16 + 15);
 						worldGenRegion.getLogger().log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Error: Could not find BO3 for CustomStructure in biome " + biomeConfig.getIdentitySettings().getBiomeName() + ". BO3: " + structureGen.getObjectName(objectNumber));
 					}
 				}

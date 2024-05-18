@@ -2,7 +2,7 @@ package com.pg85.otg.customobject.bo3;
 
 import com.pg85.otg.customobject.bo3.bo3function.BO3BlockFunction;
 import com.pg85.otg.customobject.util.BO3Enums.ExtrudeMode;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.materials.MaterialSet;
 
@@ -91,7 +91,7 @@ class ObjectExtrusionHelper
 		for (BO3BlockFunction block : blocksToExtrude)
 		{
 			// TODO: Calculate area required and fetch biome data for whole chunks instead of per column.
-			IBiomeConfig biomeConfig = forceSpawn ? worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x + block.x, z + block.z, true) : worldGenRegion.getBiomeConfigForDecoration(x + block.x, z + block.z);
+			BiomeSettings biomeConfig = forceSpawn ? worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x + block.x, z + block.z, true) : worldGenRegion.getBiomeConfigForDecoration(x + block.x, z + block.z);
 			if (extrudeMode == ExtrudeMode.BottomDown)
 			{
 				for (int yi = y + block.y - 1;
@@ -100,7 +100,7 @@ class ObjectExtrusionHelper
 				{
 					if(replaceBlock)
 					{
-						worldGenRegion.setBlock(x + block.x, yi, z + block.z, block.material, block.nbt, biomeConfig.getReplaceBlocks());
+						worldGenRegion.setBlock(x + block.x, yi, z + block.z, block.material, block.nbt, biomeConfig.getSurfaceSettings().getReplacedBlocks());
 					} else {
 						worldGenRegion.setBlock(x + block.x, yi, z + block.z, block.material, block.nbt);
 					}
@@ -114,7 +114,7 @@ class ObjectExtrusionHelper
 				{
 					if(replaceBlock)
 					{
-						worldGenRegion.setBlock(x + block.x, yi, z + block.z, block.material, block.nbt, biomeConfig.getReplaceBlocks());
+						worldGenRegion.setBlock(x + block.x, yi, z + block.z, block.material, block.nbt, biomeConfig.getSurfaceSettings().getReplacedBlocks());
 					} else {
 						worldGenRegion.setBlock(x + block.x, yi, z + block.z, block.material, block.nbt);
 					}

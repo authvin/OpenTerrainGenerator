@@ -6,7 +6,7 @@ import java.util.HashMap;
 
 import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.config.preset.PresetConfig;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.config.settings.preset.PresetSettings;
 import lombok.Getter;
@@ -27,7 +27,7 @@ public class Preset {
     // BiomeGen and ChunkGen cache some settings during a session, so they'll only update on world exit/rejoin.
     @Getter
     private PresetSettings presetConfig;
-    private HashMap<String, IBiomeConfig> biomeConfigs = new HashMap<String, IBiomeConfig>();
+    private HashMap<String, BiomeSettings> biomeConfigs = new HashMap<String, BiomeSettings>();
     @Getter
     private int majorVersion;
     @Getter
@@ -59,11 +59,11 @@ public class Preset {
         this.majorVersion = preset.majorVersion;
     }
 
-    public IBiomeConfig getBiomeConfig(String biomeName) {
+    public BiomeSettings getBiomeConfig(String biomeName) {
         return this.biomeConfigs.get(biomeName);
     }
 
-    public ArrayList<IBiomeConfig> getBiomeConfigList() {
+    public ArrayList<BiomeSettings> getBiomeConfigList() {
         return new ArrayList<>(this.biomeConfigs.values());
     }
 

@@ -12,7 +12,7 @@ import com.pg85.otg.gen.biome.layers.util.LayerFactory;
 import com.pg85.otg.gen.biome.layers.util.LayerSampleContext;
 import com.pg85.otg.interfaces.ILayerSampler;
 import com.pg85.otg.interfaces.ILogger;
-import com.pg85.otg.config.settings.preset.BiomeSettings;
+import com.pg85.otg.config.settings.preset.GenerationSettings;
 
 /**
  * Holds the factory and utils needed for OTG's biome layers to work.
@@ -71,11 +71,11 @@ public class BiomeLayers
 		LayerFactory<T> oceanTemperatureFactory = null;
 		boolean riversStarted = false;
 		boolean oceanTemperatureStarted = false;
-		BiomeSettings biomeSettings = data.biomeSettings;
-		if(biomeSettings.getBiomeMode() != BiomeMode.FromImage || data.imageSettings.getImageMode() == ImageMode.ContinueNormal)
+		GenerationSettings generationSettings = data.biomeSettings;
+		if(generationSettings.getBiomeMode() != BiomeMode.FromImage || data.imageSettings.getImageMode() == ImageMode.ContinueNormal)
 		{
 			// Iterate through the depth, manipulating the factory at specific points
-			for (int depth = 0; depth <= biomeSettings.getGenerationDepth(); depth++)
+			for (int depth = 0; depth <= generationSettings.getGenerationDepth(); depth++)
 			{
 				// Scale the factory by 2x before adding more transformations
 				factory = new ScaleLayer().create(contextProvider.apply(2000L + depth), factory);
@@ -93,13 +93,13 @@ public class BiomeLayers
 				}
 
 				// If we're at the land size, initialize the land layer with the provided rarity.
-				if (depth == biomeSettings.getLandSize() && biomeSettings.getLandRarity() > 0)
+				if (depth == generationSettings.getLandSize() && generationSettings.getLandRarity() > 0)
 				{
-					factory = new LandLayer(biomeSettings.getLandRarity(), biomeSettings.isForceLandAtSpawn(), data.biomeSettings.isOldLandRarity()).create(contextProvider.apply(1L), factory);
+					factory = new LandLayer(generationSettings.getLandRarity(), generationSettings.isForceLandAtSpawn(), data.biomeSettings.isOldLandRarity()).create(contextProvider.apply(1L), factory);
 					factory = new FuzzyScaleLayer().create(contextProvider.apply(2000L), factory);
 				}
 
-				if (depth == biomeSettings.getOceanBiomeSize())
+				if (depth == generationSettings.getOceanBiomeSize())
 				{
 					// TODO: Process isles/borders for oceanTemperatureFactory too, for gendepths after its been added?
 					oceanTemperatureFactory = new OceanTemperatureLayer(data).create(contextProvider.apply(3L));
@@ -107,12 +107,12 @@ public class BiomeLayers
 				}
 
 				// If the depth is between landSize and landFuzzy, add islands to fuzz the ocean/land border.
-				if (depth < (biomeSettings.getLandSize() + biomeSettings.getLandFuzzy()))
+				if (depth < (generationSettings.getLandSize() + generationSettings.getLandFuzzy()))
 				{
 					factory = new AddIslandsLayer().create(contextProvider.apply(depth), factory);
 				}
 
-				if(biomeSettings.getBiomeMode() == BiomeMode.Normal || biomeSettings.getBiomeMode() == BiomeMode.FromImage)
+				if(generationSettings.getBiomeMode() == BiomeMode.Normal || generationSettings.getBiomeMode() == BiomeMode.FromImage)
 				{
 					if (data.groups.containsKey(depth))
 					{
@@ -128,7 +128,7 @@ public class BiomeLayers
 				// Start rivers if we're at the current depth
 				if (data.biomeSettings.getRiverRarity() == depth)
 				{
-					if (biomeSettings.isRandomRivers())
+					if (generationSettings.isRandomRivers())
 					{
 						riverFactory = new RiverInitLayer().create(contextProvider.apply(depth), riverFactory);
 						riversStarted = true;
@@ -139,9 +139,9 @@ public class BiomeLayers
 				}
 
 				// If we're at the end of the river size
-				if ((biomeSettings.getGenerationDepth() - biomeSettings.getRiverSize()) == depth)
+				if ((generationSettings.getGenerationDepth() - generationSettings.getRiverSize()) == depth)
 				{
-					if (biomeSettings.isRandomRivers())
+					if (generationSettings.isRandomRivers())
 					{
 						riverFactory = new RiverLayer().create(contextProvider.apply(5 + depth), riverFactory);
 					} else {
@@ -167,7 +167,7 @@ public class BiomeLayers
 								biomeCanSpawnIn[islandInBiome] = true;
 							}
 						}
-						int chance = (biomeSettings.getBiomeRarityScale() + 1) - biome.rarity;
+						int chance = (generationSettings.getBiomeRarityScale() + 1) - biome.rarity;
 						islesAtCurrentDepth.addIsle(biome.id, chance, biomeCanSpawnIn, inOcean);
 					}
 					factory = new BiomeIsleLayer(islesAtCurrentDepth).create(contextProvider.apply(depth), factory);				
@@ -195,16 +195,16 @@ public class BiomeLayers
 			factory = new MergeOceanTemperatureLayer().create(contextProvider.apply(1L), factory, oceanTemperatureFactory);
 			
 			// Finalize the biome data
-			if (biomeSettings.isRandomRivers())
+			if (generationSettings.isRandomRivers())
 			{
-				factory = new FinalizeWithRiverLayer(biomeSettings.isRiversEnabled(), data.riverBiomes).create(contextProvider.apply(1L), factory, riverFactory);
+				factory = new FinalizeWithRiverLayer(generationSettings.isRiversEnabled(), data.riverBiomes).create(contextProvider.apply(1L), factory, riverFactory);
 			} else {
 				// TODO: This generates no rivers atm
-				factory = new FinalizeLayer(biomeSettings.isRiversEnabled(), data.riverBiomes).create(contextProvider.apply(1L), factory);
+				factory = new FinalizeLayer(generationSettings.isRiversEnabled(), data.riverBiomes).create(contextProvider.apply(1L), factory);
 			}
 		}
 
-		if(biomeSettings.getBiomeMode() == BiomeMode.FromImage)
+		if(generationSettings.getBiomeMode() == BiomeMode.FromImage)
 		{
 			factory = new FromImageLayer(data, logger).create(contextProvider.apply(0), factory);
 		}

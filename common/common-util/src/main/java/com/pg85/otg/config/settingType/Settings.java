@@ -25,7 +25,7 @@ public abstract class Settings
 	 * @param defaultValue Default value for the setting.
 	 * @return The newly created setting.
 	 */
-	protected static final Setting<Boolean> booleanSetting(String name, boolean defaultValue)
+	protected static Setting<Boolean> booleanSetting(String name, boolean defaultValue)
 	{
 		return new BooleanSetting(name, defaultValue);
 	}
@@ -36,7 +36,7 @@ public abstract class Settings
 	 * @param defaultValue Default value for the setting.
 	 * @return The newly created setting.
 	 */
-	protected static final Setting<Integer> colorSetting(String name, String defaultValue)
+	protected static Setting<Integer> colorSetting(String name, String defaultValue)
 	{
 		return new ColorSetting(name, defaultValue);
 	}
@@ -49,7 +49,7 @@ public abstract class Settings
 	 * @param max		  Highest allowed value.
 	 * @return The newly created setting.
 	 */
-	protected static final Setting<Double> doubleSetting(String name, double defaultValue, double min, double max)
+	protected static Setting<Double> doubleSetting(String name, double defaultValue, double min, double max)
 	{
 		return new DoubleSetting(name, defaultValue, min, max);
 	}
@@ -60,7 +60,7 @@ public abstract class Settings
 	 * @param defaultValue Default value for the setting.
 	 * @return The newly created setting.
 	 */
-	protected static final <T extends Enum<T>> Setting<T> enumSetting(String name, T defaultValue)
+	protected static <T extends Enum<T>> Setting<T> enumSetting(String name, T defaultValue)
 	{
 		return new EnumSetting<T>(name, defaultValue);
 	}
@@ -73,7 +73,7 @@ public abstract class Settings
 	 * @param max		  Highest allowed value.
 	 * @return The newly created setting.
 	 */
-	protected static final Setting<Float> floatSetting(String name, float defaultValue, float min, float max)
+	protected static Setting<Float> floatSetting(String name, float defaultValue, float min, float max)
 	{
 		return new FloatSetting(name, defaultValue, min, max);
 	}
@@ -86,12 +86,12 @@ public abstract class Settings
 	 * @param max		  Highest allowed value.
 	 * @return The newly created setting.
 	 */
-	protected static final Setting<Integer> intSetting(String name, int defaultValue, int min, int max)
+	public static Setting<Integer> intSetting(String name, int defaultValue, int min, int max)
 	{
 		return new IntSetting(name, defaultValue, min, max);
 	}
 
-	protected static final Setting<Rotation> rotationSetting(String name, Rotation defaultValue)
+	protected static Setting<Rotation> rotationSetting(String name, Rotation defaultValue)
 	{
 		return new RotationSetting(name, defaultValue);
 	}
@@ -104,7 +104,7 @@ public abstract class Settings
 	 * @param max		  Highest allowed value.
 	 * @return The newly created setting.
 	 */
-	protected static final Setting<Long> longSetting(String name, long defaultValue, long min, long max)
+	protected static Setting<Long> longSetting(String name, long defaultValue, long min, long max)
 	{
 		return new LongSetting(name, defaultValue, min, max);
 	}
@@ -119,12 +119,12 @@ public abstract class Settings
 	 * @param defaultValues Default values for the setting.
 	 * @return The newly created setting.
 	 */
-	protected static final Setting<MaterialSet> materialSetSetting(String name, String... defaultValues)
+	protected static Setting<MaterialSet> materialSetSetting(String name, String... defaultValues)
 	{
 		return new MaterialSetSetting(name, defaultValues);
 	}
 	
-	protected static final Setting<ColorSet> colorSetSetting(String name)
+	protected static Setting<ColorSet> colorSetSetting(String name)
 	{
 		return new ColorSetSetting(name);
 	}
@@ -134,7 +134,7 @@ public abstract class Settings
 	 * @param name Name of the setting.
 	 * @return The newly created setting.
 	 */
-	protected static final Setting<List<WeightedMobSpawnGroup>> mobGroupListSetting(String name)
+	protected static Setting<List<WeightedMobSpawnGroup>> mobGroupListSetting(String name)
 	{
 		return new MobGroupListSetting(name);
 	}
@@ -144,7 +144,7 @@ public abstract class Settings
 	 * @param name Name of the setting.
 	 * @return The newly created setting.
 	 */
-	protected static final Setting<ReplaceBlockMatrix> replacedBlocksSetting(String name)
+	protected static Setting<ReplaceBlockMatrix> replacedBlocksSetting(String name)
 	{
 		return new ReplacedBlocksSetting(name);
 	}
@@ -154,7 +154,7 @@ public abstract class Settings
 	 * @param value		 The setting's value as a string.
 	 * @return The newly created setting.
 	 */
-	protected static final Setting<List<ReplaceBlocks>> replaceBlocksListSetting(String value)
+	protected static Setting<List<ReplaceBlocks>> replaceBlocksListSetting(String value)
 	{
 		return new ReplaceBlocksListSetting(value);
 	}
@@ -165,7 +165,7 @@ public abstract class Settings
 	 * @param defaultValue Default value for the setting.
 	 * @return The newly created setting.
 	 */
-	protected static final Setting<String> stringSetting(String name, String defaultValue)
+	protected static Setting<String> stringSetting(String name, String defaultValue)
 	{
 		return new StringSetting(name, defaultValue);
 	}
@@ -176,7 +176,7 @@ public abstract class Settings
 	 * @param defaultValues Default values for the setting.
 	 * @return The newly created setting.
 	 */
-	protected static final Setting<List<String>> stringListSetting(String name, String... defaultValues)
+	protected static Setting<List<String>> stringListSetting(String name, String... defaultValues)
 	{
 		return new StringListSetting(name, defaultValues);
 	}

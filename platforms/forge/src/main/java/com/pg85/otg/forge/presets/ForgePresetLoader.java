@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import com.mojang.serialization.Lifecycle;
 import com.pg85.otg.OTG;
+import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.config.biome.BiomeConfigFinder.BiomeConfigStub;
 import com.pg85.otg.config.biome.BiomeGroupFunction;
 import com.pg85.otg.config.biome.TemplateBiome;
@@ -30,7 +31,7 @@ import com.pg85.otg.gen.biome.BiomeData;
 import com.pg85.otg.gen.biome.layers.BiomeLayerData;
 import com.pg85.otg.gen.biome.layers.BiomeGroup;
 import com.pg85.otg.interfaces.IBiome;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IBiomeResourceLocation;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
@@ -165,25 +166,25 @@ public class ForgePresetLoader extends LocalPresetLoader
 		this.biomesByPresetFolderName.put(preset.getFolderName(), presetBiomes);
 
 		PresetSettings presetConfig = preset.getPresetConfig();
-		IBiomeConfig oceanBiomeConfig = null;
+		BiomeSettings oceanBiomeConfig = null;
 		int[] oceanTemperatures = new int[]{0, 0, 0, 0};
 		
-		List<IBiomeConfig> biomeConfigs = preset.getBiomeConfigList();
+		List<BiomeSettings> biomeConfigs = preset.getBiomeConfigList();
 
 		Map<Integer, List<BiomeData>> isleBiomesAtDepth = new HashMap<>();
 		Map<Integer, List<BiomeData>> borderBiomesAtDepth = new HashMap<>();
 		
 		Map<String, List<Integer>> worldBiomes = new HashMap<>();
-		Map<String, IBiomeConfig> biomeConfigsByName = new HashMap<>();
+		Map<String, BiomeSettings> biomeConfigsByName = new HashMap<>();
 		
 		// Create registry keys for each biomeconfig, create template 
 		// biome configs for any non-otg biomes targeted via TemplateForBiome.
-		Map<IBiomeResourceLocation, IBiomeConfig> biomeConfigsByResourceLocation = new LinkedHashMap<>();
-		List<String> blackListedBiomes = presetConfig.getBiomeSettings().getBlackListedBiomes();
+		Map<IBiomeResourceLocation, BiomeSettings> biomeConfigsByResourceLocation = new LinkedHashMap<>();
+		List<String> blackListedBiomes = presetConfig.getGenerationSettings().getBlackListedBiomes();
 
 		processTemplateBiomes(preset.getFolderName(), presetConfig, biomeConfigs, biomeConfigsByResourceLocation, biomeConfigsByName, blackListedBiomes);
 		
-		for(IBiomeConfig biomeConfig : biomeConfigs)
+		for(BiomeSettings biomeConfig : biomeConfigs)
 		{
 			if(!biomeConfig.getIsTemplateForBiome())
 			{
@@ -195,12 +196,12 @@ public class ForgePresetLoader extends LocalPresetLoader
 		}
 		
 		IBiome[] presetIdMapping = new IBiome[biomeConfigsByResourceLocation.entrySet().size()];
-		for(Entry<IBiomeResourceLocation, IBiomeConfig> biomeConfig : biomeConfigsByResourceLocation.entrySet())
+		for(Entry<IBiomeResourceLocation, BiomeSettings> biomeConfig : biomeConfigsByResourceLocation.entrySet())
 		{
 			boolean isOceanBiome = false;
 			// Biome id 0 is reserved for ocean, used when a land column has 
 			// no biome assigned, which can happen due to biome group rarity.
-			if(biomeConfig.getValue().getIdentitySettings().getBiomeName().equals(presetConfig.getBiomeSettings().getDefaultOceanBiome()))
+			if(biomeConfig.getValue().getIdentitySettings().getBiomeName().equals(presetConfig.getGenerationSettings().getDefaultOceanBiome()))
 			{
 				oceanBiomeConfig = biomeConfig.getValue();
 				isOceanBiome = true;
@@ -301,19 +302,19 @@ public class ForgePresetLoader extends LocalPresetLoader
 			OTGClientSyncManager.getSyncedData().put(resourceLocation.toString(), new BiomeSettingSyncWrapper(biomeConfig.getValue()));
 
 			// Ocean temperature mappings. Probably a better way to do this?
-			if (biomeConfig.getValue().getIdentitySettings().getBiomeName().equals(presetConfig.getBiomeSettings().getDefaultWarmOceanBiome()))
+			if (biomeConfig.getValue().getIdentitySettings().getBiomeName().equals(presetConfig.getGenerationSettings().getDefaultWarmOceanBiome()))
 			{
 				oceanTemperatures[0] = otgBiomeId;
 			}
-			if (biomeConfig.getValue().getIdentitySettings().getBiomeName().equals(presetConfig.getBiomeSettings().getDefaultLukewarmOceanBiome()))
+			if (biomeConfig.getValue().getIdentitySettings().getBiomeName().equals(presetConfig.getGenerationSettings().getDefaultLukewarmOceanBiome()))
 			{
 				oceanTemperatures[1] = otgBiomeId;
 			}
-			if (biomeConfig.getValue().getIdentitySettings().getBiomeName().equals(presetConfig.getBiomeSettings().getDefaultColdOceanBiome()))
+			if (biomeConfig.getValue().getIdentitySettings().getBiomeName().equals(presetConfig.getGenerationSettings().getDefaultColdOceanBiome()))
 			{
 				oceanTemperatures[2] = otgBiomeId;
 			}
-			if (biomeConfig.getValue().getIdentitySettings().getBiomeName().equals(presetConfig.getBiomeSettings().getDefaultFrozenOceanBiome()))
+			if (biomeConfig.getValue().getIdentitySettings().getBiomeName().equals(presetConfig.getGenerationSettings().getDefaultFrozenOceanBiome()))
 			{
 				oceanTemperatures[3] = otgBiomeId;
 			}
@@ -335,46 +336,46 @@ public class ForgePresetLoader extends LocalPresetLoader
 			idsForBiome.add(otgBiomeId);
 			
 			// Make a list of isle and border biomes per generation depth
-			if(biomeConfig.getValue().getPlacementSettings().isIsleBiome())
+			if(biomeConfig.getValue().getGenerationSettings().isIsleBiome())
 			{
 				// Make or get a list for this group depth, then add
-				List<BiomeData> biomesAtDepth = isleBiomesAtDepth.getOrDefault(biomeConfig.getValue().getPlacementSettings().getBiomeSizeWhenIsle(), new ArrayList<>());
+				List<BiomeData> biomesAtDepth = isleBiomesAtDepth.getOrDefault(biomeConfig.getValue().getGenerationSettings().getBiomeSizeWhenIsle(), new ArrayList<>());
 				biomesAtDepth.add(
 					new BiomeData(
 						otgBiomeId,
-						biomeConfig.getValue().getPlacementSettings().getBiomeRarityWhenIsle(),
-						biomeConfig.getValue().getPlacementSettings().getBiomeSizeWhenIsle(),
+						biomeConfig.getValue().getGenerationSettings().getBiomeRarityWhenIsle(),
+						biomeConfig.getValue().getGenerationSettings().getBiomeSizeWhenIsle(),
 						biomeConfig.getValue().getVisualSettings().getBiomeTemperature(),
-						biomeConfig.getValue().getPlacementSettings().getIsleInBiomes(),
-						biomeConfig.getValue().getPlacementSettings().getBorderInBiomes(),
-						biomeConfig.getValue().getPlacementSettings().getOnlyBorderNearBiomes(),
-						biomeConfig.getValue().getPlacementSettings().getNotBorderNearBiomes()
+						biomeConfig.getValue().getGenerationSettings().getIsleInBiomes(),
+						biomeConfig.getValue().getGenerationSettings().getBorderInBiomes(),
+						biomeConfig.getValue().getGenerationSettings().getOnlyBorderNearBiomes(),
+						biomeConfig.getValue().getGenerationSettings().getNotBorderNearBiomes()
 					)
 				);
-				isleBiomesAtDepth.put(biomeConfig.getValue().getPlacementSettings().getBiomeSizeWhenIsle(), biomesAtDepth);
+				isleBiomesAtDepth.put(biomeConfig.getValue().getGenerationSettings().getBiomeSizeWhenIsle(), biomesAtDepth);
 			}
 
-			if(biomeConfig.getValue().getPlacementSettings().isBorderBiome())
+			if(biomeConfig.getValue().getGenerationSettings().isBorderBiome())
 			{
 				// Make or get a list for this group depth, then add
-				List<BiomeData> biomesAtDepth = borderBiomesAtDepth.getOrDefault(biomeConfig.getValue().getPlacementSettings().getBiomeSizeWhenBorder(), new ArrayList<>());
+				List<BiomeData> biomesAtDepth = borderBiomesAtDepth.getOrDefault(biomeConfig.getValue().getGenerationSettings().getBiomeSizeWhenBorder(), new ArrayList<>());
 				biomesAtDepth.add(
 					new BiomeData(
 						otgBiomeId,
-						biomeConfig.getValue().getPlacementSettings().getBiomeRarity(),
-						biomeConfig.getValue().getPlacementSettings().getBiomeSizeWhenBorder(),
+						biomeConfig.getValue().getGenerationSettings().getBiomeRarity(),
+						biomeConfig.getValue().getGenerationSettings().getBiomeSizeWhenBorder(),
 						biomeConfig.getValue().getVisualSettings().getBiomeTemperature(),
-						biomeConfig.getValue().getPlacementSettings().getIsleInBiomes(),
-						biomeConfig.getValue().getPlacementSettings().getBorderInBiomes(),
-						biomeConfig.getValue().getPlacementSettings().getOnlyBorderNearBiomes(),
-						biomeConfig.getValue().getPlacementSettings().getNotBorderNearBiomes()
+						biomeConfig.getValue().getGenerationSettings().getIsleInBiomes(),
+						biomeConfig.getValue().getGenerationSettings().getBorderInBiomes(),
+						biomeConfig.getValue().getGenerationSettings().getOnlyBorderNearBiomes(),
+						biomeConfig.getValue().getGenerationSettings().getNotBorderNearBiomes()
 					)
 				);
-				borderBiomesAtDepth.put(biomeConfig.getValue().getPlacementSettings().getBiomeSizeWhenBorder(), biomesAtDepth);
+				borderBiomesAtDepth.put(biomeConfig.getValue().getGenerationSettings().getBiomeSizeWhenBorder(), biomesAtDepth);
 			}
 			
 			// Index BiomeColor for FromImageMode and /otg map
-			biomeColorMap.put(biomeConfig.getValue().getPlacementSettings().getBiomeColor(), otgBiomeId);
+			biomeColorMap.put(biomeConfig.getValue().getGenerationSettings().getBiomeColor(), otgBiomeId);
 			
 			if(OTG.getEngine().getLogger().getLogCategoryEnabled(LogCategory.BIOME_REGISTRY))
 			{
@@ -406,9 +407,9 @@ public class ForgePresetLoader extends LocalPresetLoader
 		this.presetGenerationData.put(preset.getFolderName(), data);
 	}
 
-	private void processTemplateBiomes(String presetFolderName, PresetSettings presetConfig, List<IBiomeConfig> biomeConfigs, Map<IBiomeResourceLocation, IBiomeConfig> biomeConfigsByResourceLocation, Map<String, IBiomeConfig> biomeConfigsByName, List<String> blackListedBiomes)
+	private void processTemplateBiomes(String presetFolderName, PresetSettings presetConfig, List<BiomeSettings> biomeConfigs, Map<IBiomeResourceLocation, BiomeSettings> biomeConfigsByResourceLocation, Map<String, BiomeSettings> biomeConfigsByName, List<String> blackListedBiomes)
 	{
-		for (TemplateBiome templateBiome : ((PresetConfig)presetConfig).getBiomeSettings().getTemplateBiomes())
+		for (TemplateBiome templateBiome : ((PresetConfig)presetConfig).getGenerationSettings().getTemplateBiomes())
 		{
 			if(OTG.getEngine().getLogger().getLogCategoryEnabled(LogCategory.BIOME_REGISTRY))
 			{
@@ -416,7 +417,7 @@ public class ForgePresetLoader extends LocalPresetLoader
 			}
 			
 			List<String> templateBiomeTagStrings = templateBiome.getTags();
-			IBiomeConfig biomeConfig = biomeConfigs.stream().filter(a -> a.getIdentitySettings().getBiomeName().toLowerCase().trim().equals(templateBiome.getName().toLowerCase().trim())).findFirst().orElse(null);
+			BiomeSettings biomeConfig = biomeConfigs.stream().filter(a -> a.getIdentitySettings().getBiomeName().toLowerCase().trim().equals(templateBiome.getName().toLowerCase().trim())).findFirst().orElse(null);
 			if(biomeConfig == null)
 			{
 				continue;
@@ -765,12 +766,12 @@ public class ForgePresetLoader extends LocalPresetLoader
 		}
 	}
 
-	private Map<Integer, BiomeGroup> processBiomeGroups(String presetFolderName, PresetSettings presetConfig, Map<IBiomeResourceLocation, IBiomeConfig> biomeConfigsByResourceLocation, Map<String, IBiomeConfig> biomeConfigsByName, List<String> blackListedBiomes, Set<Integer> biomeDepths, Map<Integer, List<BiomeGroup>> groupDepths, BiomeLayerData data)
+	private Map<Integer, BiomeGroup> processBiomeGroups(String presetFolderName, PresetSettings presetConfig, Map<IBiomeResourceLocation, BiomeSettings> biomeConfigsByResourceLocation, Map<String, BiomeSettings> biomeConfigsByName, List<String> blackListedBiomes, Set<Integer> biomeDepths, Map<Integer, List<BiomeGroup>> groupDepths, BiomeLayerData data)
 	{
-		int genDepth = presetConfig.getBiomeSettings().getGenerationDepth();
+		int genDepth = presetConfig.getGenerationSettings().getGenerationDepth();
 		Map<Integer, BiomeGroup> groupRegistry = new HashMap<>();
 		// TODO: Refactor BiomeGroupManager to IBiomeGroupManager/IBiomeGroup to avoid PresetConfig cast?
-		for (BiomeGroupFunction group : ((PresetConfig)presetConfig).getBiomeSettings().getBiomeGroupManager().getGroups())
+		for (BiomeGroupFunction group : ((PresetConfig)presetConfig).getGenerationSettings().getBiomeGroupManager().getGroups())
 		{
 			if(OTG.getEngine().getLogger().getLogCategoryEnabled(LogCategory.BIOME_REGISTRY))
 			{
@@ -786,7 +787,7 @@ public class ForgePresetLoader extends LocalPresetLoader
 
 			float totalTemp = 0;
 
-			HashMap<String, IBiomeConfig> groupBiomes = new LinkedHashMap<String, IBiomeConfig>();
+			HashMap<String, BiomeConfig> groupBiomes = new LinkedHashMap<String, BiomeConfig>();
 			List<String> templateBiomeTagStrings = group.getBiomes();
 			List<String> allowedMods = new ArrayList<>();
 			List<Biome> excludedBiomes = new ArrayList<>();
@@ -820,13 +821,13 @@ public class ForgePresetLoader extends LocalPresetLoader
 						// Add biome, don't care about excludes.
 						// Check for biomeconfig name, if none then use  
 						// resourcelocation to look up template biome config.
-						IBiomeConfig biomeConfig = biomeConfigsByName.get(tagString.trim());
+						BiomeSettings biomeConfig = biomeConfigsByName.get(tagString.trim());
 						if(biomeConfig != null)
 						{
 							if(biomeConfig.getIsTemplateForBiome())
 							{
 								// For template biome configs, fetch all associated biomes and add them.
-								for(Entry<IBiomeResourceLocation, IBiomeConfig> entry : biomeConfigsByResourceLocation.entrySet())
+								for(Entry<IBiomeResourceLocation, BiomeSettings> entry : biomeConfigsByResourceLocation.entrySet())
 								{
 									if(entry.getValue().getIdentitySettings().getBiomeName().equals(biomeConfig.getIdentitySettings().getBiomeName()))
 									{
@@ -880,13 +881,13 @@ public class ForgePresetLoader extends LocalPresetLoader
 						tagStrings.add(tagString);
 					}
 				} else {
-					IBiomeConfig biomeConfig = biomeConfigsByName.get(tagString.trim().replace(Constants.LABEL_EXCLUDE, ""));
+					BiomeSettings biomeConfig = biomeConfigsByName.get(tagString.trim().replace(Constants.LABEL_EXCLUDE, ""));
 					if(biomeConfig != null)
 					{
 						if(biomeConfig.getIsTemplateForBiome())
 						{
 							// For template biome configs, fetch all associated biomes and add them.
-							for(Entry<IBiomeResourceLocation, IBiomeConfig> entry : biomeConfigsByResourceLocation.entrySet())
+							for(Entry<IBiomeResourceLocation, BiomeSettings> entry : biomeConfigsByResourceLocation.entrySet())
 							{
 								if(entry.getValue().getIdentitySettings().getBiomeName().equals(biomeConfig.getIdentitySettings().getBiomeName()))
 								{
@@ -1188,7 +1189,7 @@ public class ForgePresetLoader extends LocalPresetLoader
 								// Check for biomeconfig name, if none then use  
 								// resourcelocation to look up template biome config.
 								IBiomeResourceLocation otgLocation = new MCBiomeResourceLocation(biomeForTag.location().getNamespace(), biomeForTag.location().getPath(), presetFolderName);
-								IBiomeConfig biomeConfig = biomeConfigsByResourceLocation.get(otgLocation);
+								BiomeSettings biomeConfig = biomeConfigsByResourceLocation.get(otgLocation);
 								if(biomeConfig != null && !groupBiomes.containsKey(biomeForTag.location().toString()))
 								{
 									if(OTG.getEngine().getLogger().getLogCategoryEnabled(LogCategory.BIOME_REGISTRY))
@@ -1219,31 +1220,31 @@ public class ForgePresetLoader extends LocalPresetLoader
 			}
 
 			// Add each biome to the group
-			for (Entry<String, IBiomeConfig> biome : groupBiomes.entrySet())
+			for (Entry<String, BiomeConfig> biome : groupBiomes.entrySet())
 			{
 				if(biome.getValue() != null)
 				{
-					IBiomeConfig config = biome.getValue();
+					BiomeConfig config = biome.getValue();
 					// Make and add the generation data
 					BiomeData newBiomeData = new BiomeData(
 						config.getOTGBiomeId(),
-						config.getPlacementSettings().getBiomeRarity(),
-						config.getPlacementSettings().getBiomeSize(),
+						config.getGenerationSettings().getBiomeRarity(),
+						config.getGenerationSettings().getBiomeSize(),
 						config.getVisualSettings().getBiomeTemperature(),
-						config.getPlacementSettings().getIsleInBiomes(),
-						config.getPlacementSettings().getBorderInBiomes(),
-						config.getPlacementSettings().getOnlyBorderNearBiomes(),
-						config.getPlacementSettings().getNotBorderNearBiomes()
+						config.getGenerationSettings().getIsleInBiomes(),
+						config.getGenerationSettings().getBorderInBiomes(),
+						config.getGenerationSettings().getOnlyBorderNearBiomes(),
+						config.getGenerationSettings().getNotBorderNearBiomes()
 					);
 					biomes.add(newBiomeData);
 
 					// Add the biome size- if it's already there, nothing is done
-					biomeDepths.add(config.getPlacementSettings().getBiomeSize());
+					biomeDepths.add(config.getGenerationSettings().getBiomeSize());
 					
 					totalTemp += config.getVisualSettings().getBiomeTemperature();
 
 					// Add this biome's rarity to the total for its depth in the group
-					totalDepthRarity[config.getPlacementSettings().getBiomeSize()] += config.getPlacementSettings().getBiomeRarity();
+					totalDepthRarity[config.getGenerationSettings().getBiomeSize()] += config.getGenerationSettings().getBiomeRarity();
 				}
 			}
 

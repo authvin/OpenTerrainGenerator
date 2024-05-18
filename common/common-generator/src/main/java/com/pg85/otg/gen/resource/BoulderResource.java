@@ -2,8 +2,7 @@ package com.pg85.otg.gen.resource;
 
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.ILogger;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -19,7 +18,7 @@ public class BoulderResource extends FrequencyResourceBase
 	private final int minAltitude;
 	private final int maxAltitude;
 
-	public BoulderResource(IBiomeConfig config, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public BoulderResource(BiomeSettings config, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
 		super(config, args, materialReader);
 		assureSize(6, args);
@@ -75,7 +74,7 @@ public class BoulderResource extends FrequencyResourceBase
 			{
 				for (int i2 = z - n; i2 <= z + n; i2++)
 				{
-					IBiomeConfig biome = worldGenRegion.getBiomeConfigForDecoration(i1, i2);
+					BiomeSettings biome = worldGenRegion.getBiomeConfigForDecoration(i1, i2);
 					for (int i3 = y - m; i3 <= y + m; i3++)
 					{
 						f2 = i1 - x;
@@ -83,7 +82,7 @@ public class BoulderResource extends FrequencyResourceBase
 						f4 = i3 - y;
 						if (f2 * f2 + f3 * f3 + f4 * f4 <= f1 * f1)
 						{
-							worldGenRegion.setBlock(i1, i3, i2, this.material, biome.getReplaceBlocks());
+							worldGenRegion.setBlock(i1, i3, i2, this.material, biome.getSurfaceSettings().getReplacedBlocks());
 						}
 					}
 				}

@@ -3,10 +3,11 @@ package com.pg85.otg.gen.surface;
 import java.util.Arrays;
 import java.util.Random;
 
+import com.pg85.otg.config.settings.biome.SurfaceSettings;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.gen.noise.legacy.NoiseGeneratorPerlinMesaBlocks;
 import com.pg85.otg.interfaces.IBiome;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
 import com.pg85.otg.interfaces.ISurfaceGenerator;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
@@ -95,7 +96,7 @@ class MesaSurfaceGenerator implements ISurfaceGenerator
 	private int lastX = Integer.MAX_VALUE;
 	private int lastZ = Integer.MAX_VALUE;
 	private int lastNoise = 0;
-	private LocalMaterialData getBand(IBiomeConfig biomeConfig, int xInWorld, int yInWorld, int zInWorld)
+	private LocalMaterialData getBand(ReplaceBlockMatrix replacedBlocks, int xInWorld, int yInWorld, int zInWorld)
 	{
 		int noise = this.lastNoise;
 		if(this.lastX != xInWorld || this.lastZ != zInWorld)
@@ -106,55 +107,53 @@ class MesaSurfaceGenerator implements ISurfaceGenerator
 			this.lastNoise = noise;
 		}
 		//int l = 0; // TODO: Fix the mesa noise pattern (it's broken for vanilla too).
-		
-		// TODO: BiomeConfig should always be the same, this layer should only be used in a single biome,
-		// Make this prettier?
+
 		LocalMaterialData material = this.clayBands[(yInWorld + noise + 64) % 64];
 		if(material == this.hardClay)
 		{
-			return !this.hardClayIsReplaced ? this.hardClay : this.hardClay.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), yInWorld);
+			return !this.hardClayIsReplaced ? this.hardClay : replacedBlocks.replaceBlock(yInWorld, this.hardClay);
 		}
 		else if(material == this.orangeClay)
 		{
-			return !this.orangeClayIsReplaced ? this.orangeClay : this.orangeClay.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), yInWorld);
+			return !this.orangeClayIsReplaced ? this.orangeClay : replacedBlocks.replaceBlock(yInWorld, this.orangeClay);
 		}
 		else if(material == this.yellowClay)
 		{
-			return !this.yellowClayIsReplaced ? this.yellowClay : this.yellowClay.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), yInWorld);
+			return !this.yellowClayIsReplaced ? this.yellowClay : replacedBlocks.replaceBlock(yInWorld, this.yellowClay);
 		}
 		else if(material == this.brownClay)
 		{
-			return !this.brownClayIsReplaced ? this.brownClay : this.brownClay.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), yInWorld);
+			return !this.brownClayIsReplaced ? this.brownClay : replacedBlocks.replaceBlock(yInWorld, this.brownClay);
 		}
 		else if(material == this.redClay)
 		{
-			return !this.redClayIsReplaced ? this.redClay : this.redClay.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), yInWorld);
+			return !this.redClayIsReplaced ? this.redClay : replacedBlocks.replaceBlock(yInWorld, this.redClay);
 		}
 		else if(material == this.whiteClay)
 		{
-			return !this.whiteClayIsReplaced ? this.whiteClay : this.whiteClay.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), yInWorld);
+			return !this.whiteClayIsReplaced ? this.whiteClay : replacedBlocks.replaceBlock(yInWorld, this.whiteClay);
 		}
 		else if(material == this.silverClay)
 		{
-			return !this.silverClayIsReplaced ? this.silverClay : this.silverClay.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), yInWorld);
+			return !this.silverClayIsReplaced ? this.silverClay : replacedBlocks.replaceBlock(yInWorld, this.silverClay);
 		}
 		else if(material == this.redSand)
 		{
-			return !this.redSandIsReplaced ? this.redSand : this.redSand.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), yInWorld);
+			return !this.redSandIsReplaced ? this.redSand : replacedBlocks.replaceBlock(yInWorld, this.redSand);
 		}
 		return null;
 	}
 
 	@Override
-	public LocalMaterialData getSurfaceBlockAtHeight(ISurfaceGeneratorNoiseProvider noiseProvider, IBiomeConfig biomeConfig, int xInWorld, int yInWorld, int zInWorld)
+	public LocalMaterialData getSurfaceBlockAtHeight(ISurfaceGeneratorNoiseProvider noiseProvider, SurfaceSettings surfaceSettings, int xInWorld, int yInWorld, int zInWorld)
 	{
-		return getBand(biomeConfig, xInWorld, yInWorld, zInWorld);
+		return getBand(surfaceSettings.getReplacedBlocks(), xInWorld, yInWorld, zInWorld);
 	}
 	
 	@Override
-	public LocalMaterialData getGroundBlockAtHeight(ISurfaceGeneratorNoiseProvider noiseProvider, IBiomeConfig biomeConfig, int xInWorld, int yInWorld, int zInWorld)
+	public LocalMaterialData getGroundBlockAtHeight(ISurfaceGeneratorNoiseProvider noiseProvider, SurfaceSettings surfaceSettings, int xInWorld, int yInWorld, int zInWorld)
 	{
-		return getBand(biomeConfig, xInWorld, yInWorld, zInWorld);
+		return getBand(surfaceSettings.getReplacedBlocks(), xInWorld, yInWorld, zInWorld);
 	}
 	
 	// net.minecraft.world.biome.BiomeMesa.generateBands
@@ -249,11 +248,12 @@ class MesaSurfaceGenerator implements ISurfaceGenerator
 			this.generateBands(worldSeed);
 		}
 
-		IBiomeConfig biomeConfig = biome.getBiomeConfig();
+		BiomeSettings biomeConfig = biome.getBiomeConfig();
+		SurfaceSettings surfaceSettings = biomeConfig.getSurfaceSettings();
 		
 		// TODO: BiomeConfig should always be the same, this layer should only be used in a single biome,
 		// Make this prettier?
-		Init(biomeConfig.getReplaceBlocks());		
+		Init(surfaceSettings.getReplacedBlocks());
 		
 		if (this.pillarNoise == null || this.pillarRoofNoise == null || !this.clayBandsGenerated)
 		{
@@ -308,10 +308,10 @@ class MesaSurfaceGenerator implements ISurfaceGenerator
 		int generatedDepth = 0;
 
 		// Bedrock on the ceiling
-		if (biomeConfig.isCeilingBedrock())
+		if (surfaceSettings.getBlockSettings().isCeilingBedrock())
 		{
 			// Moved one block lower to fix lighting issues
-			chunkBuffer.setBlock(x, generatingChunk.heightCap - 2, z, biomeConfig.getBedrockBlockReplaced(generatingChunk.heightCap - 2));
+			chunkBuffer.setBlock(x, generatingChunk.heightCap - 2, z, surfaceSettings.getBedrockBlockReplaced(generatingChunk.heightCap - 2));
 		}
 		
 		int highestBlockInColumn = chunkBuffer.getHighestBlockForColumn(x, z);
@@ -337,12 +337,12 @@ class MesaSurfaceGenerator implements ISurfaceGenerator
 
 			if (y < (int) bryceHeight && worldMaterial.isAir())
 			{
-				chunkBuffer.setBlock(x, y, z, getBand(biomeConfig, x, y, z));
+				chunkBuffer.setBlock(x, y, z, getBand(surfaceSettings.getReplacedBlocks(), x, y, z));
 			}
 
-			if (generatingChunk.mustCreateBedrockAt(biomeConfig.isFlatBedrock(), biomeConfig.isBedrockDisabled(), biomeConfig.isCeilingBedrock(), y))
+			if (generatingChunk.mustCreateBedrockAt(surfaceSettings.getBlockSettings().isFlatBedrock(), surfaceSettings.getBlockSettings().isBedrockDisabled(), surfaceSettings.getBlockSettings().isCeilingBedrock(), y))
 			{
-				chunkBuffer.setBlock(x, y, z, biomeConfig.getBedrockBlockReplaced(y));
+				chunkBuffer.setBlock(x, y, z, surfaceSettings.getBedrockBlockReplaced(y));
 			}
 			else if (generatedDepth < 15 || this.brycePillars)
 			{
@@ -359,7 +359,7 @@ class MesaSurfaceGenerator implements ISurfaceGenerator
 				// same biome water block as surface/ground/stone block.
 				// TODO: If other mods have problems bc of replacedblocks in the chunk during ReplaceBiomeBlocks, 
 				// do replaceblock for stone/water here instead of when initially filling the chunk.				
-				else if(!worldMaterial.equals(biomeConfig.getWaterBlockReplaced(y)))
+				else if(!worldMaterial.equals(surfaceSettings.getWaterBlockReplaced(y)))
 				{
 					if (groundLayerDepth == -1)
 					{
@@ -383,20 +383,20 @@ class MesaSurfaceGenerator implements ISurfaceGenerator
 						{
 							if (this.hasForest && y > 86 + noisePlusRandomFactor * 2)
 							{
-								chunkBuffer.setBlock(x, y, z, biomeConfig.getSurfaceBlockReplaced(y));
+								chunkBuffer.setBlock(x, y, z, surfaceSettings.getSurfaceBlockReplaced(y));
 							}
 							else if (y > waterLevel + 3 + noisePlusRandomFactor)
 							{
 								if (y >= 64 && y <= 127)
 								{
-									worldMaterial = this.getBand(biomeConfig, xInWorld, y, zInWorld);
+									worldMaterial = this.getBand(surfaceSettings.getReplacedBlocks(), xInWorld, y, zInWorld);
 								} else {
-									worldMaterial = !this.orangeClayIsReplaced ? this.orangeClay : this.orangeClay.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), y);
+									worldMaterial = !this.orangeClayIsReplaced ? this.orangeClay : surfaceSettings.getReplacedBlocks().replaceBlock(y, orangeClay);
 								}
 
 								chunkBuffer.setBlock(x, y, z, worldMaterial);
 							} else {
-								chunkBuffer.setBlock(x, y, z, !this.redSandIsReplaced ? this.redSand : this.redSand.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), y));
+								chunkBuffer.setBlock(x, y, z, !this.redSandIsReplaced ? this.redSand : surfaceSettings.getReplacedBlocks().replaceBlock(y, redSand));
 								belowSand = true;
 							}
 						} else {							
@@ -408,16 +408,16 @@ class MesaSurfaceGenerator implements ISurfaceGenerator
 							}
 							else if (useGroundBlockStone)
 							{
-								currentGroundBlock = biomeConfig.getGroundBlockReplaced(y);
+								currentGroundBlock = surfaceSettings.getGroundBlockReplaced(y);
 							}							
 							else if(useDefaultGroundBlock)
 							{
-								currentGroundBlock = !this.whiteClayIsReplaced ? this.whiteClay : this.whiteClay.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), y);
+								currentGroundBlock = !this.whiteClayIsReplaced ? this.whiteClay : surfaceSettings.getReplacedBlocks().replaceBlock(y, whiteClay);
 							}
-							
+							// Todo: Should this be exposed as a setting?
 							if (groundIsStainedClay)
 							{
-								chunkBuffer.setBlock(x, y, z, !this.orangeClayIsReplaced ? this.orangeClay : this.orangeClay.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), y));
+								chunkBuffer.setBlock(x, y, z, !this.orangeClayIsReplaced ? this.orangeClay : surfaceSettings.getReplacedBlocks().replaceBlock(y, orangeClay));
 							} else {
 								chunkBuffer.setBlock(x, y, z, currentGroundBlock);
 							}
@@ -428,9 +428,9 @@ class MesaSurfaceGenerator implements ISurfaceGenerator
 						--groundLayerDepth;
 						if (belowSand)
 						{
-							chunkBuffer.setBlock(x, y, z, !this.orangeClayIsReplaced ? this.orangeClay : this.orangeClay.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), y));
+							chunkBuffer.setBlock(x, y, z, !this.orangeClayIsReplaced ? this.orangeClay : surfaceSettings.getReplacedBlocks().replaceBlock(y, orangeClay));
 						} else {
-							worldMaterial = this.getBand(biomeConfig, xInWorld, y, zInWorld);
+							worldMaterial = this.getBand(surfaceSettings.getReplacedBlocks(), xInWorld, y, zInWorld);
 							chunkBuffer.setBlock(x, y, z, worldMaterial);
 						}
 					}

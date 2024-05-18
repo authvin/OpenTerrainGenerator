@@ -6,7 +6,7 @@ import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.CustomStructureCache;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
@@ -23,7 +23,7 @@ public class CustomObjectResource extends BiomeResourceBase implements ICustomOb
 	private final List<CustomObject> objects;
 	private final List<String> objectNames;
 
-	public CustomObjectResource(IBiomeConfig biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public CustomObjectResource(BiomeSettings biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
 	{
 		super(biomeConfig, args, materialReader);
 		if (args.isEmpty() || (args.size() == 1 && args.get(0).trim().isEmpty()))

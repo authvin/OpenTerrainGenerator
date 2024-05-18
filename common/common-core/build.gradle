@@ -9,8 +9,8 @@ dependencies {
     api("com.fasterxml.jackson.core:jackson-annotations:2.9.7")
     api("com.fasterxml.jackson.core:jackson-core:2.9.7")
     api("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.7")
-    api("com.fasterxml.jackson.core:jackson-databind:2.9.7")
-    api("org.yaml:snakeyaml:1.23")
-    compileOnly 'org.projectlombok:lombok:1.18.20'
-    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+    api('com.fasterxml.jackson.core:jackson-databind:2.16.1')
+    api('org.yaml:snakeyaml:2.2')
+    compileOnly 'org.projectlombok:lombok:1.18.32'
+    annotationProcessor 'org.projectlombok:lombok:1.18.32'
 }

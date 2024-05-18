@@ -179,7 +179,7 @@ public class BO3 implements StructuredCustomObject
 				if(lastX != x + block.x || lastZ != z + block.z)
 				{
 					// TODO: Calculate area required and fetch biome data for whole chunks instead of per column.
-					replaceBlocks = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x + block.x, z + block.z, true).getReplaceBlocks();
+					replaceBlocks = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x + block.x, z + block.z, true).getSurfaceSettings().getReplacedBlocks();
 					lastX = x + block.x;
 					lastZ = z + z + block.z;
 				}
@@ -224,7 +224,7 @@ public class BO3 implements StructuredCustomObject
 				if(lastX != x + block.x || lastZ != z + block.z)
 				{
 					// TODO: Calculate area required and fetch biome data for whole chunks instead of per column.
-					replaceBlocks = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x + block.x, z + block.z, true).getReplaceBlocks();
+					replaceBlocks = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x + block.x, z + block.z, true).getSurfaceSettings().getReplacedBlocks();
 					lastX = x + block.x;
 					lastZ = z + block.z;
 				}
@@ -422,7 +422,7 @@ public class BO3 implements StructuredCustomObject
 			{
 				if(lastX != x + block.x || lastZ != z + block.z)
 				{
-					replaceBlocks = worldGenRegion.getBiomeConfigForDecoration(x + block.x, z + block.z).getReplaceBlocks();
+					replaceBlocks = worldGenRegion.getBiomeConfigForDecoration(x + block.x, z + block.z).getSurfaceSettings().getReplacedBlocks();
 					lastX = x + block.x;
 					lastZ = z + z + block.z;					
 				}				

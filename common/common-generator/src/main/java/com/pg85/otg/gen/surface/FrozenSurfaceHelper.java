@@ -1,8 +1,9 @@
 package com.pg85.otg.gen.surface;
 
+import com.pg85.otg.config.settings.biome.SurfaceSettings;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.IBiome;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.gen.DecorationArea;
@@ -47,7 +48,7 @@ public class FrozenSurfaceHelper
 		IBiome biome = worldGenRegion.getBiomeForDecoration(x, z);
 		if (biome != null)
 		{
-			IBiomeConfig biomeConfig = biome.getBiomeConfig();			
+			BiomeSettings biomeConfig = biome.getBiomeConfig();
 			int blockToFreezeY = worldGenRegion.getHighestBlockAboveYAt(x, z);
 			float tempAtBlockToFreeze = biome.getTemperatureAt(x, blockToFreezeY, z);
 			if (blockToFreezeY > 0 && tempAtBlockToFreeze < Constants.SNOW_AND_ICE_TEMP)
@@ -69,7 +70,7 @@ public class FrozenSurfaceHelper
 	 * @param z Location Z
 	 * @return If a liquid was present at the given location (not necessarily successful in freezing)
 	 */
-	private static boolean freezeLiquid(IBiomeConfig biomeConfig, IWorldGenRegion worldGenRegion, int x, int y, int z, int currentPropagationSize)
+	private static boolean freezeLiquid(BiomeSettings biomeConfig, IWorldGenRegion worldGenRegion, int x, int y, int z, int currentPropagationSize)
 	{
 		if (biomeConfig != null)
 		{
@@ -77,12 +78,12 @@ public class FrozenSurfaceHelper
 			if (materialToFreeze.isLiquid())
 			{
 				// Water & Stationary Water => IceBlock
-				LocalMaterialData iceBlock = biomeConfig.getIceBlockReplaced(y);
+				LocalMaterialData iceBlock = biomeConfig.getSurfaceSettings().getIceBlockReplaced(y);
 				if(shouldFreeze(x, y, z, materialToFreeze, iceBlock, LocalMaterials.WATER))
 				{
 					worldGenRegion.setBlock(x, y, z, iceBlock);
 				} else {
-					LocalMaterialData cooledLavaBlock = biomeConfig.getCooledLavaBlockReplaced(y);
+					LocalMaterialData cooledLavaBlock = biomeConfig.getSurfaceSettings().getCooledLavaBlockReplaced(y);
 					// Lava & Stationary Lava => CooledLavaBlock
 					if(shouldFreeze(x, y, z, materialToFreeze, cooledLavaBlock, LocalMaterials.LAVA))
 					{
@@ -119,7 +120,7 @@ public class FrozenSurfaceHelper
 	 * @param z Location Z
 	 * @param biome The biome associated with the chunk column
 	 */
-	private static void startSnowFall(IBiomeConfig biomeConfig, IWorldGenRegion worldGenRegion, int x, int y, int z, IBiome biome)
+	private static void startSnowFall(BiomeSettings biomeConfig, IWorldGenRegion worldGenRegion, int x, int y, int z, IBiome biome)
 	{
 		int decreaseFactor = 0;
 		float tempAtBlockToFreeze;
@@ -129,7 +130,8 @@ public class FrozenSurfaceHelper
 		if(worldGenRegion.getPresetConfig().getTerrainSettings().isBetterSnowFall())
 		{
 			tempAtBlockToFreeze = biome.getTemperatureAt(x, y, z);
-			snowHeight = biomeConfig.getSnowHeight(tempAtBlockToFreeze);
+            biomeConfig.getSurfaceSettings();
+            snowHeight = SurfaceSettings.getSnowHeight(tempAtBlockToFreeze);
 		} else {
 			snowHeight = 0;
 		}

@@ -1,5 +1,6 @@
 package com.pg85.otg.config.settings.preset;
 
+import com.pg85.otg.config.ConfigFile;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.biome.BiomeGroupFunction;
 import com.pg85.otg.config.biome.BiomeGroupManager;
@@ -22,7 +23,7 @@ import java.util.List;
 
 @Builder
 @Getter
-public class BiomeSettings {
+public class GenerationSettings {
     private final ArrayList<String> worldBiomes;
     private final List<String> blackListedBiomes;
     private final int biomeRarityScale;
@@ -51,7 +52,7 @@ public class BiomeSettings {
     private final BiomeGroupManager biomeGroupManager;
     private final List<TemplateBiome> templateBiomes;
 
-    public static BiomeSettings getBiomeSettings(PresetSettings presetConfig, SettingsMap reader, IConfigFunctionProvider biomeResourcesManager, List<String> biomes, IMaterialReader materialReader, Path settingsDir) {
+    public static GenerationSettings getBiomeSettings(PresetSettings presetConfig, SettingsMap reader, IConfigFunctionProvider biomeResourcesManager, List<String> biomes, IMaterialReader materialReader, Path settingsDir) {
         var biomeSettingsBuilder = builder();
 
         biomeSettingsBuilder.biomeRarityScale(reader.getSetting(PresetStandardValues.BIOME_RARITY_SCALE));
@@ -89,10 +90,10 @@ public class BiomeSettings {
         biomeSettingsBuilder.templateBiomes(readTemplateBiomes(reader, presetConfig, biomeResourcesManager, materialReader));
         biomeSettingsBuilder.biomeGroupManager(readBiomeGroups(reader, presetConfig, biomeResourcesManager, materialReader));
 
-        presetConfig.getBiomeSettings().getBiomeGroupManager().filterBiomes(biomes);
+        presetConfig.getGenerationSettings().getBiomeGroupManager().filterBiomes(biomes);
 
-        biomeSettingsBuilder.isleBiomes(presetConfig.filterBiomes(reader.getSetting(PresetStandardValues.ISLE_BIOMES), biomes));
-        biomeSettingsBuilder.borderBiomes(presetConfig.filterBiomes(reader.getSetting(PresetStandardValues.BORDER_BIOMES), biomes));
+        biomeSettingsBuilder.isleBiomes(ConfigFile.filterBiomes(reader.getSetting(PresetStandardValues.ISLE_BIOMES), biomes));
+        biomeSettingsBuilder.borderBiomes(ConfigFile.filterBiomes(reader.getSetting(PresetStandardValues.BORDER_BIOMES), biomes));
         biomeSettingsBuilder.blackListedBiomes(reader.getSetting(PresetStandardValues.BLACKLISTED_BIOMES));
         return biomeSettingsBuilder.fixSettings().build();
     }
@@ -121,8 +122,8 @@ public class BiomeSettings {
         return biomeGroupManager;
     }
 
-    public static class BiomeSettingsBuilder {
-        public BiomeSettingsBuilder fixSettings() {
+    public static class GenerationSettingsBuilder {
+        public GenerationSettingsBuilder fixSettings() {
             checkLandSize();
             checkLandFuzzy();
             checkRiverRarity();

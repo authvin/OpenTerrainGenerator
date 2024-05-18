@@ -5,7 +5,7 @@ import java.util.Random;
 
 import com.pg85.otg.config.biome.BiomeResourceBase;
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 
@@ -19,7 +19,7 @@ public abstract class FrequencyResourceBase extends BiomeResourceBase implements
 	protected int frequency;
 	protected double rarity;
 	
-	public FrequencyResourceBase(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader)
+	public FrequencyResourceBase(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader)
 	{
 		super(biomeConfig, args, materialReader);
 	}

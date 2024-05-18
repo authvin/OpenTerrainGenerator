@@ -1,8 +1,7 @@
 package com.pg85.otg.gen.resource;
 
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.ILogger;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -21,7 +20,7 @@ public class UnderWaterOreResource extends FrequencyResourceBase
 	private final int size;
 	private final MaterialSet sourceBlocks;
 
-	public UnderWaterOreResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public UnderWaterOreResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
 		super(biomeConfig, args, materialReader);
 		assureSize(5, args);
@@ -61,7 +60,7 @@ public class UnderWaterOreResource extends FrequencyResourceBase
 				deltaZ = currentZ - z;
 				if(worldGenRegion.getDecorationArea().isInAreaBeingDecorated(currentX, currentZ))
 				{
-					IBiomeConfig biome = worldGenRegion.getBiomeConfigForDecoration(currentX, currentZ);
+					BiomeSettings biome = worldGenRegion.getBiomeConfigForDecoration(currentX, currentZ);
 					if (deltaX * deltaX + deltaZ * deltaZ <= currentSize * currentSize)
 					{
 						for (int y = firstSolidBlock - 2; y <= firstSolidBlock + 2; y++)
@@ -69,7 +68,7 @@ public class UnderWaterOreResource extends FrequencyResourceBase
 							sourceBlock = worldGenRegion.getMaterial(currentX, y, currentZ);
 							if (this.sourceBlocks.contains(sourceBlock))
 							{
-								worldGenRegion.setBlock(currentX, y, currentZ, this.material, biome.getReplaceBlocks());
+								worldGenRegion.setBlock(currentX, y, currentZ, this.material, biome.getSurfaceSettings().getReplacedBlocks());
 							}
 						}
 					}

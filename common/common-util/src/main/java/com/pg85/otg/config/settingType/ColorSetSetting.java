@@ -23,7 +23,7 @@ public class ColorSetSetting extends Setting<ColorSet>
 	@Override
 	public ColorSet read(String string, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		return new SimpleColorSet(StringHelper.readCommaSeperatedString(string), materialReader);
+		return new SimpleColorSet(StringHelper.readCommaSeperatedString(string));
 	}
 
 }

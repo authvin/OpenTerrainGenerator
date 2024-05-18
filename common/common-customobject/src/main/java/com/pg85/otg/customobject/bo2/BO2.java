@@ -23,7 +23,7 @@ import com.pg85.otg.customobject.creator.ObjectType;
 import com.pg85.otg.customobject.structures.CustomStructureCache;
 import com.pg85.otg.customobject.util.BoundingBox;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ICustomObjectManager;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
@@ -112,7 +112,7 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 			}
 		}
 
-		IBiomeConfig biomeConfig = null;
+		BiomeSettings biomeConfig = null;
 		int lastX = Integer.MAX_VALUE;
 		int lastZ = Integer.MAX_VALUE;
 		for (ObjectCoordinate point : blocksToSpawn)
@@ -126,7 +126,7 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 					lastX = x + point.x;
 					lastZ = z + point.z;
 				}
-				setBlock(worldGenRegion, (x + point.x), y + point.y, z + point.z, point.material, biomeConfig.getReplaceBlocks());				
+				setBlock(worldGenRegion, (x + point.x), y + point.y, z + point.z, point.material, biomeConfig.getSurfaceSettings().getReplacedBlocks());
 			} else {
 				setBlock(worldGenRegion, (x + point.x), y + point.y, z + point.z, point.material);
 			}
@@ -201,7 +201,7 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 				if(lastX != x + point.x || lastZ != z + point.z)
 				{
 					// TODO: Calculate area required and fetch biome data for whole chunks instead of per column.
-					replaceBlocks = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x + point.x, z + point.z, true).getReplaceBlocks();
+					replaceBlocks = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x + point.x, z + point.z, true).getSurfaceSettings().getReplacedBlocks();
 					lastX = x + point.x;
 					lastZ = z + point.z;
 				}
@@ -413,7 +413,7 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 					this.doReplaceBlocks && 
 					(lastX != x + point.x || lastZ != z + point.z))
 				{
-					replaceBlocks = worldGenRegion.getBiomeConfigForDecoration(x + point.x, z + point.z).getReplaceBlocks();
+					replaceBlocks = worldGenRegion.getBiomeConfigForDecoration(x + point.x, z + point.z).getSurfaceSettings().getReplacedBlocks();
 					lastX = x + point.x;
 					lastZ = z + point.z;
 				}

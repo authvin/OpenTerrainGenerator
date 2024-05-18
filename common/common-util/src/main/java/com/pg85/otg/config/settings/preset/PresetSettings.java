@@ -1,8 +1,6 @@
 package com.pg85.otg.config.settings.preset;
 
 import com.pg85.otg.config.ConfigFile;
-import com.pg85.otg.util.biome.ReplaceBlockMatrix;
-import com.pg85.otg.util.materials.LocalMaterialData;
 import lombok.Getter;
 
 /**
@@ -22,15 +20,13 @@ public abstract class PresetSettings implements ConfigFile {
 	protected SpawnSettings spawnSettings;
 	protected PortalSettings portalSettings;
 	protected DimensionSettings dimensionSettings;
-	protected BiomeSettings biomeSettings;
+	protected GenerationSettings generationSettings;
 	protected TerrainSettings terrainSettings;
 	protected ImageSettings imageSettings;
-	protected CustomStructureSettings customStructureSettings;
 	protected VisualSettings visualSettings;
 	protected PresetInfo presetInfo;
 	protected ResourceSettings resourceSettings;
 	protected BlockSettings blockSettings;
-	protected BedrockSettings bedrockSettings;
 	private final String configName;
 
     protected PresetSettings(String configName) {
@@ -41,7 +37,5 @@ public abstract class PresetSettings implements ConfigFile {
 	public String getConfigName() {
 		return configName;
 	}
-
-    public abstract LocalMaterialData getBedrockBlockReplaced(ReplaceBlockMatrix replaceBlocks, int y);
 }
 

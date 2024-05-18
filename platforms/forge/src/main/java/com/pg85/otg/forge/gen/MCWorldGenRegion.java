@@ -10,7 +10,7 @@ import com.pg85.otg.constants.Constants;
 import com.pg85.otg.forge.materials.ForgeMaterialData;
 import com.pg85.otg.forge.util.ForgeNBTHelper;
 import com.pg85.otg.interfaces.IBiome;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
@@ -46,7 +46,7 @@ public class MCWorldGenRegion extends ForgeWorldGenRegion
 	}
 	
 	@Override
-	public IBiomeConfig getBiomeConfigForDecoration(int worldX, int worldZ)
+	public BiomeSettings getBiomeConfigForDecoration(int worldX, int worldZ)
 	{
 		throw new NotImplementedException("This method is not available for non-OTG worlds, you're trying to use an unsupported feature.");
 	}

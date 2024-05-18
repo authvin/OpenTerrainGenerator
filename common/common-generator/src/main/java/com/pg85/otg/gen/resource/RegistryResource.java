@@ -4,8 +4,7 @@ import java.util.List;
 
 import com.pg85.otg.config.biome.BiomeResourceBase;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.ILogger;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
 
 public class RegistryResource  extends BiomeResourceBase
@@ -13,7 +12,7 @@ public class RegistryResource  extends BiomeResourceBase
 	private final String registryKey;
 	private final String decorationStage;
 
-	public RegistryResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public RegistryResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
 		super(biomeConfig, args, materialReader);
 		assureSize(1, args);

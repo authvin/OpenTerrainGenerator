@@ -1,6 +1,6 @@
 package com.pg85.otg.gen.surface;
 
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.SurfaceSettings;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.materials.LocalMaterialData;
 
@@ -24,64 +24,39 @@ class MultipleLayersSurfaceGeneratorLayer implements Comparable<MultipleLayersSu
 		this.maxNoise = maxNoise;
 	}
 
-	LocalMaterialData getSurfaceBlockReplaced(int y, IBiomeConfig biomeConfig)
+	LocalMaterialData getBlockReplaced(int y, SurfaceSettings surfaceSettings, LocalMaterialData block, boolean isReplaced)
 	{
 		// TODO: Make this prettier?
-		Init(biomeConfig.getReplaceBlocks());
+		Init(surfaceSettings.getReplacedBlocks());
 		LocalMaterialData materialData = null;
-		if(this.surfaceBlockIsReplaced)
+		if(isReplaced)
 		{
-			materialData = this.surfaceBlock.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), y);
+			materialData = surfaceSettings.getReplacedBlocks().replaceBlock(y, block);
 		}
 		if(materialData == null)
 		{
-			materialData = this.surfaceBlock;
+			materialData = block;
 		}
-		if(materialData.isAir() && y < biomeConfig.getWaterLevelMax() && y >= biomeConfig.getWaterLevelMin())
+		if(materialData.isAir() && y < surfaceSettings.getWaterLevelMax() && y >= surfaceSettings.getWaterLevelMin())
 		{
-			materialData = biomeConfig.getWaterBlockReplaced(y);
+			materialData = surfaceSettings.getWaterBlockReplaced(y);
 		}
 		return materialData;
 	}
 
-	LocalMaterialData getUnderWaterSurfaceBlockReplaced(int y, IBiomeConfig biomeConfig)
+	LocalMaterialData getSurfaceBlockReplaced(int y, SurfaceSettings surfaceSettings)
 	{
-		// TODO: Make this prettier?
-		Init(biomeConfig.getReplaceBlocks());
-		LocalMaterialData materialData = null;
-		if(this.underWaterSurfaceBlockIsReplaced)
-		{
-			materialData = this.underWaterSurfaceBlock.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), y);
-		}
-		if(materialData == null)
-		{
-			materialData = this.underWaterSurfaceBlock;
-		}
-		if(materialData.isAir() && y < biomeConfig.getWaterLevelMax() && y >= biomeConfig.getWaterLevelMin())
-		{
-			materialData = biomeConfig.getWaterBlockReplaced(y);
-		}
-		return materialData;
+		return getBlockReplaced(y, surfaceSettings, surfaceBlock, surfaceBlockIsReplaced);
+	}
+
+	LocalMaterialData getUnderWaterSurfaceBlockReplaced(int y, SurfaceSettings surfaceSettings)
+	{
+		return getBlockReplaced(y, surfaceSettings, underWaterSurfaceBlock, underWaterSurfaceBlockIsReplaced);
 	}
 	
-	LocalMaterialData getGroundBlockReplaced(int y, IBiomeConfig biomeConfig)
+	LocalMaterialData getGroundBlockReplaced(int y, SurfaceSettings surfaceSettings)
 	{
-		// TODO: Make this prettier?
-		Init(biomeConfig.getReplaceBlocks());
-		LocalMaterialData materialData = null;
-		if(this.groundBlockIsReplaced)
-		{
-			materialData = this.groundBlock.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getReplaceBlocks(), y);
-		}
-		if(materialData == null)
-		{
-			materialData = this.groundBlock;
-		}
-		if(materialData.isAir() && y < biomeConfig.getWaterLevelMax() && y >= biomeConfig.getWaterLevelMin())
-		{
-			materialData = biomeConfig.getWaterBlockReplaced(y);
-		}
-		return materialData;
+		return getBlockReplaced(y, surfaceSettings, groundBlock, groundBlockIsReplaced);
 	}
 	
 	private void Init(ReplaceBlockMatrix replacedBlocks)

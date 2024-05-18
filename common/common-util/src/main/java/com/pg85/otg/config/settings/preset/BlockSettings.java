@@ -17,6 +17,9 @@ public class BlockSettings {
     private final LocalMaterialData cooledLavaBlock;
     private final LocalMaterialData iceBlock;
     private final LocalMaterialData carverLavaBlock;
+    private final boolean ceilingBedrock;
+    private final boolean flatBedrock;
+    private final boolean bedrockDisabled;
 
     public static BlockSettings getBlockSettings(SettingsMap reader, IMaterialReader materialReader) {
         var blockSettingsBuilder = builder();
@@ -27,6 +30,9 @@ public class BlockSettings {
         blockSettingsBuilder.cooledLavaBlock(reader.getSetting(PresetStandardValues.COOLED_LAVA_BLOCK, materialReader));
         blockSettingsBuilder.iceBlock(reader.getSetting(PresetStandardValues.ICE_BLOCK, materialReader));
         blockSettingsBuilder.carverLavaBlock(reader.getSetting(PresetStandardValues.CARVER_LAVA_BLOCK, materialReader));
+        blockSettingsBuilder.bedrockDisabled(reader.getSetting(PresetStandardValues.DISABLE_BEDROCK));
+        blockSettingsBuilder.ceilingBedrock(reader.getSetting(PresetStandardValues.CEILING_BEDROCK));
+        blockSettingsBuilder.flatBedrock(reader.getSetting(PresetStandardValues.FLAT_BEDROCK));
         return blockSettingsBuilder.build();
     }
 }

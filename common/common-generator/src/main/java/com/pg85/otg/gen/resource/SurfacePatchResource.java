@@ -4,8 +4,7 @@ import com.pg85.otg.config.biome.BiomeResourceBase;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.gen.noise.legacy.NoiseGeneratorSurfacePatchOctaves;
-import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.ILogger;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
@@ -35,7 +34,7 @@ public class SurfacePatchResource  extends BiomeResourceBase implements IBasicRe
 	private final Random random;
 	private final MaterialSet sourceBlocks;
 
-	public SurfacePatchResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public SurfacePatchResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
 		super(biomeConfig, args, materialReader);
 		assureSize(4, args);
@@ -103,7 +102,7 @@ public class SurfacePatchResource  extends BiomeResourceBase implements IBasicRe
 			LocalMaterialData materialAtLocation = worldGenRegion.getMaterial(x, y, z);
 			if (this.sourceBlocks.contains(materialAtLocation))
 			{
-				ReplaceBlockMatrix replaceBlocks = worldGenRegion.getBiomeConfigForDecoration(x, z).getReplaceBlocks();
+				ReplaceBlockMatrix replaceBlocks = worldGenRegion.getBiomeConfigForDecoration(x, z).getSurfaceSettings().getReplacedBlocks();
 				worldGenRegion.setBlock(x, y, z, this.material, replaceBlocks);
 				if (yNoise < 0.12D)
 				{

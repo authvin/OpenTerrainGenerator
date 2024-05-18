@@ -14,7 +14,7 @@ import com.pg85.otg.constants.settings.structure.RuinedPortalType;
 import com.pg85.otg.constants.settings.structure.VillageType;
 import com.pg85.otg.gen.resource.RegistryResource;
 import com.pg85.otg.interfaces.IBiome;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.config.settings.biome.BiomeStructureSettings;
 import com.pg85.otg.config.settings.biome.BiomeVisualSettings;
@@ -68,9 +68,9 @@ import net.minecraftforge.registries.ForgeRegistries;
 public class ForgeBiome implements IBiome
 {
 	private final Biome biomeBase;
-	private final IBiomeConfig biomeConfig;
+	private final BiomeSettings biomeConfig;
 
-	public ForgeBiome(Biome biomeBase, IBiomeConfig biomeConfig)
+	public ForgeBiome(Biome biomeBase, BiomeSettings biomeConfig)
 	{
 		this.biomeBase = biomeBase;
 		this.biomeConfig = biomeConfig;
@@ -83,7 +83,7 @@ public class ForgeBiome implements IBiome
 	}
 
 	@Override
-	public IBiomeConfig getBiomeConfig()
+	public BiomeSettings getBiomeConfig()
 	{
 		return this.biomeConfig;
 	}
@@ -93,7 +93,7 @@ public class ForgeBiome implements IBiome
 		return biomeBase;
 	}
 
-	public static Biome createOTGBiome(boolean isOceanBiome, PresetSettings presetConfig, IBiomeConfig biomeConfig)
+	public static Biome createOTGBiome(boolean isOceanBiome, PresetSettings presetConfig, BiomeSettings biomeConfig)
 	{
 		BiomeGenerationSettings.Builder biomeGenerationSettingsBuilder = new BiomeGenerationSettings.Builder();
 
@@ -110,7 +110,7 @@ public class ForgeBiome implements IBiome
 		DefaultBiomeFeatures.addDefaultCarvers(biomeGenerationSettingsBuilder);
 
 		// Register any Registry() resources to the biome, to be handled by MC.
-		for (ConfigFunction<IBiomeConfig> res : ((BiomeConfig)biomeConfig).getResourceQueue())
+		for (ConfigFunction<BiomeSettings> res : ((BiomeConfig)biomeConfig).getResourceQueue())
 		{
 			if (res instanceof RegistryResource)
 			{
@@ -254,7 +254,7 @@ public class ForgeBiome implements IBiome
 		return biomeBuilder.build().setRegistryName(registryName);
 	}
 
-	private static MobSpawnInfo.Builder createMobSpawnInfo(IBiomeConfig biomeConfig)
+	private static MobSpawnInfo.Builder createMobSpawnInfo(BiomeSettings biomeConfig)
 	{
 		MobSpawnInfo.Builder mobSpawnInfoBuilder = new MobSpawnInfo.Builder();
 		addMobGroup(EntityClassification.MONSTER, mobSpawnInfoBuilder, biomeConfig.getMobSettings().getMonsters(), biomeConfig.getIdentitySettings().getBiomeName());
@@ -284,7 +284,7 @@ public class ForgeBiome implements IBiome
 		}
 	}	
 	
-	private static void addVanillaStructures(Builder biomeGenerationSettingsBuilder, PresetSettings presetConfig, IBiomeConfig biomeConfig)
+	private static void addVanillaStructures(Builder biomeGenerationSettingsBuilder, PresetSettings presetConfig, BiomeSettings biomeConfig)
 	{
 		// TODO: Currently we can only enable/disable structures per biome and use any configuration options exposed by the vanilla structure 
 		// classes (size for villages fe). If we want to be able to customise more, we'll need to implement our own structure classes.

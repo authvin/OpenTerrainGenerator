@@ -5,8 +5,7 @@ import java.util.Random;
 
 import com.pg85.otg.config.biome.BiomeResourceBase;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IBiomeConfig;
-import com.pg85.otg.interfaces.ILogger;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.helpers.MathHelper;
@@ -21,7 +20,7 @@ public class IcebergResource extends BiomeResourceBase implements IBasicResource
 	private final double[] rarities;
 	private final double totalRarity;
 
-	public IcebergResource(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public IcebergResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
 		super(biomeConfig, args, materialReader);
 		assureSize(4, args);
@@ -68,7 +67,7 @@ public class IcebergResource extends BiomeResourceBase implements IBasicResource
 		
 		int x = world.getDecorationArea().getChunkBeingDecorated().getBlockX();
 		int z = world.getDecorationArea().getChunkBeingDecorated().getBlockZ();
-		int y = world.getBiomeConfigForDecoration(x, z).getWaterLevelMax();
+		int y = world.getBiomeConfigForDecoration(x, z).getSurfaceSettings().getWaterLevelMax();
 		boolean flag1 = random.nextDouble() > 0.7D;
 		double drandom1 = random.nextDouble() * 2.0D * Math.PI;
 		int irandom1 = 11 - random.nextInt(5);
@@ -169,7 +168,7 @@ public class IcebergResource extends BiomeResourceBase implements IBasicResource
 		int x2;
 		int y2;
 		int z2;
-		IBiomeConfig biomeConfig;
+		BiomeSettings biomeConfig;
 		LocalMaterialData replacedMaterial;
 		LocalMaterialData replacedMaterial2;
 		LocalMaterialData current;
@@ -188,10 +187,10 @@ public class IcebergResource extends BiomeResourceBase implements IBasicResource
 					biomeConfig = world.getCachedBiomeProvider().getBiomeConfig(x2, z2, true);
 					replacedMaterial = material;
 					replacedMaterial2 = material2;
-					if(biomeConfig.getReplaceBlocks() != null)
+					if(biomeConfig.getSurfaceSettings().getReplacedBlocks() != null)
 					{
-						replacedMaterial = biomeConfig.getReplaceBlocks().replaceBlock(y2, material);
-						replacedMaterial2 = biomeConfig.getReplaceBlocks().replaceBlock(y2, material2);
+						replacedMaterial = biomeConfig.getSurfaceSettings().getReplacedBlocks().replaceBlock(y2, material);
+						replacedMaterial2 = biomeConfig.getSurfaceSettings().getReplacedBlocks().replaceBlock(y2, material2);
 					}					
 					if (isIcebergBlock(current, replacedMaterial, replacedMaterial2) || current.isMaterial(LocalMaterials.SNOW_BLOCK))
 					{
@@ -316,7 +315,7 @@ public class IcebergResource extends BiomeResourceBase implements IBasicResource
 		int x2;
 		int y2;
 		int z2;
-		IBiomeConfig biomeConfig;
+		BiomeSettings biomeConfig;
 		LocalMaterialData replacedMaterial;
 		LocalMaterialData replacedMaterial2;
 		LocalMaterialData current;
@@ -334,10 +333,10 @@ public class IcebergResource extends BiomeResourceBase implements IBasicResource
 					biomeConfig = world.getCachedBiomeProvider().getBiomeConfig(x2, z2, true);
 					replacedMaterial = material;
 					replacedMaterial2 = material2;
-					if(biomeConfig.getReplaceBlocks() != null)
+					if(biomeConfig.getSurfaceSettings().getReplacedBlocks() != null)
 					{
-						replacedMaterial = biomeConfig.getReplaceBlocks().replaceBlock(y2, material);
-						replacedMaterial2 = biomeConfig.getReplaceBlocks().replaceBlock(y2, material2);
+						replacedMaterial = biomeConfig.getSurfaceSettings().getReplacedBlocks().replaceBlock(y2, material);
+						replacedMaterial2 = biomeConfig.getSurfaceSettings().getReplacedBlocks().replaceBlock(y2, material2);
 					}
 					current = world.getMaterialDirect(x2, y2, z2);
 					if (isIcebergBlock(current, replacedMaterial, replacedMaterial2) || current.isMaterial(LocalMaterials.SNOW))
@@ -356,7 +355,7 @@ public class IcebergResource extends BiomeResourceBase implements IBasicResource
 								world.getMaterialDirect(x2, y2, z2 - 1),
 								world.getMaterialDirect(x2, y2, z2 + 1)
 							};
-							IBiomeConfig[] biomeConfigs =
+							BiomeSettings[] biomeConfigs =
 							{
 								world.getCachedBiomeProvider().getBiomeConfig(x2 - 1, z2, true),
 								world.getCachedBiomeProvider().getBiomeConfig(x2 + 1, z2, true),
@@ -367,10 +366,10 @@ public class IcebergResource extends BiomeResourceBase implements IBasicResource
 							int i = 0;
 							for (LocalMaterialData mat : materials)
 							{
-								if(biomeConfigs[i].getReplaceBlocks() != null)
+								if(biomeConfigs[i].getSurfaceSettings().getReplacedBlocks() != null)
 								{
-									replacedMaterial = biomeConfigs[i].getReplaceBlocks().replaceBlock(y2, material);
-									replacedMaterial2 = biomeConfigs[i].getReplaceBlocks().replaceBlock(y2, material2);
+									replacedMaterial = biomeConfigs[i].getSurfaceSettings().getReplacedBlocks().replaceBlock(y2, material);
+									replacedMaterial2 = biomeConfigs[i].getSurfaceSettings().getReplacedBlocks().replaceBlock(y2, material2);
 								}
 								if (!isIcebergBlock(mat, replacedMaterial, replacedMaterial2))
 								{

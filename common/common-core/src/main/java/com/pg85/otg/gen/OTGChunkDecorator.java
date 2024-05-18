@@ -15,7 +15,7 @@ import com.pg85.otg.customobject.structures.CustomStructureCache;
 import com.pg85.otg.customobject.util.BO3Enums.SpawnHeightEnum;
 import com.pg85.otg.gen.resource.IBasicResource;
 import com.pg85.otg.gen.surface.FrozenSurfaceHelper;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IChunkDecorator;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
@@ -84,7 +84,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 		return this.lockingObject;
 	}
 
-	public void decorate(String presetFolderName, ChunkCoordinate chunkCoord, IWorldGenRegion worldGenRegion, IBiomeConfig biomeConfig, CustomStructureCache structureCache)
+	public void decorate(String presetFolderName, ChunkCoordinate chunkCoord, IWorldGenRegion worldGenRegion, BiomeSettings biomeConfig, CustomStructureCache structureCache)
 	{
 		ILogger logger = OTG.getEngine().getLogger();
 		
@@ -125,7 +125,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 	}
 
 	// TODO: Fire decoration events.
-	private void doDecorate(ChunkCoordinate chunkCoord, IWorldGenRegion worldGenRegion, IBiomeConfig biomeConfig, ILogger logger, IMaterialReader materialReader, Path otgRootFolder, CustomStructureCache structureCache, CustomObjectManager customObjectManager, CustomObjectResourcesManager customObjectResourcesManager, IModLoadedChecker modLoadedChecker)
+	private void doDecorate(ChunkCoordinate chunkCoord, IWorldGenRegion worldGenRegion, BiomeSettings biomeConfig, ILogger logger, IMaterialReader materialReader, Path otgRootFolder, CustomStructureCache structureCache, CustomObjectManager customObjectManager, CustomObjectResourcesManager customObjectResourcesManager, IModLoadedChecker modLoadedChecker)
 	{		
 		if (biomeConfig == null)
 		{
@@ -153,7 +153,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 		this.rand.setSeed(chunkCoord.getChunkX() * l1 + chunkCoord.getChunkZ() * l2 ^ resourcesSeed);
 
 		// Use BO4 logic for BO4 worlds
-		if(worldGenRegion.getPresetConfig().getCustomStructureSettings().getCustomStructureType() == CustomStructureType.BO4)
+		if(worldGenRegion.getPresetConfig().getResourceSettings().getCustomStructureType() == CustomStructureType.BO4)
 		{
 			// BO4 Plotting cannot currently be done in a thread-safe/non-blocking way,
 			// Paper may try to do async chunkgen, so lock here. This will ofcourse 
@@ -166,16 +166,16 @@ public class OTGChunkDecorator implements IChunkDecorator
 
 		if(
 			worldGenRegion.getSpawnChunk().equals(chunkCoord) &&
-			worldGenRegion.getPresetConfig().getCustomStructureSettings().getBO3AtSpawn() != null &&
-			!worldGenRegion.getPresetConfig().getCustomStructureSettings().getBO3AtSpawn().trim().isEmpty()
+			worldGenRegion.getPresetConfig().getResourceSettings().getBO3AtSpawn() != null &&
+			!worldGenRegion.getPresetConfig().getResourceSettings().getBO3AtSpawn().trim().isEmpty()
 		)
 		{
-			handleBO3AtSpawn(worldGenRegion, chunkCoord, worldGenRegion.getPresetConfig().getCustomStructureSettings().getBO3AtSpawn(), worldGenRegion.getPresetFolderName(), otgRootFolder, structureCache, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);
+			handleBO3AtSpawn(worldGenRegion, chunkCoord, worldGenRegion.getPresetConfig().getResourceSettings().getBO3AtSpawn(), worldGenRegion.getPresetFolderName(), otgRootFolder, structureCache, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);
 		}
 		
 		long startTimeAll = System.currentTimeMillis();
 		// Resource sequence
-		for (ConfigFunction<IBiomeConfig> res : ((BiomeConfig)biomeConfig).getResourceQueue())
+		for (ConfigFunction<BiomeSettings> res : ((BiomeConfig)biomeConfig).getResourceQueue())
 		{
 			long startTime = System.currentTimeMillis();
 			if (res instanceof ICustomObjectResource)
@@ -206,9 +206,9 @@ public class OTGChunkDecorator implements IChunkDecorator
 			{
 				if(logger.getLogCategoryEnabled(LogCategory.DECORATION))
 				{
-					if(!((ErroredFunction<IBiomeConfig>)res).isLogged)
+					if(!((ErroredFunction<BiomeSettings>)res).isLogged)
 					{
-						((ErroredFunction<IBiomeConfig>)res).isLogged = true;
+						((ErroredFunction<BiomeSettings>)res).isLogged = true;
 						if(logger.getLogCategoryEnabled(LogCategory.DECORATION))
 						{
 							logger.log(LogLevel.ERROR, LogCategory.DECORATION, "Errored setting ignored for biome " + biomeConfig.getIdentitySettings().getBiomeName() + " : " + toString());

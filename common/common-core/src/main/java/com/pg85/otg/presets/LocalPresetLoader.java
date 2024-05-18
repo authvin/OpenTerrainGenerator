@@ -166,7 +166,7 @@ public abstract class LocalPresetLoader
 		
 		// Load all files
 		BiomeConfigFinder biomeConfigFinder = new BiomeConfigFinder();
-		Map<String, BiomeConfigStub> biomeConfigStubs = biomeConfigFinder.findBiomes(presetConfig.getBiomeSettings().getWorldBiomes(), presetConfig.getTerrainSettings().getWorldHeightScale(), biomeDirs, logger, materialReader);
+		Map<String, BiomeConfigStub> biomeConfigStubs = biomeConfigFinder.findBiomes(presetConfig.getGenerationSettings().getWorldBiomes(), presetConfig.getTerrainSettings().getWorldHeightScale(), biomeDirs, logger, materialReader);
 
 		// Read all settings
 		ArrayList<BiomeConfig> biomeConfigs = readAndWriteSettings(presetConfig, biomeConfigStubs, presetDir, presetShortName, presetMajorVersion, true, biomeResourcesManager, logger, materialReader);
@@ -228,7 +228,7 @@ public abstract class LocalPresetLoader
 			// Index ReplacedBlocks
 			if (!presetConfig.isBiomeConfigsHaveReplacement())
 			{
-				presetConfig.setBiomeConfigsHaveReplacement(biomeConfig.hasReplaceBlocksSettings());
+				presetConfig.setBiomeConfigsHaveReplacement(biomeConfig.getSurfaceSettings().getReplacedBlocks().hasReplaceSettings());
 			}
 
 			// Index maxSmoothRadius

@@ -4,14 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.pg85.otg.config.ConfigFunction;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 
 /** Represents a BiomeConfig ResourceQueue resource. */
-public abstract class BiomeResourceBase extends ConfigFunction<IBiomeConfig>
+public abstract class BiomeResourceBase extends ConfigFunction<BiomeSettings>
 {
-	static BiomeResourceBase createResource(IBiomeConfig config, ILogger logger, IMaterialReader materialReader, Class<? extends BiomeResourceBase> clazz, Object... args)
+	static BiomeResourceBase createResource(BiomeSettings config, ILogger logger, IMaterialReader materialReader, Class<? extends BiomeResourceBase> clazz, Object... args)
 	{
 		List<String> stringArgs = new ArrayList<String>(args.length);
 		for (Object arg : args)
@@ -21,7 +21,7 @@ public abstract class BiomeResourceBase extends ConfigFunction<IBiomeConfig>
 
 		try
 		{
-			return clazz.getConstructor(IBiomeConfig.class, List.class, IMaterialReader.class).newInstance(config, stringArgs, materialReader);
+			return clazz.getConstructor(BiomeSettings.class, List.class, IMaterialReader.class).newInstance(config, stringArgs, materialReader);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -29,5 +29,5 @@ public abstract class BiomeResourceBase extends ConfigFunction<IBiomeConfig>
 
 	// We're using reflection to match constructors for resources, so resource classes must implement this 
 	// constructor or createResource / com.pg85.otg.config.biome.BiomeResourcesManager.getConfigFunction() will fail. 
-	public BiomeResourceBase(IBiomeConfig biomeConfig, List<String> args, IMaterialReader materialReader) { }
+	public BiomeResourceBase(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) { }
 }

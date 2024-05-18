@@ -3,7 +3,7 @@ package com.pg85.otg.forge.network;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.util.biome.ColorSet;
 import com.pg85.otg.util.biome.ColorThreshold;
 import com.pg85.otg.util.biome.SimpleColorSet;
@@ -17,7 +17,7 @@ public class BiomeSettingSyncWrapper
 	private final ColorSet foliageColorControl;
 	private final ColorSet waterColorControl;
 
-	public BiomeSettingSyncWrapper(IBiomeConfig config)
+	public BiomeSettingSyncWrapper(BiomeSettings config)
 	{
 		this.fogDensity = config.getVisualSettings().getFogDensity();
 		this.grassColorControl = config.getVisualSettings().getGrassColorControl();

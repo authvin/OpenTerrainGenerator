@@ -1,13 +1,12 @@
 package com.pg85.otg.config;
 
-import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.io.SimpleSettingsMap;
+import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.minecraft.BiomeRegistryNames;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +25,7 @@ public interface ConfigFile
 	 */
 	default SettingsMap getSettingsAsMap()
 	{
-		SettingsMap settingsMap = new SimpleSettingsMap(getConfigName());
+		SettingsMap settingsMap = new SimpleSettingsMap(getConfigName(), Constants.ProtocolVersion);
 		writeConfigSettings(settingsMap);
 		return settingsMap;
 	}
@@ -72,7 +71,7 @@ public interface ConfigFile
 		return currentValue;
 	}
 
-	default List<String> filterBiomes(List<String> biomes, List<String> customBiomes)
+	static List<String> filterBiomes(List<String> biomes, List<String> customBiomes)
 	{
 		ArrayList<String> output = new ArrayList<String>();
 

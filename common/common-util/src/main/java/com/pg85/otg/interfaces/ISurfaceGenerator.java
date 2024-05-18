@@ -1,5 +1,6 @@
 package com.pg85.otg.interfaces;
 
+import com.pg85.otg.config.settings.biome.SurfaceSettings;
 import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.gen.GeneratingChunk;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -21,7 +22,7 @@ public interface ISurfaceGenerator
 	 * Spawns this surface layer in the world.
 	 * @param generatingChunk Information about the chunk being generated.
 	 * @param chunkBuffer	 The chunk buffer.
-	 * @param biomeConfig	 The biome config to use for the settings.
+	 * @param biome	 		The biome to use for the settings.
 	 * @param xInWorld		X position in the world.
 	 * @param zInWorld		Z position in the world.
 	 */
@@ -35,7 +36,7 @@ public interface ISurfaceGenerator
 	 */
 	String toString();
 
-	LocalMaterialData getSurfaceBlockAtHeight(ISurfaceGeneratorNoiseProvider noiseProvider, IBiomeConfig biomeConfig, int xInWorld, int yInWorld, int zInWorld);
+	LocalMaterialData getSurfaceBlockAtHeight(ISurfaceGeneratorNoiseProvider noiseProvider, SurfaceSettings surfaceSettings, int xInWorld, int yInWorld, int zInWorld);
 
-	LocalMaterialData getGroundBlockAtHeight(ISurfaceGeneratorNoiseProvider noiseProvider, IBiomeConfig biomeConfig, int xInWorld, int yInWorld, int zInWorld);
+	LocalMaterialData getGroundBlockAtHeight(ISurfaceGeneratorNoiseProvider noiseProvider, SurfaceSettings surfaceSettings, int xInWorld, int yInWorld, int zInWorld);
 }

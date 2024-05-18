@@ -2,6 +2,7 @@ package com.pg85.otg.config.io;
 
 import com.pg85.otg.config.io.RawSettingValue.ValueType;
 import com.pg85.otg.interfaces.ILogger;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 
@@ -25,9 +26,19 @@ public class FileSettingsReader
 	 */
 	public static SettingsMap read(String configName, File file, ILogger logger)
 	{
-		SettingsMap settingsMap = new SimpleSettingsMap(configName);
-		new FileSettingsReader().readIntoMap(settingsMap, file, logger);
-		return settingsMap;
+		SettingsMap settings = new SimpleSettingsMap(configName);
+		if (!file.exists())
+		{
+			return settings;
+		}
+
+		try (BufferedReader reader = new BufferedReader(new FileReader(file)))
+		{
+			readIntoMap(settings, reader);
+		} catch (IOException e) {
+			logger.log(LogLevel.ERROR, LogCategory.CONFIGS, String.format("Could not read file, exception: ", (Object[])e.getStackTrace()));
+		}
+		return settings;
 	}
 
 	/**
@@ -37,14 +48,15 @@ public class FileSettingsReader
 	 *					 read, but you'll have to close the stream yourself.
 	 * @throws IOException If an IO error occurs.
 	 */
-	private void readIntoMap(SettingsMap settings, BufferedReader fileContents) throws IOException
+	private static void readIntoMap(SettingsMap settings, BufferedReader fileContents) throws IOException
 	{
 		int lineNumber = 0;
 		String thisLine;
 		while ((thisLine = fileContents.readLine()) != null)
 		{
 			lineNumber++;
-			if (thisLine.trim().isEmpty())
+			thisLine = thisLine.trim();
+			if (thisLine.isEmpty())
 			{
 				// Empty line, ignore
 			}
@@ -54,64 +66,30 @@ public class FileSettingsReader
 			}
 			else if (thisLine.contains(":") || thisLine.toLowerCase().contains("("))
 			{
-				// Setting or resource
-				if (
-						thisLine.contains("(") && 
-						(
-							!thisLine.contains(":") || 
-							thisLine.indexOf('(') < thisLine.indexOf(':')
-						)
-					)
-				{
-					// ( is first, so it's a resource
-					String configFunction = thisLine.trim();
-					settings.addRawSetting(RawSettingValue.create(ValueType.FUNCTION, configFunction).withLineNumber(lineNumber));
-				} else {
-					// : is first, so it's a setting
-					settings.addRawSetting(RawSettingValue.create(ValueType.PLAIN_SETTING, thisLine.trim()).withLineNumber(lineNumber));
-				}
+				settings.addRawSetting(getRawSetting(thisLine).withLineNumber(lineNumber));
 			}
-			else if (thisLine.contains("="))
+			else
 			{
-				// Setting (old style), split it and add it
-				String modifiedLine = thisLine.replaceFirst("=", ":").trim();
-				settings.addRawSetting(RawSettingValue.create(ValueType.PLAIN_SETTING, modifiedLine).withLineNumber(lineNumber));
+				OTGLog.getLogger().log(LogLevel.WARN, LogCategory.CONFIGS, "Invalid line: " + thisLine + " in file " + settings.getName() + " on line " + lineNumber);
 			}
 		}
 	}
 
-	/**
-	 * Reads all settings in the file into the given settings map.
-	 * @param settings The settings map.
-	 * @param file	 The file.
-	 */
-	private void readIntoMap(SettingsMap settings, File file, ILogger logger)
-	{
-		BufferedReader settingsReader = null;
-
-		if (!file.exists())
+	private static RawSettingValue getRawSetting(String thisLine) {
+		// Setting or resource
+		if (
+				thisLine.contains("(") &&
+						(
+								!thisLine.contains(":") ||
+										thisLine.indexOf('(') < thisLine.indexOf(':')
+						)
+		)
 		{
-			return;
-		}
-
-		try
-		{
-			settingsReader = new BufferedReader(new FileReader(file));
-			readIntoMap(settings, settingsReader);
-		} catch (IOException e) {
-			logger.log(LogLevel.ERROR, LogCategory.CONFIGS, String.format("Could not read file, exception: ", (Object[])e.getStackTrace()));
-		} finally {
-			if (settingsReader != null)
-			{
-				try
-				{
-					settingsReader.close();
-				}
-				catch (IOException localIOException2)
-				{
-					logger.log(LogLevel.ERROR, LogCategory.CONFIGS, String.format("Could not close file, exception: ", (Object[])localIOException2.getStackTrace()));
-				}
-			}
+			// ( is first, so it's a resource
+			return RawSettingValue.create(ValueType.FUNCTION, thisLine);
+		} else {
+			// : is first, so it's a setting
+			return RawSettingValue.create(ValueType.PLAIN_SETTING, thisLine);
 		}
 	}
 }

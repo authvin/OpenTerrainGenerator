@@ -44,14 +44,12 @@ public class PresetConfig extends PresetSettings {
         this.renameOldSettings(settingsReader, logger, materialReader);
         presetInfo = PresetInfo.buildPresetInfo(settingsReader);
         visualSettings = VisualSettings.builder().fogColor(settingsReader.getSetting(PresetStandardValues.PRESET_FOG_COLOR)).build();
-        resourceSettings = ResourceSettings.builder().disableOreGen(settingsReader.getSetting(PresetStandardValues.DISABLE_OREGEN)).build();
+        resourceSettings = ResourceSettings.getResourceSettings(settingsReader);
         blockSettings = BlockSettings.getBlockSettings(settingsReader, materialReader);
-        bedrockSettings = BedrockSettings.getBedrockSettings(settingsReader);
-        biomeSettings = BiomeSettings.getBiomeSettings(this, settingsReader, biomeResourcesManager, biomes, materialReader, settingsDir);
+        generationSettings = GenerationSettings.getBiomeSettings(this, settingsReader, biomeResourcesManager, biomes, materialReader, settingsDir);
         terrainSettings = TerrainSettings.getTerrainSettings(settingsReader);
         imageSettings = ImageSettings.getImageSettings(settingsReader, biomes);
         structureSettings = StructureSettings.getStructureSettings(settingsReader);
-        customStructureSettings = CustomStructureSettings.getCustomStructureSettings(settingsReader);
         carverSettings = CarverSettings.getCarverSettings(settingsReader);
         spawnSettings = SpawnSettings.getSpawnSettings(settingsReader, materialReader);
         portalSettings = PortalSettings.getPortalSettings(settingsReader, materialReader);

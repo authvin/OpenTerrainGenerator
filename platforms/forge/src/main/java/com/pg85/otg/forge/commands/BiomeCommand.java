@@ -11,7 +11,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.pg85.otg.forge.gen.OTGNoiseChunkGenerator;
-import com.pg85.otg.interfaces.IBiomeConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.Commands;
@@ -56,7 +56,7 @@ public class BiomeCommand extends BaseCommand
 
 		Biome biome = source.getLevel()
 				.getBiome(new BlockPos(source.getPosition().x, source.getPosition().y, source.getPosition().z));
-		IBiomeConfig config = ((OTGNoiseChunkGenerator) source.getLevel().getChunkSource().generator)
+		BiomeSettings config = ((OTGNoiseChunkGenerator) source.getLevel().getChunkSource().generator)
 				.getCachedBiomeProvider().getBiomeConfig((int) source.getPosition().x, (int) source.getPosition().z);
 
 		source.sendSuccess(new StringTextComponent("====================================================="), false);
@@ -94,7 +94,7 @@ public class BiomeCommand extends BaseCommand
 		return 0;
 	}
 
-	private void showBiomeInfo(CommandSource source, Biome biome, IBiomeConfig config)
+	private void showBiomeInfo(CommandSource source, Biome biome, BiomeSettings config)
 	{
 		Set<String> types = BiomeDictionary
 				.getTypes(RegistryKey.create(Registry.BIOME_REGISTRY, biome.getRegistryName())).stream()
@@ -108,9 +108,9 @@ public class BiomeCommand extends BaseCommand
 		source.sendSuccess(createComponent("Inherit Mobs: ", config.getMobSettings().getInheritMobsBiomeName(), TextFormatting.GOLD,
 				TextFormatting.GREEN), false);
 
-		source.sendSuccess(createComponent("Base Size: ", Integer.toString(config.getPlacementSettings().getBiomeSize()), TextFormatting.GOLD,
+		source.sendSuccess(createComponent("Base Size: ", Integer.toString(config.getGenerationSettings().getBiomeSize()), TextFormatting.GOLD,
 				TextFormatting.GREEN)
-						.append(createComponent(" Biome Rarity: ", Integer.toString(config.getPlacementSettings().getBiomeRarity()),
+						.append(createComponent(" Biome Rarity: ", Integer.toString(config.getGenerationSettings().getBiomeRarity()),
 								TextFormatting.GOLD, TextFormatting.GREEN)),
 				false);
 
@@ -133,7 +133,7 @@ public class BiomeCommand extends BaseCommand
 				false);
 	}
 
-	private void showBiomeMobs(CommandSource source, Biome biome, IBiomeConfig config)
+	private void showBiomeMobs(CommandSource source, Biome biome, BiomeSettings config)
 	{
 		source.sendSuccess(new StringTextComponent("Spawns:").withStyle(TextFormatting.GOLD), false);
 		source.sendSuccess(new StringTextComponent("  Monsters:").withStyle(TextFormatting.GOLD), false);
