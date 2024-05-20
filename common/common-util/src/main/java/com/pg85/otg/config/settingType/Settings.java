@@ -1,12 +1,15 @@
 package com.pg85.otg.config.settingType;
 
 import java.util.List;
+import java.util.function.Function;
 
+import com.pg85.otg.config.ConfigFunction;
+import com.pg85.otg.config.settings.ConfigSection;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
+import com.pg85.otg.util.Color;
 import com.pg85.otg.util.biome.ColorSet;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
-import com.pg85.otg.util.biome.ReplaceBlocks;
 import com.pg85.otg.util.biome.WeightedMobSpawnGroup;
-import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.materials.MaterialSet;
 
 /**
@@ -25,20 +28,29 @@ public abstract class Settings
 	 * @param defaultValue Default value for the setting.
 	 * @return The newly created setting.
 	 */
-	protected static Setting<Boolean> booleanSetting(String name, boolean defaultValue)
+	public static Setting<Boolean> booleanSetting(String name, boolean defaultValue)
 	{
 		return new BooleanSetting(name, defaultValue);
+	}
+	public static Setting<Boolean> booleanSetting(String name, boolean defaultValue, Function<ConfigSection, Boolean> getter, String ...description)
+	{
+		return new BooleanSetting(name, defaultValue, getter, description);
 	}
 
 	/**
 	 * Creates a setting that represents a RGB color.
-	 * @param name		 Name of the setting.
+	 *
+	 * @param name         Name of the setting.
 	 * @param defaultValue Default value for the setting.
 	 * @return The newly created setting.
 	 */
-	protected static Setting<Integer> colorSetting(String name, String defaultValue)
+	public static Setting<Color> colorSetting(String name, String defaultValue)
 	{
 		return new ColorSetting(name, defaultValue);
+	}
+	public static Setting<Color> colorSetting(String name, String defaultValue, Function<ConfigSection, Color> getter, String ...description)
+	{
+		return new ColorSetting(name, defaultValue, getter, description);
 	}
 
 	/**
@@ -49,9 +61,13 @@ public abstract class Settings
 	 * @param max		  Highest allowed value.
 	 * @return The newly created setting.
 	 */
-	protected static Setting<Double> doubleSetting(String name, double defaultValue, double min, double max)
+	public static Setting<Double> doubleSetting(String name, double defaultValue, double min, double max)
 	{
 		return new DoubleSetting(name, defaultValue, min, max);
+	}
+	public static Setting<Double> doubleSetting(String name, double defaultValue, double min, double max, Function<ConfigSection, Double> getter, String ...description)
+	{
+		return new DoubleSetting(name, defaultValue, min, max, getter, description);
 	}
 
 	/**
@@ -60,9 +76,13 @@ public abstract class Settings
 	 * @param defaultValue Default value for the setting.
 	 * @return The newly created setting.
 	 */
-	protected static <T extends Enum<T>> Setting<T> enumSetting(String name, T defaultValue)
+	public static <T extends Enum<T>> Setting<T> enumSetting(String name, T defaultValue)
 	{
 		return new EnumSetting<T>(name, defaultValue);
+	}
+	public static <T extends Enum<T>> Setting<T> enumSetting(String name, T defaultValue, Function<ConfigSection, T> getter, String ...description)
+	{
+		return new EnumSetting<T>(name, defaultValue, getter, description);
 	}
 
 	/**
@@ -73,9 +93,13 @@ public abstract class Settings
 	 * @param max		  Highest allowed value.
 	 * @return The newly created setting.
 	 */
-	protected static Setting<Float> floatSetting(String name, float defaultValue, float min, float max)
+	public static Setting<Float> floatSetting(String name, float defaultValue, float min, float max)
 	{
 		return new FloatSetting(name, defaultValue, min, max);
+	}
+	public static Setting<Float> floatSetting(String name, float defaultValue, float min, float max, Function<ConfigSection, Float> getter, String ...description)
+	{
+		return new FloatSetting(name, defaultValue, min, max, getter, description);
 	}
 
 	/**
@@ -90,10 +114,9 @@ public abstract class Settings
 	{
 		return new IntSetting(name, defaultValue, min, max);
 	}
-
-	protected static Setting<Rotation> rotationSetting(String name, Rotation defaultValue)
+	public static Setting<Integer> intSetting(String name, int defaultValue, int min, int max, Function<ConfigSection, Integer> getter, String ... description)
 	{
-		return new RotationSetting(name, defaultValue);
+		return new IntSetting(name, defaultValue, min, max, getter, description);
 	}
 
 	/**
@@ -104,17 +127,19 @@ public abstract class Settings
 	 * @param max		  Highest allowed value.
 	 * @return The newly created setting.
 	 */
-	protected static Setting<Long> longSetting(String name, long defaultValue, long min, long max)
+	public static Setting<Long> longSetting(String name, long defaultValue, long min, long max)
 	{
 		return new LongSetting(name, defaultValue, min, max);
+	}
+	public static Setting<Long> longSetting(String name, long defaultValue, long min, long max, Function<ConfigSection, Long> getter, String ...description)
+	{
+		return new LongSetting(name, defaultValue, min, max, getter, description);
 	}
 
 	/**
 	 * Creates a setting that represents a set of block materials.
 	 * Warning: you will get an AssertionError later on (during config
 	 * reading) if you provide invalid materials.
-	 * {@link Settings#materialSetSetting(String, DefaultMaterial...)} is the
-	 * suggested alternative.
 	 * @param name		  Name of the setting.
 	 * @param defaultValues Default values for the setting.
 	 * @return The newly created setting.
@@ -123,10 +148,14 @@ public abstract class Settings
 	{
 		return new MaterialSetSetting(name, defaultValues);
 	}
-	
-	protected static Setting<ColorSet> colorSetSetting(String name)
+	protected static Setting<MaterialSet> materialSetSetting(String name, String[] defaultValues, Function<ConfigSection, MaterialSet> getter, String ...description)
 	{
-		return new ColorSetSetting(name);
+		return new MaterialSetSetting(name, defaultValues, getter, description);
+	}
+
+	public static Setting<ColorSet> colorSetSetting(String name, Function<ConfigSection, ColorSet> getter, String ...description)
+	{
+		return new ColorSetSetting(name, getter, description);
 	}
 
 	/**
@@ -134,9 +163,9 @@ public abstract class Settings
 	 * @param name Name of the setting.
 	 * @return The newly created setting.
 	 */
-	protected static Setting<List<WeightedMobSpawnGroup>> mobGroupListSetting(String name)
+	public static Setting<List<WeightedMobSpawnGroup>> mobGroupListSetting(String name, Function<ConfigSection, List<WeightedMobSpawnGroup>> getter, String ...description)
 	{
-		return new MobGroupListSetting(name);
+		return new MobGroupListSetting(name, getter, description);
 	}
 
 	/**
@@ -144,19 +173,9 @@ public abstract class Settings
 	 * @param name Name of the setting.
 	 * @return The newly created setting.
 	 */
-	protected static Setting<ReplaceBlockMatrix> replacedBlocksSetting(String name)
+	public static Setting<ReplaceBlockMatrix> replacedBlocksSetting(String name, Function<ConfigSection, ReplaceBlockMatrix> getter, String ...description)
 	{
-		return new ReplacedBlocksSetting(name);
-	}
-	
-	/**
-	 * Creates a setting that represents a replaceBlocks mappings list.
-	 * @param value		 The setting's value as a string.
-	 * @return The newly created setting.
-	 */
-	protected static Setting<List<ReplaceBlocks>> replaceBlocksListSetting(String value)
-	{
-		return new ReplaceBlocksListSetting(value);
+		return new ReplacedBlocksSetting(name, getter, description);
 	}
 
 	/**
@@ -165,9 +184,13 @@ public abstract class Settings
 	 * @param defaultValue Default value for the setting.
 	 * @return The newly created setting.
 	 */
-	protected static Setting<String> stringSetting(String name, String defaultValue)
+	public static Setting<String> stringSetting(String name, String defaultValue)
 	{
-		return new StringSetting(name, defaultValue);
+		return new StringSetting(name, defaultValue, null);
+	}
+	public static Setting<String> stringSetting(String name, String defaultValue, Function<ConfigSection, String> getter, String ...description)
+	{
+		return new StringSetting(name, defaultValue, getter, description);
 	}
 
 	/**
@@ -176,8 +199,13 @@ public abstract class Settings
 	 * @param defaultValues Default values for the setting.
 	 * @return The newly created setting.
 	 */
-	protected static Setting<List<String>> stringListSetting(String name, String... defaultValues)
+	public static Setting<List<String>> stringListSetting(String name, String... defaultValues)
 	{
 		return new StringListSetting(name, defaultValues);
 	}
+	public static Setting<List<String>> stringListSetting(String name, String[] defaultValues, Function<ConfigSection, List<String>> getter, String ...description)
+	{
+		return new StringListSetting(name, defaultValues, getter, description);
+	}
+
 }

@@ -3,8 +3,8 @@ package com.pg85.otg.gen.resource;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.MaterialSet;
@@ -22,17 +22,17 @@ public class LiquidResource extends FrequencyResourceBase
 	private final int minAltitude;
 	private final MaterialSet sourceBlocks;
 
-	public LiquidResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public LiquidResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
-		super(biomeConfig, args, materialReader);
+		super(biomeConfig, args);
 		assureSize(6, args);
 
-		this.material = materialReader.readMaterial(args.get(0));
+		this.material = OTGMaterialReader.get().readMaterial(args.get(0));
 		this.frequency = readInt(args.get(1), 1, 5000);
 		this.rarity = readRarity(args.get(2));
 		this.minAltitude = readInt(args.get(3), Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1);
 		this.maxAltitude = readInt(args.get(4), this.minAltitude, Constants.WORLD_HEIGHT - 1);
-		this.sourceBlocks = readMaterials(args, 5, materialReader);
+		this.sourceBlocks = readMaterials(args, 5);
 	}
 
 	@Override

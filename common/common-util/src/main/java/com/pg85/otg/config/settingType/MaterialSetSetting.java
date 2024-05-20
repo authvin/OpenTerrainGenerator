@@ -1,9 +1,11 @@
 package com.pg85.otg.config.settingType;
 
+import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.materials.MaterialSet;
+
+import java.util.function.Function;
 
 /**
  * Reads and writes a set of materials, used for matching.
@@ -13,7 +15,7 @@ import com.pg85.otg.util.materials.MaterialSet;
  * {@link MaterialSet#parseAndAdd(String)}.
  *
  */
-class MaterialSetSetting extends Setting<MaterialSet>
+public class MaterialSetSetting extends Setting<MaterialSet>
 {
 	private final String[] defaultValues;
 
@@ -23,15 +25,22 @@ class MaterialSetSetting extends Setting<MaterialSet>
 		this.defaultValues = defaultValues;
 	}
 
+	public MaterialSetSetting(String name, String[] defaultValues, Function<ConfigSection, MaterialSet> getter, String ...description)
+	{
+		super(name, getter, description);
+		this.defaultValues = defaultValues;
+
+	}
+
 	@Override
-	public MaterialSet getDefaultValue(IMaterialReader materialReader)
+	public MaterialSet getDefaultValue()
 	{
 		try
 		{
 			MaterialSet blocks = new MaterialSet();
 			for (String blockName : defaultValues)
 			{
-				blocks.parseAndAdd(blockName, materialReader);
+				blocks.parseAndAdd(blockName);
 			}
 			return blocks;
 		} catch (InvalidConfigException e)
@@ -41,15 +50,20 @@ class MaterialSetSetting extends Setting<MaterialSet>
 	}
 
 	@Override
-	public MaterialSet read(String string, IMaterialReader materialReader) throws InvalidConfigException
+	public MaterialSet read(String string) throws InvalidConfigException
 	{
 		MaterialSet blocks = new MaterialSet();
 
 		for (String blockName : StringHelper.readCommaSeperatedString(string))
 		{
-			blocks.parseAndAdd(blockName, materialReader);
+			blocks.parseAndAdd(blockName);
 		}
 
 		return blocks;
+	}
+
+	@Override
+	public String getTypeAsString() {
+		return "string";
 	}
 }

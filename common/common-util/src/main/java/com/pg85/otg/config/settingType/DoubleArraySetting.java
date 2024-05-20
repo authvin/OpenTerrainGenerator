@@ -1,8 +1,10 @@
 package com.pg85.otg.config.settingType;
 
+import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
+
+import java.util.function.Function;
 
 /**
  * Reads and writes arrays of doubles, used for settings like
@@ -19,14 +21,19 @@ public class DoubleArraySetting extends Setting<double[]>
 		super(name);
 	}
 
+	public DoubleArraySetting(String name, Function<ConfigSection, double[]> getter, String ...comments)
+	{
+		super(name, getter, comments);
+	}
+
 	@Override
-	public double[] getDefaultValue(IMaterialReader materialReader)
+	public double[] getDefaultValue()
 	{
 		return new double[0];
 	}
 
 	@Override
-	public double[] read(String string, IMaterialReader materialReader) throws InvalidConfigException
+	public double[] read(String string) throws InvalidConfigException
 	{
 		if (string.isEmpty())
 		{
@@ -57,4 +64,13 @@ public class DoubleArraySetting extends Setting<double[]>
 		return builder.toString();
 	}
 
+	@Override
+	public String getTypeAsString() {
+		return "array";
+	}
+
+	@Override
+	public String getComplexTypeSchema() {
+		return "number";
+	}
 }

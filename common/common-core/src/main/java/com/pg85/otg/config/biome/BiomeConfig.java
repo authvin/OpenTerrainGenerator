@@ -10,7 +10,6 @@ import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settings.biome.*;
 import com.pg85.otg.config.settings.preset.PresetSettings;
-import com.pg85.otg.config.standard.BiomeStandardValues;
 import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.constants.settings.GrassColorModifier;
 import com.pg85.otg.constants.settings.TemplateBiomeType;
@@ -20,8 +19,8 @@ import com.pg85.otg.customobject.resource.CustomStructureResource;
 import com.pg85.otg.customobject.resource.SaplingResource;
 import com.pg85.otg.customobject.resource.TreeResource;
 import com.pg85.otg.gen.resource.*;
-import com.pg85.otg.gen.surface.SurfaceGeneratorSetting;
 import com.pg85.otg.interfaces.*;
+import com.pg85.otg.util.Color;
 import com.pg85.otg.util.biome.*;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.minecraft.EntityCategory;
@@ -98,7 +97,6 @@ public class BiomeConfig extends BiomeSettings
 		surfaceSettings = SurfaceSettings.getSurfaceSettings(
 				settingsMap,
 				materialReader,
-				SurfaceGeneratorSetting.SURFACE_AND_GROUND_CONTROL,
 				presetSettings.getBlockSettings());
 
 		resourceSettings = BiomeResourceSettings.getResourceSettings(
@@ -108,7 +106,6 @@ public class BiomeConfig extends BiomeSettings
 						settingsMap.getConfigFunctions(
 								this,
 								biomeResourcesManager,
-								materialReader,
 								presetFolderName,
 								OTG.getEngine().getPluginConfig())));
 	}
@@ -198,10 +195,11 @@ public class BiomeConfig extends BiomeSettings
 	@Override
 	public void renameOldSettings(SettingsMap settings, ILogger logger, IMaterialReader materialReader)
 	{
-		settings.renameOldSetting("DisableNotchHeightControl", BiomeStandardValues.DISABLE_BIOME_HEIGHT);
-		settings.renameOldSetting("BiomeDictId", BiomeStandardValues.BIOME_DICT_TAGS);
-		settings.renameOldSetting("IsleInBiome", BiomeStandardValues.ISLE_IN_BIOMES);
-		settings.renameOldSetting("BiomeIsBorder", BiomeStandardValues.BORDER_IN_BIOMES);
+		settings.renameOldSetting("DisableNotchHeightControl", BiomeTerrainSettings.DISABLE_BIOME_HEIGHT);
+		settings.renameOldSetting("BiomeDictId", IdentitySettings.BIOME_DICT_TAGS);
+		settings.renameOldSetting("IsleInBiome", BiomeGenerationSettings.ISLE_IN_BIOMES);
+		settings.renameOldSetting("BiomeIsBorder", BiomeGenerationSettings.BORDER_IN_BIOMES);
+		settings.renameOldSetting("BiomeColor", BiomeGenerationSettings.BIOME_MAP_COLOR);
 	}
 
 	@Override
@@ -243,11 +241,6 @@ public class BiomeConfig extends BiomeSettings
 	}
 
 	@Override
-	public boolean useFrozenOceanTemperature() {
-		return this.settings.useFrozenOceanTemperature;
-	}
-
-	@Override
 	public List<String> getBiomeDictTags() {
 		return this.settings.biomeDictTags;
 	}
@@ -261,10 +254,6 @@ public class BiomeConfig extends BiomeSettings
 	@Override
 	public boolean biomeConfigsHaveReplacement() {
 		return this.settings.presetConfig.isBiomeConfigsHaveReplacement();
-	}
-	@Override
-	public String getRiverBiome() {
-		return this.settings.riverBiome;
 	}
 
 
@@ -354,17 +343,17 @@ public class BiomeConfig extends BiomeSettings
 		protected float biomeTemperature;
 		protected boolean useFrozenOceanTemperature;
 		protected float biomeWetness;
-		protected int grassColor;
+		protected Color grassColor;
 		protected ColorSet grassColorControl;
 		protected GrassColorModifier grassColorModifier;
-		protected int foliageColor;
+		protected Color foliageColor;
 		protected ColorSet foliageColorControl;
-		protected int skyColor;
-		protected int waterColor;
+		protected Color skyColor;
+		protected Color waterColor;
 		protected ColorSet waterColorControl;
-		protected int fogColor;
+		protected Color fogColor;
 		protected float fogDensity;
-		protected int waterFogColor;
+		protected Color waterFogColor;
 		protected String particleType;
 		protected float particleProbability;
 

@@ -340,7 +340,7 @@ class MesaSurfaceGenerator implements ISurfaceGenerator
 				chunkBuffer.setBlock(x, y, z, getBand(surfaceSettings.getReplacedBlocks(), x, y, z));
 			}
 
-			if (generatingChunk.mustCreateBedrockAt(surfaceSettings.getBlockSettings().isFlatBedrock(), surfaceSettings.getBlockSettings().isBedrockDisabled(), surfaceSettings.getBlockSettings().isCeilingBedrock(), y))
+			if (generatingChunk.mustCreateBedrockAt(surfaceSettings.getBlockSettings().isFlatBedrock(), surfaceSettings.getBlockSettings().isDisableBedrock(), surfaceSettings.getBlockSettings().isCeilingBedrock(), y))
 			{
 				chunkBuffer.setBlock(x, y, z, surfaceSettings.getBedrockBlockReplaced(y));
 			}

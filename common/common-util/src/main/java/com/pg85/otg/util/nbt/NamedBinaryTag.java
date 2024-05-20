@@ -594,7 +594,7 @@ public class NamedBinaryTag
 	{
 		for (int i = 0; i < indent; i++)
 		{
-			System.out.print("	");
+			System.out.print("");
 		}
 	}
 

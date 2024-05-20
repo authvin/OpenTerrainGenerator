@@ -1,11 +1,12 @@
 package com.pg85.otg.config.settingType;
 
+import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.biome.WeightedMobSpawnGroup;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Reads and writes a list of mobs. Mobs are read using
@@ -13,22 +14,27 @@ import java.util.List;
  * {@link WeightedMobSpawnGroup#toJson(List)}.
  *
  */
-class MobGroupListSetting extends Setting<List<WeightedMobSpawnGroup>>
+public class MobGroupListSetting extends Setting<List<WeightedMobSpawnGroup>>
 {
 
-	MobGroupListSetting(String name)
+	public MobGroupListSetting(String name)
 	{
 		super(name);
 	}
 
+	public MobGroupListSetting(String name, Function<ConfigSection, List<WeightedMobSpawnGroup>> getter, String ...description)
+	{
+		super(name, getter, description);
+	}
+
 	@Override
-	public List<WeightedMobSpawnGroup> getDefaultValue(IMaterialReader materialReader)
+	public List<WeightedMobSpawnGroup> getDefaultValue()
 	{
 		return Collections.emptyList();
 	}
 
 	@Override
-	public List<WeightedMobSpawnGroup> read(String string, IMaterialReader materialReader) throws InvalidConfigException
+	public List<WeightedMobSpawnGroup> read(String string) throws InvalidConfigException
 	{
 		return WeightedMobSpawnGroup.fromJson(string);
 	}
@@ -39,4 +45,13 @@ class MobGroupListSetting extends Setting<List<WeightedMobSpawnGroup>>
 		return WeightedMobSpawnGroup.toJson(groups);
 	}
 
+	@Override
+	public String getTypeAsString() {
+		return "array";
+	}
+
+	@Override
+	public String getComplexTypeSchema() {
+		return "WeightedMobSpawnGroup";
+	}
 }

@@ -11,8 +11,8 @@ import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.ErroredFunction;
 import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.config.settings.preset.PresetSettings;
+import org.jetbrains.annotations.Nullable;
 
 public class BiomeResourcesManager implements IConfigFunctionProvider
 {
@@ -48,7 +48,7 @@ public class BiomeResourcesManager implements IConfigFunctionProvider
 	 */
 	// It's checked with clazz.getConstructor(holder.getClass(), ...))
 	@SuppressWarnings("unchecked")
-	public <T> ConfigFunction<T> getConfigFunction(String name, T holder, List<String> args, IMaterialReader materialReader)
+	public <T> ConfigFunction<T> getConfigFunction(String name, T holder, List<String> args)
 	{
 		// Get the class of the config function
 		Class<? extends ConfigFunction<?>> clazz = configFunctions.get(name.toLowerCase());
@@ -60,18 +60,8 @@ public class BiomeResourcesManager implements IConfigFunctionProvider
 		// Get a config function
 		try
 		{
-			Constructor<? extends ConfigFunction<?>> constructor = null;
-			if(holder instanceof BiomeSettings)
-			{
-				// Every BiomeConfig resource should have a constructor that conforms to this method signature
-				constructor = clazz.getConstructor(BiomeSettings.class, List.class, IMaterialReader.class);
-			}
-			else if(holder instanceof PresetSettings)
-			{
-				// Every PresetConfig resource should have a constructor that conforms to this method signature				
-				constructor = clazz.getConstructor(PresetSettings.class, List.class, IMaterialReader.class);
-			}
-			return (ConfigFunction<T>) constructor.newInstance(holder, args, materialReader);
+			Constructor<? extends ConfigFunction<?>> constructor = getConstructor(holder, clazz);
+			return (ConfigFunction<T>) constructor.newInstance(holder, args);
 		}
 		catch (NoSuchMethodException e1)
 		{
@@ -91,5 +81,20 @@ public class BiomeResourcesManager implements IConfigFunctionProvider
 			Throwable cause = e.getCause();
 			return new ErroredFunction<T>(name, args, "Resource type " + name + " had invalid parameters and could not be parsed, error: " + cause);
 		}
+	}
+
+	private static <T> @Nullable Constructor<? extends ConfigFunction<?>> getConstructor(T holder, Class<? extends ConfigFunction<?>> clazz) throws NoSuchMethodException {
+		Constructor<? extends ConfigFunction<?>> constructor = null;
+		if(holder instanceof BiomeSettings)
+		{
+			// Every BiomeConfig resource should have a constructor that conforms to this method signature
+			constructor = clazz.getConstructor(List.class);
+		}
+		else if(holder instanceof PresetSettings)
+		{
+			// Every PresetConfig resource should have a constructor that conforms to this method signature
+			constructor = clazz.getConstructor(PresetSettings.class, List.class);
+		}
+		return constructor;
 	}
 }

@@ -37,7 +37,7 @@ public abstract class CustomObjectConfigFile
 	 */
 	protected <T> T readSettings(Setting<T> setting, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager)
 	{
-		return readSettings(setting, setting.getDefaultValue(materialReader), logger, materialReader, manager);
+		return readSettings(setting, setting.getDefaultValue(), logger, materialReader, manager);
 	}
 
 	/**

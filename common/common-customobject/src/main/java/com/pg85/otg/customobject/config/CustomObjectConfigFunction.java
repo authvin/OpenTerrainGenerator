@@ -269,7 +269,7 @@ public abstract class CustomObjectConfigFunction<T>
 		MaterialSet materials = new MaterialSet();
 		for (int i = start; i < strings.size(); i++)
 		{
-			materials.parseAndAdd(strings.get(i), materialReader);
+			materials.parseAndAdd(strings.get(i));
 		}
 
 		return materials;

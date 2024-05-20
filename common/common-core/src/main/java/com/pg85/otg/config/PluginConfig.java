@@ -2,8 +2,8 @@ package com.pg85.otg.config;
 
 import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
+import com.pg85.otg.config.settings.preset.PresetInfo;
 import com.pg85.otg.config.standard.PluginConfigStandardValues;
-import com.pg85.otg.config.standard.PresetStandardValues;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 
@@ -30,7 +30,7 @@ public final class PluginConfig extends PluginConfigBase
 
 	private void readConfigSettings(SettingsMap reader, ILogger logger)
 	{
-		this.settingsMode = reader.getSetting(PresetStandardValues.SETTINGS_MODE);
+		this.settingsMode = reader.getSetting(PresetInfo.SETTINGS_MODE);
 		this.logLevel = reader.getSetting(PluginConfigStandardValues.LOG_LEVEL);
 		this.logCustomObjects = reader.getSetting(PluginConfigStandardValues.LOG_CUSTOM_OBJECTS);
 		this.logStructurePlotting = reader.getSetting(PluginConfigStandardValues.LOG_BO4_PLOTTING);
@@ -50,11 +50,11 @@ public final class PluginConfig extends PluginConfigBase
 	{
 		writer.header1("Open Terrain Generator Config");
 
-		writer.putSetting(PresetStandardValues.SETTINGS_MODE, this.settingsMode,
+		writer.putSetting(PresetInfo.SETTINGS_MODE, this.settingsMode,
 			"Possible Config Write Modes:",
-			"	WriteAll			 - Write config files with help comments.",
-			"	WriteWithoutComments - Write config files without help comments.",
-			"	WriteDisable		 - Don't write config files, read-only.",
+			"WriteAll			 - Write config files with help comments.",
+			"WriteWithoutComments - Write config files without help comments.",
+			"WriteDisable		 - Don't write config files, read-only.",
 			"Defaults to: WriteAll",
 			"Writing updates your configs to the currently installed version of OTG."
 		);
@@ -69,9 +69,9 @@ public final class PluginConfig extends PluginConfigBase
 
 		writer.putSetting(PluginConfigStandardValues.LOG_LEVEL, this.logLevel,
 			"Possible Log Levels",
-			"	Off			- Shows FATAL and ERROR logs.",
-			"	Quiet		- Shows FATAL, ERROR and WARNING logs.",
-			"	Standard	- Shows FATAL, ERROR, WARNING and INFO logs.",
+			"Off			- Shows FATAL and ERROR logs.",
+			"Quiet		- Shows FATAL, ERROR and WARNING logs.",
+			"Standard	- Shows FATAL, ERROR, WARNING and INFO logs.",
 			"",
 			"Defaults to: Standard"
 		);

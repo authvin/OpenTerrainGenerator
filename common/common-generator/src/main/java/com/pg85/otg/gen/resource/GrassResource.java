@@ -4,8 +4,8 @@ import com.pg85.otg.config.biome.BiomeResourceBase;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.MaterialSet;
 import com.pg85.otg.util.minecraft.PlantType;
@@ -15,7 +15,7 @@ import java.util.Random;
 
 public class GrassResource  extends BiomeResourceBase implements IBasicResource
 {
-	private static enum GroupOption
+	private enum GroupOption
 	{
 		Grouped,
 		NotGrouped
@@ -27,9 +27,9 @@ public class GrassResource  extends BiomeResourceBase implements IBasicResource
 	private PlantType plant;
 	private final MaterialSet sourceBlocks;
 
-	public GrassResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public GrassResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
-		super(biomeConfig, args, materialReader);
+		super(biomeConfig, args);
 		assureSize(5, args);
 
 		// The syntax for the first two arguments used to be blockId,blockData
@@ -42,10 +42,10 @@ public class GrassResource  extends BiomeResourceBase implements IBasicResource
 			// Test whether the second argument is the data value (deprecated)
 			readInt(secondArgument, 0, 16);
 			// If so, parse it
-			this.plant = PlantType.getPlant(args.get(0) + ":" + secondArgument, materialReader);
+			this.plant = PlantType.getPlant(args.get(0) + ":" + secondArgument, OTGMaterialReader.get());
 		} catch (InvalidConfigException e) {
 			// Nope, second argument is not a number
-			this.plant = PlantType.getPlant(args.get(0), materialReader);
+			this.plant = PlantType.getPlant(args.get(0), OTGMaterialReader.get());
 			if (secondArgument.equalsIgnoreCase(GroupOption.Grouped.toString()))
 			{
 				this.groupOption = GroupOption.Grouped;
@@ -55,11 +55,11 @@ public class GrassResource  extends BiomeResourceBase implements IBasicResource
 
 		this.frequency = readInt(args.get(2), 1, 500);
 		this.rarity = readRarity(args.get(3));
-		this.sourceBlocks = readMaterials(args, 4, materialReader);
+		this.sourceBlocks = readMaterials(args, 4);
 	}
 
 	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, IMaterialReader materialReader)
+	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random)
 	{
 		switch (this.groupOption)
 		{

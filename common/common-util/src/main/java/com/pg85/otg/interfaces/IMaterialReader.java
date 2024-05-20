@@ -1,11 +1,19 @@
 package com.pg85.otg.interfaces;
 
 import com.pg85.otg.exceptions.InvalidConfigException;
+import com.pg85.otg.util.materials.LocalMaterialBase;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterialTag;
 
 public interface IMaterialReader
 {
-	public LocalMaterialData readMaterial(String material) throws InvalidConfigException;	
-	public LocalMaterialTag readTag(String tag) throws InvalidConfigException;
+	LocalMaterialData readMaterial(String material) throws InvalidConfigException;
+	LocalMaterialTag readTag(String tag) throws InvalidConfigException;
+	default LocalMaterialBase read(String input) throws InvalidConfigException {
+		LocalMaterialTag tag = readTag(input);
+		if(tag != null) {
+			return tag;
+		}
+		return readMaterial(input);
+	}
 }

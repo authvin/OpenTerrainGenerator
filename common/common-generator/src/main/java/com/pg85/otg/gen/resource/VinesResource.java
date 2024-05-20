@@ -3,7 +3,6 @@ package com.pg85.otg.gen.resource;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterials;
@@ -24,9 +23,9 @@ public class VinesResource extends FrequencyResourceBase
 	private final int maxAltitude;
 	private final int minAltitude;
 
-	public VinesResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public VinesResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
-		super(biomeConfig, args, materialReader);
+		super(biomeConfig, args);
 
 		assureSize(4, args);
 		this.frequency = readInt(args.get(0), 1, 100);

@@ -4,18 +4,14 @@ import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.ErroredFunction;
 import com.pg85.otg.config.io.RawSettingValue.ValueType;
 import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.config.standard.PluginConfigStandardValues;
-import com.pg85.otg.config.standard.PresetStandardValues;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.ILogger;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IPluginConfig;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
-import lombok.Getter;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -77,13 +73,13 @@ public final class SimpleSettingsMap implements SettingsMap
 	}
 
 	@Override
-	public <T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager, IMaterialReader materialReader)
+	public <T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager)
 	{
-		return this.getConfigFunctions(holder, biomeResourcesManager, materialReader, null, null);
+		return this.getConfigFunctions(holder, biomeResourcesManager, null, null);
 	}
 
 	@Override
-	public <T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager, IMaterialReader materialReader, String presetFolderName, IPluginConfig conf)
+	public <T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager, String presetFolderName, IPluginConfig conf)
 	{
 		ILogger logger = OTGLog.getLogger();
 		List<ConfigFunction<T>> result = new ArrayList<ConfigFunction<T>>(configFunctions.size());
@@ -94,7 +90,7 @@ public final class SimpleSettingsMap implements SettingsMap
 			String functionName = configFunctionString.substring(0, bracketIndex);
 			String parameters = configFunctionString.substring(bracketIndex + 1, configFunctionString.length() - 1);
 			List<String> args = Arrays.asList(StringHelper.readCommaSeperatedString(parameters));
-			ConfigFunction<T> function = biomeResourcesManager.getConfigFunction(functionName, holder, args, materialReader);
+			ConfigFunction<T> function = biomeResourcesManager.getConfigFunction(functionName, holder, args);
 			if (function == null)
 			{
 				// Function is in wrong config file,
@@ -175,27 +171,15 @@ public final class SimpleSettingsMap implements SettingsMap
 	{
 		return Collections.unmodifiableCollection(this.settingsCache.values());
 	}
-
+	
 	@Override
 	public <S> S getSetting(Setting<S> setting)
 	{
-		return getSetting(setting, null, null);
+		return getSetting(setting, setting.getDefaultValue());
 	}
 	
-	@Override
-	public <S> S getSetting(Setting<S> setting, IMaterialReader materialReader)
-	{
-		return getSetting(setting, setting.getDefaultValue(materialReader), materialReader);
-	}
-
 	@Override
 	public <S> S getSetting(Setting<S> setting, S defaultValue)
-	{
-		return getSetting(setting, defaultValue, null);
-	}
-	
-	@Override
-	public <S> S getSetting(Setting<S> setting, S defaultValue, IMaterialReader materialReader)
 	{
 		ILogger logger = OTGLog.getLogger();
 		// Try reading the setting from the file
@@ -205,7 +189,7 @@ public final class SimpleSettingsMap implements SettingsMap
 			String stringValue = stringWithLineNumber.getRawValue().split(":", 2)[1].trim();
 			try
 			{
-				return setting.read(stringValue, materialReader);
+				return setting.read(stringValue);
 			}
 			catch (InvalidConfigException e)
 			{
@@ -230,7 +214,7 @@ public final class SimpleSettingsMap implements SettingsMap
 		// Try the fallback
 		if (fallback != null)
 		{
-			return fallback.getSetting(setting, defaultValue, materialReader);
+			return fallback.getSetting(setting, defaultValue);
 		}
 
 		// Return default value

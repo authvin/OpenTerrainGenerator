@@ -4,8 +4,8 @@ import com.pg85.otg.config.biome.BiomeResourceBase;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.gen.DecorationArea;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -27,12 +27,12 @@ public class VeinResource extends BiomeResourceBase implements IBasicResource
 	private final int minSizeInBlocks;		
 	private final double veinRarity;
 
-	public VeinResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public VeinResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
-		super(biomeConfig, args, materialReader);
+		super(biomeConfig, args);
 		assureSize(9, args);
 
-		this.material = materialReader.readMaterial(args.get(0));
+		this.material = OTGMaterialReader.get().readMaterial(args.get(0));
 		this.minSizeInBlocks = readInt(args.get(1), 10, 200);
 		this.maxSizeInBlocks = readInt(args.get(2), this.minSizeInBlocks, 201);
 		this.veinRarity = readDouble(args.get(3), 0.0000001, 100);
@@ -41,7 +41,7 @@ public class VeinResource extends BiomeResourceBase implements IBasicResource
 		this.oreRarity = readInt(args.get(6), 1, 100);
 		this.minAltitude = readInt(args.get(7), Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1);
 		this.maxAltitude = readInt(args.get(8), this.minAltitude, Constants.WORLD_HEIGHT - 1);
-		this.sourceBlocks = readMaterials(args, 9, materialReader);
+		this.sourceBlocks = readMaterials(args, 9);
 	}
 
 	/**
@@ -65,7 +65,7 @@ public class VeinResource extends BiomeResourceBase implements IBasicResource
 	}
 
 	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, IMaterialReader materialReader)
+	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random)
 	{
 		// Find all veins that reach this chunk, and spawn them
 		int searchRadius = (this.maxSizeInBlocks + 15) / 16;

@@ -7,6 +7,7 @@ import com.pg85.otg.gen.noise.legacy.NoiseGeneratorSurfacePatchOctaves;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.MaterialSet;
@@ -34,11 +35,11 @@ public class SurfacePatchResource  extends BiomeResourceBase implements IBasicRe
 	private final Random random;
 	private final MaterialSet sourceBlocks;
 
-	public SurfacePatchResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public SurfacePatchResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
-		super(biomeConfig, args, materialReader);
+		super(biomeConfig, args);
 		assureSize(4, args);
-
+		IMaterialReader materialReader = OTGMaterialReader.get();
 		this.material = materialReader.readMaterial(args.get(0));
 
 		// If decorationAboveReplacement is a plant/double plant 
@@ -65,13 +66,13 @@ public class SurfacePatchResource  extends BiomeResourceBase implements IBasicRe
 		
 		this.minAltitude = readInt(args.get(2), Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1);
 		this.maxAltitude = readInt(args.get(3), this.minAltitude, Constants.WORLD_HEIGHT - 1);
-		this.sourceBlocks = readMaterials(args, 4, materialReader);
+		this.sourceBlocks = readMaterials(args, 4);
 		this.random = new Random(2345L);
 		this.noiseGen = new NoiseGeneratorSurfacePatchOctaves(this.random, 1);
 	}
 
 	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, IMaterialReader materialReader)
+	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random)
 	{
 		int chunkX = worldGenRegion.getDecorationArea().getChunkBeingDecoratedCenterX();
 		int chunkZ = worldGenRegion.getDecorationArea().getChunkBeingDecoratedCenterZ();

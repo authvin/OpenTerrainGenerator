@@ -6,7 +6,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import com.pg85.otg.config.standard.PresetStandardValues;
+
+import com.pg85.otg.config.settingType.Setting;
+import com.pg85.otg.config.settingType.Settings;
 import com.pg85.otg.constants.settings.ConfigMode;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.bo2.BO2;
@@ -42,7 +44,8 @@ import com.pg85.otg.util.minecraft.DefaultStructurePart;
 
 public class BO3Config extends CustomObjectConfigFile
 {
-	// TODO: Split this up into multiple config classes like common-core
+    public static final Setting<ConfigMode> SETTINGS_MODE_BO3 = Settings.enumSetting("SettingsMode", ConfigMode.WriteDisable);
+    // TODO: Split this up into multiple config classes like common-core
 	// does for world/biome configs, add getters etc.
 	
 	private boolean isOTGPlus; // Legacy setting
@@ -349,7 +352,7 @@ public class BO3Config extends CustomObjectConfigFile
 		writer.setting(BO3Settings.VERSION, "3");
 
 		writer.comment("The settings mode, WriteAll, WriteWithoutComments or WriteDisable. See PresetConfig.");
-		writer.setting(PresetStandardValues.SETTINGS_MODE_BO3, this.settingsMode);
+		writer.setting(SETTINGS_MODE_BO3, this.settingsMode);
 
 		// Main settings
 		writer.bigTitle("Main settings");
@@ -452,7 +455,7 @@ public class BO3Config extends CustomObjectConfigFile
 
 		this.author = readSettings(BO3Settings.AUTHOR, logger, null, null);
 		this.description = readSettings(BO3Settings.DESCRIPTION, logger, null, null);
-		this.settingsMode = readSettings(PresetStandardValues.SETTINGS_MODE_BO3, logger, null, null);
+		this.settingsMode = readSettings(SETTINGS_MODE_BO3, logger, null, null);
 
 		this.tree = readSettings(BO3Settings.TREE, logger, null, null);
 		this.frequency = readSettings(BO3Settings.FREQUENCY, logger, null, null);

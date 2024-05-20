@@ -1,6 +1,5 @@
 package com.pg85.otg.customobject.resource;
 
-import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
@@ -11,6 +10,8 @@ import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.ISaplingSpawner;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.OTGLog;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -23,7 +24,7 @@ import java.util.*;
 /**
  * Represents a custom sapling generator, which can grow vanilla trees or custom objects.
  */
-public class SaplingResource extends ConfigFunction<BiomeSettings> implements ISaplingSpawner
+public class SaplingResource extends ISaplingSpawner
 {
 	private static final Map<Rotation, int[]> TREE_OFFSET;
 	static
@@ -46,16 +47,16 @@ public class SaplingResource extends ConfigFunction<BiomeSettings> implements IS
 	public LocalMaterialData saplingMaterial;
 	public boolean wideTrunk;
 	
-	public SaplingResource(BiomeSettings biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public SaplingResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
 		assureSize(3, args);
 
 		this.saplingType = SaplingType.get(args.get(0));
-
+		ILogger logger = OTGLog.getLogger();
 		if (this.saplingType == SaplingType.Custom)
 		{
 			try {
-				this.saplingMaterial = materialReader.readMaterial(args.get(1));
+				this.saplingMaterial = OTGMaterialReader.get().readMaterial(args.get(1));
 			} catch (InvalidConfigException e) {
 				if(logger.getLogCategoryEnabled(LogCategory.DECORATION))
 				{

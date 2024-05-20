@@ -1,13 +1,16 @@
 package com.pg85.otg.config.settings.preset;
 
 import com.pg85.otg.config.io.SettingsMap;
-import com.pg85.otg.config.standard.PresetStandardValues;
+import com.pg85.otg.config.settingType.Setting;
+import com.pg85.otg.config.settingType.Settings;
+import com.pg85.otg.config.settings.ConfigSection;
+import com.pg85.otg.constants.Constants;
 import lombok.Builder;
 import lombok.Getter;
 
 @Builder
 @Getter
-public class TerrainSettings {
+public class TerrainSettings extends ConfigSection {
     private final double fractureHorizontal;
     private final double fractureVertical;
     private final int worldHeightCap;
@@ -17,20 +20,75 @@ public class TerrainSettings {
     private final int waterLevelMin;
     private final int carverLavaBlockHeight;
 
+    public static final Setting<Boolean> BETTER_SNOW_FALL = Settings.booleanSetting(
+            "BetterSnowFall", false,
+            t -> ((TerrainSettings) t).isBetterSnowFall(),
+            "When set to false, 1 layer of snow falls on the highest block only.",
+            "When set to true, the number of layers (1-8) is dependent on biome temperature.",
+            "Higher altitudes have lower temperatures, so snow becomes deeper higher up.",
+            "Also causes snow to fall through leaves, leaves can carry 3 layers while the rest falls through."
+    );
+    public static final Setting<Integer> WORLD_HEIGHT_SCALE_BITS = Settings.intSetting(
+            "WorldHeightScaleBits", 7, 5, 8,
+            t -> ((TerrainSettings) t).getWorldHeightScale(),
+            "The height scale of the world. Increasing this by one doubles the terrain height of the world,",
+            "substracting one halves the terrain height. Values must be between 5 and 8, inclusive."
+    );
+    public static final Setting<Integer> WORLD_HEIGHT_CAP_BITS = Settings.intSetting(
+            "WorldHeightCapBits", 8, 5, 8,
+            t -> ((TerrainSettings) t).getWorldHeightCap(),
+            "The height cap of the world. A cap of 7 will make sure that there is no terrain above 128 (y=2^7). Near this cap less and less terrain generates with no terrain above this cap.",
+            "Values must be between 5 and 8 (inclusive), and may not be lower that WorldHeightScaleBits."
+    );
+    public static final Setting<Integer> WATER_LEVEL_MAX = Settings.intSetting(
+            "WaterLevelMax", 63, Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1,
+            t -> ((TerrainSettings) t).getWaterLevelMax(),
+            "Set water level. Every empty block under this level down to min will be fill water or another block from WaterBlock."
+    );
+    public static final Setting<Integer> WATER_LEVEL_MIN = Settings.intSetting(
+            "WaterLevelMin", 0, Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1,
+            t -> ((TerrainSettings) t).getWaterLevelMin(),
+            "Set water level. Every empty block over this level up to max will be fill water or another block from WaterBlock."
+    );
+    public static final Setting<Integer> CARVER_LAVA_BLOCK_HEIGHT = Settings.intSetting(
+            "CarverLavaBlockHeight", 10, 0, 255,
+            t -> ((TerrainSettings) t).getCarverLavaBlockHeight(),
+            "All air blocks are replaced to CarverLavaBlock from Y0 up to CarverLavaBlockHeight.",
+            "For example, vanilla replaces air in caves with lava up to Y10.",
+            "Defaults to: 10"
+    );
+    public static final Setting<Double> FRACTURE_HORIZONTAL = Settings.doubleSetting(
+            "FractureHorizontal", 0, -500, 500,
+            t -> ((TerrainSettings) t).getFractureHorizontal(),
+            "Can increase (values greater than 0) or decrease (values less than 0) how much the landscape is fractured horizontally.",
+            "Values less than 0 will 'relax' the terrain, leading to more gradual and smoother height transitions."
+    );
+    public static final Setting<Double> FRACTURE_VERTICAL = Settings.doubleSetting(
+            "FractureVertical", 0, -500, 500,
+            t -> ((TerrainSettings) t).getFractureVertical(),
+            "Can increase (values greater than 0) or decrease (values less than 0) how much the landscape is fractured vertically.",
+            "Values above 0 will lead to large cliffs/overhangs, floating islands, and/or a cavern world depending on other settings.",
+            "Values less than 0 will make terrain volatility more 'spiky' but lessen the likelihood of overhangs and floating terrain."
+    );
+
     public static TerrainSettings getTerrainSettings(SettingsMap reader) {
         var terrainSettingsBuilder = builder();
 
-        terrainSettingsBuilder.fractureHorizontal(reader.getSetting(PresetStandardValues.FRACTURE_HORIZONTAL));
-        terrainSettingsBuilder.fractureVertical(reader.getSetting(PresetStandardValues.FRACTURE_VERTICAL));
-        terrainSettingsBuilder.worldHeightCap(1 << reader.getSetting(PresetStandardValues.WORLD_HEIGHT_CAP_BITS));
-        terrainSettingsBuilder.worldHeightScale(1 << reader.getSetting(PresetStandardValues.WORLD_HEIGHT_SCALE_BITS));
-        terrainSettingsBuilder.betterSnowFall(reader.getSetting(PresetStandardValues.BETTER_SNOW_FALL));
-        terrainSettingsBuilder.waterLevelMax(reader.getSetting(PresetStandardValues.WATER_LEVEL_MAX));
-        terrainSettingsBuilder.waterLevelMin(reader.getSetting(PresetStandardValues.WATER_LEVEL_MIN));
-        terrainSettingsBuilder.carverLavaBlockHeight(reader.getSetting(PresetStandardValues.CARVER_LAVA_BLOCK_HEIGHT));
+        terrainSettingsBuilder.fractureHorizontal(reader.getSetting(FRACTURE_HORIZONTAL));
+        terrainSettingsBuilder.fractureVertical(reader.getSetting(FRACTURE_VERTICAL));
+        terrainSettingsBuilder.worldHeightCap(1 << reader.getSetting(WORLD_HEIGHT_CAP_BITS));
+        terrainSettingsBuilder.worldHeightScale(1 << reader.getSetting(WORLD_HEIGHT_SCALE_BITS));
+        terrainSettingsBuilder.betterSnowFall(reader.getSetting(BETTER_SNOW_FALL));
+        terrainSettingsBuilder.waterLevelMax(reader.getSetting(WATER_LEVEL_MAX));
+        terrainSettingsBuilder.waterLevelMin(reader.getSetting(WATER_LEVEL_MIN));
+        terrainSettingsBuilder.carverLavaBlockHeight(reader.getSetting(CARVER_LAVA_BLOCK_HEIGHT));
 
-        var terrainSettings = terrainSettingsBuilder.fixSettings().build();
-        return terrainSettings;
+        return terrainSettingsBuilder.fixSettings().build();
+    }
+
+    @Override
+    public String getSectionName() {
+        return "Terrain Settings";
     }
 
     public static class TerrainSettingsBuilder {

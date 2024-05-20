@@ -23,7 +23,7 @@ public class SmallLakeResource extends FrequencyResourceBase
 
 	public SmallLakeResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
 	{
-		super(biomeConfig, args, materialReader);
+		super(biomeConfig, args);
 		assureSize(5, args);
 		this.material = materialReader.readMaterial(args.get(0));
 		this.frequency = readInt(args.get(1), 1, 100);
@@ -33,14 +33,14 @@ public class SmallLakeResource extends FrequencyResourceBase
 	}
 
 	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, IMaterialReader materialReader)
+	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random)
 	{
 		// TODO: This only checks for a structure start, need to expose the MC method for finding villages on worldGenRegion.
 		if(worldGenRegion.chunkHasDefaultStructure(random, worldGenRegion.getDecorationArea().getChunkBeingDecorated()))
 		{
 			return;
 		}
-		super.spawnForChunkDecoration(worldGenRegion, random, materialReader);
+		super.spawnForChunkDecoration(worldGenRegion, random);
 	}	
 	
 	@Override

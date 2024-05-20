@@ -1,27 +1,34 @@
 package com.pg85.otg.util.biome;
 
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.pg85.otg.config.yaml.ColorSettingDeserializer;
+import com.pg85.otg.config.yaml.ColorSettingSerializer;
+import com.pg85.otg.config.yaml.ColorThresholdSerializer;
+import com.pg85.otg.util.Color;
+import lombok.Getter;
+
+@Getter
 public class ColorThreshold implements Comparable<ColorThreshold>
 {
-	final float maxNoise;
-	final int color;
+	@JsonProperty
+	@JsonFormat(shape = JsonFormat.Shape.STRING)
+	final Color color;
 
-	public ColorThreshold(int color, float maxNoise) {
+	@JsonProperty
+	final float maxNoise;
+
+	@JsonCreator
+	public ColorThreshold(@JsonProperty Color color, @JsonProperty float maxNoise) {
 		this.color = color;
 		this.maxNoise = maxNoise;
 	}
 
-	public float getMaxNoise()
-	{
-		return maxNoise;
-	}
-
-	public int getColor()
-	{
-		return color;
-	}
-
-	@Override
+    @Override
 	public int compareTo(ColorThreshold that)
 	{
 		float delta = this.maxNoise - that.maxNoise;

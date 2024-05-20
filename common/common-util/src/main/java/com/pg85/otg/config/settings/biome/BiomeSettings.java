@@ -69,12 +69,6 @@ public abstract class BiomeSettings implements ConfigFile {
     // Height / volatility
     abstract public double getCHCData(int y);
 
-    // Rivers
-
-    abstract public String getRiverBiome();
-    // Visuals / weather
-
-    abstract public boolean useFrozenOceanTemperature();
 
     // OTG Custom structures (BO's)
 

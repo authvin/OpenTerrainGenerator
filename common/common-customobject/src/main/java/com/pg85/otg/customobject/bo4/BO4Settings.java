@@ -28,7 +28,7 @@ class BO4Settings extends Settings
 		USE_CENTER_FOR_HIGHEST_BLOCK = booleanSetting("UseCenterForHighestBlock", true)		
 	;
 
-	static final Setting<Rotation> INHERITBO3ROTATION = rotationSetting("InheritBO3Rotation", Rotation.NORTH);
+	static final Setting<Rotation> INHERITBO3ROTATION = enumSetting("InheritBO3Rotation", Rotation.NORTH);
 
 	static final Setting<Integer>
 		FREQUENCY = intSetting("Frequency", 0, 0, 9999),

@@ -1,11 +1,11 @@
 package com.pg85.otg.forge.biome;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import com.pg85.otg.OTG;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.biome.BiomeConfig;
-import com.pg85.otg.config.standard.BiomeStandardValues;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.constants.settings.structure.MineshaftType;
 import com.pg85.otg.constants.settings.structure.OceanRuinsType;
@@ -141,10 +141,10 @@ public class ForgeBiome implements IBiome
 
 		BiomeAmbience.Builder biomeAmbienceBuilder =
 			new BiomeAmbience.Builder()			
-				.fogColor(biomeVisualSettings.getFogColor() != BiomeStandardValues.FOG_COLOR.getDefaultValue() ? biomeVisualSettings.getFogColor() : presetConfig.getVisualSettings().getFogColor())
-				.waterFogColor(biomeVisualSettings.getWaterFogColor() != BiomeStandardValues.WATER_FOG_COLOR.getDefaultValue() ? biomeVisualSettings.getWaterFogColor() : 329011)
-				.waterColor(biomeVisualSettings.getWaterColor() != BiomeStandardValues.WATER_COLOR.getDefaultValue() ? biomeVisualSettings.getWaterColor() : 4159204)
-				.skyColor(biomeVisualSettings.getSkyColor() != BiomeStandardValues.SKY_COLOR.getDefaultValue() ? biomeVisualSettings.getSkyColor() : getSkyColorForTemp(safeTemperature)) // TODO: Sky color is normally based on temp, make a setting for that?
+				.bfogColor(biomeVisualSettings.getFogColor() != BiomeVisualSettings.FOG_COLOR.getDefaultValue() ? biomeVisualSettings.getFogColor() : presetConfig.getVisualSettings().getFogColor())
+				.bwaterFogColor(biomeVisualSettings.getWaterFogColor() != BiomeVisualSettings.WATER_FOG_COLOR.getDefaultValue() ? biomeVisualSettings.getWaterFogColor() : 329011)
+				.bwaterColor(biomeVisualSettings.getWaterColor() != BiomeVisualSettings.WATER_COLOR.getDefaultValue() ? biomeVisualSettings.getWaterColor() : 4159204)
+				.bskyColor(biomeVisualSettings.getSkyColor() != BiomeVisualSettings.SKY_COLOR.getDefaultValue() ? biomeVisualSettings.getSkyColor() : getSkyColorForTemp(safeTemperature)) // TODO: Sky color is normally based on temp, make a setting for that?
 		;
 
 		@SuppressWarnings("deprecation")
@@ -243,11 +243,6 @@ public class ForgeBiome implements IBiome
 			.mobSpawnSettings(mobSpawnInfoBuilder2.build())
 			.generationSettings(biomeGenerationSettingsBuilder2.build())
 		;
-		
-		if(biomeConfig.useFrozenOceanTemperature())
-		{
-			biomeBuilder.temperatureAdjustment(Biome.TemperatureModifier.FROZEN);
-		}
 
 		biomeBuilder.biomeCategory(category != null ? category : isOceanBiome ? Biome.Category.OCEAN : Biome.Category.PLAINS);
 		
@@ -271,7 +266,7 @@ public class ForgeBiome implements IBiome
 	{
 		for(WeightedMobSpawnGroup mobSpawnGroup : mobSpawnGroupList)
 		{
-			Optional<EntityType<?>> entityType = EntityType.byString(mobSpawnGroup.getInternalName());
+			Optional<EntityType<?>> entityType = EntityType.byString(mobSpawnGroup.internalName());
 			if(entityType.isPresent())
 			{
 				mobSpawnInfoBuilder.addSpawn(entitiClassification, new MobSpawnInfo.Spawners(entityType.get(), mobSpawnGroup.getWeight(), mobSpawnGroup.getMin(), mobSpawnGroup.getMax()));

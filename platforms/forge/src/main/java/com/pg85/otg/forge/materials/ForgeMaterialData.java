@@ -27,7 +27,7 @@ public class ForgeMaterialData extends LocalMaterialData
 	private static final ConcurrentHashMap<BlockState, ForgeMaterialData> stateToMaterialDataMap = new ConcurrentHashMap<>(); // TODO: Move to ForgeMaterialReader?
 
 	private final BlockState blockData;
-	private String name = null;
+	protected String name = null;
 
 	private ForgeMaterialData(BlockState blockData, String raw)
 	{
@@ -36,9 +36,10 @@ public class ForgeMaterialData extends LocalMaterialData
 
 	private ForgeMaterialData(BlockState blockData, String raw, boolean isBlank)
 	{
+		super(raw);
 		this.blockData = blockData;
-		this.rawEntry = raw;
 		this.isBlank = isBlank;
+		this.name = getName();
 	}
 
 	static ForgeMaterialData ofBlock(Block block, String raw)
@@ -88,9 +89,9 @@ public class ForgeMaterialData extends LocalMaterialData
 		{
 			if(this.rawEntry != null)
 			{
-				this.name = this.rawEntry;
+				return this.rawEntry;
 			} else {
-				this.name = "Unknown";
+				return "Unknown";
 			}
 		} else {
 			if(
@@ -101,14 +102,13 @@ public class ForgeMaterialData extends LocalMaterialData
 				)
 			)
 			{
-				this.name = this.blockData.toString()
+				return this.blockData.toString()
 					.replace("Block{", "")
 					.replace("}", "");
 			} else {
-				this.name = this.blockData.getBlock().getRegistryName().toString();
+				return this.blockData.getBlock().getRegistryName().toString();
 			}
 		}
-		return this.name;
 	}
 
 	@Override

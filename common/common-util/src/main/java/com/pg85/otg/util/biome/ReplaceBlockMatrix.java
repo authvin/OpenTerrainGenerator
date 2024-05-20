@@ -1,10 +1,14 @@
 package com.pg85.otg.util.biome;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.IMaterialReader;
+import com.pg85.otg.util.OTGLog;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
-import com.pg85.otg.util.materials.LocalMaterialBase;
+import com.pg85.otg.util.logging.LogCategory;
+import com.pg85.otg.util.logging.LogLevel;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterialTag;
 
@@ -15,105 +19,17 @@ import java.util.List;
 
 public class ReplaceBlockMatrix
 {
-	private static final String NO_REPLACE = "None";
-	
-	private class ReplaceBlockEntry
-	{
-		public final List<ReplacedBlocksInstruction> targets = new ArrayList<ReplacedBlocksInstruction>();
-	}
-	
-	public static class ReplacedBlocksInstruction
-	{
-		private final LocalMaterialBase from;
-		private LocalMaterialData to;
-		private final int minHeight;
-		private final int maxHeight;
-		
-		/**
-		 * Parses the given instruction string.
-		 * @param instruction The instruction string.
-		 * @param maxAllowedY Maximum allowed y height for the replace setting, inclusive.
-		 * @throws InvalidConfigException If the instruction is formatted incorrectly.
-		 */
-		private ReplacedBlocksInstruction(String instruction, int maxAllowedY, IMaterialReader materialReader) throws InvalidConfigException
-		{
-			String[] values = instruction.split(",(?![^\\(\\[]*[\\]\\)])"); // Splits on any comma not inside brackets
-			if (values.length == 5)
-			{
-				// Replace in TC 2.3 style found
-				values = new String[] {values[0], values[1] + ":" + values[2], values[3], "" + (Integer.parseInt(values[4]) - 1)};
-			}
-
-			if (values.length != 2 && values.length != 4)
-			{
-				throw new InvalidConfigException("Replace parts must be in the format (from,to) or (from,to,minHeight,maxHeight)");
-			}
-			
-			LocalMaterialTag tag = materialReader.readTag(values[0]);
-			if(tag != null)
-			{
-				this.from = tag;
-			} else {
-				this.from = materialReader.readMaterial(values[0]);	
-			}
-			this.to = materialReader.readMaterial(values[1]);
-
-			if (values.length == 4)
-			{
-				this.minHeight = StringHelper.readInt(values[2], 0, maxAllowedY);
-				this.maxHeight = StringHelper.readInt(values[3], this.minHeight, maxAllowedY);
-			} else {
-				this.minHeight = 0;
-				this.maxHeight = maxAllowedY;
-			}
-		}
-
-		/**
-		 * Creates a ReplacedBlocksInstruction with the given parameters.
-		 * Parameters may not be null.
-		 * @param from The block that will be replaced.
-		 * @param to The block that from will be replaced to.
-		 * @param minHeight Minimum height for this replace, inclusive. Must be smaller than or equal to 0.
-		 * @param maxHeight Maximum height for this replace, inclusive. Must not be larger than {@link ReplaceBlockMatrix#maxHeight}.
-		 */
-		public ReplacedBlocksInstruction(LocalMaterialBase from, LocalMaterialData to, int minHeight, int maxHeight)
-		{
-			this.from = from;
-			this.to = to;
-			this.minHeight = minHeight;
-			this.maxHeight = maxHeight;
-		}
-
-		public ReplacedBlocksInstruction clone()
-		{
-			return new ReplacedBlocksInstruction(this.from, this.to, this.minHeight, this.maxHeight);
-		}
-		
-		public LocalMaterialBase getFrom()
-		{
-			return this.from;
-		}
-
-		public LocalMaterialData getTo()
-		{
-			return this.to;
-		}
-
-		public int getMinHeight()
-		{
-			return this.minHeight;
-		}
-
-		public int getMaxHeight()
-		{
-			return this.maxHeight;
-		}
-	}
-
-	 // All ReplacedBlocksInstructions must have maxHeight smaller than or equal to this.
-	private final int maxHeight;
+	@JsonProperty
 	private List<ReplacedBlocksInstruction> instructions;
-	private final ReplaceBlockEntry[] targetsAtHeights;
+
+	public boolean initialised = false;
+
+	private static final String NO_REPLACE = "None";
+
+	// All ReplacedBlocksInstructions must have maxHeight smaller than or equal to this.
+	private final int maxHeight = Constants.WORLD_HEIGHT;
+
+	private final ReplaceBlockEntry[] targetsAtHeights = new ReplaceBlockEntry[256];
 	
 	public boolean replacesCooledLava = false;
 	public boolean replacesIce = false;
@@ -128,19 +44,21 @@ public class ReplaceBlockMatrix
 	public boolean replacesSandStone = false;
 	public boolean replacesRedSandStone = false;
 
-	public ReplaceBlockMatrix(String setting, int maxHeight, IMaterialReader reader) throws InvalidConfigException
+	public ReplaceBlockMatrix(@JsonProperty List<ReplacedBlocksInstruction> instructions) {
+		setInstructions(instructions);
+	}
+
+	public ReplaceBlockMatrix(String setting) throws InvalidConfigException
 	{
-		this.maxHeight = maxHeight;
-		this.targetsAtHeights = (ReplaceBlockEntry[])new ReplaceBlockEntry[256];
 		
 		// Parse
 		if (setting.isEmpty() || setting.equalsIgnoreCase(NO_REPLACE))
 		{
-			setInstructions(Collections.<ReplacedBlocksInstruction> emptyList());
+			setInstructions(Collections.emptyList());
 			return;
 		}
 
-		List<ReplacedBlocksInstruction> instructions = new ArrayList<ReplacedBlocksInstruction>();
+		List<ReplacedBlocksInstruction> instructions = new ArrayList<>();
 		String[] keys = StringHelper.readCommaSeperatedString(setting);
 
 		for (String key : keys)
@@ -150,7 +68,7 @@ public class ReplaceBlockMatrix
 			if (start != -1 && end != -1)
 			{
 				String keyWithoutBraces = key.substring(start + 1, end);
-				instructions.add(new ReplacedBlocksInstruction(keyWithoutBraces, maxHeight, reader));
+				instructions.add(new ReplacedBlocksInstruction(keyWithoutBraces, maxHeight, OTGMaterialReader.get()));
 			} else {
 				throw new InvalidConfigException("One of the parts is missing braces around it.");
 			}
@@ -188,26 +106,26 @@ public class ReplaceBlockMatrix
 				{
 					// If this instruction replaces the output of a previously added
 					// instruction, override the output of the previous instruction.
-					LocalMaterialData existingTo = (LocalMaterialData)existing.to;
-					if(!instruction.from.isTag())
+					LocalMaterialData existingTo = existing.to;
+					if(instruction.from instanceof LocalMaterialData data)
 					{
-						LocalMaterialData newFrom = (LocalMaterialData)instruction.from;
 						if(
-							(newFrom.isDefaultState() && newFrom.getRegistryName().equals(existingTo.getRegistryName())) ||
-							(!newFrom.isDefaultState() && newFrom.hashCode() == existingTo.hashCode())
+							(data.isDefaultState() && data.getRegistryName().equals(existingTo.getRegistryName())) ||
+							(!data.isDefaultState() && data.hashCode() == existingTo.hashCode())
 						)
 						{
 							existing.to = instruction.to;
 						}
-					} else {
-						LocalMaterialTag newFrom = (LocalMaterialTag)instruction.from;
-						if(instruction.from.isTag() && existingTo.isBlockTag(newFrom))
+					} else if (instruction.from instanceof LocalMaterialTag tag) {
+						if(instruction.from.isTag() && existingTo.isBlockTag(tag))
 						{
 							existing.to = instruction.to;
 						}
+					} else {
+						OTGLog.getLogger().log(LogLevel.ERROR, LogCategory.CONFIGS, "Unknown type of material: " + instruction.from.toString());
 					}
 				}
-				targetsAtHeight.targets.add(instruction.clone());
+				targetsAtHeight.targets.add(instruction.copyInstruction());
 			}
 		}
 		
@@ -364,7 +282,7 @@ public class ReplaceBlockMatrix
 	public static ReplaceBlockMatrix createEmptyMatrix(int maxHeight, IMaterialReader materialReader)
 	{
 		try {
-			return new ReplaceBlockMatrix(NO_REPLACE, maxHeight, materialReader);
+			return new ReplaceBlockMatrix(NO_REPLACE);
 		} catch (InvalidConfigException e) {
 			throw new AssertionError(e); // Should never happen
 		}

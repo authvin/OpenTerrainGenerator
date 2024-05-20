@@ -6,7 +6,7 @@ import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.config.biome.BiomeResourcesManager;
 import com.pg85.otg.config.io.FileSettingsReader;
 import com.pg85.otg.config.io.FileSettingsWriter;
-import com.pg85.otg.config.standard.PresetStandardValues;
+import com.pg85.otg.config.settings.preset.PresetInfo;
 import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.customobject.CustomObjectManager;
@@ -240,12 +240,12 @@ public abstract class OTGEngine
 	
 	private int parseMajorVersion(BufferedReader reader) throws IOException
 	{
-		return parseVersion(reader, PresetStandardValues.MAJOR_VERSION.getName());
+		return parseVersion(reader, PresetInfo.MAJOR_VERSION.getName());
 	}
 	
 	private int parseMinorVersion(BufferedReader reader) throws IOException
 	{
-		return parseVersion(reader, PresetStandardValues.MINOR_VERSION.getName());
+		return parseVersion(reader, PresetInfo.MINOR_VERSION.getName());
 	}
 	
 	private int parseVersion(BufferedReader reader, String name) throws IOException

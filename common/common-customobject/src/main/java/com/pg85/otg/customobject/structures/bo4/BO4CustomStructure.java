@@ -937,7 +937,7 @@ public class BO4CustomStructure extends CustomStructure
 
 						if(!minimumSize && canSpawn)
 						{
-							if(!checkYBounds(worldGenRegion.getPresetConfig().getBlockSettings().isBedrockDisabled(), childBranchDataItem.branch, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker))
+							if(!checkYBounds(worldGenRegion.getPresetConfig().getBlockSettings().isDisableBedrock(), childBranchDataItem.branch, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker))
 							{
 								canSpawn = false;
 								chunkIsIneligible = true;

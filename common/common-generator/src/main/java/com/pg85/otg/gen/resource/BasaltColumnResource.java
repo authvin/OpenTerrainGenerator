@@ -7,7 +7,6 @@ import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.gen.resource.util.PositionHelper;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.MaterialSet;
@@ -23,13 +22,13 @@ public class BasaltColumnResource extends FrequencyResourceBase
 	private LocalMaterialData material;
 	private final MaterialSet sourceBlocks;
 
-	public BasaltColumnResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader)
+	public BasaltColumnResource(BiomeSettings biomeConfig, List<String> args)
 			throws InvalidConfigException
 	{
-		super(biomeConfig, args, materialReader);
+		super(biomeConfig, args);
 		assureSize(8, args);
 
-		this.material = readMaterial(args.get(0), materialReader);
+		this.material = readMaterial(args.get(0));
 		this.frequency = readInt(args.get(1), 1, 100);
 		this.rarity = readRarity(args.get(2));
 		this.baseSize = readInt(args.get(3), 1, 5);
@@ -38,7 +37,7 @@ public class BasaltColumnResource extends FrequencyResourceBase
 		this.heightVariance = readInt(args.get(6), 0, 5);
 		this.minAltitude = readInt(args.get(7), Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1);
 		this.maxAltitude = readInt(args.get(8), Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1);
-		this.sourceBlocks = readMaterials(args, 9, materialReader);
+		this.sourceBlocks = readMaterials(args, 9);
 
 	}
 

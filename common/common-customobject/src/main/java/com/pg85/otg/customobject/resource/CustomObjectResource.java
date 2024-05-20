@@ -23,9 +23,9 @@ public class CustomObjectResource extends BiomeResourceBase implements ICustomOb
 	private final List<CustomObject> objects;
 	private final List<String> objectNames;
 
-	public CustomObjectResource(BiomeSettings biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public CustomObjectResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
-		super(biomeConfig, args, materialReader);
+		super(biomeConfig, args);
 		if (args.isEmpty() || (args.size() == 1 && args.get(0).trim().isEmpty()))
 		{
 			// Backwards compatibility

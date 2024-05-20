@@ -4,8 +4,8 @@ import com.pg85.otg.config.biome.BiomeResourceBase;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -29,12 +29,12 @@ public class OreResource extends BiomeResourceBase implements IBasicResource
 	private final boolean useExtendedParams;	
 	private final int maxSpawn;	
 
-	public OreResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public OreResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
-		super(biomeConfig, args, materialReader);
+		super(biomeConfig, args);
 		assureSize(7, args);
 
-		this.material = materialReader.readMaterial(args.get(0));
+		this.material = OTGMaterialReader.get().readMaterial(args.get(0));
 		this.numberOfBlocks = readInt(args.get(1), 1, 128);
 		this.frequency = readInt(args.get(2), 1, 100);
 		this.rarity = readRarity(args.get(3));
@@ -58,11 +58,11 @@ public class OreResource extends BiomeResourceBase implements IBasicResource
 		this.useExtendedParams = useExtendedParams;
 		this.maxSpawn = maxSpawn;
 
-		this.sourceBlocks = readMaterials(args, 6, materialReader);
+		this.sourceBlocks = readMaterials(args, 6);
 	}
 
 	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, IMaterialReader materialReader)
+	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random)
 	{
 		// Override spawnForChunkDecoration so we can add a cache.
 		

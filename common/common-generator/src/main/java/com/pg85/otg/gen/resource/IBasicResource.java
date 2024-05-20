@@ -2,8 +2,6 @@ package com.pg85.otg.gen.resource;
 
 import java.util.Random;
 
-import com.pg85.otg.interfaces.ILogger;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 
 // Biome resources are spawned during decoration, for each chunk being decorated, resources can
@@ -18,11 +16,11 @@ import com.pg85.otg.interfaces.IWorldGenRegion;
 // the common-customobject project.
 public interface IBasicResource
 {
-	default void processForChunkDecoration(IWorldGenRegion worldGenregion, Random random, IMaterialReader materialReader)
+	default void processForChunkDecoration(IWorldGenRegion worldGenregion, Random random)
 	{
 		// TODO: Fire Forge resource decoration events, when they're available.
-		spawnForChunkDecoration(worldGenregion, random, materialReader);
+		spawnForChunkDecoration(worldGenregion, random);
 	}
 
-	void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, IMaterialReader materialReader);
+	void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random);
 }

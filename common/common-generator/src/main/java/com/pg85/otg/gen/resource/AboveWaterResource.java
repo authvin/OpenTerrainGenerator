@@ -2,8 +2,8 @@ package com.pg85.otg.gen.resource;
 
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.materials.LocalMaterialData;
 
 import java.util.List;
@@ -13,12 +13,12 @@ public class AboveWaterResource extends FrequencyResourceBase
 {
 	private final LocalMaterialData material;
 	
-	public AboveWaterResource(BiomeSettings config, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public AboveWaterResource(BiomeSettings config, List<String> args) throws InvalidConfigException
 	{
-		super(config, args, materialReader);
+		super(config, args);
 		assureSize(3, args);
 
-		this.material = materialReader.readMaterial(args.get(0));
+		this.material = OTGMaterialReader.get().readMaterial(args.get(0));
 		this.frequency = readInt(args.get(1), 1, 100);
 		this.rarity = readRarity(args.get(2));
 	}

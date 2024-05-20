@@ -1,9 +1,11 @@
 package com.pg85.otg.config.settingType;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 
+import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
 
@@ -24,8 +26,14 @@ public class MaterialListSetting extends Setting<ArrayList<LocalMaterialData>>
 		this.defaultValue = defaultValue;
 	}
 
+	public MaterialListSetting(String name, String[] defaultValue, Function<ConfigSection, ArrayList<LocalMaterialData>> getter, String ...comments)
+	{
+		super(name, getter, comments);
+		this.defaultValue = defaultValue;
+	}
+
 	@Override
-	public ArrayList<LocalMaterialData> getDefaultValue(IMaterialReader materialReader)
+	public ArrayList<LocalMaterialData> getDefaultValue()
 	{
 		if(!this.processedMaterials)
 		{
@@ -35,7 +43,7 @@ public class MaterialListSetting extends Setting<ArrayList<LocalMaterialData>>
 			{
 				LocalMaterialData material = null;
 				try {
-					material = materialReader.readMaterial(defaultMaterial);
+					material = OTGMaterialReader.get().readMaterial(defaultMaterial);
 				} catch (InvalidConfigException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -51,13 +59,13 @@ public class MaterialListSetting extends Setting<ArrayList<LocalMaterialData>>
 	}
 
 	@Override
-	public ArrayList<LocalMaterialData> read(String string, IMaterialReader materialReader) throws InvalidConfigException
+	public ArrayList<LocalMaterialData> read(String string) throws InvalidConfigException
 	{
 		String[] materialNames = string.split(",(?![^\\(\\[]*[\\]\\)])"); // Splits on any comma not inside brackets
 		ArrayList<LocalMaterialData> materials = new ArrayList<LocalMaterialData>();
 		for(String materialName : materialNames)
 		{
-			LocalMaterialData material = materialReader.readMaterial(materialName.trim());
+			LocalMaterialData material = OTGMaterialReader.get().readMaterial(materialName.trim());
 			materials.add(material);
 		}
 		return materials;
@@ -67,5 +75,30 @@ public class MaterialListSetting extends Setting<ArrayList<LocalMaterialData>>
 	public String write(ArrayList<LocalMaterialData> value)
 	{
 		return StringHelper.join(value, ", ");
+	}
+
+	@Override
+	public String getTypeAsString() {
+		return "array";
+	}
+
+	@Override
+	public String getComplexTypeSchema() {
+		return "string";
+	}
+
+	@Override
+	public String getDefaultValueAsString() {
+		if (defaultValue.length == 0) {
+			return "";
+		}
+		StringBuilder sb = new StringBuilder();
+		for (String s : defaultValue) {
+			sb.append('"');
+			sb.append(s);
+			sb.append("\", ");
+		}
+		sb.setLength(sb.length() - 2);
+		return sb.toString();
 	}
 }

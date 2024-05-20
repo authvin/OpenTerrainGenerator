@@ -4,8 +4,12 @@ import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.pg85.otg.config.yaml.MaterialSetDeserializer;
+import com.pg85.otg.config.yaml.MaterialSetSerializer;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
 
 /**
@@ -14,6 +18,8 @@ import com.pg85.otg.util.helpers.StringHelper;
  * this set, and as such, this set can't be iterated over and its size remains
  * unknown.
  */
+@JsonDeserialize(using = MaterialSetDeserializer.class)
+@JsonSerialize(using = MaterialSetSerializer.class)
 public class MaterialSet
 {
 	/**
@@ -39,8 +45,8 @@ public class MaterialSet
 	private boolean allNonSolidMaterials = false;
 
 	private int[] materialIntSet = new int[0];
-	private Set<MaterialSetEntry> materials = new LinkedHashSet<MaterialSetEntry>();
-	private Set<MaterialSetEntry> tags = new LinkedHashSet<MaterialSetEntry>();
+	private final Set<LocalMaterialData> materials = new LinkedHashSet<>();
+	private Set<LocalMaterialTag> tags = new LinkedHashSet<>();
 	private boolean intSetUpToDate = true;
 
 	/**
@@ -60,7 +66,7 @@ public class MaterialSet
 	 * @param input The name of the material to add.
 	 * @throws InvalidConfigException If the name is invalid.
 	 */
-	public void parseAndAdd(String input, IMaterialReader materialReader) throws InvalidConfigException
+	public void parseAndAdd(String input) throws InvalidConfigException
 	{
 		if (input.equalsIgnoreCase(ALL_MATERIALS))
 		{
@@ -77,29 +83,26 @@ public class MaterialSet
 			this.allNonSolidMaterials = true;
 			return;
 		}
-		
-		LocalMaterialTag tag = materialReader.readTag(input);
-		if(tag != null)
-		{
-			addTag(new MaterialSetEntry(tag));
+
+		LocalMaterialBase base = OTGMaterialReader.get().read(input);
+
+		if (base instanceof LocalMaterialTag tag) {
+			addTag(tag);
+		} else if (base instanceof LocalMaterialData data) {
+			addMaterial(data);
 		} else {
-			LocalMaterialData material = materialReader.readMaterial(input);		
-			if(material == null)
-			{
-				throw new InvalidConfigException("Invalid block check, material \"" + input + "\" could not be found.");
-			}
-			addMaterial(new MaterialSetEntry(material));
+			throw new InvalidConfigException("Invalid block check, material \"" + input + "\" could not be found.");
 		}
 	}
 	
-	private void addMaterial(MaterialSetEntry entry)
+	private void addMaterial(LocalMaterialData entry)
 	{
 		// Add the appropriate hashCode
 		this.intSetUpToDate = false;
 		this.materials.add(entry);
 	}
 	
-	private void addTag(MaterialSetEntry entry)
+	private void addTag(LocalMaterialTag entry)
 	{
 		this.tags.add(entry);
 	} 
@@ -119,12 +122,12 @@ public class MaterialSet
 		// Update the int set
 		this.materialIntSet = new int[this.materials.size()];
 		int i = 0;
-		for (MaterialSetEntry entry : this.materials)
+		for (LocalMaterialData entry : this.materials)
 		{
 			// If the material has no data, it should match all with the same registry name
-			if(!((LocalMaterialData)entry.getMaterial()).isDefaultState())
+			if(!entry.isDefaultState())
 			{
-				this.materialIntSet[i] = ((LocalMaterialData)entry.getMaterial()).getRegistryName().hashCode();	
+				this.materialIntSet[i] = entry.getRegistryName().hashCode();
 			} else {
 				this.materialIntSet[i] = entry.hashCode();
 			}
@@ -174,9 +177,9 @@ public class MaterialSet
 		{
 			return true;
 		}
-		for(MaterialSetEntry entry : this.tags)
+		for(LocalMaterialTag entry : this.tags)
 		{
-			if(material.isBlockTag((LocalMaterialTag)entry.getMaterial()))
+			if(material.isBlockTag(entry))
 			{
 				return true;
 			}
@@ -213,18 +216,18 @@ public class MaterialSet
 			builder.append(NON_SOLID_MATERIALS).append(',');
 		}
 		// Add all tags
-		for (MaterialSetEntry tag : this.tags)
+		for (LocalMaterialTag tag : this.tags)
 		{
 			builder.append(tag.toString()).append(',');
 		}
 		// Add all other materials
-		for (MaterialSetEntry material : this.materials)
+		for (LocalMaterialData material : this.materials)
 		{
 			builder.append(material.toString()).append(',');
 		}
 
 		// Remove last ','
-		if (builder.length() > 0)
+		if (!builder.isEmpty())
 		{
 			builder.deleteCharAt(builder.length() - 1);
 		}
@@ -253,7 +256,7 @@ public class MaterialSet
 			rotated.allNonSolidMaterials = true;
 		}
 		rotated.intSetUpToDate = false;
-		for (MaterialSetEntry material : this.materials)
+		for (LocalMaterialData material : this.materials)
 		{
 			rotated.materials.add(material.rotate());
 		}

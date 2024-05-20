@@ -1,18 +1,33 @@
 package com.pg85.otg.util.materials;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.pg85.otg.config.yaml.LocalMaterialDataDeserializer;
+import com.pg85.otg.config.yaml.LocalMaterialDataSerializer;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 
 /**
  * Represents one of Minecraft's materials.
  * Immutable.
  */
+@JsonDeserialize(using = LocalMaterialDataDeserializer.class)
+@JsonSerialize(using = LocalMaterialDataSerializer.class)
 public abstract class LocalMaterialData extends LocalMaterialBase
 {
+	@JsonProperty("material")
 	protected String rawEntry;
+
 	protected boolean isBlank = false;
 	protected boolean parsedDefaultMaterial = false;
 	protected LocalMaterialData[] rotations = new LocalMaterialData[] {this, null, null, null};
 	protected LocalMaterialData rotated = null;
+
+	@JsonCreator
+	public LocalMaterialData(String raw) {
+		this.rawEntry = raw;
+	}
 
 	public abstract <T extends Comparable<T>> LocalMaterialData withProperty(MaterialProperty<T> state, T value);
 	

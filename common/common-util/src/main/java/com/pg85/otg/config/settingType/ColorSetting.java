@@ -1,7 +1,15 @@
 package com.pg85.otg.config.settingType;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.pg85.otg.config.settings.ConfigSection;
+import com.pg85.otg.config.yaml.ColorSettingDeserializer;
+import com.pg85.otg.config.yaml.ColorSettingSerializer;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
+import com.pg85.otg.util.Color;
+import com.pg85.otg.util.helpers.StringHelper;
+
+import java.util.function.Function;
 
 /**
  * Reads and writes colors. The colors are represented as integers internally,
@@ -12,43 +20,42 @@ import com.pg85.otg.interfaces.IMaterialReader;
  * numbers and other colors as decimal numbers. Colors are case insensitive.
  *
  */
-class ColorSetting extends Setting<Integer>
+@JsonSerialize(using = ColorSettingSerializer.class)
+@JsonDeserialize(using = ColorSettingDeserializer.class)
+public class ColorSetting extends Setting<Color>
 {
-	private int defaultValue;
+	private final Color defaultValue;
 
-	ColorSetting(String name, String defaultValue)
-	{
+	public ColorSetting(String name, String defaultValue) {
 		super(name);
-		this.defaultValue = Integer.decode(defaultValue);
+		this.defaultValue = new Color(defaultValue);
+	}
+
+	public ColorSetting(String name, String defaultValue, Function<ConfigSection, Color> getter, String... description) {
+		super(name, getter, description);
+		this.defaultValue = new Color(defaultValue);
 	}
 
 	@Override
-	public Integer getDefaultValue(IMaterialReader materialReader)
+	public Color getDefaultValue()
 	{
 		return defaultValue;
 	}
 
 	@Override
-	public Integer read(String string, IMaterialReader materialReader) throws InvalidConfigException
+	public Color read(String string) throws InvalidConfigException
 	{
-		try
-		{
-			Integer integer = Integer.decode(string);
-			if (integer.intValue() > 0xffffff || integer.intValue() < 0)
-			{
-				throw new InvalidConfigException("Color must have 6 hexadecimal digits");
-			}
-			return integer;
-		} catch (NumberFormatException e)
-		{
-			throw new InvalidConfigException("Invalid color " + string);
-		}
+		return new Color(string);
 	}
 
 	@Override
-	public String write(Integer value)
-	{
-		return "#" + Integer.toHexString(value.intValue() | 0x1000000).substring(1).toUpperCase();
+	public String getTypeAsString() {
+		return "string";
+	}
+
+	@Override
+	public String getStringFormat() {
+		return "color";
 	}
 
 }

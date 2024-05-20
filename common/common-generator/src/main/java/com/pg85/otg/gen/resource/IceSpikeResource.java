@@ -4,8 +4,8 @@ import com.pg85.otg.constants.Constants;
 import com.pg85.otg.constants.settings.IceSpikeType;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -22,12 +22,12 @@ public class IceSpikeResource extends FrequencyResourceBase
 	private final MaterialSet sourceBlocks;
 	private IceSpikeType type;
 
-	public IceSpikeResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public IceSpikeResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
-		super(biomeConfig, args, materialReader);
+		super(biomeConfig, args);
 		assureSize(2, args);
 
-		this.material = materialReader.readMaterial(args.get(0));
+		this.material = OTGMaterialReader.get().readMaterial(args.get(0));
 
 		// Read type
 		String typeString = args.get(1);
@@ -50,7 +50,7 @@ public class IceSpikeResource extends FrequencyResourceBase
 		this.minAltitude = readInt(args.get(4), Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1);
 		this.maxAltitude = readInt(args.get(5), this.minAltitude, Constants.WORLD_HEIGHT - 1);
 
-		this.sourceBlocks = readMaterials(args, 6, materialReader);
+		this.sourceBlocks = readMaterials(args, 6);
 	}
 
 	@Override

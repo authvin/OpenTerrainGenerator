@@ -3,8 +3,6 @@ package com.pg85.otg.config.biome;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.ILogger;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.helpers.StringHelper;
@@ -34,13 +32,14 @@ public final class BiomeGroupFunction extends ConfigFunction<PresetSettings>
 
 	/**
 	 * Loads the biome group using the provided settings.
+	 *
 	 * @param config The world config.
-	 * @param args	The settings to be parsed.
+	 * @param args   The settings to be parsed.
 	 * @throws InvalidConfigException When the config is invalid.
 	 * @see #BiomeGroupFunction(PresetSettings, String, int, int, List) Constructor to
 	 * properly initialize this biome group manually.
 	 */
-	public BiomeGroupFunction(PresetSettings config, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public BiomeGroupFunction(PresetSettings config, List<String> args) throws InvalidConfigException
 	{
 		// Must have at least a GroupName and a Biome that belongs to it
 		assureSize(4, args);

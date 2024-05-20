@@ -103,12 +103,19 @@ public abstract class StringHelper
 	public static int readColor(String string) throws InvalidConfigException {
 		try
 		{
-			Integer integer = Integer.decode(string);
-			if (integer.intValue() > 0xffffff || integer.intValue() < 0)
+			if (string.startsWith("#"))
+			{
+				string = string.substring(1);
+			} else if (string.startsWith("0x"))
+			{
+				string = string.substring(2);
+			}
+			int color = Integer.parseInt(string, 16);
+			if (color > 0xffffff || color < 0)
 			{
 				throw new InvalidConfigException("Color must have 6 hexadecimal digits");
 			}
-			return integer;
+			return color;
 		} catch (NumberFormatException e) {
 			throw new InvalidConfigException("Invalid color " + string);
 		}

@@ -1,8 +1,11 @@
 package com.pg85.otg.config.settingType;
 
+import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.materials.LocalMaterialData;
+
+import java.util.function.Function;
 
 /**
  * Reads and writes a material. Materials are read using
@@ -22,14 +25,20 @@ public class MaterialSetting extends Setting<LocalMaterialData>
 		this.defaultValue = defaultValue;
 	}
 
+	public MaterialSetting(String name, String defaultValue, Function<ConfigSection, LocalMaterialData> getter, String ...comments)
+	{
+		super(name, getter, comments);
+		this.defaultValue = defaultValue;
+	}
+
 	@Override
-	public LocalMaterialData getDefaultValue(IMaterialReader materialReader)
+	public LocalMaterialData getDefaultValue()
 	{		
 		if(!processedMaterial)
 		{
 			processedMaterial = true;
 			try {
-				defaultMaterial = materialReader.readMaterial(defaultValue);
+				defaultMaterial = OTGMaterialReader.get().readMaterial(defaultValue);
 			} catch (InvalidConfigException e) {
 				e.printStackTrace();
 			}
@@ -38,8 +47,13 @@ public class MaterialSetting extends Setting<LocalMaterialData>
 	}
 
 	@Override
-	public LocalMaterialData read(String string, IMaterialReader materialReader) throws InvalidConfigException
+	public LocalMaterialData read(String string) throws InvalidConfigException
 	{
-		return materialReader.readMaterial(string);
+		return OTGMaterialReader.get().readMaterial(string);
+	}
+
+	@Override
+	public String getTypeAsString() {
+		return "string";
 	}
 }

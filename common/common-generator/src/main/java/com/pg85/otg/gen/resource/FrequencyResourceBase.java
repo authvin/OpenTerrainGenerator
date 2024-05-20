@@ -6,7 +6,6 @@ import java.util.Random;
 import com.pg85.otg.config.biome.BiomeResourceBase;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 
 // Frequency resources uses frequency and rarity settings to spawn in each chunk being decorated.
@@ -19,13 +18,13 @@ public abstract class FrequencyResourceBase extends BiomeResourceBase implements
 	protected int frequency;
 	protected double rarity;
 	
-	public FrequencyResourceBase(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader)
+	public FrequencyResourceBase(BiomeSettings biomeConfig, List<String> args)
 	{
-		super(biomeConfig, args, materialReader);
+		super(biomeConfig, args);
 	}
 
 	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random, IMaterialReader materialReader)
+	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random)
 	{
 		int blockX = worldGenRegion.getDecorationArea().getChunkBeingDecoratedCenterX();
 		int blockZ = worldGenRegion.getDecorationArea().getChunkBeingDecoratedCenterZ();		

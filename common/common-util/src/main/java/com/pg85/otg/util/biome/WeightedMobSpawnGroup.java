@@ -1,8 +1,12 @@
 package com.pg85.otg.util.biome;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.minecraft.EntityNames;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,16 +15,23 @@ import java.util.List;
  * This class holds data for a bukkit nms.BiomeMeta class. The name does not
  * match but ours make more sense.
  */
+@Getter
+@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 public class WeightedMobSpawnGroup
 {
+	@JsonProperty
 	private final String mob;
-	private final int max;
+	@JsonProperty
 	private final int weight;
+	@JsonProperty
+	private final int max;
+	@JsonProperty
 	private final int min;
 
-	public WeightedMobSpawnGroup(String mobName, int weight, int min, int max)
+	@JsonCreator
+	public WeightedMobSpawnGroup(@JsonProperty String mob, @JsonProperty int weight, @JsonProperty int min, @JsonProperty int max)
 	{
-		this.mob = mobName;
+		this.mob = mob;
 		this.weight = weight;
 		this.min = min;
 		this.max = max;
@@ -31,27 +42,12 @@ public class WeightedMobSpawnGroup
 		this(mobName.getInternalName(), weight, min, max);
 	}
 
-	public String getInternalName()
+	public String internalName()
 	{
 		return EntityNames.toInternalName(this.getMob());
 	}
 
-	public int getWeight()
-	{
-		return this.weight;
-	}
-
-	public int getMin()
-	{
-		return this.min;
-	}
-
-	public int getMax()
-	{
-		return this.max;
-	}
-
-	public static List<WeightedMobSpawnGroup> fromJson(String originalJson) throws InvalidConfigException
+    public static List<WeightedMobSpawnGroup> fromJson(String originalJson) throws InvalidConfigException
 	{
 		// Example: [{"mob": "Sheep", "weight": 12, "min": 4, "max": 4}]
 		List<WeightedMobSpawnGroup> mobGroups = new ArrayList<WeightedMobSpawnGroup>();
@@ -168,7 +164,7 @@ public class WeightedMobSpawnGroup
 	private void toJson(StringBuilder json)
 	{
 		json.append("{\"mob\": \"");			 
-		json.append(getInternalName());
+		json.append(internalName());
 		json.append("\", \"weight\": ");
 		json.append(getWeight());
 		json.append(", \"min\": ");
@@ -230,7 +226,4 @@ public class WeightedMobSpawnGroup
 		return string.substring(1, string.length() - 1);
 	}
 
-	public String getMob() {
-		return mob;
-	}
 }

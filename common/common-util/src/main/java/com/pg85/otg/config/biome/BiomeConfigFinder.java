@@ -2,7 +2,7 @@ package com.pg85.otg.config.biome;
 
 import com.pg85.otg.config.io.FileSettingsReader;
 import com.pg85.otg.config.io.SettingsMap;
-import com.pg85.otg.config.standard.BiomeStandardValues;
+import com.pg85.otg.config.settings.biome.MobSettings;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
@@ -14,11 +14,7 @@ import com.pg85.otg.util.minecraft.EntityCategory;
 import java.io.File;
 import java.nio.file.Path;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * This class searches for the appropriate file for each biome.
@@ -28,6 +24,15 @@ import java.util.Map;
  */
 public final class BiomeConfigFinder
 {
+	// >> Biome Extensions & Related
+	public static final Collection<String> BiomeConfigExtensions = Arrays.asList(
+		"BiomeConfig.ini",
+		".biome",
+		".bc",
+		".bc.ini",
+		".biome.ini"
+	);
+
 	/**
 	 * Constructs a new biome loader.
 	 * 
@@ -146,7 +151,7 @@ public final class BiomeConfigFinder
 	private String toBiomeName(File file)
 	{
 		String fileName = file.getName();
-		for (String extension : BiomeStandardValues.BiomeConfigExtensions)
+		for (String extension : BiomeConfigExtensions)
 		{
 			if (fileName.endsWith(extension))
 			{
@@ -212,70 +217,70 @@ public final class BiomeConfigFinder
 			// Load mob settings here so we can process mob inheritance before loading the BiomeConfigs.
 			
 			// Apply default values only when no mob spawning settings are present in the config
-			if(settings.hasSetting(BiomeStandardValues.SPAWN_MONSTERS))
+			if(settings.hasSetting(MobSettings.SPAWN_MONSTERS))
 			{
-				this.spawnMonsters = settings.getSetting(BiomeStandardValues.SPAWN_MONSTERS, null, materialReader);
+				this.spawnMonsters = settings.getSetting(MobSettings.SPAWN_MONSTERS, null);
 				if(this.spawnMonsters == null)
 				{
 					this.spawnMonsters = new ArrayList<WeightedMobSpawnGroup>();
 				}
 			} else {
-				this.spawnMonsters = BiomeStandardValues.SPAWN_MONSTERS.getDefaultValue();
+				this.spawnMonsters = MobSettings.SPAWN_MONSTERS.getDefaultValue();
 			}
 
-			if(settings.hasSetting(BiomeStandardValues.SPAWN_CREATURES))
+			if(settings.hasSetting(MobSettings.SPAWN_CREATURES))
 			{
-				this.spawnCreatures = settings.getSetting(BiomeStandardValues.SPAWN_CREATURES, new ArrayList<WeightedMobSpawnGroup>(), materialReader);
+				this.spawnCreatures = settings.getSetting(MobSettings.SPAWN_CREATURES, new ArrayList<WeightedMobSpawnGroup>());
 				if(this.spawnCreatures == null)
 				{
 					this.spawnCreatures = new ArrayList<WeightedMobSpawnGroup>();
 				}
 			} else {
-				this.spawnCreatures = BiomeStandardValues.SPAWN_CREATURES.getDefaultValue();
+				this.spawnCreatures = MobSettings.SPAWN_CREATURES.getDefaultValue();
 			}
 
-			if(settings.hasSetting(BiomeStandardValues.SPAWN_WATER_CREATURES))
+			if(settings.hasSetting(MobSettings.SPAWN_WATER_CREATURES))
 			{
-				this.spawnWaterCreatures = settings.getSetting(BiomeStandardValues.SPAWN_WATER_CREATURES, new ArrayList<WeightedMobSpawnGroup>(), materialReader);
+				this.spawnWaterCreatures = settings.getSetting(MobSettings.SPAWN_WATER_CREATURES, new ArrayList<WeightedMobSpawnGroup>());
 				if(this.spawnWaterCreatures == null)
 				{
 					this.spawnWaterCreatures = new ArrayList<WeightedMobSpawnGroup>();
 				}
 			} else {
-				this.spawnWaterCreatures = BiomeStandardValues.SPAWN_WATER_CREATURES.getDefaultValue();
+				this.spawnWaterCreatures = MobSettings.SPAWN_WATER_CREATURES.getDefaultValue();
 			}
 			
-			if(settings.hasSetting(BiomeStandardValues.SPAWN_AMBIENT_CREATURES))
+			if(settings.hasSetting(MobSettings.SPAWN_AMBIENT_CREATURES))
 			{
-				this.spawnAmbientCreatures = settings.getSetting(BiomeStandardValues.SPAWN_AMBIENT_CREATURES, new ArrayList<WeightedMobSpawnGroup>(), materialReader);
+				this.spawnAmbientCreatures = settings.getSetting(MobSettings.SPAWN_AMBIENT_CREATURES, new ArrayList<WeightedMobSpawnGroup>());
 				if(this.spawnAmbientCreatures == null)
 				{
 					this.spawnAmbientCreatures = new ArrayList<WeightedMobSpawnGroup>();
 				}
 			} else {
-				this.spawnAmbientCreatures = BiomeStandardValues.SPAWN_AMBIENT_CREATURES.getDefaultValue();
+				this.spawnAmbientCreatures = MobSettings.SPAWN_AMBIENT_CREATURES.getDefaultValue();
 			}
 
-			if(settings.hasSetting(BiomeStandardValues.SPAWN_WATER_AMBIENT_CREATURES))
+			if(settings.hasSetting(MobSettings.SPAWN_WATER_AMBIENT_CREATURES))
 			{
-				this.spawnWaterAmbientCreatures = settings.getSetting(BiomeStandardValues.SPAWN_WATER_AMBIENT_CREATURES, new ArrayList<WeightedMobSpawnGroup>(), materialReader);
+				this.spawnWaterAmbientCreatures = settings.getSetting(MobSettings.SPAWN_WATER_AMBIENT_CREATURES, new ArrayList<WeightedMobSpawnGroup>());
 				if(this.spawnWaterAmbientCreatures == null)
 				{
 					this.spawnWaterAmbientCreatures = new ArrayList<WeightedMobSpawnGroup>();
 				}
 			} else {
-				this.spawnWaterAmbientCreatures = BiomeStandardValues.SPAWN_WATER_AMBIENT_CREATURES.getDefaultValue();
+				this.spawnWaterAmbientCreatures = MobSettings.SPAWN_WATER_AMBIENT_CREATURES.getDefaultValue();
 			}
 			
-			if(settings.hasSetting(BiomeStandardValues.SPAWN_MISC_CREATURES))
+			if(settings.hasSetting(MobSettings.SPAWN_MISC_CREATURES))
 			{
-				this.spawnMiscCreatures = settings.getSetting(BiomeStandardValues.SPAWN_MISC_CREATURES, new ArrayList<WeightedMobSpawnGroup>(), materialReader);
+				this.spawnMiscCreatures = settings.getSetting(MobSettings.SPAWN_MISC_CREATURES, new ArrayList<WeightedMobSpawnGroup>());
 				if(this.spawnMiscCreatures == null)
 				{
 					this.spawnMiscCreatures = new ArrayList<WeightedMobSpawnGroup>();
 				}
 			} else {
-				this.spawnMiscCreatures = BiomeStandardValues.SPAWN_MISC_CREATURES.getDefaultValue();
+				this.spawnMiscCreatures = MobSettings.SPAWN_MISC_CREATURES.getDefaultValue();
 			}
 			
 			this.spawnMonstersMerged.addAll(this.spawnMonsters);

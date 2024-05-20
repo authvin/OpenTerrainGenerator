@@ -3,6 +3,7 @@ package com.pg85.otg.util.biome;
 import java.util.List;
 
 import com.pg85.otg.exceptions.InvalidConfigException;
+import com.pg85.otg.util.Color;
 import com.pg85.otg.util.helpers.StringHelper;
 
 public class SimpleColorSet extends ColorSet
@@ -12,7 +13,7 @@ public class SimpleColorSet extends ColorSet
 	{
 		for (int i = 0; i < args.length - 1; i += 2)
 		{
-			Integer color = StringHelper.readColor(args[i]);
+			Color color = new Color(args[i]);
 			float maxNoise = (float) StringHelper.readDouble(args[i + 1], -1, 1);
 			layers.add(new ColorThreshold(color, maxNoise));
 		}
@@ -34,7 +35,7 @@ public class SimpleColorSet extends ColorSet
 		StringBuilder stringBuilder = new StringBuilder();
 		for (ColorThreshold layer : this.layers)
 		{
-			stringBuilder.append("#" + Integer.toHexString(layer.getColor() | 0x1000000).substring(1).toUpperCase());
+			stringBuilder.append("#" + Integer.toHexString(layer.getColor().getColor() | 0x1000000).substring(1).toUpperCase());
 			stringBuilder.append(',').append(' ');
 			stringBuilder.append(layer.maxNoise);
 			stringBuilder.append(',').append(' ');

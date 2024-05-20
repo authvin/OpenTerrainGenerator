@@ -1,8 +1,10 @@
 package com.pg85.otg.fabric;
 
 import com.pg85.otg.OTG;
+import com.pg85.otg.fabric.materials.FabricMaterialReader;
 import com.pg85.otg.fabric.util.FabricLogger;
 import com.pg85.otg.util.OTGLog;
+import com.pg85.otg.util.OTGMaterialReader;
 import net.fabricmc.api.ModInitializer;
 
 public class OTGPlugin implements ModInitializer {
@@ -13,6 +15,7 @@ public class OTGPlugin implements ModInitializer {
 		// Proceed with mild caution.
 		OTG.log("OTG Engine starting");
 		OTGLog.setLogger(new FabricLogger());
+		OTGMaterialReader.set(new FabricMaterialReader());
 		OTG.startEngine(new FabricEngine());
 
 		OTG.log("Loading presets");

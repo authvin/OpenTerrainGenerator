@@ -14,7 +14,7 @@ import com.pg85.otg.config.io.FileSettingsReader;
 import com.pg85.otg.config.io.FileSettingsWriter;
 import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
-import com.pg85.otg.config.standard.BiomeStandardValues;
+import com.pg85.otg.config.settings.biome.MobSettings;
 import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.ILogger;
@@ -36,6 +36,7 @@ public abstract class LocalPresetLoader
 	protected final HashMap<String, Preset> presets = new HashMap<>();
 	protected final HashMap<String, String> aliasMap = new HashMap<>();
 	protected HashMap<String, IMaterialReader> materialReaderByPresetFolderName = new HashMap<>();
+
 
 	public LocalPresetLoader(Path otgRootFolder)
 	{
@@ -251,7 +252,7 @@ public abstract class LocalPresetLoader
 			return;
 		}
 
-		String stubInheritMobsBiomeName = biomeConfigStub.getSettings().getSetting(BiomeStandardValues.INHERIT_MOBS_BIOME_NAME, BiomeStandardValues.INHERIT_MOBS_BIOME_NAME.getDefaultValue(), null);
+		String stubInheritMobsBiomeName = biomeConfigStub.getSettings().getSetting(MobSettings.INHERIT_MOBS_BIOME_NAME, MobSettings.INHERIT_MOBS_BIOME_NAME.getDefaultValue());
 
 		if(stubInheritMobsBiomeName != null && stubInheritMobsBiomeName.length() > 0)
 		{

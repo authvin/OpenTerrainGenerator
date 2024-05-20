@@ -32,9 +32,9 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 	private final boolean useExtendedParams;	
 	private final int maxSpawn;
 
-	public TreeResource(BiomeSettings biomeConfig, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public TreeResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
-		super(biomeConfig, args, materialReader);
+		super(biomeConfig, args);
 		assureSize(3, args);
 
 		this.frequency = readInt(args.get(0), 1, 100);

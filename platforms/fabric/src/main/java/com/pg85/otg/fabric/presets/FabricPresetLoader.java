@@ -1,6 +1,7 @@
 package com.pg85.otg.fabric.presets;
 
 import com.pg85.otg.config.biome.BiomeConfigFinder;
+import com.pg85.otg.fabric.materials.FabricMaterialReader;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.presets.LocalPresetLoader;
 
@@ -13,7 +14,7 @@ public class FabricPresetLoader extends LocalPresetLoader {
 
     @Override
     protected IMaterialReader createMaterialReader() {
-        return null;
+        return new FabricMaterialReader();
     }
 
     @Override

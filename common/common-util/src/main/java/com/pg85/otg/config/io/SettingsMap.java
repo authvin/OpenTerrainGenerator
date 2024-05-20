@@ -3,7 +3,6 @@ package com.pg85.otg.config.io;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.io.RawSettingValue.ValueType;
 import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IPluginConfig;
 import java.util.Collection;
 import java.util.List;
@@ -41,8 +40,8 @@ public interface SettingsMap
 	 * @param holder      The holder of all config functions.
 	 * @return The config functions.
 	 */
-	<T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager, IMaterialReader materialReader);
-	<T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager, IMaterialReader materialReader, String presetName, IPluginConfig conf);
+	<T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager);
+	<T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager, String presetName, IPluginConfig conf);
 
 	/**
 	 * Gets the name of this config file. For worlds, this is the world name,
@@ -60,16 +59,6 @@ public interface SettingsMap
 	 * @return The raw settings.
 	 */
 	Collection<RawSettingValue> getRawSettings();
-
-	/**
-	 * Reads a setting. If the setting does not exist, the default value for the
-	 * setting is returned.
-	 *
-	 * @param <S>     Type of the value of the setting.
-	 * @param setting The setting to read.
-	 * @return The setting value.
-	 */
-	<S> S getSetting(Setting<S> setting, IMaterialReader materialReader);
 	
 	/**
 	 * Reads a setting. If the setting does not exist, the default value for the
@@ -80,18 +69,6 @@ public interface SettingsMap
 	 * @return The setting value.
 	 */
 	<S> S getSetting(Setting<S> setting);
-
-	/**
-	 * Reads a setting. This method allows you to provide another default
-	 * value. If the setting has an invalid value, a message is logged and
-	 * the default value is returned.
-	 *
-	 * @param <S>          Type of the value of the setting.
-	 * @param setting      The setting to read.
-	 * @param defaultValue Default value for the setting.
-	 * @return The value of the setting.
-	 */
-	<S> S getSetting(Setting<S> setting, S defaultValue, IMaterialReader materialReader);
 
 	/**
 	 * Reads a setting. This method allows you to provide another default

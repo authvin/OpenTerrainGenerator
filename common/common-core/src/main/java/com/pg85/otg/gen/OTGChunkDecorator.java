@@ -196,7 +196,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 			}
 			else if (res instanceof IBasicResource)
 			{
-				((IBasicResource)res).processForChunkDecoration(worldGenRegion, this.rand, logger, materialReader);
+				((IBasicResource)res).processForChunkDecoration(worldGenRegion, this.rand);
 				if(logger.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
 				{
 					logger.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Processing resource " + res.toString() + " in biome " + biomeConfig.getIdentitySettings().getBiomeName() + " took " + (System.currentTimeMillis() - startTime) + " Ms.");

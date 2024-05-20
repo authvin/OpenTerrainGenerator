@@ -1,21 +1,23 @@
 package com.pg85.otg.config.settingType;
 
+import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
+
+import java.util.function.Function;
 
 /**
  * Reads and writes a single long.
  *
  * <p>Numbers are limited to the given min and max values.
  */
-class LongSetting extends Setting<Long>
+public class LongSetting extends Setting<Long>
 {
 	private final long defaultValue;
 	private final long minValue;
 	private final long maxValue;
 
-	LongSetting(String name, long defaultValue, long minValue, long maxValue)
+	public LongSetting(String name, long defaultValue, long minValue, long maxValue)
 	{
 		super(name);
 		this.defaultValue = defaultValue;
@@ -23,23 +25,38 @@ class LongSetting extends Setting<Long>
 		this.maxValue = maxValue;
 	}
 
+	public LongSetting(String name, long defaultValue, long minValue, long maxValue, Function<ConfigSection, Long> getter, String ...description)
+	{
+		super(name, getter, description);
+		this.defaultValue = defaultValue;
+		this.minValue = minValue;
+		this.maxValue = maxValue;
+	}
+
 	@Override
-	public Long getDefaultValue(IMaterialReader materialReader)
+	public Long getDefaultValue()
 	{
 		return defaultValue;
 	}
 
 	@Override
-	public Long read(String string, IMaterialReader materialReader) throws InvalidConfigException
+	public Long read(String string) throws InvalidConfigException
 	{
 		return StringHelper.readLong(string, minValue, maxValue);
 	}
 
+	@Override
+	public String getTypeAsString() {
+		return "integer";
+	}
+
+	@Override
 	public Long getMinValue()
 	{
 		return minValue;
 	}
-	
+
+	@Override
 	public Long getMaxValue()
 	{
 		return maxValue;

@@ -5,13 +5,11 @@ import java.util.List;
 
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.ILogger;
-import com.pg85.otg.interfaces.IMaterialReader;
 
 /** Represents a BiomeConfig ResourceQueue resource. */
 public abstract class BiomeResourceBase extends ConfigFunction<BiomeSettings>
 {
-	static BiomeResourceBase createResource(BiomeSettings config, ILogger logger, IMaterialReader materialReader, Class<? extends BiomeResourceBase> clazz, Object... args)
+	static BiomeResourceBase createResource(BiomeSettings config, Class<? extends BiomeResourceBase> clazz, Object... args)
 	{
 		List<String> stringArgs = new ArrayList<String>(args.length);
 		for (Object arg : args)
@@ -21,7 +19,7 @@ public abstract class BiomeResourceBase extends ConfigFunction<BiomeSettings>
 
 		try
 		{
-			return clazz.getConstructor(BiomeSettings.class, List.class, IMaterialReader.class).newInstance(config, stringArgs, materialReader);
+			return clazz.getConstructor(BiomeSettings.class, List.class).newInstance(config, stringArgs);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -29,5 +27,5 @@ public abstract class BiomeResourceBase extends ConfigFunction<BiomeSettings>
 
 	// We're using reflection to match constructors for resources, so resource classes must implement this 
 	// constructor or createResource / com.pg85.otg.config.biome.BiomeResourcesManager.getConfigFunction() will fail. 
-	public BiomeResourceBase(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) { }
+	public BiomeResourceBase(BiomeSettings biomeConfig, List<String> args) { }
 }

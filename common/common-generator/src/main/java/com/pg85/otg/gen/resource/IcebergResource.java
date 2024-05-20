@@ -6,8 +6,8 @@ import java.util.Random;
 import com.pg85.otg.config.biome.BiomeResourceBase;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -20,9 +20,9 @@ public class IcebergResource extends BiomeResourceBase implements IBasicResource
 	private final double[] rarities;
 	private final double totalRarity;
 
-	public IcebergResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public IcebergResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
-		super(biomeConfig, args, materialReader);
+		super(biomeConfig, args);
 		assureSize(4, args);
 
 		int size = (int) Math.floor(args.size() / 3);
@@ -33,8 +33,8 @@ public class IcebergResource extends BiomeResourceBase implements IBasicResource
 		int pos = 0;
 		for (int i = 0; i < args.size() - 1; i+=3)
 		{
-			this.materials[pos] = materialReader.readMaterial(args.get(i));
-			this.materials2[pos] = materialReader.readMaterial(args.get(i + 1));
+			this.materials[pos] = OTGMaterialReader.get().readMaterial(args.get(i));
+			this.materials2[pos] = OTGMaterialReader.get().readMaterial(args.get(i + 1));
 			this.rarities[pos] = readRarity(args.get(i + 2));
 			pos++;
 		}
@@ -42,7 +42,7 @@ public class IcebergResource extends BiomeResourceBase implements IBasicResource
 	}
 
 	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion world, Random random, IMaterialReader materialReader)
+	public void spawnForChunkDecoration(IWorldGenRegion world, Random random)
 	{
 		LocalMaterialData material = null;
 		LocalMaterialData material2 = null;

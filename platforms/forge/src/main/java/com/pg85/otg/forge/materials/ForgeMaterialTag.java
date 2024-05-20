@@ -46,13 +46,12 @@ public class ForgeMaterialTag extends LocalMaterialTag
 		return null;
 	}
 
-	private final String name;
 	private final ITag<Block> blockTag;
 
 	private ForgeMaterialTag(ITag<Block> blockTag, String name)
 	{
+		super(name);
 		this.blockTag = blockTag;
-		this.name = name;
 	}
 
 	public ITag<Block> getTag()

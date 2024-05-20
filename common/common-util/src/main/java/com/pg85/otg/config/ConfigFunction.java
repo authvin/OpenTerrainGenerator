@@ -1,7 +1,7 @@
 package com.pg85.otg.config;
 
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.MaterialSet;
@@ -88,31 +88,33 @@ public abstract class ConfigFunction<T>
 
 	/**
 	 * Returns the material with the given name.
+	 *
 	 * @param string Name of the material, case insensitive.
 	 * @return The material.
 	 * @throws InvalidConfigException If no material exists with the given name.
 	 */
-	protected final LocalMaterialData readMaterial(String string, IMaterialReader materialReader) throws InvalidConfigException
+	protected final LocalMaterialData readMaterial(String string) throws InvalidConfigException
 	{
-        return materialReader.readMaterial(string);
+        return OTGMaterialReader.get().readMaterial(string);
 	}
 
 	/**
 	 * Reads all materials from the start position until the end of the
 	 * list.
+	 *
 	 * @param strings The input strings.
-	 * @param start	The position to start. The first element in the list
-	 *				has index 0, the last one size() - 1.
+	 * @param start   The position to start. The first element in the list
+	 *                has index 0, the last one size() - 1.
 	 * @return All block ids.
 	 * @throws InvalidConfigException If one of the elements in the list is
-	 *								not a valid block id.
+	 *                                not a valid block id.
 	 */
-	protected final MaterialSet readMaterials(List<String> strings, int start, IMaterialReader materialReader) throws InvalidConfigException
+	protected final MaterialSet readMaterials(List<String> strings, int start) throws InvalidConfigException
 	{
 		MaterialSet materials = new MaterialSet();
 		for (int i = start; i < strings.size(); i++)
 		{
-			materials.parseAndAdd(strings.get(i), materialReader);
+			materials.parseAndAdd(strings.get(i));
 		}
 
 		return materials;

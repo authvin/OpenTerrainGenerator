@@ -1,9 +1,12 @@
 package com.pg85.otg.config.settings.biome;
 
 import com.pg85.otg.config.io.SettingsMap;
+import com.pg85.otg.config.settingType.MaterialSetting;
 import com.pg85.otg.config.settingType.Setting;
+import com.pg85.otg.config.settingType.Settings;
+import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.config.settings.preset.BlockSettings;
-import com.pg85.otg.config.standard.BiomeStandardValues;
+import com.pg85.otg.config.settings.preset.TerrainSettings;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.interfaces.IMaterialReader;
@@ -13,18 +16,22 @@ import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.gen.GeneratingChunk;
 import com.pg85.otg.util.materials.LocalMaterialData;
+import com.pg85.otg.util.materials.LocalMaterials;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Builder
 @Getter
-public class SurfaceSettings {
+@AllArgsConstructor
+public class SurfaceSettings extends ConfigSection {
     private final ISurfaceGenerator surfaceGenerator;
     private final ReplaceBlockMatrix replacedBlocks;
     private final BlockSettings blockSettings;
     private final int waterLevelMax;
     private final int waterLevelMin;
     private final boolean useWorldWaterLevel;
+    private final boolean useFrozenOceanTemperature;
     private final LocalMaterialData stoneBlock;
     private final LocalMaterialData surfaceBlock;
     private final LocalMaterialData underWaterSurfaceBlock;
@@ -36,28 +43,104 @@ public class SurfaceSettings {
     private final LocalMaterialData packedIceBlock;
     private final LocalMaterialData snowBlock;
     private final LocalMaterialData cooledLavaBlock;
-    private boolean replacedBlocksInitialised = false;
 
-    public static SurfaceSettings getSurfaceSettings(SettingsMap settingsReader, IMaterialReader materialReader, Setting<ISurfaceGenerator> surfaceGeneratorSetting, BlockSettings parent) {
+    public static final Setting<Integer> WATER_LEVEL_MAX = TerrainSettings.WATER_LEVEL_MAX;
+    public static final Setting<Integer> WATER_LEVEL_MIN = TerrainSettings.WATER_LEVEL_MIN;
+
+    @Override
+    public String getSectionName() {
+        return "Biome Surface Settings";
+    }
+
+    public static final Setting<Boolean> USE_WORLD_WATER_LEVEL = Settings.booleanSetting(
+            "UseWorldWaterLevel", true,
+            t -> ((SurfaceSettings)t).isUseWorldWaterLevel(),
+            "If this setting is set to true, the water level of the world will be used instead of the water level of the biome."
+    );
+    public static final Setting<LocalMaterialData> STONE_BLOCK = new MaterialSetting(
+            "StoneBlock", LocalMaterials.STONE_NAME,
+            t -> ((SurfaceSettings)t).getStoneBlock(),
+            "The block used for the stone"
+    );
+    public static final Setting<LocalMaterialData> SURFACE_BLOCK = new MaterialSetting(
+            "SurfaceBlock", LocalMaterials.GRASS_NAME,
+            t -> ((SurfaceSettings)t).getSurfaceBlock(),
+            "The block used for the surface"
+    );
+    public static final Setting<LocalMaterialData> UNDER_WATER_SURFACE_BLOCK = new MaterialSetting(
+            "UnderWaterSurfaceBlock", "",
+            t -> ((SurfaceSettings)t).getUnderWaterSurfaceBlock(),
+            "The block used for the surface in the biome when under water."
+    );
+    public static final Setting<LocalMaterialData> GROUND_BLOCK = new MaterialSetting(
+            "GroundBlock", LocalMaterials.DIRT_NAME,
+            t -> ((SurfaceSettings)t).getGroundBlock(),
+            "The block used for the ground"
+    );
+    public static final Setting<LocalMaterialData> SANDSTONE_BLOCK = new MaterialSetting(
+            "SandstoneBlock", LocalMaterials.SANDSTONE_NAME,
+            t -> ((SurfaceSettings)t).getSandStoneBlock(),
+            "The block used for the sandstone"
+    );
+    public static final Setting<LocalMaterialData> RED_SANDSTONE_BLOCK = new MaterialSetting(
+            "RedSandstoneBlock", LocalMaterials.RED_SANDSTONE_NAME,
+            t -> ((SurfaceSettings)t).getRedSandStoneBlock(),
+            "The block used for the red sandstone"
+    );
+    public static final Setting<LocalMaterialData> COOLED_LAVA_BLOCK = BlockSettings.COOLED_LAVA_BLOCK;
+    public static final Setting<LocalMaterialData> WATER_BLOCK = BlockSettings.WATER_BLOCK;
+    public static final Setting<LocalMaterialData> ICE_BLOCK = BlockSettings.ICE_BLOCK;
+    public static final Setting<LocalMaterialData> PACKED_ICE_BLOCK = new MaterialSetting(
+            "PackedIceBlock", LocalMaterials.PACKED_ICE_NAME,
+            t -> ((SurfaceSettings)t).getPackedIceBlock(),
+            "The block used for the packed ice."
+    );
+    public static final Setting<LocalMaterialData> SNOW_BLOCK = new MaterialSetting(
+            "SnowBlock", LocalMaterials.SNOW_BLOCK_NAME,
+            t -> ((SurfaceSettings)t).getSnowBlock(),
+            "The block used for the snow."
+    );
+    public static final Setting<ReplaceBlockMatrix> REPLACED_BLOCKS = Settings.replacedBlocksSetting(
+            "ReplacedBlocks",
+            t -> ((SurfaceSettings)t).getReplacedBlocks(),
+            "Replace Variable: (blockFrom,blockTo[:blockDataTo][,minHeight,maxHeight])", "Example :",
+            "  ReplacedBlocks: (GRASS,DIRT,100,127),(GRAVEL,GLASS)",
+            "Replace grass block to dirt from 100 to 127 height and replace gravel to glass on all height ",
+            "Only the following biome resources are affected: CustomObject, CustomStructure, Ore, UnderWaterOre, ",
+            "Vein, SurfacePatch, Boulder, IceSpike.",
+            "BO's used as CustomObject/CustomStructure may have DoReplaceBlocks:false to save performance."
+    );
+    public static final Setting<Boolean> USE_FROZEN_OCEAN_TEMPERATURE = Settings.booleanSetting(
+            "UseFrozenOceanTemperature", false,
+            t -> ((SurfaceSettings)t).isUseFrozenOceanTemperature(),
+            "Set this to true to use variable temperatures within the biome based on noise.",
+            "Used for vanilla Frozen Ocean and Deep Frozen Ocean biomes to create patches of water/ice."
+    );
+
+    // This field is set statically by SurfaceGeneratorSetting.java, which is not available in Util
+    public static Setting<ISurfaceGenerator> SURFACE_GENERATOR;
+
+    public static SurfaceSettings getSurfaceSettings(SettingsMap settingsReader, IMaterialReader materialReader, BlockSettings parent) {
         SurfaceSettingsBuilder builder = SurfaceSettings.builder();
 
-        builder.surfaceGenerator(settingsReader.getSetting(surfaceGeneratorSetting));
-        builder.replacedBlocks(settingsReader.getSetting(BiomeStandardValues.REPLACED_BLOCKS));
+        builder.surfaceGenerator(settingsReader.getSetting(SURFACE_GENERATOR));
+        builder.replacedBlocks(settingsReader.getSetting(REPLACED_BLOCKS));
         builder.blockSettings(parent);
-        builder.waterLevelMax(settingsReader.getSetting(BiomeStandardValues.WATER_LEVEL_MAX));
-        builder.waterLevelMin(settingsReader.getSetting(BiomeStandardValues.WATER_LEVEL_MIN));
-        builder.useWorldWaterLevel(settingsReader.getSetting(BiomeStandardValues.USE_WORLD_WATER_LEVEL));
-        builder.stoneBlock(settingsReader.getSetting(BiomeStandardValues.STONE_BLOCK, materialReader));
-        builder.surfaceBlock(settingsReader.getSetting(BiomeStandardValues.SURFACE_BLOCK, materialReader));
-        builder.underWaterSurfaceBlock(settingsReader.getSetting(BiomeStandardValues.UNDER_WATER_SURFACE_BLOCK, materialReader));
-        builder.groundBlock(settingsReader.getSetting(BiomeStandardValues.GROUND_BLOCK, materialReader));
-        builder.sandStoneBlock(settingsReader.getSetting(BiomeStandardValues.SANDSTONE_BLOCK, materialReader));
-        builder.redSandStoneBlock(settingsReader.getSetting(BiomeStandardValues.RED_SANDSTONE_BLOCK, materialReader));
-        builder.waterBlock(settingsReader.getSetting(BiomeStandardValues.WATER_BLOCK, materialReader));
-        builder.iceBlock(settingsReader.getSetting(BiomeStandardValues.ICE_BLOCK, materialReader));
-        builder.packedIceBlock(settingsReader.getSetting(BiomeStandardValues.PACKED_ICE_BLOCK, materialReader));
-        builder.snowBlock(settingsReader.getSetting(BiomeStandardValues.SNOW_BLOCK, materialReader));
-        builder.cooledLavaBlock(settingsReader.getSetting(BiomeStandardValues.COOLED_LAVA_BLOCK, materialReader));
+        builder.waterLevelMax(settingsReader.getSetting(WATER_LEVEL_MAX));
+        builder.waterLevelMin(settingsReader.getSetting(WATER_LEVEL_MIN));
+        builder.useWorldWaterLevel(settingsReader.getSetting(USE_WORLD_WATER_LEVEL));
+        builder.useFrozenOceanTemperature(settingsReader.getSetting(USE_FROZEN_OCEAN_TEMPERATURE));
+        builder.stoneBlock(settingsReader.getSetting(STONE_BLOCK));
+        builder.surfaceBlock(settingsReader.getSetting(SURFACE_BLOCK));
+        builder.underWaterSurfaceBlock(settingsReader.getSetting(UNDER_WATER_SURFACE_BLOCK));
+        builder.groundBlock(settingsReader.getSetting(GROUND_BLOCK));
+        builder.sandStoneBlock(settingsReader.getSetting(SANDSTONE_BLOCK));
+        builder.redSandStoneBlock(settingsReader.getSetting(RED_SANDSTONE_BLOCK));
+        builder.waterBlock(settingsReader.getSetting(WATER_BLOCK));
+        builder.iceBlock(settingsReader.getSetting(ICE_BLOCK));
+        builder.packedIceBlock(settingsReader.getSetting(PACKED_ICE_BLOCK));
+        builder.snowBlock(settingsReader.getSetting(SNOW_BLOCK));
+        builder.cooledLavaBlock(settingsReader.getSetting(COOLED_LAVA_BLOCK));
 
         return builder.fixSettings().build();
     }
@@ -197,11 +280,11 @@ public class SurfaceSettings {
     }
 
     private void initReplaceBlocks() {
-        if (!this.replacedBlocksInitialised) {
+        if (!this.replacedBlocks.initialised) {
             // Multiple threads may be working with
             // the same biome configs async, lock.
             synchronized (this) {
-                if (!this.replacedBlocksInitialised) {
+                if (!this.replacedBlocks.initialised) {
                     this.replacedBlocks.init(
                             this.useWorldWaterLevel ? this.getBlockSettings().getCooledLavaBlock() : this.cooledLavaBlock,
                             this.useWorldWaterLevel ? this.getBlockSettings().getIceBlock() : this.iceBlock,
@@ -217,7 +300,7 @@ public class SurfaceSettings {
                             this.redSandStoneBlock
                     );
                 }
-                this.replacedBlocksInitialised = true;
+                this.replacedBlocks.initialised = true;
             }
         }
     }

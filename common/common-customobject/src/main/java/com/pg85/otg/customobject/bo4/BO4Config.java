@@ -1,10 +1,10 @@
 package com.pg85.otg.customobject.bo4;
 
-import com.pg85.otg.config.standard.PresetStandardValues;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.constants.settings.ConfigMode;
 import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.CustomObjectManager;
+import com.pg85.otg.customobject.bo3.BO3Config;
 import com.pg85.otg.customobject.bo4.bo4function.BO4BlockFunction;
 import com.pg85.otg.customobject.bo4.bo4function.BO4BranchFunction;
 import com.pg85.otg.customobject.bo4.bo4function.BO4EntityFunction;
@@ -951,7 +951,7 @@ public class BO4Config extends CustomObjectConfigFile
 		}
 		
 		writer.comment("The settings mode, WriteAll, WriteWithoutComments or WriteDisable. See PresetConfig.");
-		writer.setting(PresetStandardValues.SETTINGS_MODE_BO3, this.settingsMode);
+		writer.setting(BO3Config.SETTINGS_MODE_BO3, this.settingsMode);
 
 		// Main settings
 		writer.bigTitle("Main settings");
@@ -1227,7 +1227,7 @@ public class BO4Config extends CustomObjectConfigFile
 
 		this.author = readSettings(BO4Settings.AUTHOR, logger, materialReader, manager);
 		this.description = readSettings(BO4Settings.DESCRIPTION, logger, materialReader, manager);
-		this.settingsMode = readSettings(PresetStandardValues.SETTINGS_MODE_BO3, logger, materialReader, manager);
+		this.settingsMode = readSettings(BO3Config.SETTINGS_MODE_BO3, logger, materialReader, manager);
 
 		this.frequency = readSettings(BO4Settings.FREQUENCY, logger, materialReader, manager);
 		this.spawnHeight = readSettings(BO4Settings.SPAWN_HEIGHT, logger, materialReader, manager);

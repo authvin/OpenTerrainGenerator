@@ -3,7 +3,6 @@ package com.pg85.otg.gen.resource;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.MaterialSet;
@@ -20,19 +19,19 @@ public class WellResource extends FrequencyResourceBase
 	private final LocalMaterialData material;
 	private final MaterialSet sourceBlocks;
 
-	public WellResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public WellResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
-		super(biomeConfig, args, materialReader);
+		super(biomeConfig, args);
 		assureSize(8, args);
 
-		this.material = readMaterial(args.get(0), materialReader);
-		this.slab = readMaterial(args.get(1), materialReader);
-		this.water = readMaterial(args.get(2), materialReader);
+		this.material = readMaterial(args.get(0));
+		this.slab = readMaterial(args.get(1));
+		this.water = readMaterial(args.get(2));
 		this.frequency = readInt(args.get(3), 1, 100);
 		this.rarity = readRarity(args.get(4));
 		this.minAltitude = readInt(args.get(5), Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1);
 		this.maxAltitude = readInt(args.get(6), this.minAltitude + 1, Constants.WORLD_HEIGHT - 1);
-		this.sourceBlocks = readMaterials(args, 7, materialReader);
+		this.sourceBlocks = readMaterials(args, 7);
 	}
 
 	@Override

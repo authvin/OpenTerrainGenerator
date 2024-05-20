@@ -1,11 +1,11 @@
 package com.pg85.otg.config.biome;
 
 import com.pg85.otg.config.io.SettingsMap;
-import com.pg85.otg.config.standard.BiomeStandardValues;
-import com.pg85.otg.config.standard.PresetStandardValues;
+import com.pg85.otg.config.settings.biome.*;
+import com.pg85.otg.config.settings.preset.BlockSettings;
+import com.pg85.otg.config.settings.preset.GenerationSettings;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.constants.settings.IceSpikeType;
-import com.pg85.otg.gen.surface.SurfaceGeneratorSetting;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.minecraft.PlantType;
 import com.pg85.otg.util.minecraft.SaplingType;
@@ -16,7 +16,7 @@ public class BiomeConfigWriter {
 
         writer.header1("Biome Identity");
 
-        writer.putSetting(BiomeStandardValues.IS_TEMPLATE_FOR_BIOME, biomeConfig.getIdentitySettings().isTemplateForBiome(),
+        writer.putSetting(IdentitySettings.IS_TEMPLATE_FOR_BIOME, biomeConfig.getIdentitySettings().isTemplateForBiome(),
                 "Set this to true if this biome config is used with non-OTG biomes, configured in the PresetConfig via TemplateBiome()",
                 "OTG generates the terrain for the biome as configured in this file and spawns resources, but also allows the biome to spawn ",
                 "its own resources and mobs and apply its settings. Because of this, the following OTG settings cannot be used:",
@@ -28,7 +28,7 @@ public class BiomeConfigWriter {
                 " - OTG settings not mentioned above that are handled by OTG and don't rely on MC logic.");
 
         if (isTemplateBiome) {
-            writer.putSetting(BiomeStandardValues.TEMPLATE_BIOME_TYPE, biomeConfig.getIdentitySettings().getTemplateBiomeType(),
+            writer.putSetting(IdentitySettings.TEMPLATE_BIOME_TYPE, biomeConfig.getIdentitySettings().getTemplateBiomeType(),
                     "If this is a template biome config for an overworld biome, set this to Overworld. STONE is used for base terrain generation.",
                     "If this is a template biome config for a nether biome, set this to Nether. NETHERRACK is used for base terrain generation.",
                     "If this is a template biome config for an end biome, set this to End. END_STONE is used for base terrain generation."
@@ -36,12 +36,12 @@ public class BiomeConfigWriter {
         }
 
         if (!isTemplateBiome) {
-            writer.putSetting(BiomeStandardValues.BIOME_DICT_TAGS, biomeConfig.getIdentitySettings().getBiomeDictTags(),
+            writer.putSetting(IdentitySettings.BIOME_DICT_TAGS, biomeConfig.getIdentitySettings().getBiomeDictTags(),
                     "Forge Biome Dictionary tags used by other mods to identify a biome and",
                     "place modded blocks, items and mobs in it.", "Example: HOT, DRY, SANDY, OVERWORLD",
                     "TemplateForBiome biomes inherit these from the targeted biomes.");
 
-            writer.putSetting(BiomeStandardValues.BIOME_CATEGORY, biomeConfig.getIdentitySettings().getBiomeCategory(),
+            writer.putSetting(IdentitySettings.BIOME_CATEGORY, biomeConfig.getIdentitySettings().getBiomeCategory(),
                     "Set a category for this biome, used by vanilla for... something",
                     "Accepts one of the following values:",
                     "none, taiga, extreme_hills, jungle, mesa, plains, savanna, icy, the_end, beach, forest, ocean, desert, river, swamp, mushroom, nether",
@@ -50,7 +50,7 @@ public class BiomeConfigWriter {
 
         writer.header1("Biome placement");
 
-        writer.putSetting(BiomeStandardValues.BIOME_SIZE, biomeConfig.getGenerationSettings().getBiomeSize(),
+        writer.putSetting(BiomeGenerationSettings.BIOME_SIZE, biomeConfig.getGenerationSettings().getBiomeSize(),
                 "Biome size from 0 to GenerationDepth. Defines in which biome layer this biome will be generated (see GenerationDepth).",
                 "Higher numbers result in a smaller biome, lower numbers a larger biome.",
                 "How this setting is used depends on the value of BiomeMode in the PresetConfig.",
@@ -58,104 +58,104 @@ public class BiomeConfigWriter {
                 "- normal biomes, ice biomes, isle biomes and border biomes when BiomeMode is set to NoGroups",
                 "- biomes spawned as part of a BiomeGroup when BiomeMode is set to Normal.",
                 "  For biomes spawned as isles, borders or rivers other settings are available.",
-                "  Isle biomes:	" + BiomeStandardValues.BIOME_SIZE_WHEN_ISLE + " (see below)",
-                "  Border biomes: " + BiomeStandardValues.BIOME_SIZE_WHEN_BORDER + " (see below)",
-                "  River biomes:  " + PresetStandardValues.RIVER_SIZE + " (see PresetConfig)");
+                "  Isle biomes:	" + BiomeGenerationSettings.BIOME_SIZE_WHEN_ISLE + " (see below)",
+                "  Border biomes: " + BiomeGenerationSettings.BIOME_SIZE_WHEN_BORDER + " (see below)",
+                "  River biomes:  " + GenerationSettings.RIVER_SIZE + " (see PresetConfig)");
 
-        writer.putSetting(BiomeStandardValues.BIOME_RARITY, biomeConfig.getGenerationSettings().getBiomeRarity(),
+        writer.putSetting(BiomeGenerationSettings.BIOME_RARITY, biomeConfig.getGenerationSettings().getBiomeRarity(),
                 "Biome rarity from 100 to 1. If this is normal or ice biome - chance to spawn this biome, then others.",
                 "Example for normal biome :",
                 "  100 rarity mean 1/6 chance than other ( with 6 default normal biomes).",
                 "  50 rarity mean 1/11 chance than other",
-                "For isle biomes see the " + BiomeStandardValues.BIOME_RARITY_WHEN_ISLE + " setting below.",
+                "For isle biomes see the " + BiomeGenerationSettings.BIOME_RARITY_WHEN_ISLE + " setting below.",
                 "Doesn`t work on Ocean and River (frozen versions too) biomes when not added as normal biome.");
 
-        writer.putSetting(BiomeStandardValues.BIOME_COLOR, biomeConfig.getGenerationSettings().getBiomeColor(),
+        writer.putSetting(BiomeGenerationSettings.BIOME_MAP_COLOR, biomeConfig.getGenerationSettings().getBiomeColor(),
                 "The hexadecimal color value of this biome. Used in the output of the /otg map command,",
                 "and used in the input of BiomeMode: FromImage.");
 
         writer.header2("Isle biomes", "To spawn a biome as an isle, first add it to the",
-                PresetStandardValues.ISLE_BIOMES + " list in the PresetConfig.", "");
+                GenerationSettings.ISLE_BIOMES + " list in the PresetConfig.", "");
 
-        writer.putSetting(BiomeStandardValues.ISLE_IN_BIOMES, biomeConfig.getGenerationSettings().getIsleInBiomes(),
+        writer.putSetting(BiomeGenerationSettings.ISLE_IN_BIOMES, biomeConfig.getGenerationSettings().getIsleInBiomes(),
                 "List of biomes in which this biome will spawn as an isle.",
                 "For example, Mushroom Isles spawn inside the Ocean biome.");
 
-        writer.putSetting(BiomeStandardValues.BIOME_SIZE_WHEN_ISLE, biomeConfig.getGenerationSettings().getBiomeSizeWhenIsle(),
+        writer.putSetting(BiomeGenerationSettings.BIOME_SIZE_WHEN_ISLE, biomeConfig.getGenerationSettings().getBiomeSizeWhenIsle(),
                 "Size of this biome when spawned as an isle biome in BiomeMode: Normal.",
                 "Valid values range from 0 to GenerationDepth.",
                 "Larger numbers give *smaller* islands. The biome must be smaller than the biome it's going",
-                "to spawn in, so the " + BiomeStandardValues.BIOME_SIZE_WHEN_ISLE + " number must be larger than the "
-                        + BiomeStandardValues.BIOME_SIZE + " of the other biome.");
+                "to spawn in, so the " + BiomeGenerationSettings.BIOME_SIZE_WHEN_ISLE + " number must be larger than the "
+                        + BiomeGenerationSettings.BIOME_SIZE + " of the other biome.");
 
-        writer.putSetting(BiomeStandardValues.BIOME_RARITY_WHEN_ISLE, biomeConfig.getGenerationSettings().getBiomeRarityWhenIsle(),
+        writer.putSetting(BiomeGenerationSettings.BIOME_RARITY_WHEN_ISLE, biomeConfig.getGenerationSettings().getBiomeRarityWhenIsle(),
                 "Rarity of this biome when spawned as an isle biome in BiomeMode: Normal.");
 
         writer.smallTitle("Border biomes", "To spawn a biome as a border, first add it to the",
-                PresetStandardValues.BORDER_BIOMES + " list in the PresetConfig.", "");
+                GenerationSettings.BORDER_BIOMES + " list in the PresetConfig.", "");
 
-        writer.putSetting(BiomeStandardValues.BORDER_IN_BIOMES, biomeConfig.getGenerationSettings().getBorderInBiomes(),
+        writer.putSetting(BiomeGenerationSettings.BORDER_IN_BIOMES, biomeConfig.getGenerationSettings().getBorderInBiomes(),
                 "List of biomes this biome can be a border of.",
                 "For example, the Beach biome is a border on the Ocean biome, so",
                 "it can spawn anywhere on the border of an ocean.");
 
-        writer.putSetting(BiomeStandardValues.ONLY_BORDER_NEAR, biomeConfig.getGenerationSettings().getOnlyBorderNearBiomes(),
+        writer.putSetting(BiomeGenerationSettings.ONLY_BORDER_NEAR, biomeConfig.getGenerationSettings().getOnlyBorderNearBiomes(),
                 "Whitelist of neighouring biomes that allow this border biome to spawn.");
 
-        writer.putSetting(BiomeStandardValues.NOT_BORDER_NEAR, biomeConfig.getGenerationSettings().getNotBorderNearBiomes(),
+        writer.putSetting(BiomeGenerationSettings.NOT_BORDER_NEAR, biomeConfig.getGenerationSettings().getNotBorderNearBiomes(),
                 "Blacklist of neighbouring biomes that do not allow this border biome to spawn.",
                 "For example, the Beach biome will never spawn next to an Extreme Hills biome.",
                 "Only used when OnlyBorderNear is empty / not used.");
 
-        writer.putSetting(BiomeStandardValues.BIOME_SIZE_WHEN_BORDER, biomeConfig.getGenerationSettings().getBiomeSizeWhenBorder(),
+        writer.putSetting(BiomeGenerationSettings.BIOME_SIZE_WHEN_BORDER, biomeConfig.getGenerationSettings().getBiomeSizeWhenBorder(),
                 "Size of this biome when spawned as a border biome in BiomeMode: Normal.",
                 "Valid values range from 0 to GenerationDepth.",
                 "Larger numbers give *smaller* borders. The biome must be smaller than the biome it's going",
-                "to spawn in, so the " + BiomeStandardValues.BIOME_SIZE_WHEN_BORDER + " number must be larger than the "
-                        + BiomeStandardValues.BIOME_SIZE + " of the other biome.");
+                "to spawn in, so the " + BiomeGenerationSettings.BIOME_SIZE_WHEN_BORDER + " number must be larger than the "
+                        + BiomeGenerationSettings.BIOME_SIZE + " of the other biome.");
 
         writer.header1("Terrain height and volatility");
 
-        writer.putSetting(BiomeStandardValues.BIOME_HEIGHT, biomeConfig.getTerrainSettings().getBiomeHeight(),
+        writer.putSetting(BiomeTerrainSettings.BIOME_HEIGHT, biomeConfig.getTerrainSettings().getBiomeHeight(),
                 "BiomeHeight defines how much height will be added during terrain generation",
                 "Must be between -10.0 and 10.0",
                 "Value 0.0 is equivalent to half of map height with all other settings at defaults.");
 
-        writer.putSetting(BiomeStandardValues.BIOME_VOLATILITY, biomeConfig.getTerrainSettings().getBiomeVolatility(), "Biome volatility.");
+        writer.putSetting(BiomeTerrainSettings.BIOME_VOLATILITY, biomeConfig.getTerrainSettings().getBiomeVolatility(), "Biome volatility.");
 
-        writer.putSetting(BiomeStandardValues.SMOOTH_RADIUS, biomeConfig.getTerrainSettings().getSmoothRadius(),
+        writer.putSetting(BiomeTerrainSettings.SMOOTH_RADIUS, biomeConfig.getTerrainSettings().getSmoothRadius(),
                 "Smooth radius between biomes. Must be between 0 and 32, inclusive. The resulting",
                 "smooth radius seems to be  (thisSmoothRadius + 1 + smoothRadiusOfBiomeOnOtherSide) * 4 .",
                 "So if two biomes next to each other have both a smooth radius of 2, the",
                 "resulting smooth area will be (2 + 1 + 2) * 4 = 20 blocks wide.");
 
-        writer.putSetting(BiomeStandardValues.CUSTOM_HEIGHT_CONTROL_SMOOTH_RADIUS, biomeConfig.getTerrainSettings().getCHCSmoothRadius(),
+        writer.putSetting(BiomeTerrainSettings.CUSTOM_HEIGHT_CONTROL_SMOOTH_RADIUS, biomeConfig.getTerrainSettings().getCHCSmoothRadius(),
                 "Works the same way as SmoothRadius but only acts on CustomHeightControl. Must be between 0 and 32, inclusive.",
                 "Does nothing if Custom Height Control smoothing is not enabled in the world config.");
 
-        writer.putSetting(BiomeStandardValues.MAX_AVERAGE_HEIGHT, biomeConfig.getTerrainSettings().getMaxAverageHeight(),
+        writer.putSetting(BiomeTerrainSettings.MAX_AVERAGE_HEIGHT, biomeConfig.getTerrainSettings().getMaxAverageHeight(),
                 "If this value is greater than 0, then it will affect how much, on average, the terrain will rise before leveling off when it begins to increase in elevation.",
                 "If the value is less than 0, then it will cause the terrain to either increase to a lower height before leveling out or decrease in height if the value is a large enough negative.");
 
-        writer.putSetting(BiomeStandardValues.MAX_AVERAGE_DEPTH, biomeConfig.getTerrainSettings().getMaxAverageDepth(),
+        writer.putSetting(BiomeTerrainSettings.MAX_AVERAGE_DEPTH, biomeConfig.getTerrainSettings().getMaxAverageDepth(),
                 "If this value is greater than 0, then it will affect how much, on average, the terrain (usually at the ottom of the ocean) will fall before leveling off when it begins to decrease in elevation. ",
                 "If the value is less than 0, then it will cause the terrain to either fall to a lesser depth before leveling out or increase in height if the value is a large enough negative.");
 
-        writer.putSetting(BiomeStandardValues.VOLATILITY_1, biomeConfig.getTerrainSettings().getVolatility1(),
+        writer.putSetting(BiomeTerrainSettings.VOLATILITY_1, biomeConfig.getTerrainSettings().getVolatility1(),
                 "Another type of noise. This noise is independent from biomes. The larger the values the more chaotic/volatile landscape generation becomes.",
                 "Setting the values to negative will have the opposite effect and make landscape generation calmer/gentler.");
 
-        writer.putSetting(BiomeStandardValues.VOLATILITY_2, biomeConfig.getTerrainSettings().getVolatility2());
+        writer.putSetting(BiomeTerrainSettings.VOLATILITY_2, biomeConfig.getTerrainSettings().getVolatility2());
 
-        writer.putSetting(BiomeStandardValues.VOLATILITY_WEIGHT_1, biomeConfig.getTerrainSettings().getVolatilityWeight1(),
+        writer.putSetting(BiomeTerrainSettings.VOLATILITY_WEIGHT_1, biomeConfig.getTerrainSettings().getVolatilityWeight1(),
                 "Adjust the weight of the corresponding volatility settings. This allows you to change how prevalent you want either of the volatility settings to be in the terrain.");
 
-        writer.putSetting(BiomeStandardValues.VOLATILITY_WEIGHT_2, biomeConfig.getTerrainSettings().getVolatilityWeight2());
+        writer.putSetting(BiomeTerrainSettings.VOLATILITY_WEIGHT_2, biomeConfig.getTerrainSettings().getVolatilityWeight2());
 
-        writer.putSetting(BiomeStandardValues.DISABLE_BIOME_HEIGHT, biomeConfig.getTerrainSettings().isDisableBiomeHeight(),
+        writer.putSetting(BiomeTerrainSettings.DISABLE_BIOME_HEIGHT, biomeConfig.getTerrainSettings().isDisableBiomeHeight(),
                 "Disable all noises except Volatility1 and Volatility2. Also disable default block chance from height.");
 
-        writer.putSetting(BiomeStandardValues.CUSTOM_HEIGHT_CONTROL, biomeConfig.settings.chcData,
+        writer.putSetting(BiomeTerrainSettings.CUSTOM_HEIGHT_CONTROL, biomeConfig.getTerrainSettings().getCustomHeightControl(),
                 "List of custom height factors, 17 double entries, each controls about 7",
                 "blocks height, starting at the bottom of the world. Positive entry - larger chance of spawn blocks, negative - smaller",
                 "Values which affect your configuration may be found only experimentally. Values may be very big, like ~3000.0 depends from height",
@@ -165,47 +165,47 @@ public class BiomeConfigWriter {
 
         writer.header1("Rivers");
 
-        writer.putSetting(BiomeStandardValues.RIVER_BIOME, biomeConfig.settings.riverBiome, "The biome used as the river biome.");
+        writer.putSetting(BiomeGenerationSettings.RIVER_BIOME, biomeConfig.getGenerationSettings().getRiverBiome(), "The biome used as the river biome.");
 
         writer.header1("Blocks");
 
         if (!isTemplateBiome) {
-            writer.putSetting(BiomeStandardValues.STONE_BLOCK, biomeConfig.settings.stoneBlock,
+            writer.putSetting(SurfaceSettings.STONE_BLOCK, biomeConfig.getSurfaceSettings().getStoneBlock(),
                     "The stone block used for the biome, usually STONE.");
 
-            writer.putSetting(BiomeStandardValues.SURFACE_BLOCK, biomeConfig.settings.surfaceBlock,
+            writer.putSetting(SurfaceSettings.SURFACE_BLOCK, biomeConfig.getSurfaceSettings().getSurfaceBlock(),
                     "The surface block used for the biome, usually GRASS.");
 
-            writer.putSetting(BiomeStandardValues.GROUND_BLOCK, biomeConfig.settings.groundBlock,
+            writer.putSetting(SurfaceSettings.GROUND_BLOCK, biomeConfig.getSurfaceSettings().getGroundBlock(),
                     "The ground block used for the biome, usually DIRT.");
 
-            writer.putSetting(BiomeStandardValues.SANDSTONE_BLOCK, biomeConfig.getSurfaceSettings().getSandStoneBlock(),
+            writer.putSetting(SurfaceSettings.SANDSTONE_BLOCK, biomeConfig.getSurfaceSettings().getSandStoneBlock(),
                     "The sandstone block used for the biome, usually SANDSTONE.");
 
-            writer.putSetting(BiomeStandardValues.RED_SANDSTONE_BLOCK, biomeConfig.getSurfaceSettings().getRedSandStoneBlock(),
+            writer.putSetting(SurfaceSettings.RED_SANDSTONE_BLOCK, biomeConfig.getSurfaceSettings().getRedSandStoneBlock(),
                     "The red sandstone block used for the biome, usually RED_SANDSTONE.");
 
-            writer.putSetting(BiomeStandardValues.UNDER_WATER_SURFACE_BLOCK, biomeConfig.settings.underWaterSurfaceBlock,
+            writer.putSetting(SurfaceSettings.UNDER_WATER_SURFACE_BLOCK, biomeConfig.getSurfaceSettings().getUnderWaterSurfaceBlock(),
                     "The surface block used for the biome when underwater, usually the same as GroundBlock.");
         }
 
-        writer.putSetting(SurfaceGeneratorSetting.SURFACE_AND_GROUND_CONTROL, biomeConfig.settings.surfaceAndGroundControl,
+        writer.putSetting(SurfaceSettings.SURFACE_GENERATOR, biomeConfig.getSurfaceSettings().getSurfaceGenerator(),
                 "Setting for biomes with more complex surface and ground blocks.",
                 "Each column in the world has a noise value from what appears to be -7 to 7.",
                 "Values near 0 are more common than values near -7 and 7. This setting is",
                 "used to change the surface block based on the noise value for the column.",
                 "1.12.2 Syntax: SurfaceBlockName,GroundBlockName,MaxNoise[,AnotherSurfaceBlockName,AnotherGroundBlockName,MaxNoise][,...]",
-                "Example: " + SurfaceGeneratorSetting.SURFACE_AND_GROUND_CONTROL + ": STONE,STONE,-0.8,GRAVEL,STONE,0.0,DIRT,DIRT,10.0",
+                "Example: " + SurfaceSettings.SURFACE_GENERATOR + ": STONE,STONE,-0.8,GRAVEL,STONE,0.0,DIRT,DIRT,10.0",
                 "1.16.x Syntax: SurfaceBlockName,UnderWaterSurfaceBlockName,GroundBlockName,MaxNoise,[AnotherSurfaceBlockName,AnotherUnderWaterSurfaceBlockName,AnotherGroundBlockName,MaxNoise[,...]]",
                 "  When the noise is below -0.8, stone is the surface and ground block, between -0.8 and 0",
                 "  gravel with stone just below and between 0.0 and 10.0 there's only dirt.",
-                "  Because 10.0 is higher than the noise can ever get, the normal " + BiomeStandardValues.SURFACE_BLOCK,
-                "  and " + BiomeStandardValues.GROUND_BLOCK + " will never appear in this biome.", "",
+                "  Because 10.0 is higher than the noise can ever get, the normal " + SurfaceSettings.SURFACE_BLOCK,
+                "  and " + SurfaceSettings.GROUND_BLOCK + " will never appear in this biome.", "",
                 "Alternatively, you can use Mesa, MesaForest or MesaBryce to get blocks",
                 "like the blocks found in the Mesa biomes.",
                 "You can also use Iceberg to get iceberg generation like in vanilla frozen oceans. Iceberg accepts a normal SAGC string: \"Iceberg <SAGC>\", so you can use normal SAGC with it.");
 
-        writer.putSetting(BiomeStandardValues.REPLACED_BLOCKS, biomeConfig.settings.replacedBlocks,
+        writer.putSetting(SurfaceSettings.REPLACED_BLOCKS, biomeConfig.getSurfaceSettings().getReplacedBlocks(),
                 "Replace Variable: (blockFrom,blockTo[:blockDataTo][,minHeight,maxHeight])", "Example :",
                 "  ReplacedBlocks: (GRASS,DIRT,100,127),(GRAVEL,GLASS)",
                 "Replace grass block to dirt from 100 to 127 height and replace gravel to glass on all height ",
@@ -215,118 +215,126 @@ public class BiomeConfigWriter {
 
         writer.header2("Water / Lava & Frozen States");
 
-        writer.putSetting(BiomeStandardValues.USE_WORLD_WATER_LEVEL, biomeConfig.settings.useWorldWaterLevel,
+        writer.putSetting(SurfaceSettings.USE_WORLD_WATER_LEVEL, biomeConfig.getSurfaceSettings().isUseWorldWaterLevel(),
                 "Set this to false to use the \"Water / Lava & Frozen States\" settings of this biome.");
 
-        writer.putSetting(BiomeStandardValues.WATER_LEVEL_MAX, biomeConfig.privateSettings.configWaterLevelMax,
+        writer.putSetting(SurfaceSettings.WATER_LEVEL_MAX, biomeConfig.getSurfaceSettings().getWaterLevelMax(),
                 "Set water level. Every empty between this levels will be fill water or another block from WaterBlock.");
 
-        writer.putSetting(BiomeStandardValues.WATER_LEVEL_MIN, biomeConfig.privateSettings.configWaterLevelMin);
+        writer.putSetting(SurfaceSettings.WATER_LEVEL_MIN, biomeConfig.getSurfaceSettings().getWaterLevelMin());
 
-        writer.putSetting(BiomeStandardValues.WATER_BLOCK, biomeConfig.privateSettings.configWaterBlock,
+        writer.putSetting(SurfaceSettings.WATER_BLOCK, biomeConfig.getSurfaceSettings().getWaterBlock(),
                 "The block used when placing water in the biome.");
 
-        writer.putSetting(BiomeStandardValues.ICE_BLOCK, biomeConfig.privateSettings.configIceBlock,
+        writer.putSetting(SurfaceSettings.ICE_BLOCK, biomeConfig.getSurfaceSettings().getIceBlock(),
                 "The block used as ice. Ice only spawns if the BiomeTemperature is low enough.");
 
-        writer.putSetting(BiomeStandardValues.PACKED_ICE_BLOCK, biomeConfig.settings.packedIceBlock,
+        writer.putSetting(SurfaceSettings.PACKED_ICE_BLOCK, biomeConfig.getSurfaceSettings().getPackedIceBlock(),
                 "The block used as packed ice. Packed ice only spawns when using Iceberg SurfaceAndGroundControl.");
 
-        writer.putSetting(BiomeStandardValues.SNOW_BLOCK, biomeConfig.settings.snowBlock,
+        writer.putSetting(SurfaceSettings.SNOW_BLOCK, biomeConfig.getSurfaceSettings().getSnowBlock(),
                 "The block used as snow (block, not tile). Snow blocks only spawn when using Iceberg SurfaceAndGroundControl.");
 
-        writer.putSetting(PresetStandardValues.COOLED_LAVA_BLOCK, biomeConfig.settings.cooledLavaBlock,
+        writer.putSetting(BlockSettings.COOLED_LAVA_BLOCK, biomeConfig.getSurfaceSettings().getCooledLavaBlock(),
                 "The block used as cooled or frozen lava.",
                 "Set this to OBSIDIAN for \"frozen\" lava lakes in cold biomes");
 
         writer.header1("Visuals and weather");
 
         if (!isTemplateBiome) {
-            writer.putSetting(BiomeStandardValues.BIOME_TEMPERATURE, biomeConfig.settings.biomeTemperature,
+            writer.putSetting(BiomeVisualSettings.BIOME_TEMPERATURE, biomeConfig.getVisualSettings().getBiomeTemperature(),
                     "Biome temperature. Float value from 0.0 to 2.0.",
                     "When this value is around 0.2, snow will fall on mountain peaks above y=90.",
                     "When this value is around 0.1, the whole biome will be covered in snow and ice.");
 
-            writer.putSetting(BiomeStandardValues.USE_FROZEN_OCEAN_TEMPERATURE, biomeConfig.settings.useFrozenOceanTemperature,
+            writer.putSetting(SurfaceSettings.USE_FROZEN_OCEAN_TEMPERATURE, biomeConfig.getSurfaceSettings().isUseFrozenOceanTemperature(),
                     "Set this to true to use variable temperatures within the biome based on noise.",
                     "Used for vanilla Frozen Ocean and Deep Frozen Ocean biomes to create patches of water/ice.");
 
-            writer.putSetting(BiomeStandardValues.BIOME_WETNESS, biomeConfig.settings.biomeWetness,
+            writer.putSetting(BiomeVisualSettings.BIOME_WETNESS, biomeConfig.getVisualSettings().getBiomeWetness(),
                     "Biome wetness. Float value from 0.0 to 1.0.",
                     "Affects rain and snow.");
 
-            writer.putSetting(BiomeStandardValues.SKY_COLOR, biomeConfig.settings.skyColor, "Biome sky color.");
+            writer.putSetting(BiomeVisualSettings.SKY_COLOR, biomeConfig.getVisualSettings().getSkyColor(), "Biome sky color.");
 
-            writer.putSetting(BiomeStandardValues.WATER_COLOR, biomeConfig.settings.waterColor, "Biome water color.");
+            writer.putSetting(BiomeVisualSettings.WATER_COLOR, biomeConfig.getVisualSettings().getWaterColor(), "Biome water color.");
 
-            writer.putSetting(BiomeStandardValues.WATER_COLOR_CONTROL, biomeConfig.settings.waterColorControl,
+            writer.putSetting(BiomeVisualSettings.WATER_COLOR_CONTROL, biomeConfig.getVisualSettings().getWaterColorControl(),
                     "Setting for biomes with more complex colors.",
                     "Each column in the world has a noise value from what appears to be -1 to 1.",
                     "Values near 0 are more common than values near -1 and 1. This setting is",
                     "used to change the water color based on the noise value for the column.",
                     "Syntax: Color,MaxNoise,[AnotherColor,MaxNoise[,...]]",
-                    "Example: " + BiomeStandardValues.WATER_COLOR_CONTROL + ": #FFFFFF,-0.8,#000000,0.0",
+                    "Example: " + BiomeVisualSettings.WATER_COLOR_CONTROL + ": #FFFFFF,-0.8,#000000,0.0",
                     "  When the noise is below -0.8, the water will be white, between -0.8 and 0",
-                    "  the water will be black, and above 0 the water will be the normal " + BiomeStandardValues.WATER_COLOR + ".");
+                    "  the water will be black, and above 0 the water will be the normal " + BiomeVisualSettings.WATER_COLOR + ".");
 
-            writer.putSetting(BiomeStandardValues.GRASS_COLOR, biomeConfig.settings.grassColor, "Biome grass color.");
+            writer.putSetting(BiomeVisualSettings.GRASS_COLOR, biomeConfig.getVisualSettings().getGrassColor(),
+                    "Biome grass color.");
 
-            writer.putSetting(BiomeStandardValues.GRASS_COLOR_CONTROL, biomeConfig.settings.grassColorControl, "Biome grass color control. See " + BiomeStandardValues.WATER_COLOR_CONTROL + ".");
+            writer.putSetting(BiomeVisualSettings.GRASS_COLOR_CONTROL, biomeConfig.getVisualSettings().getGrassColorControl(),
+                    "Biome grass color control. See " + BiomeVisualSettings.WATER_COLOR_CONTROL + ".");
 
-            writer.putSetting(BiomeStandardValues.GRASS_COLOR_MODIFIER, biomeConfig.settings.grassColorModifier,
+            writer.putSetting(BiomeVisualSettings.GRASS_COLOR_MODIFIER, biomeConfig.getVisualSettings().getGrassColorModifier(),
                     "Biome grass color modifier, can be None, Swamp or DarkForest.");
 
-            writer.putSetting(BiomeStandardValues.FOLIAGE_COLOR, biomeConfig.settings.foliageColor, "Biome foliage color.");
+            writer.putSetting(BiomeVisualSettings.FOLIAGE_COLOR, biomeConfig.getVisualSettings().getFoliageColor(),
+                    "Biome foliage color.");
 
-            writer.putSetting(BiomeStandardValues.FOLIAGE_COLOR_CONTROL, biomeConfig.settings.foliageColorControl, "Biome foliage color control. See " + BiomeStandardValues.WATER_COLOR_CONTROL + ".");
+            writer.putSetting(BiomeVisualSettings.FOLIAGE_COLOR_CONTROL, biomeConfig.getVisualSettings().getFoliageColorControl(),
+                    "Biome foliage color control. See " + BiomeVisualSettings.WATER_COLOR_CONTROL + ".");
 
-            writer.putSetting(BiomeStandardValues.FOG_COLOR, biomeConfig.settings.fogColor, "Biome fog color.");
+            writer.putSetting(BiomeVisualSettings.FOG_COLOR, biomeConfig.getVisualSettings().getFogColor(),
+                    "Biome fog color.");
 
-            writer.putSetting(BiomeStandardValues.FOG_DENSITY, biomeConfig.settings.fogDensity, "Biome fog density, from 0.0 to 1.0. 0 will mimic vanilla fog density.");
+            writer.putSetting(BiomeVisualSettings.FOG_DENSITY, biomeConfig.getVisualSettings().getFogDensity(),
+                    "Biome fog density, from 0.0 to 1.0. 0 will mimic vanilla fog density.");
 
-            writer.putSetting(BiomeStandardValues.WATER_FOG_COLOR, biomeConfig.settings.waterFogColor, "Biome water fog color.");
+            writer.putSetting(BiomeVisualSettings.WATER_FOG_COLOR, biomeConfig.getVisualSettings().getWaterFogColor(),
+                    "Biome water fog color.");
 
-            writer.putSetting(BiomeStandardValues.PARTICLE_TYPE, biomeConfig.settings.particleType,
+            writer.putSetting(BiomeVisualSettings.PARTICLE_TYPE, biomeConfig.getVisualSettings().getParticleType(),
                     "Biome particle type, for example minecraft:white_ash.",
                     "Use the \"otg particles\" console command to get a list of particles.");
 
-            writer.putSetting(BiomeStandardValues.PARTICLE_PROBABILITY, biomeConfig.settings.particleProbability,
+            writer.putSetting(BiomeVisualSettings.PARTICLE_PROBABILITY, biomeConfig.getVisualSettings().getParticleProbability(),
                     "Biome particle probability, 0 by default.", "*TODO: Test different values and document usage.");
 
-            writer.putSetting(BiomeStandardValues.MUSIC, biomeConfig.settings.music,
+            writer.putSetting(BiomeVisualSettings.MUSIC, biomeConfig.getVisualSettings().getMusic(),
                     "Music for the biome, takes a resource location. Leave empty to disable. Examples: ",
-                    "	Music: minecraft:music_disc.cat", "	Music: minecraft:music.nether.basalt_deltas");
+                    "Music: minecraft:music_disc.cat", "Music: minecraft:music.nether.basalt_deltas");
 
-            writer.putSetting(BiomeStandardValues.MUSIC_MIN_DELAY, biomeConfig.settings.musicMinDelay,
+            writer.putSetting(BiomeVisualSettings.MUSIC_MIN_DELAY, biomeConfig.getVisualSettings().getMusicMinDelay(),
                     "Minimum delay for music to start, in ticks");
 
-            writer.putSetting(BiomeStandardValues.MUSIC_MAX_DELAY, biomeConfig.settings.musicMaxDelay,
+            writer.putSetting(BiomeVisualSettings.MUSIC_MAX_DELAY, biomeConfig.getVisualSettings().getMusicMaxDelay(),
                     "Maximum delay for music to start, in ticks");
 
-            writer.putSetting(BiomeStandardValues.REPLACE_CURRENT_MUSIC, biomeConfig.settings.replaceCurrentMusic,
+            writer.putSetting(BiomeVisualSettings.REPLACE_CURRENT_MUSIC, biomeConfig.getVisualSettings().isReplaceCurrentMusic(),
                     "Whether music replaces the current playing music in the client or not");
 
-            writer.putSetting(BiomeStandardValues.AMBIENT_SOUND, biomeConfig.settings.ambientSound,
+            writer.putSetting(BiomeVisualSettings.AMBIENT_SOUND, biomeConfig.getVisualSettings().getAmbientSound(),
                     "Ambient sound for the biome. Leave empty to disable. Example:",
-                    "	AmbientSound: minecraft:ambient.cave");
+                    "AmbientSound: minecraft:ambient.cave");
 
-            writer.putSetting(BiomeStandardValues.MOOD_SOUND, biomeConfig.settings.moodSound,
+            writer.putSetting(BiomeVisualSettings.MOOD_SOUND, biomeConfig.getVisualSettings().getMoodSound(),
                     "Mood sound for the biome. Leave empty to disable. Example:",
-                    "	MoodSound: minecraft:ambient.crimson_forest.mood");
+                    "MoodSound: minecraft:ambient.crimson_forest.mood");
 
-            writer.putSetting(BiomeStandardValues.MOOD_SOUND_DELAY, biomeConfig.settings.moodSoundDelay,
+            writer.putSetting(BiomeVisualSettings.MOOD_SOUND_DELAY, biomeConfig.getVisualSettings().getMoodSoundDelay(),
                     "The delay in ticks between triggering mood sound");
 
-            writer.putSetting(BiomeStandardValues.MOOD_SEARCH_RANGE, biomeConfig.settings.moodSearchRange,
+            writer.putSetting(BiomeVisualSettings.MOOD_SEARCH_RANGE, biomeConfig.getVisualSettings().getMoodSearchRange(),
                     "How far from the player a mood sound can play");
 
-            writer.putSetting(BiomeStandardValues.MOOD_OFFSET, biomeConfig.settings.moodOffset, "The offset of the sound event");
+            writer.putSetting(BiomeVisualSettings.MOOD_OFFSET, biomeConfig.getVisualSettings().getMoodOffset(),
+                    "The offset of the sound event");
 
-            writer.putSetting(BiomeStandardValues.ADDITIONS_SOUND, biomeConfig.settings.additionsSound,
+            writer.putSetting(BiomeVisualSettings.ADDITIONS_SOUND, biomeConfig.getVisualSettings().getAdditionsSound(),
                     "Additions sound for the biome. Leave empty to disable. Example:",
-                    "	AdditionsSound: minecraft:ambient.soul_sand_valley.additions");
+                    "AdditionsSound: minecraft:ambient.soul_sand_valley.additions");
 
-            writer.putSetting(BiomeStandardValues.ADDITIONS_TICK_CHANCE, biomeConfig.settings.additionsTickChance,
+            writer.putSetting(BiomeVisualSettings.ADDITIONS_TICK_CHANCE, biomeConfig.getVisualSettings().getAdditionsTickChance(),
                     "The tick chance that the additions sound plays");
         }
 
@@ -370,27 +378,27 @@ public class BiomeConfigWriter {
                 "Rarity:		Chance for each attempt, Rarity:100 - mean 100% to pass, Rarity:1 - mean 1% to pass.",
                 "MinAltitude and MaxAltitude: Height limits.", "TallChance:	Number between 0.0 and 1.0",
                 "TreeType:		Tree (original oak tree) - BigTree - Birch - TallBirch - SwampTree -",
-                "				HugeMushroom (randomly red or brown) - HugeRedMushroom - HugeBrownMushroom -",
-                "				Taiga1 - Taiga2 - HugeTaiga1 - HugeTaiga2 -",
-                "				JungleTree (the huge jungle tree) - GroundBush - CocoaTree (smaller jungle tree)",
-                "				DarkOak (from the roofed forest biome) - Acacia",
-                "				New for 1.16.5: CrimsonFungi, WarpedFungi, ChorusPlant.",
-                "				You can also use your own custom objects, as long as they have Tree:true in their settings.",
+                "			HugeMushroom (randomly red or brown) - HugeRedMushroom - HugeBrownMushroom -",
+                "			Taiga1 - Taiga2 - HugeTaiga1 - HugeTaiga2 -",
+                "			JungleTree (the huge jungle tree) - GroundBush - CocoaTree (smaller jungle tree)",
+                "			DarkOak (from the roofed forest biome) - Acacia",
+                "			New for 1.16.5: CrimsonFungi, WarpedFungi, ChorusPlant.",
+                "			You can also use your own custom objects, as long as they have Tree:true in their settings.",
                 "TreeTypeChance: Similar to Rarity. Example:",
-                "				Tree(10,Taiga1,35,Taiga2,100) - tries 10 times, for each attempt it tries to place Taiga1 (35% chance),",
-                "				if that fails, it attempts to place Taiga2 (100% chance).",
+                "			Tree(10,Taiga1,35,Taiga2,100) - tries 10 times, for each attempt it tries to place Taiga1 (35% chance),",
+                "			if that fails, it attempts to place Taiga2 (100% chance).",
                 "PlantType:	  	One of the plant types: " + StringHelper.join(PlantType.values(), ", "),
-                "				or a block name",
+                "			or a block name",
                 "IceSpikeType:  One of the ice spike types: " + StringHelper.join(IceSpikeType.values(), ","),
                 "Object:		Any custom object (bo2 or bo3) file but without the file extension. ",
                 "RegistryKey:	Registry key for a (non-OTG) default or configured feature. For example: minecraft:plain_vegetation",
                 "DecorationStage: Optional, one of the vanilla decoration stages.",
                 "               Can be: RAW_GENERATION, LAKES, LOCAL_MODIFICATIONS, UNDERGROUND_STRUCTURES, ",
-                "				SURFACE_STRUCTURES, STRONGHOLDS, UNDERGROUND_ORES, UNDERGROUND_DECORATION,",
-                "				VEGETAL_DECORATION, TOP_LAYER_MODIFICATION. VEGETAL_DECORATION by default.",
+                "			SURFACE_STRUCTURES, STRONGHOLDS, UNDERGROUND_ORES, UNDERGROUND_DECORATION,",
+                "			VEGETAL_DECORATION, TOP_LAYER_MODIFICATION. VEGETAL_DECORATION by default.",
                 "ExtendedParams: Optional, set this to true if you want to use additional parameters, like MaxSpawn.",
                 "MaxSpawn: 		Optional, used with Frequency. When MaxSpawn spawn attempts have succeeded, stop spawning (for the current chunk).",
-                "				For example, you can do 100 spawn attempts per chunk but stop after 5 have succeeded.",
+                "			For example, you can do 100 spawn attempts per chunk but stop after 5 have succeeded.",
                 "",
                 "Plant and Grass resource: Both a resource of one block. Plant can place blocks underground, Grass cannot.",
                 "UnderWaterPlant resource: Similar to plant, but places blocks underwater.",
@@ -399,7 +407,7 @@ public class BiomeConfigWriter {
                 "Vein resource: Starts an area where ores will spawn. Can be slow, so use a low Rarity (smaller than 1).",
                 "CustomStructure resource: Starts a BO3 or BO4 structure in the chunk if spawn requirements are met.",
                 "");
-        writer.addConfigFunctions(biomeConfig.settings.resourceQueue);
+        writer.addConfigFunctions(biomeConfig.getResourceSettings().getResourceQueue());
 
         writer.header1("Saplings",
                 Constants.MOD_ID + " allows you to grow your custom objects from saplings, instead",
@@ -416,90 +424,90 @@ public class BiomeConfigWriter {
                 "BigJungle - for when 4 jungle saplings grow at once.",
                 "RedMushroom/BrownMushroom - will only grow when bonemeal is used.", "");
 
-        writer.addConfigFunctions(biomeConfig.settings.saplingGrowers.values());
-        writer.addConfigFunctions(biomeConfig.settings.customSaplingGrowers.values());
-        writer.addConfigFunctions(biomeConfig.settings.customBigSaplingGrowers.values());
+        writer.addConfigFunctions(biomeConfig.getResourceSettings().getSaplingGrowers().values());
+        writer.addConfigFunctions(biomeConfig.getResourceSettings().getCustomSaplingGrowers().values());
+        writer.addConfigFunctions(biomeConfig.getResourceSettings().getCustomBigSaplingGrowers().values());
 
         if (!isTemplateBiome) {
             writer.header1("Vanilla structures", "Vanilla structure settings, each structure type has a global on/off",
                     "toggle in the PresetConfig, be sure to enable it to allow biomes to", "spawn structures.",
                     "* Fossils and Dungeons count as resources, not structures.");
 
-            writer.putSetting(BiomeStandardValues.STRONGHOLDS_ENABLED, biomeConfig.settings.strongholdsEnabled,
+            writer.putSetting(BiomeStructureSettings.STRONGHOLDS_ENABLED, biomeConfig.getStructureSettings().isStrongholdsEnabled(),
                     "Toggles strongholds spawning in this biome.");
 
-            writer.putSetting(BiomeStandardValues.WOODLAND_MANSIONS_ENABLED, biomeConfig.settings.woodLandMansionsEnabled,
+            writer.putSetting(BiomeStructureSettings.WOODLAND_MANSIONS_ENABLED, biomeConfig.getStructureSettings().isWoodlandMansionsEnabled(),
                     "Toggles woodland mansions spawning in this biome.");
 
-            writer.putSetting(BiomeStandardValues.OCEAN_MONUMENTS_ENABLED, biomeConfig.settings.oceanMonumentsEnabled,
+            writer.putSetting(BiomeStructureSettings.OCEAN_MONUMENTS_ENABLED, biomeConfig.getStructureSettings().isOceanMonumentsEnabled(),
                     "Toggles ocean monuments spawning in this biome.");
 
-            writer.putSetting(BiomeStandardValues.NETHER_FORTRESSES_ENABLED, biomeConfig.settings.netherFortressesEnabled,
+            writer.putSetting(BiomeStructureSettings.NETHER_FORTRESSES_ENABLED, biomeConfig.getStructureSettings().isNetherFortressesEnabled(),
                     "Toggles nether fortresses spawning in this biome.");
 
-            writer.putSetting(BiomeStandardValues.VILLAGE_TYPE, biomeConfig.settings.villageType,
+            writer.putSetting(BiomeStructureSettings.VILLAGE_TYPE, biomeConfig.getStructureSettings().getVillageType(),
                     "The type of villages in this biome. Can be wood, sandstone, taiga, savanna, snowy or disabled.");
 
-            writer.putSetting(BiomeStandardValues.VILLAGE_SIZE, biomeConfig.settings.villageSize,
+            writer.putSetting(BiomeStructureSettings.VILLAGE_SIZE, biomeConfig.getStructureSettings().getVillageSize(),
                     "The size of villages in this biome, 6 by default.",
                     "*TODO: Test different values and document usage.");
 
-            writer.putSetting(BiomeStandardValues.MINESHAFT_TYPE, biomeConfig.settings.mineshaftType,
+            writer.putSetting(BiomeStructureSettings.MINESHAFT_TYPE, biomeConfig.getStructureSettings().getMineshaftType(),
                     "The type of mineshafts in this biome. Can be normal, mesa or disabled.");
 
-            writer.putSetting(BiomeStandardValues.MINESHAFT_PROBABILITY, biomeConfig.settings.mineshaftProbability,
+            writer.putSetting(BiomeStructureSettings.MINESHAFT_PROBABILITY, biomeConfig.getStructureSettings().getMineshaftProbability(),
                     "Probability of mineshafts spawning, 0.004 by default.",
                     "*TODO: Test different values and document usage.");
 
-            writer.putSetting(BiomeStandardValues.RARE_BUILDING_TYPE, biomeConfig.settings.rareBuildingType,
+            writer.putSetting(BiomeStructureSettings.RARE_BUILDING_TYPE, biomeConfig.getStructureSettings().getRareBuildingType(),
                     "The type of the aboveground rare building in this biome.",
                     "Can be desertPyramid, jungleTemple, swampHut, igloo or disabled.");
 
-            writer.putSetting(BiomeStandardValues.BURIED_TREASURE_ENABLED, biomeConfig.settings.buriedTreasureEnabled,
+            writer.putSetting(BiomeStructureSettings.BURIED_TREASURE_ENABLED, biomeConfig.getStructureSettings().isBuriedTreasureEnabled(),
                     "Toggles buried treasure spawning in this biome.");
 
-            writer.putSetting(BiomeStandardValues.BURIED_TREASURE_PROBABILITY, biomeConfig.settings.buriedTreasureProbability,
+            writer.putSetting(BiomeStructureSettings.BURIED_TREASURE_PROBABILITY, biomeConfig.getStructureSettings().getBuriedTreasureProbability(),
                     "Probability of buried treasure spawning, 0.01 by default.",
                     "*TODO: Test different values and document usage.");
 
-            writer.putSetting(BiomeStandardValues.SHIP_WRECK_ENABLED, biomeConfig.settings.shipWreckEnabled,
+            writer.putSetting(BiomeStructureSettings.SHIP_WRECK_ENABLED, biomeConfig.getStructureSettings().isShipWreckEnabled(),
                     "Toggles shipwrecks spawning in this biome.");
 
-            writer.putSetting(BiomeStandardValues.SHIP_WRECK_BEACHED_ENABLED, biomeConfig.settings.shipWreckBeachedEnabled,
+            writer.putSetting(BiomeStructureSettings.SHIP_WRECK_BEACHED_ENABLED, biomeConfig.getStructureSettings().isShipWreckBeachedEnabled(),
                     "Toggles beached shipwrecks spawning in this biome.");
 
-            writer.putSetting(BiomeStandardValues.PILLAGER_OUTPOST_ENABLED, biomeConfig.settings.pillagerOutpostEnabled,
+            writer.putSetting(BiomeStructureSettings.PILLAGER_OUTPOST_ENABLED, biomeConfig.getStructureSettings().isPillagerOutpostEnabled(),
                     "Toggles pillager outposts spawning in this biome.");
 
-            writer.putSetting(BiomeStandardValues.PILLAGER_OUTPOST_SIZE, biomeConfig.settings.pillagerOutpostSize,
+            writer.putSetting(BiomeStructureSettings.PILLAGER_OUTPOST_SIZE, biomeConfig.getStructureSettings().getPillagerOutpostSize(),
                     "The size of pillager outposts in this biome, 7 by default.",
                     "*TODO: Test different values and document usage.");
 
-            writer.putSetting(BiomeStandardValues.BASTION_REMNANT_ENABLED, biomeConfig.settings.bastionRemnantEnabled,
+            writer.putSetting(BiomeStructureSettings.BASTION_REMNANT_ENABLED, biomeConfig.getStructureSettings().isBastionRemnantEnabled(),
                     "Toggles bastion remnants spawning in this biome.");
 
-            writer.putSetting(BiomeStandardValues.BASTION_REMNANT_SIZE, biomeConfig.settings.bastionRemnantSize,
+            writer.putSetting(BiomeStructureSettings.BASTION_REMNANT_SIZE, biomeConfig.getStructureSettings().getBastionRemnantSize(),
                     "The size of bastion remnants in this biome, 6 by default.",
                     "*TODO: Test different values and document usage.");
 
-            writer.putSetting(BiomeStandardValues.NETHER_FOSSIL_ENABLED, biomeConfig.settings.netherFossilEnabled,
+            writer.putSetting(BiomeStructureSettings.NETHER_FOSSIL_ENABLED, biomeConfig.getStructureSettings().isNetherFossilEnabled(),
                     "Toggles nether fossils spawning in this biome.", "Caution: Nether fossils spawn at all heights.");
 
-            writer.putSetting(BiomeStandardValues.END_CITY_ENABLED, biomeConfig.settings.endCityEnabled,
+            writer.putSetting(BiomeStructureSettings.END_CITY_ENABLED, biomeConfig.getStructureSettings().isEndCityEnabled(),
                     "Toggles end cities spawning in this biome.");
 
-            writer.putSetting(BiomeStandardValues.RUINED_PORTAL_TYPE, biomeConfig.settings.ruinedPortalType,
+            writer.putSetting(BiomeStructureSettings.RUINED_PORTAL_TYPE, biomeConfig.getStructureSettings().getRuinedPortalType(),
                     "The type of ruined portals in this biome.",
                     "Can be normal, desert, jungle, swamp, mountain, ocean, nether or disabled.");
 
-            writer.putSetting(BiomeStandardValues.OCEAN_RUINS_TYPE, biomeConfig.settings.oceanRuinsType,
+            writer.putSetting(BiomeStructureSettings.OCEAN_RUINS_TYPE, biomeConfig.getStructureSettings().getOceanRuinsType(),
                     "The type of ocean ruins in this biome.", "Can be cold, warm or disabled.");
 
-            writer.putSetting(BiomeStandardValues.OCEAN_RUINS_LARGE_PROBABILITY, biomeConfig.settings.oceanRuinsLargeProbability,
+            writer.putSetting(BiomeStructureSettings.OCEAN_RUINS_LARGE_PROBABILITY, biomeConfig.getStructureSettings().getOceanRuinsLargeProbability(),
                     "Probability of large ocean ruins spawning, 0.3 by default.",
                     "*TODO: Test different values and document usage.");
 
-            writer.putSetting(BiomeStandardValues.OCEAN_RUINS_CLUSTER_PROBABILITY, biomeConfig.settings.oceanRuinsClusterProbability,
+            writer.putSetting(BiomeStructureSettings.OCEAN_RUINS_CLUSTER_PROBABILITY, biomeConfig.getStructureSettings().getOceanRuinsClusterProbability(),
                     "Probability of ocean ruins spawning clusters, 0.9 by default.",
                     "*TODO: Test different values and document usage.");
 
@@ -522,7 +530,7 @@ public class BiomeConfigWriter {
                     "To see the mob category a mob belongs to, use /otg entities. The mob's category (if any) is listed after its name.",
                     "Also supports modded mobs, if they are of the correct mob category.");
 
-            writer.putSetting(BiomeStandardValues.SPAWN_MONSTERS, biomeConfig.privateSettings.spawnMonsters,
+            writer.putSetting(MobSettings.SPAWN_MONSTERS, biomeConfig.getMobSettings().getMonsters(),
                     "The monsters (blazes, cave spiders, creepers, drowned, elder guardians, ender dragons, endermen, endermites, evokers, ghasts, giants,",
                     "guardians, hoglins, husks, illusioners, magma cubes, phantoms, piglins, pillagers, ravagers, shulkers, silverfishes, skeletons, slimes,",
                     "spiders, strays, vexes, vindicators, witches, zoglins, zombies, zombie villagers, zombified piglins) that spawn in this biome.",
@@ -530,7 +538,7 @@ public class BiomeConfigWriter {
                     "Use the \"/otg entities\" console command to get a list of possible mobs and mob categories.",
                     "Use the \"/otg biome -m\" console command to get the list of registered mobs for a biome.");
 
-            writer.putSetting(BiomeStandardValues.SPAWN_CREATURES, biomeConfig.privateSettings.spawnCreatures,
+            writer.putSetting(MobSettings.SPAWN_CREATURES, biomeConfig.getMobSettings().getCreatures(),
                     "The friendly creatures (bees, cats, chickens, cows, donkeys, foxes, horses, llama, mooshrooms, mules, ocelots, panda's, parrots,",
                     "pigs, polar bears, rabbits, sheep, skeleton horses, striders, trader llama's, turtles, wandering traders, wolves, zombie horses)",
                     "that spawn in this biome.",
@@ -538,31 +546,31 @@ public class BiomeConfigWriter {
                     "Use the \"/otg entities\" console command to get a list of possible mobs and mob categories.",
                     "Use the \"/otg biome -m\" console command to get the list of registered mobs for a biome.");
 
-            writer.putSetting(BiomeStandardValues.SPAWN_WATER_CREATURES, biomeConfig.privateSettings.spawnWaterCreatures,
+            writer.putSetting(MobSettings.SPAWN_WATER_CREATURES, biomeConfig.getMobSettings().getWaterCreatures(),
                     "The water creatures (squids and dolphins) that spawn in this biome",
                     "For instance [{\"mob\": \"minecraft:squid\", \"weight\": 10, \"min\": 4, \"max\": 4}]",
                     "Use the \"/otg entities\" console command to get a list of possible mobs and mob categories.",
                     "Use the \"/otg biome -m\" console command to get the list of registered mobs for a biome.");
 
-            writer.putSetting(BiomeStandardValues.SPAWN_AMBIENT_CREATURES, biomeConfig.privateSettings.spawnAmbientCreatures,
+            writer.putSetting(MobSettings.SPAWN_AMBIENT_CREATURES, biomeConfig.getMobSettings().getAmbientCreatures(),
                     "The ambient creatures (only bats in vanila) that spawn in this biome",
                     "For instance [{\"mob\": \"minecraft:bat\", \"weight\": 10, \"min\": 8, \"max\": 8}]",
                     "Use the \"/otg entities\" console command to get a list of possible mobs and mob categories.",
                     "Use the \"/otg biome -m\" console command to get the list of registered mobs for a biome.");
 
-            writer.putSetting(BiomeStandardValues.SPAWN_WATER_AMBIENT_CREATURES, biomeConfig.privateSettings.spawnWaterAmbientCreatures,
+            writer.putSetting(MobSettings.SPAWN_WATER_AMBIENT_CREATURES, biomeConfig.getMobSettings().getWaterAmbientCreatures(),
                     "The ambient water creatures (cod, pufferfish, salmon, tropical fish) that spawn in this biome",
                     "For instance [{\"mob\": \"minecraft:cod\", \"weight\": 10, \"min\": 8, \"max\": 8}]",
                     "Use the \"/otg entities\" console command to get a list of possible mobs and mob categories.",
                     "Use the \"/otg biome -m\" console command to get the list of registered mobs for a biome.");
 
-            writer.putSetting(BiomeStandardValues.SPAWN_MISC_CREATURES, biomeConfig.privateSettings.spawnMiscCreatures,
+            writer.putSetting(MobSettings.SPAWN_MISC_CREATURES, biomeConfig.getMobSettings().getMiscCreatures(),
                     "The miscellaneous creatures (iron golems, snow golems and villagers) that spawn in this biome",
                     "For instance [{\"mob\": \"minecraft:villager\", \"weight\": 10, \"min\": 8, \"max\": 8}]",
                     "Use the \"/otg entities\" console command to get a list of possible mobs and mob categories.",
                     "Use the \"/otg biome -m\" console command to get the list of registered mobs for a biome.");
 
-            writer.putSetting(BiomeStandardValues.INHERIT_MOBS_BIOME_NAME, biomeConfig.settings.inheritMobsBiomeName,
+            writer.putSetting(MobSettings.INHERIT_MOBS_BIOME_NAME, biomeConfig.getMobSettings().getInheritMobsBiomeName(),
                     "Inherit the internal mobs list of another biome. Inherited mobs can be overridden using",
                     "the mob spawn settings in this biome config. Any mob type defined in this biome config",
                     "will override inherited mob settings for the same mob in the same mob category.",

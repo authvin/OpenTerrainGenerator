@@ -318,13 +318,13 @@ public class CustomStructureFileManager
 				} else {
 					logger.log(LogLevel.FATAL, LogCategory.MAIN,
 						"OTG encountered a critical error loading " + occupiedChunksFile.getAbsolutePath() + " and could not load a backup, exiting. "
-						+ "OTG automatically backs up files before writing and will try to use the backup when loading. "					
+						+ "OTG automatically backs up files before writing and will try to use the backup when loading. "				
 						+ "If your dimension's structure data files and backups have been corrupted, you can delete them,"
 						+ "at the risk of losing data for unspawned structure parts."
 					);					
 					throw new RuntimeException(
 						"OTG encountered a critical error loading " + occupiedChunksFile.getAbsolutePath() + " and could not load a backup, exiting. "
-						+ "OTG automatically backs up files before writing and will try to use the backup when loading. "					
+						+ "OTG automatically backs up files before writing and will try to use the backup when loading. "				
 						+ "If your dimension's structure data files and backups have been corrupted, you can delete them,"
 						+ "at the risk of losing data for unspawned structure parts."
 					);

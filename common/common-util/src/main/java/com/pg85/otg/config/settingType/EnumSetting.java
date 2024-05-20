@@ -1,7 +1,11 @@
 package com.pg85.otg.config.settingType;
 
+import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 
 /**
  * Reads and writes values of the given enum type.
@@ -13,7 +17,7 @@ import com.pg85.otg.interfaces.IMaterialReader;
  *
  * @param <T> The enum type.
  */
-class EnumSetting<T extends Enum<T>> extends Setting<T>
+public class EnumSetting<T extends Enum<T>> extends Setting<T>
 {
 	private final T defaultValue;
 	private final T[] enumValues;
@@ -25,14 +29,21 @@ class EnumSetting<T extends Enum<T>> extends Setting<T>
 		this.enumValues = defaultValue.getDeclaringClass().getEnumConstants();
 	}
 
+	public EnumSetting(String name, T defaultValue,Function<ConfigSection, T> getter, String ...description)
+	{
+		super(name, getter, description);
+		this.defaultValue = defaultValue;
+		this.enumValues = defaultValue.getDeclaringClass().getEnumConstants();
+	}
+
 	@Override
-	public T getDefaultValue(IMaterialReader materialReader)
+	public T getDefaultValue()
 	{
 		return defaultValue;
 	}
 
 	@Override
-	public T read(String string, IMaterialReader materialReader) throws InvalidConfigException
+	public T read(String string) throws InvalidConfigException
 	{
 		for (T enumValue : enumValues)
 		{
@@ -44,4 +55,18 @@ class EnumSetting<T extends Enum<T>> extends Setting<T>
 		throw new InvalidConfigException(string + " is not an acceptable value");
 	}
 
+	@Override
+	public String getTypeAsString() {
+		return "string";
+	}
+
+	@Override
+	public List<String> getEnumValues() {
+		List<String> values = new ArrayList<>();
+		for (T enumValue : enumValues)
+		{
+			values.add(enumValue.name());
+		}
+		return values;
+	}
 }

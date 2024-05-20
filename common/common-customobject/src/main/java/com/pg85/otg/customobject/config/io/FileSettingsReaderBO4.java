@@ -207,7 +207,7 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 			String stringValue = stringWithLineNumber.string;
 			try
 			{
-				return setting.read(stringValue, materialReader);
+				return setting.read(stringValue);
 			}
 			catch (InvalidConfigException e)
 			{

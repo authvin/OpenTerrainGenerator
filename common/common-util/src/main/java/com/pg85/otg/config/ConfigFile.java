@@ -25,7 +25,7 @@ public interface ConfigFile
 	 */
 	default SettingsMap getSettingsAsMap()
 	{
-		SettingsMap settingsMap = new SimpleSettingsMap(getConfigName(), Constants.ProtocolVersion);
+		SettingsMap settingsMap = new SimpleSettingsMap(getConfigName());
 		writeConfigSettings(settingsMap);
 		return settingsMap;
 	}
@@ -37,39 +37,10 @@ public interface ConfigFile
 	void writeConfigSettings(SettingsMap settingsMap);
 
 	/**
-	 * Called before {@link #readConfigSettings(SettingsMap)} to rewrite
-	 * configs in old formats to the modern format, so that they can be read.
+	 * rewrite configs in old formats to the modern format, so that they can be read.
 	 * @param reader The settings reader.
 	 */
 	void renameOldSettings(SettingsMap reader, ILogger logger, IMaterialReader materialReader);
-
-	/**
-	 * Silently corrects the given number so that it is higher than or equal to
-	 * the minimum value.
-	 * @param currentValue The current value, will be corrected if needed.
-	 * @param minimumValue The minimum value.
-	 * @return The corrected value.
-	 */
-	default int higherThanOrEqualTo(int currentValue, int minimumValue)
-	{
-        return Math.max(currentValue, minimumValue);
-    }
-
-	/**
-	 * Silently corrects the given number so that it is lower than or equal
-	 * to the maximum value.
-	 * @param currentValue The current value, will be corrected if needed.
-	 * @param maximumValue The maximum value.
-	 * @return The corrected value.
-	 */
-	default int lowerThanOrEqualTo(int currentValue, int maximumValue)
-	{
-		if (currentValue > maximumValue)
-		{
-			return maximumValue;
-		}
-		return currentValue;
-	}
 
 	static List<String> filterBiomes(List<String> biomes, List<String> customBiomes)
 	{
