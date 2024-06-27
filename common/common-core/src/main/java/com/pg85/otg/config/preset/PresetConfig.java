@@ -93,6 +93,7 @@ public class PresetConfig extends PresetSettings {
         reader.renameOldSetting("WorldFog", VisualSettings.PRESET_FOG_COLOR);
         reader.renameOldSetting("BedrockobBlock", BlockSettings.BEDROCK_BLOCK);
         reader.renameOldSetting("DimensionPortalMaterials", PortalSettings.PORTAL_BLOCKS);
+        reader.renameOldSetting("ShortPresetName", PresetInfo.REGISTRY_NAME);
     }
     @Override
     public void writeConfigSettings(SettingsMap writer) {

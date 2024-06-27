@@ -13,7 +13,7 @@ import lombok.Getter;
 @Getter
 public class PresetInfo extends ConfigSection {
     private final ConfigMode settingsMode;
-    private final String shortPresetName;
+    private final String registryName;
     private final int majorVersion;
     private final int minorVersion;
     private final String author;
@@ -32,9 +32,9 @@ public class PresetInfo extends ConfigSection {
             t -> ((PresetInfo) t).getAuthor(),
             "The author of this preset"
     );
-    public static final Setting<String> SHORT_PRESET_NAME = Settings.stringSetting(
-            "ShortPresetName", "",
-            t -> ((PresetInfo) t).getShortPresetName(),
+    public static final Setting<String> REGISTRY_NAME = Settings.stringSetting(
+            "RegistryName", "",
+            t -> ((PresetInfo) t).getRegistryName(),
             "The shortened name for the preset, used in biome resource locations and similar"
     );
     public static final Setting<String> DESCRIPTION = Settings.stringSetting(
@@ -61,7 +61,7 @@ public class PresetInfo extends ConfigSection {
         presetInfoBuilder.settingsMode(reader.getSetting(SETTINGS_MODE));
         presetInfoBuilder.author(reader.getSetting(AUTHOR));
         presetInfoBuilder.description(reader.getSetting(DESCRIPTION));
-        presetInfoBuilder.shortPresetName(reader.getSetting(SHORT_PRESET_NAME));
+        presetInfoBuilder.registryName(reader.getSetting(REGISTRY_NAME));
         presetInfoBuilder.majorVersion(reader.getSetting(MAJOR_VERSION));
         presetInfoBuilder.minorVersion(reader.getSetting(MINOR_VERSION));
 

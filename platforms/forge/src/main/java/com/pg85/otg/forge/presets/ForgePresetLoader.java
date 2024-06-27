@@ -88,12 +88,7 @@ public class ForgePresetLoader extends LocalPresetLoader
 
 	public Map<String, BiomeLayerData> getPresetGenerationData()
 	{
-		Map<String, BiomeLayerData> clonedData = new HashMap<>();
-		for(Entry<String, BiomeLayerData> entry : this.presetGenerationData.entrySet())
-		{
-			clonedData.put(entry.getKey(), new BiomeLayerData(entry.getValue()));
-		}
-		return clonedData;
+        return new HashMap<>(this.presetGenerationData);
 	}
 
 	// Note: BiomeGen and ChunkGen cache some settings during a session, so they'll only update on world exit/rejoin.

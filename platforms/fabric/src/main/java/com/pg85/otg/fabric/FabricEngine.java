@@ -3,6 +3,7 @@ package com.pg85.otg.fabric;
 import com.pg85.otg.OTG;
 import com.pg85.otg.OTGEngine;
 import com.pg85.otg.constants.Constants;
+import com.pg85.otg.fabric.materials.FabricMaterials;
 import com.pg85.otg.fabric.presets.FabricPresetLoader;
 import com.pg85.otg.fabric.util.FabricLogger;
 import com.pg85.otg.fabric.util.FabricModLoadedChecker;
@@ -23,6 +24,12 @@ public class FabricEngine extends OTGEngine {
                 new FabricModLoadedChecker(),
                 new FabricPresetLoader(FabricLoader.getInstance().getConfigDir().resolve(Constants.MOD_ID))
         );
+    }
+
+    @Override
+    public void onStart() {
+        FabricMaterials.init();
+        super.onStart();
     }
 
     @Override

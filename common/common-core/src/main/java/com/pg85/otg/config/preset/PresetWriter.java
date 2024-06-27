@@ -41,7 +41,7 @@ public class PresetWriter {
                 "while increasing the major version will make the PresetPacker save a new copy"
         );
 
-        writer.putSetting(PresetInfo.SHORT_PRESET_NAME, presetConfig.getPresetInfo().getShortPresetName(),
+        writer.putSetting(PresetInfo.REGISTRY_NAME, presetConfig.getPresetInfo().getRegistryName(),
                 "The shortened name for the preset, used in biome resource locations and similar"
         );
 

@@ -28,4 +28,10 @@ public abstract class LocalMaterialTag extends LocalMaterialBase
 	{
 		return material.isBlockTag(this);
 	}
+
+	@Override
+	public String toString()
+	{
+		return this.name;
+	}
 }

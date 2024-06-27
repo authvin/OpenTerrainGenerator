@@ -11,6 +11,7 @@ import com.pg85.otg.config.yaml.MaterialSetSerializer;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
+import net.minecraft.client.resources.model.Material;
 
 /**
  * A material set that accepts special values such as "All" or "Solid". These
@@ -22,31 +23,10 @@ import com.pg85.otg.util.helpers.StringHelper;
 @JsonSerialize(using = MaterialSetSerializer.class)
 public class MaterialSet
 {
-	/**
-	 * Keyword that adds all materials to the set when used in
-	 * {@link #parseAndAdd(String)}.
-	 */
-	private static final String ALL_MATERIALS = "All";
-
-	/**
-	 * Keyword that adds all solid materials to the set when used in
-	 * {@link #parseAndAdd(String)}.
-	 */
-	public static final String SOLID_MATERIALS = "Solid";
-
-	/**
-	 * Keyword that adds all non solid materials to the set when used in
-	 * {@link #parseAndAdd(String)}.
-	 */
-	private static final String NON_SOLID_MATERIALS = "NonSolid";
-
-	private boolean allMaterials = false;
-	private boolean allSolidMaterials = false;
-	private boolean allNonSolidMaterials = false;
-
 	private int[] materialIntSet = new int[0];
 	private final Set<LocalMaterialData> materials = new LinkedHashSet<>();
 	private Set<LocalMaterialTag> tags = new LinkedHashSet<>();
+	private MaterialGroup group = null;
 	private boolean intSetUpToDate = true;
 
 	/**
@@ -68,19 +48,10 @@ public class MaterialSet
 	 */
 	public void parseAndAdd(String input) throws InvalidConfigException
 	{
-		if (input.equalsIgnoreCase(ALL_MATERIALS))
+		MaterialGroup group = MaterialGroup.ofKeyword(input);
+		if (group != null)
 		{
-			this.allMaterials = true;
-			return;
-		}
-		if (input.equalsIgnoreCase(SOLID_MATERIALS))
-		{
-			this.allSolidMaterials = true;
-			return;
-		}
-		if (input.equalsIgnoreCase(NON_SOLID_MATERIALS))
-		{
-			this.allNonSolidMaterials = true;
+			this.group = group;
 			return;
 		}
 
@@ -151,15 +122,7 @@ public class MaterialSet
 		{
 			return false;
 		}
-		if (this.allMaterials)
-		{
-			return true;
-		}
-		if (this.allSolidMaterials && material.isSolid())
-		{
-			return true;
-		}
-		if (this.allNonSolidMaterials && !material.isSolid())
+		if (group.contains(material))
 		{
 			return true;
 		}
@@ -198,22 +161,11 @@ public class MaterialSet
 	@Override
 	public String toString()
 	{
-		// Check if all materials are included
-		if (this.allMaterials)
-		{
-			return ALL_MATERIALS;
-		}
-
 		StringBuilder builder = new StringBuilder();
 		// Check for solid materials
-		if (this.allSolidMaterials)
+		if (this.group != null)
 		{
-			builder.append(SOLID_MATERIALS).append(',');
-		}
-		// Check for non-solid materials
-		if (this.allNonSolidMaterials)
-		{
-			builder.append(NON_SOLID_MATERIALS).append(',');
+			builder.append(this.group.getKeyword()).append(',');
 		}
 		// Add all tags
 		for (LocalMaterialTag tag : this.tags)
@@ -243,18 +195,7 @@ public class MaterialSet
 	public MaterialSet rotate()
 	{
 		MaterialSet rotated = new MaterialSet();
-		if (this.allMaterials)
-		{
-			rotated.allMaterials = true;
-		}
-		if (this.allSolidMaterials)
-		{
-			rotated.allSolidMaterials = true;
-		}
-		if (this.allNonSolidMaterials)
-		{
-			rotated.allNonSolidMaterials = true;
-		}
+		rotated.group = this.group;
 		rotated.intSetUpToDate = false;
 		for (LocalMaterialData material : this.materials)
 		{

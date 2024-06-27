@@ -4,6 +4,8 @@ import com.pg85.otg.config.biome.BiomeConfigFinder;
 import com.pg85.otg.fabric.materials.FabricMaterialReader;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.presets.LocalPresetLoader;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
 
 import java.nio.file.Path;
 
@@ -15,11 +17,6 @@ public class FabricPresetLoader extends LocalPresetLoader {
     @Override
     protected IMaterialReader createMaterialReader() {
         return new FabricMaterialReader();
-    }
-
-    @Override
-    public void registerBiomes() {
-
     }
 
     @Override

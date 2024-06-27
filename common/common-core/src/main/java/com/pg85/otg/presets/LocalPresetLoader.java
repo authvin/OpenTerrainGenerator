@@ -37,7 +37,6 @@ public abstract class LocalPresetLoader
 	protected final HashMap<String, String> aliasMap = new HashMap<>();
 	protected HashMap<String, IMaterialReader> materialReaderByPresetFolderName = new HashMap<>();
 
-
 	public LocalPresetLoader(Path otgRootFolder)
 	{
 		this.presetsDir = Paths.get(otgRootFolder.toString(), File.separator + Constants.PRESETS_FOLDER).toFile();
@@ -63,7 +62,7 @@ public abstract class LocalPresetLoader
 	// its own block fallbacks / block dictionaries.
 	protected abstract IMaterialReader createMaterialReader();
 
-	public abstract void registerBiomes();
+	//public abstract void registerBiomes();
 	
 	protected abstract void mergeVanillaBiomeMobSpawnSettings(BiomeConfigStub biomeConfigStub, String inheritMobsBiomeName);
 	
@@ -135,8 +134,8 @@ public abstract class LocalPresetLoader
 		FileSettingsWriter.writeToFile(presetConfig.getSettingsAsMap(), presetConfigFile, presetConfig.getPresetInfo().getSettingsMode(), logger);
 
 		// use shortPresetName to register the biomes, instead of presetName
-		ArrayList<BiomeConfig> biomeConfigs = loadBiomeConfigs(presetConfig.getPresetInfo().getShortPresetName(), presetConfig.getPresetInfo().getMajorVersion(), presetDir, biomesDirectory.toPath(), presetConfig, biomeResourcesManager, logger, getMaterialReader(presetFolderName));
-		return new Preset(presetDir, presetConfig.getPresetInfo().getShortPresetName(), presetConfig, biomeConfigs);
+		ArrayList<BiomeConfig> biomeConfigs = loadBiomeConfigs(presetConfig.getPresetInfo().getRegistryName(), presetConfig.getPresetInfo().getMajorVersion(), presetDir, biomesDirectory.toPath(), presetConfig, biomeResourcesManager, logger, getMaterialReader(presetFolderName));
+		return new Preset(presetDir, presetConfig.getPresetInfo().getRegistryName(), presetConfig, biomeConfigs);
 	}
 	
 	private ArrayList<String> addBiomesFromDirRecursive(File biomesDirectory)
