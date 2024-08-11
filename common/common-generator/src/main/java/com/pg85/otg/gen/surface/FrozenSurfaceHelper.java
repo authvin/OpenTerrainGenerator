@@ -48,7 +48,7 @@ public class FrozenSurfaceHelper
 		IBiome biome = worldGenRegion.getBiomeForDecoration(x, z);
 		if (biome != null)
 		{
-			BiomeSettings biomeConfig = biome.getBiomeConfig();
+			BiomeSettings biomeConfig = biome.getBiomeSettings();
 			int blockToFreezeY = worldGenRegion.getHighestBlockAboveYAt(x, z);
 			float tempAtBlockToFreeze = biome.getTemperatureAt(x, blockToFreezeY, z);
 			if (blockToFreezeY > 0 && tempAtBlockToFreeze < Constants.SNOW_AND_ICE_TEMP)

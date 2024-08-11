@@ -84,7 +84,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 		return this.lockingObject;
 	}
 
-	public void decorate(String presetFolderName, ChunkCoordinate chunkCoord, IWorldGenRegion worldGenRegion, BiomeSettings biomeConfig, CustomStructureCache structureCache)
+	public void decorate(ChunkCoordinate chunkCoord, IWorldGenRegion worldGenRegion, BiomeSettings biomeConfig, CustomStructureCache structureCache)
 	{
 		ILogger logger = OTG.getEngine().getLogger();
 		
@@ -111,7 +111,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 
 		Path otgRootFolder = OTG.getEngine().getOTGRootFolder();
 		CustomObjectManager customObjectManager = OTG.getEngine().getCustomObjectManager();
-		IMaterialReader materialReader = OTG.getEngine().getPresetLoader().getMaterialReader(presetFolderName);
+		IMaterialReader materialReader = OTG.getEngine().getPresetLoader().getMaterialReader();
 		CustomObjectResourcesManager customObjectResourcesManager = OTG.getEngine().getCustomObjectResourcesManager();
 		IModLoadedChecker modLoadedChecker = OTG.getEngine().getModLoadedChecker();
 

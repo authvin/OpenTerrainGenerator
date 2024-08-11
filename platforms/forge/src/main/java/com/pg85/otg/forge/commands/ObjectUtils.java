@@ -196,7 +196,7 @@ public class ObjectUtils
 			OTG.getEngine().getOTGRootFolder(),
 			OTG.getEngine().getLogger(),
 			OTG.getEngine().getCustomObjectManager(),
-			OTG.getEngine().getPresetLoader().getMaterialReader(presetFolderName),
+			OTG.getEngine().getPresetLoader().getMaterialReader(),
 			OTG.getEngine().getCustomObjectResourcesManager(),
 			OTG.getEngine().getModLoadedChecker());
 	}
@@ -242,7 +242,7 @@ public class ObjectUtils
 				presetFolderName,
 				OTG.getEngine().getOTGRootFolder(),
 				OTG.getEngine().getLogger(), OTG.getEngine().getCustomObjectManager(),
-				OTG.getEngine().getPresetLoader().getMaterialReader(presetFolderName),
+				OTG.getEngine().getPresetLoader().getMaterialReader(),
 				OTG.getEngine().getCustomObjectResourcesManager(), OTG.getEngine().getModLoadedChecker());
 
 			if (verbose && fixedObject != null)

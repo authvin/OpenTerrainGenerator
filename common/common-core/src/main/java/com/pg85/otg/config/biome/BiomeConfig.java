@@ -5,25 +5,20 @@ import java.util.*;
 
 import com.pg85.otg.OTG;
 import com.pg85.otg.config.ConfigFunction;
-import com.pg85.otg.config.biome.BiomeConfigFinder.BiomeConfigStub;
 import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settings.biome.*;
-import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.config.preset.PresetConfig;
-import com.pg85.otg.constants.settings.GrassColorModifier;
-import com.pg85.otg.constants.settings.TemplateBiomeType;
-import com.pg85.otg.constants.settings.structure.*;
 import com.pg85.otg.customobject.resource.CustomObjectResource;
 import com.pg85.otg.customobject.resource.CustomStructureResource;
 import com.pg85.otg.customobject.resource.SaplingResource;
 import com.pg85.otg.customobject.resource.TreeResource;
 import com.pg85.otg.gen.resource.*;
 import com.pg85.otg.interfaces.*;
-import com.pg85.otg.util.Color;
-import com.pg85.otg.util.biome.*;
+import com.pg85.otg.util.OTGMaterialReader;
+import com.pg85.otg.util.biome.OTGBiomeID;
+import com.pg85.otg.util.biome.OTGBiomeResourceLocation;
 import com.pg85.otg.util.materials.LocalMaterialData;
-import com.pg85.otg.util.minecraft.EntityCategory;
 import com.pg85.otg.util.minecraft.SaplingType;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,12 +26,11 @@ import lombok.Setter;
 /**
  * BiomeConfig (*.bc) classes
  * 
- * IBiomeConfig defines anything that's used/exposed between projects.
- * BiomeConfigBase implements anything needed for IBiomeConfig. BiomeConfig
- * contains only fields/methods used for io/serialisation/instantiation.
+ * BiomeSettings defines and implements anything needed for BiomeConfig. BiomeConfig
+ * contains mainly io/serialisation/instantiation, or details specific to the file of origin.
  * 
  * BiomeConfig should be used only in common-core and platform-specific layers,
- * when reading/writing settings on app start. IBiomeConfig should be used
+ * when reading/writing settings on app start. BiomeSettings should be used
  * wherever settings are used in code.
  */
 public class BiomeConfig extends BiomeSettings
@@ -79,15 +73,18 @@ public class BiomeConfig extends BiomeSettings
 		RESOURCE_QUEUE_RESOURCES.put("BasaltColumn", BasaltColumnResource.class);
 	}
 
-	public BiomeConfig(String biomeName) {
-		super(biomeName);
-	}
+	private final Path path;
+	private final PresetConfig parent;
+	private OTGBiomeID otgBiomeID;
 
-	public BiomeConfig(String biomeName, SettingsMap settingsMap, IMaterialReader materialReader, PresetSettings presetSettings, IConfigFunctionProvider biomeResourcesManager, String presetFolderName)
+	public BiomeConfig(SettingsMap settingsMap, PresetConfig presetSettings, IConfigFunctionProvider biomeResourcesManager)
 	{
-		super(biomeName);
+		super(settingsMap.getName());
+		this.path = settingsMap.getPath();
+		IMaterialReader materialReader = OTGMaterialReader.get();
+		parent = presetSettings;
 		renameOldSettings(settingsMap, OTG.getEngine().getLogger(), materialReader);
-		identitySettings = IdentitySettings.buildIdentitySettings(settingsMap, biomeName);
+		identitySettings = IdentitySettings.buildIdentitySettings(settingsMap);
 		mobSettings = MobSettings.getMobSettings(settingsMap);
 		generationSettings = BiomeGenerationSettings.getPlacementSettings(settingsMap, presetSettings.getGenerationSettings());
 		structureSettings = BiomeStructureSettings.getBiomeStructureSettings(settingsMap, presetSettings.getStructureSettings());
@@ -106,86 +103,29 @@ public class BiomeConfig extends BiomeSettings
 						settingsMap.getConfigFunctions(
 								this,
 								biomeResourcesManager,
-								presetFolderName,
+								presetSettings.getConfigName(),
 								OTG.getEngine().getPluginConfig())));
 	}
 
 
     @Override
 	public void setOTGBiomeId(int id) {
-		this.otgBiomeId = id;
+		this.oldOTGBiomeID = id;
+		this.otgBiomeID = new OTGBiomeID(id, this.getRegistryKey(), this.getConfigName());
 	}
 
 	@Override
-	public int getOTGBiomeId() {
-		return this.otgBiomeId;
+	public int getOldOTGBiomeID() {
+		return this.oldOTGBiomeID;
 	}
 	@Setter
     @Getter
     private IBiomeResourceLocation registryKey;
-	private int otgBiomeId;
+	private int oldOTGBiomeID;
 
-	// Private fields, only used when reading/writing
-
-	// Settings container, used so we can copy a biomeconfig while 
-	// changing only its id and registry key, used for non-otg 
-	// biomes in otg worlds.
-	protected com.pg85.otg.config.biome.SettingsContainer privateSettings = new com.pg85.otg.config.biome.SettingsContainer();
-
-	public BiomeConfig(
-			String biomeName, BiomeConfigStub biomeConfigStub, Path presetFolder, SettingsMap settings,
-			PresetConfig presetConfig, String presetShortName, int presetMajorVersion,
-			IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader
-	)
-	{
-		super(biomeName);
-		this.setRegistryKey(new OTGBiomeResourceLocation(presetFolder, presetShortName, presetMajorVersion, biomeName));
-
-		// Mob inheritance
-		// Mob spawning data was already loaded seperately before the rest of the
-		// biomeconfig to make inheritance work properly
-		// Forge: If this is a vanilla biome then mob spawning settings have been
-		// inherited from vanilla MC biomes
-		// This includes any mobs added to vanilla biomes by other mods when MC started.
-
-		if (biomeConfigStub != null)
-		{
-			this.privateSettings.spawnMonsters.addAll(biomeConfigStub.getSpawner(EntityCategory.MONSTER));
-			this.privateSettings.spawnCreatures.addAll(biomeConfigStub.getSpawner(EntityCategory.CREATURE));
-			this.privateSettings.spawnWaterCreatures.addAll(biomeConfigStub.getSpawner(EntityCategory.WATER_CREATURE));
-			this.privateSettings.spawnAmbientCreatures.addAll(biomeConfigStub.getSpawner(EntityCategory.AMBIENT_CREATURE));
-			this.privateSettings.spawnWaterAmbientCreatures.addAll(biomeConfigStub.getSpawner(EntityCategory.WATER_AMBIENT));
-			this.privateSettings.spawnMiscCreatures.addAll(biomeConfigStub.getSpawner(EntityCategory.MISC));
-
-			this.settings.spawnMonstersMerged.addAll(biomeConfigStub.getSpawnerMerged(EntityCategory.MONSTER));
-			this.settings.spawnCreaturesMerged.addAll(biomeConfigStub.getSpawnerMerged(EntityCategory.CREATURE));
-			this.settings.spawnWaterCreaturesMerged.addAll(biomeConfigStub.getSpawnerMerged(EntityCategory.WATER_CREATURE));
-			this.settings.spawnAmbientCreaturesMerged.addAll(biomeConfigStub.getSpawnerMerged(EntityCategory.AMBIENT_CREATURE));
-			this.settings.spawnWaterAmbientCreaturesMerged.addAll(biomeConfigStub.getSpawnerMerged(EntityCategory.WATER_AMBIENT));
-			this.settings.spawnMiscCreaturesMerged.addAll(biomeConfigStub.getSpawnerMerged(EntityCategory.MISC));
-		}
-
-		this.settings.presetConfig = presetConfig;
-
-		this.renameOldSettings(settings, logger, materialReader);
-		//this.readConfigSettings(settings, biomeResourcesManager, logger, materialReader, presetFolder.toFile().getName());
-		//this.validateAndCorrectSettings();
-
-		// Set water level
-		if (this.settings.useWorldWaterLevel)
-		{
-			this.settings.waterLevelMax = presetConfig.getTerrainSettings().getWaterLevelMax();
-			this.settings.waterLevelMin = presetConfig.getTerrainSettings().getWaterLevelMin();
-			this.settings.waterBlock = presetConfig.getBlockSettings().getWaterBlock();
-			this.settings.iceBlock = presetConfig.getBlockSettings().getIceBlock();
-			this.settings.cooledLavaBlock = presetConfig.getBlockSettings().getCooledLavaBlock();
-		} else {
-			this.settings.waterLevelMax = this.privateSettings.configWaterLevelMax;
-			this.settings.waterLevelMin = this.privateSettings.configWaterLevelMin;
-			this.settings.waterBlock = this.privateSettings.configWaterBlock;
-			this.settings.iceBlock = this.privateSettings.configIceBlock;
-			this.settings.cooledLavaBlock = this.privateSettings.configCooledLavaBlock;
-		}
+	@Override
+	public Path getConfigPath() {
+		return path;
 	}
 
 	public void writeConfigSettings(SettingsMap writer) {
@@ -203,28 +143,15 @@ public class BiomeConfig extends BiomeSettings
 	}
 
 	@Override
-	public BiomeSettings createTemplateBiome()
-	{
-		BiomeConfig biomeConfig = new BiomeConfig(this.getConfigName());
-		biomeConfig.privateSettings = this.privateSettings;
-		biomeConfig.settings = this.settings;
-		return biomeConfig;
-	}
-	// Settings container, used so we can copy a biomeconfig while
-	// changing only its id and registry key, used for non-otg
-	// biomes in otg worlds.
-	protected SettingsContainer settings = new SettingsContainer();
-
-	@Override
 	public List<ConfigFunction<BiomeSettings>> getResourceQueue() {
-		return this.settings.resourceQueue;
+		return this.getResourceSettings().getResourceQueue();
 	}
 
 	@Override
 	public List<List<String>> getCustomStructureNames() {
 		List<List<String>> customStructureNamesByGen = new ArrayList<>();
-		for (CustomStructureResource structureGens : this.settings.customStructures) {
-			List<String> customStructureNames = new ArrayList<>(structureGens.objectNames);
+		for (ICustomStructureGen structureGens : this.getResourceSettings().getCustomStructures()) {
+			List<String> customStructureNames = Arrays.asList(structureGens.getObjectNames());
 			customStructureNamesByGen.add(customStructureNames);
 		}
 		return customStructureNamesByGen;
@@ -237,194 +164,45 @@ public class BiomeConfig extends BiomeSettings
 
 	@Override
 	public boolean getIsTemplateForBiome() {
-		return this.settings.isTemplateForBiome;
+		return this.getIdentitySettings().isTemplateForBiome();
 	}
 
 	@Override
 	public List<String> getBiomeDictTags() {
-		return this.settings.biomeDictTags;
+		return this.getIdentitySettings().getBiomeDictTags();
 	}
 
 	@Override
 	public double getCHCData(int y) {
-		return this.settings.chcData[y];
+		return this.getTerrainSettings().getCustomHeightControl()[y];
 	}
 
 
 	@Override
 	public boolean biomeConfigsHaveReplacement() {
-		return this.settings.presetConfig.isBiomeConfigsHaveReplacement();
+		return this.parent.isBiomeConfigsHaveReplacement();
 	}
-
-
 
 	@Override
 	public ISaplingSpawner getSaplingGen(SaplingType type) {
-		SaplingResource gen = this.settings.saplingGrowers.get(type);
+		ISaplingSpawner gen = this.resourceSettings.getSaplingGrowers().get(type);
 		if (gen == null && type.growsTree()) {
-			gen = this.settings.saplingGrowers.get(SaplingType.All);
+			gen = this.resourceSettings.getSaplingGrowers().get(SaplingType.All);
 		}
 		return gen;
-	}
-	static class SettingsContainer {
-		// Misc
-		protected boolean replacedBlocksInited = false;
-
-		// TODO: Ideally, don't contain presetConfig within biomeconfig,
-		// use a parent object that holds both, like a worldgenregion.
-		protected PresetConfig presetConfig;
-
-		// Identity
-
-		protected boolean isTemplateForBiome;
-		protected TemplateBiomeType templateBiomeType;
-		protected String biomeCategory;
-
-		// Inheritance
-
-		protected List<String> biomeDictTags;
-
-		// Placement
-
-		protected int biomeSize;
-		protected int biomeRarity;
-		protected int biomeColor;
-		protected List<String> isleInBiome;
-		protected int biomeSizeWhenIsle;
-		protected int biomeRarityWhenIsle;
-		protected List<String> biomeIsBorder;
-		protected List<String> onlyBorderNear;
-		protected List<String> notBorderNear;
-		protected int biomeSizeWhenBorder;
-
-		// Height / volatility
-
-		protected float biomeHeight;
-		protected float biomeVolatility;
-		protected int smoothRadius;
-		protected int CHCSmoothRadius;
-		protected double maxAverageHeight;
-		protected double maxAverageDepth;
-		protected double volatility1;
-		protected double volatility2;
-		protected double volatilityWeight1;
-		protected double volatilityWeight2;
-		protected boolean disableBiomeHeight;
-		protected double[] chcData;
-
-		// Rivers
-
-		protected String riverBiome;
-
-		// Blocks
-
-		protected LocalMaterialData stoneBlock;
-		protected LocalMaterialData surfaceBlock;
-		protected LocalMaterialData underWaterSurfaceBlock;
-		protected LocalMaterialData groundBlock;
-		protected LocalMaterialData sandStoneBlock;
-		protected LocalMaterialData redSandStoneBlock;
-		protected ISurfaceGenerator surfaceAndGroundControl;
-		protected ReplaceBlockMatrix replacedBlocks;
-
-		// Water / lava / freezing
-
-		protected boolean useWorldWaterLevel;
-		protected int waterLevelMax;
-		protected int waterLevelMin;
-		protected LocalMaterialData waterBlock;
-		protected LocalMaterialData iceBlock;
-		protected LocalMaterialData packedIceBlock;
-		protected LocalMaterialData snowBlock;
-		protected LocalMaterialData cooledLavaBlock;
-
-		// Visuals and weather
-
-		protected float biomeTemperature;
-		protected boolean useFrozenOceanTemperature;
-		protected float biomeWetness;
-		protected Color grassColor;
-		protected ColorSet grassColorControl;
-		protected GrassColorModifier grassColorModifier;
-		protected Color foliageColor;
-		protected ColorSet foliageColorControl;
-		protected Color skyColor;
-		protected Color waterColor;
-		protected ColorSet waterColorControl;
-		protected Color fogColor;
-		protected float fogDensity;
-		protected Color waterFogColor;
-		protected String particleType;
-		protected float particleProbability;
-
-		// Music and sounds
-
-		protected String music;
-		protected int musicMinDelay;
-		protected int musicMaxDelay;
-		protected boolean replaceCurrentMusic;
-		protected String ambientSound;
-		protected String moodSound;
-		protected int moodSoundDelay;
-		protected int moodSearchRange;
-		protected double moodOffset;
-		protected String additionsSound;
-		protected double additionsTickChance;
-
-		// Custom structures
-
-		protected List<CustomStructureResource> customStructures = new ArrayList<>(); // Used as a cache for fast querying, not saved
-		protected boolean strongholdsEnabled;
-
-		// Vanilla structures
-		protected boolean oceanMonumentsEnabled;
-		protected boolean woodLandMansionsEnabled;
-		protected boolean netherFortressesEnabled;
-		protected int villageSize;
-		protected VillageType villageType;
-		protected RareBuildingType rareBuildingType;
-		protected MineshaftType mineshaftType = MineshaftType.normal;
-		protected boolean buriedTreasureEnabled;
-		protected boolean shipWreckEnabled;
-		protected boolean shipWreckBeachedEnabled;
-		protected boolean pillagerOutpostEnabled;
-		protected boolean bastionRemnantEnabled;
-		protected boolean netherFossilEnabled;
-		protected boolean endCityEnabled;
-		protected float mineshaftProbability;
-		protected RuinedPortalType ruinedPortalType;
-		protected OceanRuinsType oceanRuinsType;
-		protected float oceanRuinsLargeProbability;
-		protected float oceanRuinsClusterProbability;
-		protected float buriedTreasureProbability;
-		protected int pillagerOutpostSize;
-		protected int bastionRemnantSize;
-		protected List<WeightedMobSpawnGroup> spawnMonstersMerged = new ArrayList<>();
-
-		// Mob spawning
-		protected List<WeightedMobSpawnGroup> spawnCreaturesMerged = new ArrayList<>();
-		protected List<WeightedMobSpawnGroup> spawnWaterCreaturesMerged = new ArrayList<>();
-		protected List<WeightedMobSpawnGroup> spawnAmbientCreaturesMerged = new ArrayList<>();
-		protected List<WeightedMobSpawnGroup> spawnWaterAmbientCreaturesMerged = new ArrayList<>();
-		protected List<WeightedMobSpawnGroup> spawnMiscCreaturesMerged = new ArrayList<>();
-		protected String inheritMobsBiomeName;
-		protected List<ConfigFunction<BiomeSettings>> resourceQueue = new ArrayList<>();
-
-		// Resources
-		protected Map<SaplingType, SaplingResource> saplingGrowers = new EnumMap<>(SaplingType.class);
-
-		// Saplings
-		protected Map<LocalMaterialData, SaplingResource> customSaplingGrowers = new HashMap<>();
-		protected Map<LocalMaterialData, SaplingResource> customBigSaplingGrowers = new HashMap<>();
 	}
 
 	public ISaplingSpawner getCustomSaplingGen(LocalMaterialData materialData, boolean wideTrunk) {
 		if (wideTrunk) {
-			ISaplingSpawner spawner = this.settings.customBigSaplingGrowers.get(materialData);
+			ISaplingSpawner spawner = this.resourceSettings.getCustomBigSaplingGrowers().get(materialData);
 			if (spawner != null) {
 				return spawner;
 			}
 		}
-		return this.settings.customSaplingGrowers.get(materialData);
+		return this.resourceSettings.getCustomSaplingGrowers().get(materialData);
+	}
+
+	public OTGBiomeID getOTGBiomeID() {
+		return this.otgBiomeID;
 	}
 }

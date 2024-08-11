@@ -10,7 +10,6 @@ import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.interfaces.ICachedBiomeProvider;
 import com.pg85.otg.interfaces.ILayerSource;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.FifoMap;
 import com.pg85.otg.util.helpers.MathHelper;
@@ -24,10 +23,8 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 {
 	static int cacheHits = 0;
 	static int smallCacheHits = 0;
-	@SuppressWarnings("unused")
-	private final ILogger logger;
-	
-	private final long seed;
+
+    private final long seed;
 	private final ILayerSource biomeProvider;
 	private final IBiome[] biomesById;
 	
@@ -40,12 +37,11 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 	private final Object noiseLock = new Object();
 	private final FifoMap<ChunkCoordinate, BiomeSettings[]> noiseBiomeConfigsCache = new FifoMap<>(1024);
 
-	public CachedBiomeProvider(long seed, ILayerSource biomeProvider, IBiome[] biomesById, ILogger logger)
+	public CachedBiomeProvider(long seed, ILayerSource biomeProvider, IBiome[] biomesById)
 	{
 		this.seed = seed;
 		this.biomeProvider = biomeProvider;
 		this.biomesById = biomesById;
-		this.logger = logger;
 	}
 
 	// Used by any method that can preemptively request a chunk of biomeconfigs,
@@ -73,7 +69,7 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 						biomeId = BiomeInterpolator.getId(this.seed, x + chunkCoord.getBlockX(), 0, z + chunkCoord.getBlockZ(), this.biomeProvider);
 						biome = this.biomesById[biomeId];
 						biomes[x * Constants.CHUNK_SIZE + z] = biome;
-						biomeConfigs[x * Constants.CHUNK_SIZE + z] = biome.getBiomeConfig();
+						biomeConfigs[x * Constants.CHUNK_SIZE + z] = biome.getBiomeSettings();
 					}
 				}
 				this.biomesCache.put(chunkCoord, biomes);
@@ -111,7 +107,7 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 						biomeId = BiomeInterpolator.getId(this.seed,  x + chunkCoord.getBlockX(), 0, z + chunkCoord.getBlockZ(), this.biomeProvider);
 						biome = this.biomesById[biomeId];
 						biomes[x * Constants.CHUNK_SIZE + z] = biome;
-						biomeConfigs[x * Constants.CHUNK_SIZE + z] = biome.getBiomeConfig();
+						biomeConfigs[x * Constants.CHUNK_SIZE + z] = biome.getBiomeSettings();
 					}
 				}
 				this.biomesCache.put(chunkCoord, biomes);
@@ -178,7 +174,7 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 			}
 			// TODO: Technically, we should be providing the hashed seed here. Perhaps this may work for the time being?
 			int biomeId = BiomeInterpolator.getId(this.seed,  x, 0, z, this.biomeProvider);
-			return this.biomesById[biomeId].getBiomeConfig();
+			return this.biomesById[biomeId].getBiomeSettings();
 		} else {
 			smallCacheHits++;
 			//logger.log(LogLevel.INFO, LogCategory.MAIN, "Small cache hit " + cacheHits);
@@ -192,7 +188,7 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 	@Override
 	public BiomeSettings getBiomeConfig(int x, int z)
 	{
-		return getBiome(x, z).getBiomeConfig();
+		return getBiome(x, z).getBiomeSettings();
 	}	
 	
 	@Override
@@ -274,7 +270,7 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 				{
 					// TODO: Technically, we should be providing the hashed seed here. Perhaps this may work for the time being?
 					biome = this.biomesById[this.biomeProvider.getSampler().sample((regionTohandle.getChunkX() << 3) + x, (regionTohandle.getChunkZ() << 3) + z)];
-					region[(x << 3) + z] = biome.getBiomeConfig();
+					region[(x << 3) + z] = biome.getBiomeSettings();
 					
 					// TODO: Abort and don't cache region if requested area is smaller than 8x8?
 					cacheX = ((regionTohandle.getChunkX() - regionStartX) << 3) + x - cacheOffsetX;
@@ -284,7 +280,7 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 						cacheZ < widthHeight && cacheZ >= 0
 					)
 					{
-						biomeConfigs[cacheX * widthHeight + cacheZ] = biome.getBiomeConfig();
+						biomeConfigs[cacheX * widthHeight + cacheZ] = biome.getBiomeSettings();
 					}
 				}
 			}
@@ -300,7 +296,7 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 	@Override
 	public BiomeSettings getNoiseBiomeConfig(int noiseX, int noiseZ, boolean cacheChunk)
 	{
-		return getNoiseBiome(noiseX, noiseZ, cacheChunk).getBiomeConfig();
+		return getNoiseBiome(noiseX, noiseZ, cacheChunk).getBiomeSettings();
 	}
 
 	@Override

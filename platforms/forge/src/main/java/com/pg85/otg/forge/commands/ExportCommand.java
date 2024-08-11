@@ -224,7 +224,7 @@ public class ExportCommand extends BaseCommand
 
 			// Initialize the settings
 			if (!template.onEnable(preset.getFolderName(), OTG.getEngine().getOTGRootFolder(), OTG.getEngine().getLogger(),
-				OTG.getEngine().getCustomObjectManager(), OTG.getEngine().getPresetLoader().getMaterialReader(preset.getFolderName()),
+				OTG.getEngine().getCustomObjectManager(), OTG.getEngine().getPresetLoader().getMaterialReader(),
 				OTG.getEngine().getCustomObjectResourcesManager(), OTG.getEngine().getModLoadedChecker()))
 			{
 				source.sendSuccess(new StringTextComponent("Failed to load template \"" + templateName + "\""), false);
@@ -258,7 +258,7 @@ public class ExportCommand extends BaseCommand
 						OTG.getEngine().getOTGRootFolder(),
 						OTG.getEngine().getLogger(),
 						OTG.getEngine().getCustomObjectManager(),
-						OTG.getEngine().getPresetLoader().getMaterialReader(preset.getFolderName()),
+						OTG.getEngine().getPresetLoader().getMaterialReader(),
 						OTG.getEngine().getCustomObjectResourcesManager(),
 						OTG.getEngine().getModLoadedChecker(),
 						excludes
@@ -283,7 +283,7 @@ public class ExportCommand extends BaseCommand
 						OTG.getEngine().getOTGRootFolder(),
 						OTG.getEngine().getLogger(),
 						OTG.getEngine().getCustomObjectManager(),
-						OTG.getEngine().getPresetLoader().getMaterialReader(preset.getFolderName()),
+						OTG.getEngine().getPresetLoader().getMaterialReader(),
 						OTG.getEngine().getCustomObjectResourcesManager(),
 						OTG.getEngine().getModLoadedChecker()
 				);

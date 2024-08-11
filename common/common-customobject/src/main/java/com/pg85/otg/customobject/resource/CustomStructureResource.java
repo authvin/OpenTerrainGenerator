@@ -14,10 +14,12 @@ import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IStructuredCustomObject;
+import lombok.Getter;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class CustomStructureResource extends BiomeResourceBase implements ICustomStructureResource, ICustomStructureGen
 {
@@ -48,7 +50,17 @@ public class CustomStructureResource extends BiomeResourceBase implements ICusto
 	{
 		return this.objectNames.size() < i + 1 ? null : this.objectNames.get(i);
 	}
-	
+
+	@Override
+	public String[] getObjectNames() {
+		return objectNames.toArray(new String[0]);
+	}
+
+	@Override
+	public Double[] getObjectChances() {
+		return objectChances.toArray(new Double[0]);
+	}
+
 	@Override
 	public boolean isEmpty()
 	{

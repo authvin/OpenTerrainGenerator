@@ -95,6 +95,12 @@ public class PresetConfig extends PresetSettings {
         reader.renameOldSetting("DimensionPortalMaterials", PortalSettings.PORTAL_BLOCKS);
         reader.renameOldSetting("ShortPresetName", PresetInfo.REGISTRY_NAME);
     }
+
+    @Override
+    public Path getConfigPath() {
+        return null;
+    }
+
     @Override
     public void writeConfigSettings(SettingsMap writer) {
         PresetWriter.writePresetConfig(this, writer);

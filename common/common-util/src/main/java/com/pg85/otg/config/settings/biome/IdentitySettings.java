@@ -64,11 +64,11 @@ public class IdentitySettings extends ConfigSection {
             "TemplateForBiome biomes inherit these from the targeted biomes."
     );
 
-    public static IdentitySettings buildIdentitySettings(SettingsMap reader, String biomeName) {
+    public static IdentitySettings buildIdentitySettings(SettingsMap reader) {
         IdentitySettingsBuilder builder = IdentitySettings.builder();
 
         builder.biomeCategory(reader.getSetting(BIOME_CATEGORY));
-        builder.biomeName(biomeName);
+        builder.biomeName(reader.getName());
         builder.isTemplateForBiome(reader.getSetting(IS_TEMPLATE_FOR_BIOME));
         builder.templateBiomeType(reader.getSetting(TEMPLATE_BIOME_TYPE));
         builder.biomeDictTags(reader.getSetting(BIOME_DICT_TAGS));

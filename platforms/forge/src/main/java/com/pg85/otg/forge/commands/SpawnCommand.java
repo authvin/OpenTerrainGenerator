@@ -158,7 +158,7 @@ public class SpawnCommand extends BaseCommand
         				OTG.getEngine().getOTGRootFolder(), 
         				OTG.getEngine().getLogger(), 
         				OTG.getEngine().getCustomObjectManager(), 
-        				OTG.getEngine().getPresetLoader().getMaterialReader(preset.getFolderName()), 
+        				OTG.getEngine().getPresetLoader().getMaterialReader(),
         				OTG.getEngine().getCustomObjectResourcesManager(), 
         				null, 
         				genRegion, 
@@ -221,7 +221,7 @@ public class SpawnCommand extends BaseCommand
 	                            			OTG.getEngine().getOTGRootFolder(),
 	                            			OTG.getEngine().getLogger(), 
 	                            			OTG.getEngine().getCustomObjectManager(), 
-	                            			OTG.getEngine().getPresetLoader().getMaterialReader(preset.getFolderName()), 
+	                            			OTG.getEngine().getPresetLoader().getMaterialReader(),
 	                            			OTG.getEngine().getCustomObjectResourcesManager(), 
 	                            			OTG.getEngine().getModLoadedChecker(), 
 	                            			force

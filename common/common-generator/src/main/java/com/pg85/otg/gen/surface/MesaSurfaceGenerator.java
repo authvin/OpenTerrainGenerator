@@ -248,7 +248,7 @@ class MesaSurfaceGenerator implements ISurfaceGenerator
 			this.generateBands(worldSeed);
 		}
 
-		BiomeSettings biomeConfig = biome.getBiomeConfig();
+		BiomeSettings biomeConfig = biome.getBiomeSettings();
 		SurfaceSettings surfaceSettings = biomeConfig.getSurfaceSettings();
 		
 		// TODO: BiomeConfig should always be the same, this layer should only be used in a single biome,
@@ -311,7 +311,7 @@ class MesaSurfaceGenerator implements ISurfaceGenerator
 		if (surfaceSettings.getBlockSettings().isCeilingBedrock())
 		{
 			// Moved one block lower to fix lighting issues
-			chunkBuffer.setBlock(x, generatingChunk.heightCap - 2, z, surfaceSettings.getBedrockBlockReplaced(generatingChunk.heightCap - 2));
+			chunkBuffer.setBlock(x, generatingChunk.getWorldHeight().getXBelowMax(2), z, surfaceSettings.getBedrockBlockReplaced(generatingChunk.getWorldHeight().getXBelowMax(2)));
 		}
 		
 		int highestBlockInColumn = chunkBuffer.getHighestBlockForColumn(x, z);

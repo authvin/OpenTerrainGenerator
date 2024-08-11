@@ -40,6 +40,7 @@ import com.pg85.otg.util.materials.LocalMaterialData;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -161,7 +162,7 @@ public final class OTGNoiseChunkGenerator extends NoiseChunkGenerator
 			this.dimConfig = null;
 		}	
 		this.shadowChunkGenerator = new ShadowChunkGenerator(OTG.getEngine().getPluginConfig().getMaxWorkerThreads());
-		this.internalGenerator = new OTGChunkGenerator(this.preset, seed, (ILayerSource) biomeProvider1,((ForgePresetLoader)OTG.getEngine().getPresetLoader()).getGlobalIdMapping(presetFolderName), OTG.getEngine().getLogger());
+		this.internalGenerator = new OTGChunkGenerator(this.preset, seed, (ILayerSource) biomeProvider1,((ForgePresetLoader)OTG.getEngine().getPresetLoader()).getGlobalIdMapping(presetFolderName));
 		this.chunkDecorator = new OTGChunkDecorator();
 	}
 	
@@ -383,7 +384,7 @@ public final class OTGNoiseChunkGenerator extends NoiseChunkGenerator
 					}
 				});
 			}
-			this.internalGenerator.populateNoise(this.preset.getPresetConfig().getTerrainSettings().getWorldHeightCap(), world.getRandom(), buffer, buffer.getChunkCoordinate(), structures, junctions);			
+			this.internalGenerator.populateNoise(, this.preset.getPresetConfig().getTerrainSettings().getWorldHeightCap(), buffer, buffer.getChunkCoordinate(), structures, junctions, world.getRandom(), );
 			this.shadowChunkGenerator.setChunkGenerated(chunkCoord);
 		}
 	}
@@ -417,11 +418,11 @@ public final class OTGNoiseChunkGenerator extends NoiseChunkGenerator
 				worldX = chunkMinX + xInChunk;
 				worldZ = chunkMinZ + zInChunk;
 				biome = biomesForChunk[xInChunk * Constants.CHUNK_SIZE + zInChunk];
-				if(biome.getBiomeConfig().getIsTemplateForBiome())
+				if(biome.getBiomeSettings().getIsTemplateForBiome())
 				{
 					i2 = chunk.getHeight(Heightmap.Type.WORLD_SURFACE_WG, xInChunk, zInChunk) + 1;
 					d1 = this.surfaceNoise.getSurfaceNoiseValue((double)worldX * 0.0625D, (double)worldZ * 0.0625D, 0.0625D, (double)xInChunk * 0.0625D) * 15.0D;
-					((ForgeBiome)biome).getBiomeBase().buildSurfaceAt(sharedseedrandom, chunk, worldX, worldZ, i2, d1, ((ForgeMaterialData)biome.getBiomeConfig().getSurfaceSettings().getStoneBlock()).internalBlock(), ((ForgeMaterialData)biome.getBiomeConfig().getSurfaceSettings().getWaterBlock()).internalBlock(), this.getSeaLevel(), worldGenRegion.getSeed());
+					((ForgeBiome)biome).getBiomeBase().buildSurfaceAt(sharedseedrandom, chunk, worldX, worldZ, i2, d1, ((ForgeMaterialData)biome.getBiomeSettings().getSurfaceSettings().getStoneBlock()).internalBlock(), ((ForgeMaterialData)biome.getBiomeSettings().getSurfaceSettings().getWaterBlock()).internalBlock(), this.getSeaLevel(), worldGenRegion.getSeed());
 				}
 			}
 		}
@@ -463,7 +464,7 @@ public final class OTGNoiseChunkGenerator extends NoiseChunkGenerator
 				ChunkPrimer protoChunk = (ChunkPrimer) chunk;
 				ChunkBuffer chunkBuffer = new ForgeChunkBuffer(protoChunk);
 				BitSet carvingMask = protoChunk.getOrCreateCarvingMask(stage);
-				this.internalGenerator.carve(chunkBuffer, seed, protoChunk.getPos().x, protoChunk.getPos().z, carvingMask, cavesEnabled, ravinesEnabled);
+				this.internalGenerator.carve(chunkBuffer, seed, carvingMask, cavesEnabled, ravinesEnabled);
 			}
 		}
 		applyNonOTGCarvers(seed, biomeManager, chunk, stage);
@@ -550,18 +551,18 @@ public final class OTGNoiseChunkGenerator extends NoiseChunkGenerator
 			 * - Frank
 			 */
 			List<Integer> alreadyDecorated = new ArrayList<>();
-			this.chunkDecorator.decorate(this.preset.getFolderName(), chunkBeingDecorated, forgeWorldGenRegion, biome.getBiomeConfig(), getStructureCache(worldSaveFolder));
+			this.chunkDecorator.decorate(chunkBeingDecorated, forgeWorldGenRegion, biome.getBiomeSettings(), getStructureCache(worldSaveFolder));
 			((ForgeBiome)biome).getBiomeBase().generate(structureManager, this, worldGenRegion, decorationSeed, sharedseedrandom, blockpos);
-			alreadyDecorated.add(biome.getBiomeConfig().getOTGBiomeId());
+			alreadyDecorated.add(biome.getBiomeSettings().getOldOTGBiomeID());
 
 			// Template biomes handle their own snow, OTG biomes use OTG snow.
 			// TODO: Snow is handled per chunk, so this may cause some artifacts on biome borders.
 			if(
-				!biome.getBiomeConfig().getIsTemplateForBiome() ||
-				!biome1.getBiomeConfig().getIsTemplateForBiome() ||
-				!biome2.getBiomeConfig().getIsTemplateForBiome() ||
-				!biome3.getBiomeConfig().getIsTemplateForBiome() ||				
-				!biome4.getBiomeConfig().getIsTemplateForBiome()
+				!biome.getBiomeSettings().getIsTemplateForBiome() ||
+				!biome1.getBiomeSettings().getIsTemplateForBiome() ||
+				!biome2.getBiomeSettings().getIsTemplateForBiome() ||
+				!biome3.getBiomeSettings().getIsTemplateForBiome() ||
+				!biome4.getBiomeSettings().getIsTemplateForBiome()
 			)
 			{
 				this.chunkDecorator.doSnowAndIce(forgeWorldGenRegion, chunkBeingDecorated);
@@ -640,8 +641,8 @@ public final class OTGNoiseChunkGenerator extends NoiseChunkGenerator
 				// Get the real y position (translate noise chunk and noise piece)
 				int y = (noiseY * 8) + pieceY;
 
-				//BlockState state = this.getBlockState(density, y, biomeConfig);
-				BlockState state = this.generateBaseState(density, y);
+				BlockState state = this.getBlockState(density, y, biomeConfig);
+
 				if (blockStates != null)
 				{
 					blockStates[y] = state;
@@ -658,6 +659,20 @@ public final class OTGNoiseChunkGenerator extends NoiseChunkGenerator
 		return 0;
 	}
 
+
+	private BlockState getBlockState(double density, int y)
+	{
+		if (density > 0.0D)
+		{
+			return this.defaultBlock;
+		}
+		else if (y < this.getSeaLevel())
+		{
+			return this.defaultFluid;
+		} else {
+			return Blocks.AIR.getBlockData();
+		}
+	}
 	// Getters / misc
 
 	@Override
@@ -741,7 +756,7 @@ public final class OTGNoiseChunkGenerator extends NoiseChunkGenerator
 			this.portalDataProcessed = true;
 			if(this.dimConfig != null)
 			{
-				IMaterialReader materialReader = OTG.getEngine().getPresetLoader().getMaterialReader(this.preset.getFolderName());
+				IMaterialReader materialReader = OTG.getEngine().getPresetLoader().getMaterialReader();
 				for(OTGDimension dim : this.dimConfig.Dimensions)
 				{
 					if(dim.PresetFolderName != null && this.preset.getFolderName().equals(dim.PresetFolderName))

@@ -1,7 +1,7 @@
 package com.pg85.otg.config.io;
 
 import com.pg85.otg.constants.settings.ConfigMode;
-import com.pg85.otg.interfaces.ILogger;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 
@@ -30,12 +30,12 @@ public final class FileSettingsWriter
 	 * Writes the configuration settings to the given file. If writing fails,
 	 * the error is logged.
 	 *
-	 * @param config	 The configuration to write to disk.
-	 * @param file		The file to write to.
+	 * @param config     The configuration to write to disk.
+	 * @param file       The file to write to.
 	 * @param configMode The configuration mode. If this is set to
-	 * WriteDisable, this method does nothing.
+	 *                   WriteDisable, this method does nothing.
 	 */
-	public static void writeToFile(SettingsMap config, File file, ConfigMode configMode, ILogger logger)
+	public static void writeToFile(SettingsMap config, File file, ConfigMode configMode)
 	{
 		if (configMode == ConfigMode.WriteDisable)
 		{
@@ -50,7 +50,7 @@ public final class FileSettingsWriter
 		}
 		catch (IOException e)
 		{
-			logger.log(
+			OTGLog.getLogger().log(
 				LogLevel.ERROR,
 				LogCategory.CONFIGS,
 				String.format("Failed to write to file " + file + ", error: ",(Object[])e.getStackTrace())

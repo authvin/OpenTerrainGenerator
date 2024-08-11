@@ -30,6 +30,6 @@ public class DecorationBiomeCache
 
 	public BiomeSettings getBiomeConfig(int x, int z)
 	{
-		return getBiome(x, z).getBiomeConfig();
+		return getBiome(x, z).getBiomeSettings();
 	}
 }

@@ -175,7 +175,7 @@ public class ShadowChunkGenerator
 		ObjectList<JigsawStructureData> structures = new ObjectArrayList<>(10);
 		ObjectList<JigsawStructureData> junctions = new ObjectArrayList<>(32);
 
-		otgChunkGenerator.populateNoise(worldHeightCap, random, buffer, buffer.getChunkCoordinate(), structures, junctions);
+		otgChunkGenerator.populateNoise(, worldHeightCap, buffer, buffer.getChunkCoordinate(), structures, junctions, random, );
 		return buffer;
 	}
 

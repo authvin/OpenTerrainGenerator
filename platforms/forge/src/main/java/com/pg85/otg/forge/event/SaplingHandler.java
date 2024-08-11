@@ -65,7 +65,7 @@ public class SaplingHandler
 		ILogger logger = OTG.getEngine().getLogger();
 		Path otgRootFolder = OTG.getEngine().getOTGRootFolder();
 		IModLoadedChecker modLoadedChecker = OTG.getEngine().getModLoadedChecker();		
-		IMaterialReader materialReader = OTG.getEngine().getPresetLoader().getMaterialReader(preset.getFolderName());
+		IMaterialReader materialReader = OTG.getEngine().getPresetLoader().getMaterialReader();
 
         BiomeSettings biomeConfig = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(blockPos.getX(), blockPos.getZ());
         ForgeMaterialData material = (ForgeMaterialData)worldGenRegion.getMaterial(blockPos.getX(), blockPos.getY(), blockPos.getZ());
@@ -188,7 +188,7 @@ public class SaplingHandler
 		ILogger logger = OTG.getEngine().getLogger();
 		Path otgRootFolder = OTG.getEngine().getOTGRootFolder();
 		IModLoadedChecker modLoadedChecker = OTG.getEngine().getModLoadedChecker();		
-		IMaterialReader materialReader = OTG.getEngine().getPresetLoader().getMaterialReader(preset.getFolderName());		
+		IMaterialReader materialReader = OTG.getEngine().getPresetLoader().getMaterialReader();
 		
         BiomeSettings biomeConfig = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(blockPos.getX(), blockPos.getZ());
 

@@ -9,6 +9,7 @@ import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 import com.pg85.otg.util.minecraft.BiomeRegistryNames;
+import lombok.Getter;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -22,13 +23,31 @@ import java.util.*;
  */
 public final class BiomeGroupFunction extends ConfigFunction<PresetSettings>
 {
-	private int groupId;
-	private String name;
-	private int groupRarity;
-	private int generationDepth = 0;
+    /**
+     * -- GETTER --
+     *  Gets the numerical id for this group. Group ids are sequential and
+     *  based on the order they are placed in the configuration files.
+     *
+     * @return The numerical id.
+     */
+    @Getter
+    private int groupId;
+    /**
+     * -- GETTER --
+     *  Gets the name of this biome group.
+     *
+     * @return The name.
+     */
+    @Getter
+    private String name;
+	@Getter
+    private int groupRarity;
+	@Getter
+    private int generationDepth = 0;
 	private double minTemp = 0;
 	private double maxTemp = 0;
-	private final List<String> biomes = new ArrayList<String>();
+	@Getter
+    private final List<String> biomes = new ArrayList<String>();
 
 	/**
 	 * Loads the biome group using the provided settings.
@@ -79,19 +98,11 @@ public final class BiomeGroupFunction extends ConfigFunction<PresetSettings>
 		this.generationDepth = size;
 		this.groupRarity = rarity;
 		this.minTemp = 0;
-		this.maxTemp = 0;		
-		for (String biome : biomes)
-		{
-			this.biomes.add(biome);
-		}
+		this.maxTemp = 0;
+        this.biomes.addAll(biomes);
 	}
 
-	public List<String> getBiomes()
-	{
-		return this.biomes;
-	}
-
-	public boolean temperatureAllowed(float baseTemperature)
+    public boolean temperatureAllowed(float baseTemperature)
 	{
 		if(this.minTemp != 0 || this.maxTemp != 0)
 		{
@@ -119,16 +130,7 @@ public final class BiomeGroupFunction extends ConfigFunction<PresetSettings>
 		return new ArrayList<String>(strings.subList(start, strings.size()));
 	}
 
-	/**
-	 * Gets the name of this biome group.
-	 * @return The name.
-	 */
-	public String getName()
-	{
-		return name;
-	}
-
-	/**
+    /**
 	 * Filters the biomes in this group, removing all biomes that have an
 	 * unrecognized name.
 	 *
@@ -139,7 +141,7 @@ public final class BiomeGroupFunction extends ConfigFunction<PresetSettings>
 		for (Iterator<String> it = this.biomes.iterator(); it.hasNext();)
 		{
 			String biomeName = it.next();
-			if(biomeName != null && biomeName.trim().length() > 0)
+			if(biomeName != null && !biomeName.trim().isEmpty())
 			{
 				if (
 					BiomeRegistryNames.Contain(biomeName) || 
@@ -195,27 +197,7 @@ public final class BiomeGroupFunction extends ConfigFunction<PresetSettings>
 		this.groupId = groupId;
 	}
 
-	/**
-	 * Gets the numerical id for this group. Group ids are sequential and
-	 * based on the order they are placed in the configuration files.
-	 * @return The numerical id.
-	 */
-	public int getGroupId()
-	{
-		return this.groupId;
-	}
-
-	public int getGroupRarity()
-	{
-		return groupRarity;
-	}
-
-	public int getGenerationDepth()
-	{
-		return generationDepth;
-	}
-
-	/**
+    /**
 	 * Gets whether this group has any biomes.
 	 * @return True if the group has no biomes and is thus empty, false
 	 * if the group has biomes.

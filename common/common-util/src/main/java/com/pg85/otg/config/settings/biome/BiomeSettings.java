@@ -50,7 +50,7 @@ public abstract class BiomeSettings implements ConfigFile {
 
     abstract public void setRegistryKey(IBiomeResourceLocation registryKey);
 
-    abstract public int getOTGBiomeId();
+    abstract public int getOldOTGBiomeID();
 
     abstract public void setOTGBiomeId(int id);
 
@@ -85,7 +85,7 @@ public abstract class BiomeSettings implements ConfigFile {
 
     // Misc
 
-    abstract public BiomeSettings createTemplateBiome();
+    //abstract public BiomeSettings createTemplateBiome();
 
     abstract public List<ConfigFunction<BiomeSettings>> getResourceQueue();
 }

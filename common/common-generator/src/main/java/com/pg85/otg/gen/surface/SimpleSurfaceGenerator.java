@@ -35,7 +35,7 @@ public class SimpleSurfaceGenerator implements ISurfaceGenerator
 	{
 		int internalX = xInWorld & 0xf;
 		int internalZ = zInWorld & 0xf;
-		SurfaceSettings surfaceSettings = biome.getBiomeConfig().getSurfaceSettings();
+		SurfaceSettings surfaceSettings = biome.getBiomeSettings().getSurfaceSettings();
 		// Used to create a variable depth ground layer per column
 		int biomeBlocksNoise = (int) (generatingChunk.getNoise(internalX, internalZ) / 3.0D + 3.0D + generatingChunk.random.nextDouble() * 0.25D);
 
@@ -43,7 +43,7 @@ public class SimpleSurfaceGenerator implements ISurfaceGenerator
 		if (surfaceSettings.getBlockSettings().isCeilingBedrock())
 		{
 			// Moved one block lower to fix lighting issues
-			chunkBuffer.setBlock(internalX, generatingChunk.heightCap - 2, internalZ, surfaceSettings.getBedrockBlockReplaced(generatingChunk.heightCap - 2));
+			chunkBuffer.setBlock(internalX, generatingChunk.getWorldHeight().getXBelowMax(2), internalZ, surfaceSettings.getBedrockBlockReplaced(generatingChunk.getWorldHeight().getXBelowMax(2)));
 		}
 
 		// Traverse down the block column to place bedrock, ground and surface blocks

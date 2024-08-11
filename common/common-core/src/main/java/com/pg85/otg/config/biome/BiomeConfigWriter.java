@@ -12,7 +12,7 @@ import com.pg85.otg.util.minecraft.SaplingType;
 
 public class BiomeConfigWriter {
     public static void writeConfigSettings(BiomeConfig biomeConfig, SettingsMap writer) {
-        boolean isTemplateBiome = biomeConfig.settings.isTemplateForBiome;
+        boolean isTemplateBiome = biomeConfig.getIdentitySettings().isTemplateForBiome();
 
         writer.header1("Biome Identity");
 

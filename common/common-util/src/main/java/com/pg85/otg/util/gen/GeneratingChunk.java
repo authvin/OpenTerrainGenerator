@@ -2,6 +2,7 @@ package com.pg85.otg.util.gen;
 
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.util.ChunkCoordinate;
+import lombok.Getter;
 
 import java.util.Random;
 
@@ -13,18 +14,18 @@ public final class GeneratingChunk
 {
 
 	private static final int BEDROCK_LAYER_HEIGHT = 5;
-
-	public final int heightCap;
+	@Getter
+	private final WorldHeight worldHeight;
 	public final Random random;
 	private final int[] waterLevel;
 	private final double[] surfaceNoise;
 
-	public GeneratingChunk(Random random, int[] waterLevel, double[] surfaceNoise, int heightCap)
+	public GeneratingChunk(Random random, int[] waterLevel, double[] surfaceNoise, WorldHeight worldHeight)
 	{
 		this.random = random;
 		this.waterLevel = waterLevel;
 		this.surfaceNoise = surfaceNoise;
-		this.heightCap = heightCap;
+		this.worldHeight = worldHeight;
 	}
 
 	/**
@@ -68,25 +69,21 @@ public final class GeneratingChunk
 		// Handle flat bedrock
 		if (flatBedrock)
 		{
-			if (!disableBedrock && y == 0)
+			if (!disableBedrock && y <= worldHeight.getXAboveMin(1))
 			{
 				return true;
 			}
-			if (ceilingBedrock && y >= this.heightCap - 1)
-			{
-				return true;
-			}
-			return false;
-		}
+            return ceilingBedrock && y >= worldHeight.getXBelowMax(1);
+        }
 
 		// Otherwise we have normal bedrock
-		if (!disableBedrock && y < 5)
+		if (!disableBedrock && y < worldHeight.getXAboveMin(BEDROCK_LAYER_HEIGHT))
 		{
-			return y <= this.random.nextInt(BEDROCK_LAYER_HEIGHT);
+			return y <= worldHeight.getXAboveMin(BEDROCK_LAYER_HEIGHT, random);
 		}
-		if (ceilingBedrock)
+		if (ceilingBedrock && y > worldHeight.getXBelowMax(BEDROCK_LAYER_HEIGHT) && y < worldHeight.getMaxY())
 		{
-			int amountBelowHeightCap = this.heightCap - y - 1;
+			int amountBelowHeightCap = worldHeight.getXBelowMax(y + 1);
 			if (amountBelowHeightCap < 0 || amountBelowHeightCap > BEDROCK_LAYER_HEIGHT)
 			{
 				return false;

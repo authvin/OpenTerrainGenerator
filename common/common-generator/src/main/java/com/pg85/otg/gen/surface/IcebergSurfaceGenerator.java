@@ -41,14 +41,14 @@ public class IcebergSurfaceGenerator extends MultipleLayersSurfaceGenerator
 		}
 
 		Random random = generatingChunk.random;
-		BiomeSettings biomeConfig = biome.getBiomeConfig();
+		BiomeSettings biomeConfig = biome.getBiomeSettings();
 		SurfaceSettings surfaceSettings = biomeConfig.getSurfaceSettings();
 
 		// Bedrock on the ceiling
 		if (surfaceSettings.getBlockSettings().isCeilingBedrock())
 		{
 			// Moved one block lower to fix lighting issues
-			chunkBuffer.setBlock(internalX, generatingChunk.heightCap - 2, internalZ, surfaceSettings.getBedrockBlockReplaced(generatingChunk.heightCap - 2));
+			chunkBuffer.setBlock(internalX, generatingChunk.getWorldHeight().getXBelowMax(2), internalZ, surfaceSettings.getBedrockBlockReplaced(generatingChunk.getWorldHeight().getXBelowMax(2)));
 		}
 
 		double icebergHeight = 0;

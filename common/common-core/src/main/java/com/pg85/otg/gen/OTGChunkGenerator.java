@@ -25,10 +25,7 @@ import com.pg85.otg.presets.Preset;
 import com.pg85.otg.config.settings.biome.BiomeTerrainSettings;
 import com.pg85.otg.config.settings.preset.TerrainSettings;
 import com.pg85.otg.util.ChunkCoordinate;
-import com.pg85.otg.util.gen.ChunkBuffer;
-import com.pg85.otg.util.gen.DecorationArea;
-import com.pg85.otg.util.gen.GeneratingChunk;
-import com.pg85.otg.util.gen.JigsawStructureData;
+import com.pg85.otg.util.gen.*;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -101,16 +98,16 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 	private ThreadLocal<Integer> lastZ = ThreadLocal.withInitial(() -> Integer.MAX_VALUE);
 	private ThreadLocal<Double> lastNoise = ThreadLocal.withInitial(() -> 0d);
 
-	public OTGChunkGenerator(Preset preset, long seed, ILayerSource biomeProvider, IBiome[] biomesById, ILogger logger)
+	public OTGChunkGenerator(Preset preset, long seed, ILayerSource biomeProvider, IBiome[] biomesById)
 	{
 		this.preset = preset;
 		this.seed = seed;
-		this.cachedBiomeProvider = new CachedBiomeProvider(this.seed, biomeProvider, biomesById, logger);
+		this.cachedBiomeProvider = new CachedBiomeProvider(this.seed, biomeProvider, biomesById);
 
 		// Setup noises
 		Random random = new Random(seed);
 
-		this.noiseSizeY = preset.getPresetConfig().getTerrainSettings().getWorldHeightCap() / 8;
+		this.noiseSizeY = preset.getPresetConfig().getTerrainSettings().getWorldHeightCap();
 
 		this.interpolationNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-7, 0));
 		this.lowerInterpolatedNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-15, 0));
@@ -429,12 +426,11 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 
 	// Surface / ground / stone blocks / SAGC
 
-	public void populateNoise(int worldHeightCap, Random random, ChunkBuffer buffer, ChunkCoordinate chunkCoord, ObjectList<JigsawStructureData> structures, ObjectList<JigsawStructureData> junctions)
+	public void populateNoise(WorldHeight worldHeight, ChunkBuffer buffer, ChunkCoordinate chunkCoord, ObjectList<JigsawStructureData> structures, Random random)
 	{
 		ILogger logger = OTG.getEngine().getLogger();
 
 		ObjectListIterator<JigsawStructureData> structureIterator = structures.iterator();
-		ObjectListIterator<JigsawStructureData> junctionsIterator = junctions.iterator();
 
 		long startTime = System.currentTimeMillis();
 		
@@ -450,7 +446,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 			for (int z = 0; z < Constants.CHUNK_SIZE; z++)
 			{
 				// TODO: water levels used to be interpolated via bilinear interpolation. Do we still need to do that?
-				waterLevel[x * Constants.CHUNK_SIZE + z] = biomes[x * Constants.CHUNK_SIZE + z].getBiomeConfig().getSurfaceSettings().getWaterLevelMax();
+				waterLevel[x * Constants.CHUNK_SIZE + z] = biomes[x * Constants.CHUNK_SIZE + z].getBiomeSettings().getSurfaceSettings().getWaterLevelMax();
 			}
 		}
 
@@ -501,10 +497,6 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 		int structureY;
 		int structureZ;
 		JigsawStructureData structure;
-		JigsawStructureData junction;
-		int sourceX;
-		int sourceY;
-		int sourceZ;
 		double[][] xColumn;
 		for (int noiseX = 0; noiseX < this.noiseSizeX; ++noiseX)
 		{
@@ -570,14 +562,11 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 								// Normalize the noise from (-256, 256) to [-1, 1]
 								density = MathHelper.clamp(rawNoise / 200.0D, -1.0D, 1.0D);
 
-								biomeConfig = biomes[localX * 16 + localZ].getBiomeConfig();
+								biomeConfig = biomes[localX * 16 + localZ].getBiomeSettings();
 
 								// TODO: make this bigger and look better
 								// Iterate through structures to add density
-								structureX = 0;
-								structureY = 0;
-								structureZ = 0;
-								for(density = density / 2.0D - density * density * density / 24.0D; structureIterator.hasNext(); density += getNoiseWeight(structureX, structureY, structureZ) * 0.8D)
+                                for(density = density / 2.0D - density * density * density / 24.0D; structureIterator.hasNext(); density += getNoiseWeight(structureX, structureY, structureZ) * 0.8D)
 								{
 									structure = structureIterator.next();
 									structureX = Math.max(0, Math.max(structure.minX - realX, realX - structure.maxX));
@@ -585,18 +574,6 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 									structureZ = Math.max(0, Math.max(structure.minZ - realZ, realZ - structure.maxZ));
 								}
 								structureIterator.back(structures.size());
-
-								// Iterate through jigsawws to add density
-								while(junctionsIterator.hasNext())
-								{
-									junction = junctionsIterator.next();
-									sourceX = realX - junction.sourceX;
-									sourceY = realY - junction.groundY;
-									sourceZ = realZ - junction.sourceZ;
-									density += getNoiseWeight(sourceX, sourceY, sourceZ) * 0.4D;
-								}
-								junctionsIterator.back(junctions.size());
-
 								if (density > 0.0)
 								{
 									buffer.setBlock(localX, realY, localZ, biomeConfig.getSurfaceSettings().getStoneBlockReplaced(realY));
@@ -619,7 +596,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 			noiseData[1] = xColumn;
 		}
 
-		doSurfaceAndGroundControl(biomes, random, worldHeightCap, this.seed, buffer, waterLevel);
+		doSurfaceAndGroundControl(biomes, random, worldHeight, this.seed, buffer, waterLevel);
 		
 		if(logger.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
 		{
@@ -627,12 +604,15 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 		}
 	}
 
-	public void carve(ChunkBuffer chunk, long seed, int chunkX, int chunkZ, BitSet carvingMask, boolean cavesEnabled, boolean ravinesEnabled)
+	public void carve(ChunkBuffer chunk, long seed, BitSet carvingMask, boolean cavesEnabled, boolean ravinesEnabled)
 	{
 		// TODO: it should be possible to cache these carver graphs to make larger carvers more efficient and easier to use
 		if(cavesEnabled || ravinesEnabled)
 		{
 			Random random = new Random();
+			ChunkCoordinate chunkCoordinate = chunk.getChunkCoordinate();
+			int chunkX = chunkCoordinate.getChunkX();
+			int chunkZ = chunkCoordinate.getChunkZ();
 			for (int localChunkX = chunkX - 8; localChunkX <= chunkX + 8; ++localChunkX)
 			{
 				for (int localChunkZ = chunkZ - 8; localChunkZ <= chunkZ + 8; ++localChunkZ)
@@ -670,13 +650,13 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 		return noiseSizeY;
 	}
 
-	private void doSurfaceAndGroundControl(IBiome[] biomes, Random random, int heightCap, long worldSeed, ChunkBuffer chunkBuffer, int[] waterLevel)
+	private void doSurfaceAndGroundControl(IBiome[] biomes, Random random, WorldHeight worldHeight, long worldSeed, ChunkBuffer chunkBuffer, int[] waterLevel)
 	{
 		// Process surface and ground blocks for each column in the chunk
 		ChunkCoordinate chunkCoord = chunkBuffer.getChunkCoordinate();		
 		double d1 = 0.03125D;
 		this.biomeBlocksNoise.set(this.biomeBlocksNoiseGen.getRegion(this.biomeBlocksNoise.get(), chunkCoord.getBlockX(), chunkCoord.getBlockZ(), Constants.CHUNK_SIZE, Constants.CHUNK_SIZE, d1 * 2.0D, d1 * 2.0D, 1.0D));
-		GeneratingChunk generatingChunk = new GeneratingChunk(random, waterLevel, this.biomeBlocksNoise.get(), heightCap);
+		GeneratingChunk generatingChunk = new GeneratingChunk(random, waterLevel, this.biomeBlocksNoise.get(), worldHeight);
 		IBiome biome;
 		for (int x = 0; x < Constants.CHUNK_SIZE; x++)
 		{
@@ -684,7 +664,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 			{
 				// Get the current biome config and some properties
 				biome = biomes[x * Constants.CHUNK_SIZE + z];
-				biome.getBiomeConfig().getSurfaceSettings().doSurfaceAndGroundControl(worldSeed, generatingChunk, chunkBuffer, chunkCoord.getBlockX() + x, chunkCoord.getBlockZ() + z, biome);
+				biome.getBiomeSettings().getSurfaceSettings().doSurfaceAndGroundControl(worldSeed, generatingChunk, chunkBuffer, chunkCoord.getBlockX() + x, chunkCoord.getBlockZ() + z, biome);
 			}
 		}
 	}

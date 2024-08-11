@@ -2,11 +2,11 @@ package com.pg85.otg.config;
 
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.io.SimpleSettingsMap;
-import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.minecraft.BiomeRegistryNames;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,14 +18,25 @@ import java.util.List;
  */
 public interface ConfigFile
 {
+	/**
+	 * Gets the name of this config file. For biomes, this is the biome name, for presets it's the preset folder name, etc.
+	 * @return The name of this config file.
+	 */
 	String getConfigName();
+
+	/**
+	 * Gets the path of this config file. For biomes, this is the path to the biome file, for presets it's the path to the preset file, etc.
+	 * @return The path of this config file.
+	 */
+	Path getConfigPath();
+
 	/**
 	 * Gets all settings of this config file.
 	 * @return All settings.
 	 */
 	default SettingsMap getSettingsAsMap()
 	{
-		SettingsMap settingsMap = new SimpleSettingsMap(getConfigName());
+		SettingsMap settingsMap = new SimpleSettingsMap(getConfigName(), getConfigPath());
 		writeConfigSettings(settingsMap);
 		return settingsMap;
 	}

@@ -29,9 +29,9 @@ public class Preset {
     // BiomeGen and ChunkGen cache some settings during a session, so they'll only update on world exit/rejoin.
     @Getter
     private PresetSettings presetConfig;
-    private HashMap<String, BiomeSettings> biomeConfigs = new HashMap<>();
+    private HashMap<OTGBiomeID, BiomeConfig> biomeConfigs = new HashMap<>();
 
-    private HashSet<OTGBiomeID> biomeIDS = new HashSet<>();
+    private final HashSet<OTGBiomeID> biomeIDS = new HashSet<>();
     @Getter
     private int majorVersion;
     @Getter
@@ -53,7 +53,8 @@ public class Preset {
         this.majorVersion = presetConfig.getPresetInfo().getMajorVersion();
 
         for (BiomeConfig biomeConfig : biomeConfigs) {
-            this.biomeConfigs.put(biomeId, biomeConfig);
+            this.biomeConfigs.put(biomeConfig.getOTGBiomeID(), biomeConfig);
+            biomeIDS.add(biomeConfig.getOTGBiomeID());
         }
     }
 
@@ -90,18 +91,18 @@ public class Preset {
 
     public OTGBiomeID getBiomeIDByRegistryName(String registryName) {
         for (OTGBiomeID biomeID : this.biomeIDS) {
-            if (biomeID.registryName().equals(registryName)) {
+            if (biomeID.registryName().getPresetFolderName().equals(registryName)) {
                 return biomeID;
             }
         }
         return null;
     }
 
-    public ArrayList<BiomeSettings> getBiomeConfigList() {
+    public ArrayList<BiomeConfig> getBiomeConfigList() {
         return new ArrayList<>(this.biomeConfigs.values());
     }
 
     public ArrayList<String> getAllBiomeNames() {
-        return new ArrayList<>(this.biomeConfigs.keySet());
+        return new ArrayList<>(this.biomeConfigs.keySet().stream().map(OTGBiomeID::biomeName).toList());
     }
 }

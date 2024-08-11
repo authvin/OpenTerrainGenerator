@@ -13,6 +13,7 @@ import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 
+import java.nio.file.Path;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -24,6 +25,7 @@ public final class SimpleSettingsMap implements SettingsMap
 	private final List<RawSettingValue> configFunctions;
 	private SettingsMap fallback;
 	private final String name;
+	private final Path path;
 
 	/**
 	 * Stores all the settings. Settings like Name:Value or Name=Value are
@@ -36,12 +38,15 @@ public final class SimpleSettingsMap implements SettingsMap
 
 	/**
 	 * Creates a new settings reader.
-	 * @param name		Name of the config file, like "PresetConfig" or "Taiga".
-	 * //@param isNewConfig True if this config is newly created.
+	 *
+	 * @param name     Name of the config file, like "PresetConfig" or "Taiga".
+	 *                 //@param isNewConfig True if this config is newly created.
+	 * @param filePath
 	 */
-	public SimpleSettingsMap(String name)
+	public SimpleSettingsMap(String name, Path filePath)
 	{
 		this.name = name;
+		this.path = filePath;
 		this.settingsCache = new LinkedHashMap<String, RawSettingValue>();
 		this.configFunctions = new ArrayList<RawSettingValue>();
 	}
@@ -293,6 +298,11 @@ public final class SimpleSettingsMap implements SettingsMap
 	public void header2(String title, String... comments)
 	{
 		this.settingsCache.put(nextDummyKey(), RawSettingValue.create(ValueType.BIG_TITLE_2, title).withComments(comments));
+	}
+
+	@Override
+	public Path getPath() {
+		return path;
 	}
 
 	@Override

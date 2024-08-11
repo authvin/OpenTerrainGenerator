@@ -83,7 +83,7 @@ public class ForgeBiome implements IBiome
 	}
 
 	@Override
-	public BiomeSettings getBiomeConfig()
+	public BiomeSettings getBiomeSettings()
 	{
 		return this.biomeConfig;
 	}

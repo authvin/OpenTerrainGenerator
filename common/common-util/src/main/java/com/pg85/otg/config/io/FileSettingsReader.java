@@ -1,7 +1,6 @@
 package com.pg85.otg.config.io;
 
 import com.pg85.otg.config.io.RawSettingValue.ValueType;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -19,14 +18,15 @@ public class FileSettingsReader
 {
 	/**
 	 * Reads a file.
+	 *
 	 * @param configName The name of the config file. For worlds, use the world
-	 * name, for biomes, use the biome name, etc.
-	 * @param file The file to read from.
+	 *                   name, for biomes, use the biome name, etc.
+	 * @param file       The file to read from.
 	 * @return The settings in the file.
 	 */
-	public static SettingsMap read(String configName, File file, ILogger logger)
+	public static SettingsMap read(String configName, File file)
 	{
-		SettingsMap settings = new SimpleSettingsMap(configName);
+		SettingsMap settings = new SimpleSettingsMap(configName, file.toPath());
 		if (!file.exists())
 		{
 			return settings;
@@ -36,7 +36,7 @@ public class FileSettingsReader
 		{
 			readIntoMap(settings, reader);
 		} catch (IOException e) {
-			logger.log(LogLevel.ERROR, LogCategory.CONFIGS, String.format("Could not read file, exception: ", (Object[])e.getStackTrace()));
+			OTGLog.getLogger().log(LogLevel.ERROR, LogCategory.CONFIGS, String.format("Could not read file, exception: ", (Object[])e.getStackTrace()));
 		}
 		return settings;
 	}

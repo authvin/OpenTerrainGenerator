@@ -82,9 +82,8 @@ public abstract class OTGEngine
 
 		File pluginConfigFile = Paths.get(getOTGRootFolder().toString(), Constants.PluginConfigFilename).toFile();
 		this.pluginConfig = new PluginConfig(
-			FileSettingsReader.read(Constants.PluginConfigFilename, pluginConfigFile, (ILogger)null), 
-			this.biomeResourcesManager,
-			this.logger
+				FileSettingsReader.read(Constants.PluginConfigFilename, pluginConfigFile),
+				pluginConfigFile.toPath()
 		);
 		this.logger.init(
 			this.pluginConfig.getLogLevel().getLevel(), 
@@ -97,7 +96,7 @@ public abstract class OTGEngine
 			this.pluginConfig.logMobs(),
 			this.pluginConfig.logPresets()
 		);
-		FileSettingsWriter.writeToFile(this.pluginConfig.getSettingsAsMap(), pluginConfigFile, this.pluginConfig.getSettingsMode(), this.logger);
+		FileSettingsWriter.writeToFile(this.pluginConfig.getSettingsAsMap(), pluginConfigFile, this.pluginConfig.getSettingsMode());
 
 		// Create OTG folders
 
@@ -316,7 +315,7 @@ public abstract class OTGEngine
 			getOTGRootFolder(), 
 			getLogger(), 
 			getCustomObjectManager(), 
-			getPresetLoader().getMaterialReader(presetFolderName), 
+			getPresetLoader().getMaterialReader(),
 			getCustomObjectResourcesManager(), 
 			null
 		);

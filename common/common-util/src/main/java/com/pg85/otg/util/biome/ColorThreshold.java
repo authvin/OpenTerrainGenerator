@@ -28,6 +28,11 @@ public class ColorThreshold implements Comparable<ColorThreshold>
 		this.maxNoise = maxNoise;
 	}
 
+	public ColorThreshold(int color, float maxNoise) {
+		this.color = new Color(color);
+		this.maxNoise = maxNoise;
+	}
+
     @Override
 	public int compareTo(ColorThreshold that)
 	{

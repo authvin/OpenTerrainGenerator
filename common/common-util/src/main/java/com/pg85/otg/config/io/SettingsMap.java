@@ -4,6 +4,8 @@ import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.io.RawSettingValue.ValueType;
 import com.pg85.otg.config.settingType.Setting;
 import com.pg85.otg.interfaces.IPluginConfig;
+
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
@@ -150,4 +152,6 @@ public interface SettingsMap
 	 * @param comments Comments directly after the title.
 	 */	
 	void header2(String title, String... comments);
+
+	Path getPath();
 }

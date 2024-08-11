@@ -1,11 +1,13 @@
 package com.pg85.otg.config;
 
-import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settings.preset.PresetInfo;
 import com.pg85.otg.config.standard.PluginConfigStandardValues;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
+import com.pg85.otg.util.OTGLog;
+
+import java.nio.file.Path;
 
 /**
  * OTG.ini / PluginConfig classes
@@ -19,10 +21,13 @@ import com.pg85.otg.interfaces.IMaterialReader;
  */
 public final class PluginConfig extends PluginConfigBase
 {
-	public PluginConfig(SettingsMap settingsReader, IConfigFunctionProvider biomeResourcesManager, ILogger logger)
+	private final Path path;
+
+	public PluginConfig(SettingsMap settingsReader, Path path)
 	{
 		super(settingsReader.getName());
-		readConfigSettings(settingsReader, logger);
+		this.path = path;
+		readConfigSettings(settingsReader, OTGLog.getLogger());
 	}
 
 	@Override
@@ -43,6 +48,11 @@ public final class PluginConfig extends PluginConfigBase
 		this.decorationEnabled = reader.getSetting(PluginConfigStandardValues.DECORATION_ENABLED);
 		this.developerMode = reader.getSetting(PluginConfigStandardValues.DEVELOPER_MODE);
 		this.workerThreads = reader.getSetting(PluginConfigStandardValues.WORKER_THREADS);
+	}
+
+	@Override
+	public Path getConfigPath() {
+		return path;
 	}
 
 	@Override

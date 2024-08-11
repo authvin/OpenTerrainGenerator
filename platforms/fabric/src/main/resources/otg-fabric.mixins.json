@@ -4,6 +4,8 @@
   "package": "net.fabricmc.example.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
+    "com.pg85.otg.fabric.mixin.BiomeDataMixin",
+    "com.pg85.otg.fabric.mixin.BuiltInRegistriesAccessor"
   ],
   "client": [
   ],

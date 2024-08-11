@@ -124,7 +124,7 @@ public class UpdateCommand extends BaseCommand
 
 			ArrayList<BlockFunction<?>> extraBlocks = EditCommand.spawnAndFixObject(center.x, center.y, center.z, inputObject, worldGenRegion, true,
 				presetFolderName, OTG.getEngine().getOTGRootFolder(), OTG.getEngine().getLogger(), OTG.getEngine().getCustomObjectManager(),
-				OTG.getEngine().getPresetLoader().getMaterialReader(presetFolderName), OTG.getEngine().getCustomObjectResourcesManager(), OTG.getEngine().getModLoadedChecker());
+				OTG.getEngine().getPresetLoader().getMaterialReader(), OTG.getEngine().getCustomObjectResourcesManager(), OTG.getEngine().getModLoadedChecker());
 
 			Thread t = new Thread(ObjectUtils.getExportRunnable(type, region, center, inputObject, fixedObjectFolderPath.resolve(ObjectUtils.getFoldersFromObject(inputObject)), extraBlocks, presetFolderName, false, leaveIllegalLeaves, source, worldGenRegion
 			));

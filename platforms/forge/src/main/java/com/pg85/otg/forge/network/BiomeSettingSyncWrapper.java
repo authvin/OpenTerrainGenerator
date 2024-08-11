@@ -8,7 +8,7 @@ import com.pg85.otg.util.biome.ColorSet;
 import com.pg85.otg.util.biome.ColorThreshold;
 import com.pg85.otg.util.biome.SimpleColorSet;
 
-import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.FriendlyByteBuf;
 
 public class BiomeSettingSyncWrapper
 {
@@ -25,7 +25,7 @@ public class BiomeSettingSyncWrapper
 		this.waterColorControl = config.getVisualSettings().getWaterColorControl();
 	}
 
-	public BiomeSettingSyncWrapper(PacketBuffer buffer)
+	public BiomeSettingSyncWrapper(FriendlyByteBuf buffer)
 	{
 		this.fogDensity = buffer.readFloat();
 		byte size;
@@ -75,28 +75,28 @@ public class BiomeSettingSyncWrapper
 		return waterColorControl;
 	}
 
-	public void encode(PacketBuffer buffer)
+	public void encode(FriendlyByteBuf buffer)
 	{
 		buffer.writeFloat(this.fogDensity);
 
 		buffer.writeByte((byte) this.grassColorControl.getLayers().size());
 		for (ColorThreshold color : this.grassColorControl.getLayers())
 		{
-			buffer.writeInt(color.getColor());
+			buffer.writeInt(color.getColor().intValue());
 			buffer.writeFloat(color.getMaxNoise());
 		}
 
 		buffer.writeByte((byte) this.foliageColorControl.getLayers().size());
 		for (ColorThreshold color : this.foliageColorControl.getLayers())
 		{
-			buffer.writeInt(color.getColor());
+			buffer.writeInt(color.getColor().intValue());
 			buffer.writeFloat(color.getMaxNoise());
 		}
 
 		buffer.writeByte((byte) this.waterColorControl.getLayers().size());
 		for (ColorThreshold color : this.waterColorControl.getLayers())
 		{
-			buffer.writeInt(color.getColor());
+			buffer.writeInt(color.getColor().intValue());
 			buffer.writeFloat(color.getMaxNoise());
 		}
 	}

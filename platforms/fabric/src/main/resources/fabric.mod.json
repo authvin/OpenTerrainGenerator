@@ -3,7 +3,7 @@
   "id": "otg",
   "version": "${version}",
 
-  "name": "Example Mod",
+  "name": "OpenTerrainGenerator",
   "description": "OTG: Generate anything!",
   "authors": [
     "Team OTG"

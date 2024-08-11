@@ -6,6 +6,7 @@ import com.pg85.otg.util.materials.LocalMaterialTag;
 import com.pg85.otg.util.materials.MaterialProperties;
 import com.pg85.otg.util.materials.MaterialProperty;
 import lombok.Getter;
+import lombok.NonNull;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
@@ -38,12 +39,12 @@ public class FabricMaterialData extends LocalMaterialData {
         this.name = getName();
     }
 
-    public static LocalMaterialData ofBlockState(BlockState blockState) {
-        return ofBlockState(blockState, null);
+    public static LocalMaterialData ofBlockState(@NonNull BlockState blockState) {
+        return ofBlockState(blockState, blockState.toString());
     }
 
     public static LocalMaterialData ofBlockState(BlockState blockState, String input) {
-        if (stateToMaterialDataMap.contains(blockState)) {
+        if (stateToMaterialDataMap.containsKey(blockState)) {
             return stateToMaterialDataMap.get(blockState);
         }
         FabricMaterialData materialData = new FabricMaterialData(blockState, input);

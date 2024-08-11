@@ -16,12 +16,12 @@ import org.jetbrains.annotations.Nullable;
 
 public class BiomeResourcesManager implements IConfigFunctionProvider
 {
-	private Map<String, Class<? extends ConfigFunction<?>>> configFunctions;
+	private final Map<String, Class<? extends ConfigFunction<?>>> configFunctions;
 
 	public BiomeResourcesManager(Map<String, Class<? extends ConfigFunction<?>>> configFunctions)
 	{
 		// Also store in this class
-		this.configFunctions = new HashMap<String, Class<? extends ConfigFunction<?>>>();
+		this.configFunctions = new HashMap<>();
 
 		for(Entry<String, Class<? extends ConfigFunction<?>>> resource : configFunctions.entrySet())
 		{
@@ -61,18 +61,15 @@ public class BiomeResourcesManager implements IConfigFunctionProvider
 		try
 		{
 			Constructor<? extends ConfigFunction<?>> constructor = getConstructor(holder, clazz);
-			return (ConfigFunction<T>) constructor.newInstance(holder, args);
+            assert constructor != null;
+            return (ConfigFunction<T>) constructor.newInstance(holder, args);
 		}
 		catch (NoSuchMethodException e1)
 		{
 			// Probably uses another holder type
 			return null;
 		}
-		catch (InstantiationException e)
-		{
-			throw new RuntimeException(e);
-		}
-		catch (IllegalAccessException e)
+		catch (InstantiationException | IllegalAccessException e)
 		{
 			throw new RuntimeException(e);
 		}

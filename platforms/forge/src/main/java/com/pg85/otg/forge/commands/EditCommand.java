@@ -162,7 +162,7 @@ public class EditCommand extends BaseCommand
 			// Spawn code, taken and modified from BO3.java :: spawnForced()
 			ArrayList<BlockFunction<?>> extraBlocks = spawnAndFixObject(center.x, center.y, center.z, inputObject, worldGenRegion, doFixing,
 				presetFolderName, OTG.getEngine().getOTGRootFolder(), OTG.getEngine().getLogger(), OTG.getEngine().getCustomObjectManager(),
-				OTG.getEngine().getPresetLoader().getMaterialReader(presetFolderName), OTG.getEngine().getCustomObjectResourcesManager(), OTG.getEngine().getModLoadedChecker());
+				OTG.getEngine().getPresetLoader().getMaterialReader(), OTG.getEngine().getCustomObjectResourcesManager(), OTG.getEngine().getModLoadedChecker());
 
 			// Save the object and clean the area
 			Path path = ObjectUtils.getObjectFolderPath(isGlobal ? null : preset.getPresetFolder())
@@ -220,7 +220,7 @@ public class EditCommand extends BaseCommand
 					OTG.getEngine().getOTGRootFolder(),
 					OTG.getEngine().getLogger(),
 					OTG.getEngine().getCustomObjectManager(),
-					OTG.getEngine().getPresetLoader().getMaterialReader(presetFolderName),
+					OTG.getEngine().getPresetLoader().getMaterialReader(),
 					OTG.getEngine().getCustomObjectResourcesManager(),
 					OTG.getEngine().getModLoadedChecker()));
 		}
@@ -235,7 +235,7 @@ public class EditCommand extends BaseCommand
 						objectToSpawn.getName(),
 						((BO2) objectToSpawn).getFile().getParentFile().toPath()).toFile(),
 					((BO2) objectToSpawn).getConvertedConfig(presetFolderName, OTG.getEngine().getOTGRootFolder(), OTG.getEngine().getLogger(), OTG.getEngine().getCustomObjectManager(),
-						OTG.getEngine().getPresetLoader().getMaterialReader(presetFolderName), OTG.getEngine().getCustomObjectResourcesManager(), OTG.getEngine().getModLoadedChecker())
+						OTG.getEngine().getPresetLoader().getMaterialReader(), OTG.getEngine().getCustomObjectResourcesManager(), OTG.getEngine().getModLoadedChecker())
 				);
 			}
 			catch (InvalidConfigException e)
@@ -310,7 +310,7 @@ public class EditCommand extends BaseCommand
 			OTG.getEngine().getOTGRootFolder(),
 			OTG.getEngine().getLogger(),
 			OTG.getEngine().getCustomObjectManager(),
-			OTG.getEngine().getPresetLoader().getMaterialReader(session.presetFolderName),
+			OTG.getEngine().getPresetLoader().getMaterialReader(),
 			OTG.getEngine().getCustomObjectResourcesManager(),
 			OTG.getEngine().getModLoadedChecker()
 		);
