@@ -7,6 +7,7 @@ import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin.TransformerExclusions
 
 @IFMLLoadingPlugin.MCVersion("1.12.2")
 @TransformerExclusions(value = { "com.pg85.otg.forge.asm.excluded" })
+@IFMLLoadingPlugin.SortingIndex(1001)
 public class OTGCorePlugin implements IFMLLoadingPlugin
 {
 	@Override

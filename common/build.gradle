@@ -1,9 +1,18 @@
-// Build script for the Common parts of OpenTerrainGenerator
+import org.gradle.internal.jvm.Jvm
 
-plugins {
-  id 'java'
-  id 'com.github.johnrengelman.shadow' version '1.2.4'
+// Build script for the Common parts of OpenTerrainGenerator
+buildscript {
+	repositories {
+		mavenCentral()
+		gradlePluginPortal()
+	}
+	dependencies {
+		classpath "com.gradleup.shadow:shadow-gradle-plugin:${shadowVersion}"
+	}
 }
+
+apply plugin: 'java'
+apply plugin: 'com.gradleup.shadow'
 
 // Project properties
 archivesBaseName = "openterraingenerator-common"
@@ -11,19 +20,20 @@ description = "Core files of OpenTerrainGenerator"
 
 repositories
 {
-	jcenter()
     mavenLocal()
     mavenCentral()
 }
 
+println "Running java version: " + Jvm.current().getJavaHome()
+
 dependencies
 {
-    compile (
-		'com.fasterxml.jackson.core:jackson-annotations:2.9.0',
-		'com.fasterxml.jackson.core:jackson-core:2.9.7',
-		'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.9.7',
-		'com.fasterxml.jackson.core:jackson-databind:2.9.7',
-		'org.yaml:snakeyaml:1.23',
+    implementation (
+		'com.fasterxml.jackson.core:jackson-annotations:2.17.2',
+		'com.fasterxml.jackson.core:jackson-core:2.17.2',
+		'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.2',
+		'com.fasterxml.jackson.core:jackson-databind:2.17.2',
+		'org.yaml:snakeyaml:2.2',
 		'org.apache.commons:commons-lang3:3.4'
     )	
 }
@@ -40,8 +50,8 @@ shadowJar {
 	relocate 'com.fasterxml.jackson', 'com.pg85.otg.shaded.fasterxml.jackson'
 	relocate 'org.apache', 'com.pg85.otg.shaded.org.apache'
 	relocate 'org.yaml', 'com.pg85.otg.shaded.org.yaml'
-	archiveName = project.archivesBaseName + '-' + project.version + '.jar'
-	destinationDir = project.distsDir
+	archiveFileName = project.archivesBaseName + '-' + project.version + '.jar'
+	destinationDirectory = project.layout.buildDirectory.dir('dists')
 }
 
 build.finalizedBy(shadowJar)

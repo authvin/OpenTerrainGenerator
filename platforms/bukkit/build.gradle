@@ -12,9 +12,9 @@ repositories
 {
     mavenLocal() // For Spigot Server
     mavenCentral() // For log4j
-    maven 
+    maven
     {   // Fallback for Spigot Server, no official repo exists
-        url = "http://rutgerkok.nl/repo" 
+        url = "https://rutgerkok.nl/repo"
     }
     maven
     {   // For Bukkit API, updated by Spigot
@@ -28,12 +28,12 @@ repositories
 
 dependencies
 {
-    compile 'org.bukkit:bukkit:' + project.ext.bukkitVersion
-    compile 'org.spigotmc:spigot:' + project.ext.bukkitVersion
+    implementation 'org.bukkit:bukkit:' + project.ext.bukkitVersion
+    implementation 'org.spigotmc:spigot:' + project.ext.bukkitVersion
     compileOnly 'com.sk89q.worldedit:worldedit-bukkit:' + project.ext.worldeditVersion
-    compile project(':common')
-    compile 'org.apache.logging.log4j:log4j-api:2.0-beta9'
-    compile 'org.apache.logging.log4j:log4j-core:2.0-beta9'
+    implementation project(':common')
+    implementation 'org.apache.logging.log4j:log4j-api:2.0-beta9'
+    implementation 'org.apache.logging.log4j:log4j-core:2.0-beta9'
 }
 
 // Replace text in plugin.yml
@@ -41,6 +41,7 @@ processResources
 {
     // This will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 
     // Replace stuff in plugin.yml, nothing else
     from(sourceSets.main.resources.srcDirs) {
@@ -59,8 +60,8 @@ processResources
 // Include all Open Terrain Generator files in the jar
 jar
 {
-    destinationDir = new File(project.buildDir, "distributions")
-    classifier = ''
+    destinationDirectory = new File(project.buildDir, "distributions")
+    archiveClassifier.set('')
     from
     {
         project(":common").sourceSets.main.output.files
