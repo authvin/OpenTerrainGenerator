@@ -1,13 +1,15 @@
 buildscript {
     repositories {
-        jcenter()
         maven { url = "https://maven.minecraftforge.net/" }
+        maven { url = "https://repo.spongepowered.org/maven/" }
     }
     dependencies {
         classpath group: "net.minecraftforge.gradle", name: "ForgeGradle", version: "6.0.+"
+        classpath group: "org.spongepowered", name: "mixingradle", version: "0.7.+"
     }
 }
 apply plugin: "net.minecraftforge.gradle"
+apply plugin: "org.spongepowered.mixin"
 apply plugin: 'signing'
 
 // Project properties
@@ -18,6 +20,9 @@ ext.minecraftVersion = "1.12.2"
 
 dependencies {
     minecraft "net.minecraftforge:forge:1.12.2-14.23.5.2860"
+
+    annotationProcessor "org.spongepowered:mixin:0.8.5:processor"
+
     implementation project(':common')
     compileOnly  ('com.sk89q.worldedit:worldedit-forge-mc1.11:6.1.6') {
         exclude group: 'com.google.guava'
@@ -29,6 +34,11 @@ dependencies {
     }
     implementation 'com.google.guava:guava:23.0'
     implementation 'com.google.code.gson:gson:2.6.2'
+}
+
+mixin {
+    add sourceSets.main, "mixins.openterraingenerator.refmap.json"
+    config "mixins.openterraingenerator.json"
 }
 
 minecraft {
@@ -47,8 +57,8 @@ minecraft {
         }
     }
 
-    accessTransformer = project.file('src/main/resources/accesstransformer.cfg')
-    
+    accessTransformer = project.file('src/main/resources/META-INF/accesstransformer.cfg')
+
     // the mappings can be changed at any time, and must be in the following format.
     // snapshot_YYYYMMDD   snapshot are built nightly.
     // stable_#            stables are built at the discretion of the MCP team.
@@ -63,10 +73,12 @@ repositories
     maven {
         url = "https://maven.minecraftforge.net/"
     }
-    maven 
-    {   // Worldedit API
-   		url "https://maven.enginehub.org/artifactory/repo/" 
+    maven {   // Worldedit API
+   		url "https://maven.enginehub.org/artifactory/repo/"
    	}
+    maven {
+        url = "https://repo.spongepowered.org/maven/"
+    }
 }
 
 processResources {
@@ -89,12 +101,10 @@ processResources {
 }
 
 // Include all OpenTerrainGenerator files in the jar
-jar
-{
-    destinationDirectory = new File(project.buildDir, "distributions")
+jar {
+    destinationDirectory = project.getLayout().getBuildDirectory().dir("distributions")
     archiveClassifier.set("")
-    from
-    {
+    from {
         project(":common").sourceSets.main.output.files
     }
 }
@@ -110,7 +120,7 @@ task asmJar(type: Jar, dependsOn: 'compileJava') {
     manifest {
         attributes(
                 'FMLCorePlugin': 'com.pg85.otg.forge.asm.excluded.launch.OTGCorePlugin',
-                'FMLCorePluginContainsFMLMod': 'true'
+                'FMLCorePluginContainsFMLMod': 'true',
         )
     }
 }
