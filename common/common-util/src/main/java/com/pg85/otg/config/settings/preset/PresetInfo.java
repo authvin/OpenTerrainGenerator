@@ -33,7 +33,7 @@ public class PresetInfo extends ConfigSection {
             "The author of this preset"
     );
     public static final Setting<String> REGISTRY_NAME = Settings.stringSetting(
-            "RegistryName", "",
+            "RegistryName", "default",
             t -> ((PresetInfo) t).getRegistryName(),
             "The shortened name for the preset, used in biome resource locations and similar"
     );

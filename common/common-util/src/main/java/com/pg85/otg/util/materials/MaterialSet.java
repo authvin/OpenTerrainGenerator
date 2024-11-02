@@ -11,7 +11,7 @@ import com.pg85.otg.config.yaml.MaterialSetSerializer;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
-import net.minecraft.client.resources.model.Material;
+
 
 /**
  * A material set that accepts special values such as "All" or "Solid". These

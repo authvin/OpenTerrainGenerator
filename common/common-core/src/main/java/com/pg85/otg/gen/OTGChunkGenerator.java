@@ -32,6 +32,7 @@ import com.pg85.otg.util.logging.LogLevel;
 import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
+import lombok.Getter;
 
 /**
  * Generates the base terrain, sets stone/ground/surface blocks and does SurfaceAndGroundControl, generates caves and canyons.
@@ -73,53 +74,58 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 	// ThreadLocal may have some overhead for the gets/sets, even when used on a single thread.
 	// Some of these classes may not be thread-safe (tho testing seems ok), need to check all the internal state.
 	
-	private final OctavePerlinNoiseSampler interpolationNoise;	 // Volatility noise
-	private final OctavePerlinNoiseSampler lowerInterpolatedNoise; // Volatility1 noise
-	private final OctavePerlinNoiseSampler upperInterpolatedNoise; // Volatility2 noise
-	private final OctavePerlinNoiseSampler depthNoise;
+	private OctavePerlinNoiseSampler interpolationNoise;	 // Volatility noise
+	private OctavePerlinNoiseSampler lowerInterpolatedNoise; // Volatility1 noise
+	private OctavePerlinNoiseSampler upperInterpolatedNoise; // Volatility2 noise
+	private OctavePerlinNoiseSampler depthNoise;
 
 	private final Preset preset;
-	private final long seed;
+	private long seed;
 	private final CachedBiomeProvider cachedBiomeProvider;
 
 	private final int noiseSizeX = 4;
-	private final int noiseSizeY;
+	@Getter
+    private final int noiseSizeY;
 	private final int noiseSizeZ = 4;
 
 	private final ThreadLocal<NoiseCache> noiseCache;
-	private final NoiseGeneratorPerlinMesaBlocks biomeBlocksNoiseGen;
+	private NoiseGeneratorPerlinMesaBlocks biomeBlocksNoiseGen;
 	// Carvers
 	private final Carver caves;
 	private final Carver ravines;
 	// Biome blocks noise
 	// TODO: Use new noise?
-	private ThreadLocal<double[]> biomeBlocksNoise = ThreadLocal.withInitial(() -> new double[Constants.CHUNK_SIZE * Constants.CHUNK_SIZE]);
-	private ThreadLocal<Integer> lastX = ThreadLocal.withInitial(() -> Integer.MAX_VALUE);
-	private ThreadLocal<Integer> lastZ = ThreadLocal.withInitial(() -> Integer.MAX_VALUE);
-	private ThreadLocal<Double> lastNoise = ThreadLocal.withInitial(() -> 0d);
+	private final ThreadLocal<double[]> biomeBlocksNoise = ThreadLocal.withInitial(() -> new double[Constants.CHUNK_SIZE * Constants.CHUNK_SIZE]);
+	private final ThreadLocal<Integer> lastX = ThreadLocal.withInitial(() -> Integer.MAX_VALUE);
+	private final ThreadLocal<Integer> lastZ = ThreadLocal.withInitial(() -> Integer.MAX_VALUE);
+	private final ThreadLocal<Double> lastNoise = ThreadLocal.withInitial(() -> 0d);
 
-	public OTGChunkGenerator(Preset preset, long seed, ILayerSource biomeProvider, IBiome[] biomesById)
+	public OTGChunkGenerator(Preset preset, ILayerSource biomeProvider, IBiome[] biomesById)
 	{
 		this.preset = preset;
-		this.seed = seed;
-		this.cachedBiomeProvider = new CachedBiomeProvider(this.seed, biomeProvider, biomesById);
+		this.cachedBiomeProvider = new CachedBiomeProvider(biomeProvider, biomesById);
 
+		this.noiseSizeY = preset.getPresetConfig().getTerrainSettings().getWorldHeightCap() / Constants.PIECE_Y_SIZE;
+		this.noiseCache = ThreadLocal.withInitial(() -> new NoiseCache(128, this.noiseSizeY + 1));
+
+
+		this.caves = new CaveCarver(Constants.WORLD_HEIGHT, preset.getPresetConfig());
+		this.ravines = new RavineCarver(Constants.WORLD_HEIGHT, preset.getPresetConfig());
+	}
+
+	public void setSeed(long seed)
+	{
+		this.seed = seed;
+		this.cachedBiomeProvider.setSeed(seed);
 		// Setup noises
 		Random random = new Random(seed);
 
-		this.noiseSizeY = preset.getPresetConfig().getTerrainSettings().getWorldHeightCap();
 
 		this.interpolationNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-7, 0));
 		this.lowerInterpolatedNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-15, 0));
 		this.upperInterpolatedNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-15, 0));
 		this.depthNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-15, 0));
-
-		this.noiseCache = ThreadLocal.withInitial(() -> new NoiseCache(128, this.noiseSizeY + 1));
-
 		this.biomeBlocksNoiseGen = new NoiseGeneratorPerlinMesaBlocks(random, 4);
-
-		this.caves = new CaveCarver(Constants.WORLD_HEIGHT, preset.getPresetConfig());
-		this.ravines = new RavineCarver(Constants.WORLD_HEIGHT, preset.getPresetConfig());
 	}
 	
 	public ICachedBiomeProvider getCachedBiomeProvider()
@@ -426,7 +432,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 
 	// Surface / ground / stone blocks / SAGC
 
-	public void populateNoise(WorldHeight worldHeight, ChunkBuffer buffer, ChunkCoordinate chunkCoord, ObjectList<JigsawStructureData> structures, Random random)
+	public void populateNoise(OTGWorldInfo worldHeight, ChunkBuffer buffer, ChunkCoordinate chunkCoord, ObjectList<JigsawStructureData> structures, Random random)
 	{
 		ILogger logger = OTG.getEngine().getLogger();
 
@@ -645,18 +651,13 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 		return k;
 	}
 
-	public int getNoiseSizeY()
-	{
-		return noiseSizeY;
-	}
-
-	private void doSurfaceAndGroundControl(IBiome[] biomes, Random random, WorldHeight worldHeight, long worldSeed, ChunkBuffer chunkBuffer, int[] waterLevel)
+    private void doSurfaceAndGroundControl(IBiome[] biomes, Random random, OTGWorldInfo OTGWorldInfo, long worldSeed, ChunkBuffer chunkBuffer, int[] waterLevel)
 	{
 		// Process surface and ground blocks for each column in the chunk
 		ChunkCoordinate chunkCoord = chunkBuffer.getChunkCoordinate();		
 		double d1 = 0.03125D;
 		this.biomeBlocksNoise.set(this.biomeBlocksNoiseGen.getRegion(this.biomeBlocksNoise.get(), chunkCoord.getBlockX(), chunkCoord.getBlockZ(), Constants.CHUNK_SIZE, Constants.CHUNK_SIZE, d1 * 2.0D, d1 * 2.0D, 1.0D));
-		GeneratingChunk generatingChunk = new GeneratingChunk(random, waterLevel, this.biomeBlocksNoise.get(), worldHeight);
+		GeneratingChunk generatingChunk = new GeneratingChunk(random, waterLevel, this.biomeBlocksNoise.get(), OTGWorldInfo);
 		IBiome biome;
 		for (int x = 0; x < Constants.CHUNK_SIZE; x++)
 		{

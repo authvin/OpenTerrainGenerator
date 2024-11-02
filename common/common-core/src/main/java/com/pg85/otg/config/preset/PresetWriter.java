@@ -574,66 +574,9 @@ public class PresetWriter {
                 "Only applies for dimensions, not overworld/nether/end."
         );
 
-        writer.header1("Dimension settings (Forge)",
-                "Note: At world creation, these settings are written to the world save's datapack folder (\\saves\\WorldName\\datapacks\\otg\\)",
-                "as dimension_type json file. The json file is used by MC on world load to fetch the settings. If you want to change dimension",
-                "settings for already created worlds make sure to edit the dimension_type json file, since changes to the PresetConfig dimension",
-                "settings won't be picked up on world load, only on world creation."
-        );
+        writer.header1("Dimension settings");
 
-        writer.putSetting(DimensionSettings.FIXED_TIME, presetConfig.getDimensionSettings().getFixedTime().orElse(DimensionSettings.FIXED_TIME.getDefaultValue()),
-                "The time this dimension is fixed at, from 0 to 24000.",
-                "-1 by default, meaning disabled, so time passes normally.",
-                "Vanilla Nether uses 18000, End uses 6000."
-        );
-        writer.putSetting(DimensionSettings.HAS_SKYLIGHT, presetConfig.getDimensionSettings().isHasSkyLight(),
-                "Whether this dimension uses a skylight, defaults to true.",
-                "Vanilla nether and end use false, nether combines this with AmbientLight:0.1."
-        );
-        writer.putSetting(DimensionSettings.HAS_CEILING, presetConfig.getDimensionSettings().isHasCeiling(),
-                "Whether this dimension has a ceiling, affects mob spawning, weather (thunder), maps.",
-                "Defaults to false, vanilla nether uses true."
-        );
-        writer.putSetting(DimensionSettings.ULTRA_WARM, presetConfig.getDimensionSettings().isUltraWarm(),
-                "Whether water evaporates in this dimension. Also appears to affect lava/lava flow.",
-                "Defaults to false. Vanilla nether uses true."
-        );
-        writer.putSetting(DimensionSettings.NATURAL, presetConfig.getDimensionSettings().isNatural(),
-                "When set to false, mobs do not spawn from portals and players cannot use beds in this dimension.",
-                "Defaults to true."
-        );
-        writer.putSetting(DimensionSettings.COORDINATE_SCALE, presetConfig.getDimensionSettings().getCoordinateScale(),
-                "The amount of blocks traveled compared to other dimensions.",
-                "1 by default, same as vanilla overworld, nether uses 8."
-        );
-        writer.putSetting(DimensionSettings.CREATE_DRAGON_FLIGHT, presetConfig.getDimensionSettings().isCreateDragonFight(),
-                "Probably starts a dragon fight, we think. Try it, what could possibly go wrong?"
-        );
-        writer.putSetting(DimensionSettings.PIGLIN_SAFE, presetConfig.getDimensionSettings().isPiglinSafe(),
-                "Whether this dimension can spawn piglins, false by default."
-        );
-        writer.putSetting(DimensionSettings.BED_WORKS, presetConfig.getDimensionSettings().isBedWorks(),
-                "Whether beds can be used to sleep and skip time in this dimension, true by default.");
-        writer.putSetting(DimensionSettings.RESPAWN_ANCHOR_WORKS, presetConfig.getDimensionSettings().isRespawnAnchorWorks(),
-                "Whether RespawnAnchorBlocks can be used, false by default."
-        );
-        writer.putSetting(DimensionSettings.HAS_RAIDS, presetConfig.getDimensionSettings().isHasRaids(),
-                "Whether the dimension has raids, true by default."
-        );
-        writer.putSetting(DimensionSettings.LOGICAL_HEIGHT, presetConfig.getDimensionSettings().getLogicalHeight(),
-                "World height, 256 by default. Affects portals and chorus fruits."
-        );
-        writer.putSetting(DimensionSettings.INFINIBURN, presetConfig.getDimensionSettings().getInfiniburn(),
-                "Infiniburn block tag registry key, minecraft:infiniburn_overworld by default.",
-                "Can be either overworld/nether/end (or potentially modded)."
-        );
-        writer.putSetting(DimensionSettings.EFFECTS_LOCATION, presetConfig.getDimensionSettings().getEffectsLocation(),
-                "Effects registry key, minecraft:overworld by default.",
-                "Can be either overworld/nether/end (or potentially modded)."
-        );
-        writer.putSetting(DimensionSettings.AMBIENT_LIGHT, presetConfig.getDimensionSettings().getAmbientLight(),
-                "The base ambient light level for the world, 0.0 for overworld/end, 0.1 for nether."
-        );
+        presetConfig.getDimensionSettings().writeSettings(writer);
 
         writer.header1("Game rules (Forge)",
                 "See: https://minecraft.fandom.com/wiki/Game_rule",

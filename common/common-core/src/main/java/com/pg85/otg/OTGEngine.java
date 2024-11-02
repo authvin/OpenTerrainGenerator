@@ -16,6 +16,7 @@ import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IPluginConfig;
 import com.pg85.otg.presets.LocalPresetLoader;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 import lombok.Getter;
@@ -140,7 +141,7 @@ public abstract class OTGEngine
 
 		// Load presets
 
-		this.presetLoader.loadPresetsFromDisk(this.biomeResourcesManager, this.logger);
+		this.presetLoader.loadPresetsFromDisk();
 	}
 
 	private void unpackDefaultPresetAndExamples(File presetsDir)
@@ -153,7 +154,13 @@ public abstract class OTGEngine
 			{
 				this.logger.log(LogLevel.WARN, LogCategory.MAIN, "Could not find root jar file, skipping default preset and example dimension configs unpack (copy them manually from the resources folder for development).");
 			} else {
-				jarFile = new JarFile(jarFileLocation);
+				try {
+					jarFile = new JarFile(jarFileLocation);
+				} catch (IOException e) {
+					this.logger.log(LogLevel.WARN, LogCategory.MAIN, "Could not open root jar file, skipping default preset and example dimension configs unpack (copy them manually from the resources folder for development).");
+					return;
+				}
+
 				Enumeration<JarEntry> entries = jarFile.entries();
 				// Unpack default preset if none present
 				if (new File(presetsDir.getPath() + File.separator + "Default").exists())
@@ -314,8 +321,8 @@ public abstract class OTGEngine
 			isBo4Enabled, 
 			getOTGRootFolder(), 
 			getLogger(), 
-			getCustomObjectManager(), 
-			getPresetLoader().getMaterialReader(),
+			getCustomObjectManager(),
+			OTGMaterialReader.get(),
 			getCustomObjectResourcesManager(), 
 			null
 		);

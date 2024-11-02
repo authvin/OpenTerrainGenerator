@@ -26,7 +26,7 @@ import java.util.List;
 @Builder
 @Getter
 public class GenerationSettings extends ConfigSection {
-    private final ArrayList<String> worldBiomes;
+    private final List<String> worldBiomes;
     private final List<String> blackListedBiomes;
     private final int biomeRarityScale;
     private final boolean oldGroupRarity;
@@ -205,28 +205,30 @@ public class GenerationSettings extends ConfigSection {
 
 
     public static GenerationSettings getBiomeSettings(PresetSettings presetConfig, SettingsMap reader, IConfigFunctionProvider biomeResourcesManager, List<String> biomes, IMaterialReader materialReader, Path settingsDir) {
-        var biomeSettingsBuilder = builder();
+        var generationSettingsBuilder = builder();
 
-        biomeSettingsBuilder.biomeRarityScale(reader.getSetting(BIOME_RARITY_SCALE));
-        biomeSettingsBuilder.generationDepth(reader.getSetting(GENERATION_DEPTH));
-        biomeSettingsBuilder.oldGroupRarity(reader.getSetting(OLD_GROUP_RARITY));
-        biomeSettingsBuilder.oldLandRarity(reader.getSetting(OLD_LAND_RARITY));
-        biomeSettingsBuilder.landFuzzy(reader.getSetting(LAND_FUZZY));
-        biomeSettingsBuilder.landRarity(reader.getSetting(LAND_RARITY));
-        biomeSettingsBuilder.landSize(reader.getSetting(LAND_SIZE));
-        biomeSettingsBuilder.forceLandAtSpawn(reader.getSetting(FORCE_LAND_AT_SPAWN));
-        biomeSettingsBuilder.oceanBiomeSize(reader.getSetting(OCEAN_BIOME_SIZE));
-        biomeSettingsBuilder.defaultOceanBiome(reader.getSetting(DEFAULT_OCEAN_BIOME));
-        biomeSettingsBuilder.defaultWarmOceanBiome(reader.getSetting(DEFAULT_WARM_OCEAN_BIOME));
-        biomeSettingsBuilder.defaultLukewarmOceanBiome(reader.getSetting(DEFAULT_LUKEWARM_OCEAN_BIOME));
-        biomeSettingsBuilder.defaultColdOceanBiome(reader.getSetting(DEFAULT_COLD_OCEAN_BIOME));
-        biomeSettingsBuilder.defaultFrozenOceanBiome(reader.getSetting(DEFAULT_FROZEN_OCEAN_BIOME));
-        biomeSettingsBuilder.frozenOcean(reader.getSetting(FROZEN_OCEAN));
-        biomeSettingsBuilder.frozenOceanTemperature(reader.getSetting(FROZEN_OCEAN_TEMPERATURE));
-        biomeSettingsBuilder.randomRivers(reader.getSetting(RANDOM_RIVERS));
-        biomeSettingsBuilder.riverRarity(reader.getSetting(RIVER_RARITY));
-        biomeSettingsBuilder.riverSize(reader.getSetting(RIVER_SIZE));
-        biomeSettingsBuilder.riversEnabled(reader.getSetting(RIVERS_ENABLED));
+        generationSettingsBuilder.worldBiomes(biomes);
+
+        generationSettingsBuilder.biomeRarityScale(reader.getSetting(BIOME_RARITY_SCALE));
+        generationSettingsBuilder.generationDepth(reader.getSetting(GENERATION_DEPTH));
+        generationSettingsBuilder.oldGroupRarity(reader.getSetting(OLD_GROUP_RARITY));
+        generationSettingsBuilder.oldLandRarity(reader.getSetting(OLD_LAND_RARITY));
+        generationSettingsBuilder.landFuzzy(reader.getSetting(LAND_FUZZY));
+        generationSettingsBuilder.landRarity(reader.getSetting(LAND_RARITY));
+        generationSettingsBuilder.landSize(reader.getSetting(LAND_SIZE));
+        generationSettingsBuilder.forceLandAtSpawn(reader.getSetting(FORCE_LAND_AT_SPAWN));
+        generationSettingsBuilder.oceanBiomeSize(reader.getSetting(OCEAN_BIOME_SIZE));
+        generationSettingsBuilder.defaultOceanBiome(reader.getSetting(DEFAULT_OCEAN_BIOME));
+        generationSettingsBuilder.defaultWarmOceanBiome(reader.getSetting(DEFAULT_WARM_OCEAN_BIOME));
+        generationSettingsBuilder.defaultLukewarmOceanBiome(reader.getSetting(DEFAULT_LUKEWARM_OCEAN_BIOME));
+        generationSettingsBuilder.defaultColdOceanBiome(reader.getSetting(DEFAULT_COLD_OCEAN_BIOME));
+        generationSettingsBuilder.defaultFrozenOceanBiome(reader.getSetting(DEFAULT_FROZEN_OCEAN_BIOME));
+        generationSettingsBuilder.frozenOcean(reader.getSetting(FROZEN_OCEAN));
+        generationSettingsBuilder.frozenOceanTemperature(reader.getSetting(FROZEN_OCEAN_TEMPERATURE));
+        generationSettingsBuilder.randomRivers(reader.getSetting(RANDOM_RIVERS));
+        generationSettingsBuilder.riverRarity(reader.getSetting(RIVER_RARITY));
+        generationSettingsBuilder.riverSize(reader.getSetting(RIVER_SIZE));
+        generationSettingsBuilder.riversEnabled(reader.getSetting(RIVERS_ENABLED));
 
         BiomeMode biomeMode = reader.getSetting(BIOME_MODE);
         if (biomeMode == BiomeMode.FromImage) {
@@ -236,18 +238,18 @@ public class GenerationSettings extends ConfigSection {
                 biomeMode = BiomeMode.Normal;
             }
         }
-        biomeSettingsBuilder.biomeMode(biomeMode);
+        generationSettingsBuilder.biomeMode(biomeMode);
 
         // BiomeGroups requires that values like genDepth are initialized
-        biomeSettingsBuilder.templateBiomes(readTemplateBiomes(reader, presetConfig, biomeResourcesManager));
-        biomeSettingsBuilder.biomeGroupManager(readBiomeGroups(reader, presetConfig, biomeResourcesManager));
+        generationSettingsBuilder.templateBiomes(readTemplateBiomes(reader, presetConfig, biomeResourcesManager));
+        generationSettingsBuilder.biomeGroupManager(readBiomeGroups(reader, presetConfig, biomeResourcesManager));
 
-        presetConfig.getGenerationSettings().getBiomeGroupManager().filterBiomes(biomes);
+        generationSettingsBuilder.biomeGroupManager.filterBiomes(biomes);
 
-        biomeSettingsBuilder.isleBiomes(ConfigFile.filterBiomes(reader.getSetting(ISLE_BIOMES), biomes));
-        biomeSettingsBuilder.borderBiomes(ConfigFile.filterBiomes(reader.getSetting(BORDER_BIOMES), biomes));
-        biomeSettingsBuilder.blackListedBiomes(reader.getSetting(BLACKLISTED_BIOMES));
-        return biomeSettingsBuilder.fixSettings().build();
+        generationSettingsBuilder.isleBiomes(ConfigFile.filterBiomes(reader.getSetting(ISLE_BIOMES), biomes));
+        generationSettingsBuilder.borderBiomes(ConfigFile.filterBiomes(reader.getSetting(BORDER_BIOMES), biomes));
+        generationSettingsBuilder.blackListedBiomes(reader.getSetting(BLACKLISTED_BIOMES));
+        return generationSettingsBuilder.fixSettings().build();
     }
 
     private static ArrayList<TemplateBiome> readTemplateBiomes(SettingsMap reader, PresetSettings presetSettings, IConfigFunctionProvider biomeResourcesManager) {

@@ -4,6 +4,7 @@ import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.ErroredFunction;
 import com.pg85.otg.config.io.RawSettingValue.ValueType;
 import com.pg85.otg.config.settingType.Setting;
+import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.ILogger;
@@ -244,6 +245,12 @@ public final class SimpleSettingsMap implements SettingsMap
 	public <S> void putSetting(Setting<S> setting, S value, String... comments)
 	{
 		RawSettingValue settingValue = RawSettingValue.ofPlainSetting(setting, value).withComments(comments);
+		this.settingsCache.put(setting.getName().toLowerCase(), settingValue);
+	}
+
+	@Override
+	public <S> void putSetting(Setting<S> setting, ConfigSection holder) {
+		RawSettingValue settingValue = RawSettingValue.ofPlainSetting(setting, setting.getGetter().apply(holder)).withComments(setting.getDescription());
 		this.settingsCache.put(setting.getName().toLowerCase(), settingValue);
 	}
 

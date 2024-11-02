@@ -2,7 +2,7 @@ plugins {
     `java-library`
     `maven-publish`
 }
-val javaVersion = project.property("javaVersion").toString().toInt()
+val javaVersion = project.property("java_version").toString().toInt()
 configure<JavaPluginExtension> {
     toolchain.languageVersion.set(JavaLanguageVersion.of(javaVersion))
     withSourcesJar()

@@ -12,7 +12,6 @@ import lombok.Getter;
  */
 public class OTG
 {
-	@Getter
 	private static OTGEngine Engine;
 	@Getter
 	private static ILogger logger;
@@ -31,6 +30,15 @@ public class OTG
 		Engine = engine;
 		engine.onStart();
 		logger = Engine.getLogger();
+	}
+
+	public static OTGEngine getEngine()
+	{
+		if (Engine == null)
+		{
+			throw new IllegalStateException("Engine is not started.");
+		}
+		return Engine;
 	}
 
 	public static void stopEngine()

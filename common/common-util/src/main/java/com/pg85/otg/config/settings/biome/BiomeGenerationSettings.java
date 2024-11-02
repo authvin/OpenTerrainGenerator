@@ -146,6 +146,8 @@ public class BiomeGenerationSettings extends ConfigSection {
         builder.notBorderNearBiomes(reader.getSetting(NOT_BORDER_NEAR));
         builder.biomeSizeWhenBorder(reader.getSetting(BIOME_SIZE_WHEN_BORDER));
 
+        // worldBiomes is empty, fill it
+
         return builder.fixSettings().build();
     }
 

@@ -12,7 +12,6 @@ import com.pg85.otg.config.ErroredFunction;
 import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.config.settings.preset.PresetSettings;
-import org.jetbrains.annotations.Nullable;
 
 public class BiomeResourcesManager implements IConfigFunctionProvider
 {
@@ -80,7 +79,7 @@ public class BiomeResourcesManager implements IConfigFunctionProvider
 		}
 	}
 
-	private static <T> @Nullable Constructor<? extends ConfigFunction<?>> getConstructor(T holder, Class<? extends ConfigFunction<?>> clazz) throws NoSuchMethodException {
+	private static <T> Constructor<? extends ConfigFunction<?>> getConstructor(T holder, Class<? extends ConfigFunction<?>> clazz) throws NoSuchMethodException {
 		Constructor<? extends ConfigFunction<?>> constructor = null;
 		if(holder instanceof BiomeSettings)
 		{

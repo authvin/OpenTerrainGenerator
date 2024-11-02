@@ -6,6 +6,7 @@ import java.util.function.Function;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
+import com.pg85.otg.interfaces.ISurfaceGenerator;
 import com.pg85.otg.util.Color;
 import com.pg85.otg.util.biome.ColorSet;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
@@ -208,4 +209,13 @@ public abstract class Settings
 		return new StringListSetting(name, defaultValues, getter, description);
 	}
 
+	/**
+	 * Creates a setting that represents a {@link ISurfaceGenerator}.
+	 * @param name Name of the setting.
+	 * @return The newly created setting.
+	 */
+	public static Setting<ISurfaceGenerator> surfaceGeneratorSetting(String name, Function<ConfigSection, ISurfaceGenerator> getter, String ...comments)
+	{
+		return new SurfaceGeneratorSetting(name, getter, comments);
+	}
 }

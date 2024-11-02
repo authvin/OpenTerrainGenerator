@@ -1,14 +1,12 @@
 plugins {
-    id "com.github.johnrengelman.shadow" version "7.1.2"
+    id('com.gradleup.shadow')
+    id("architectury-plugin")
+    id("dev.architectury.loom")
 }
 
 architectury {
     platformSetupLoomIde()
     fabric()
-}
-
-loom {
-    accessWidenerPath = project(":common").loom.accessWidenerPath
 }
 
 configurations {
@@ -23,25 +21,47 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
     modApi "net.fabricmc.fabric-api:fabric-api:${rootProject.fabric_api_version}"
     // Remove the next line if you don't want to depend on the API
-    modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
+    //modApi "dev.architectury:architectury-fabric:${rootProject.architectury_version}"
 
-    common(project(path: ":common", configuration: "namedElements")) { transitive false }
-    shadowCommon(project(path: ":common", configuration: "transformProductionFabric")) { transitive false }
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+
+    //common(project(path: ":platforms:shared", configuration: "namedElements")) { transitive false }
+    //shadowCommon(project(path: ":platforms:shared", configuration: "transformProductionFabric")) { transitive false }
 
     implementation project(':common:common-util')
     implementation project(':common:common-customobject')
     implementation project(':common:common-generator')
     implementation project(':common:common-core')
 
+    //implementation project(':platforms:shared')
+
     compileOnly 'org.projectlombok:lombok:1.18.32'
     annotationProcessor 'org.projectlombok:lombok:1.18.32'
+
+    shadowCommon project(':common:common-util')
+    shadowCommon project(':common:common-customobject')
+    shadowCommon project(':common:common-generator')
+    shadowCommon project(':common:common-core')
+
+    //shadowCommon(project(':platforms:shared')) { transitive = false }
+}
+
+loom {
+    //accessWidenerPath = file("src/main/resources/META-INF/otg.accesswidener")
 }
 
 processResources {
-    inputs.property "version", project.version
+    inputs.property "version", project.property("otg_version")
+    inputs.property "minecraft_version", project.property("minecraft_version")
+    inputs.property "fabric_loader_version", project.property("fabric_loader_version")
 
     filesMatching("fabric.mod.json") {
-        expand "version": project.version
+        HashMap<String, String> map = new HashMap<>();
+        map.put("version", project.property("otg_version").toString())
+        map.put("minecraft_version", project.property("minecraft_version").toString())
+        map.put("fabric_loader_version", project.property("fabric_loader_version").toString())
+        expand map
     }
 }
 
@@ -53,15 +73,17 @@ shadowJar {
 }
 
 remapJar {
-    injectAccessWidener = true
+    //injectAccessWidener = true
     input.set shadowJar.archiveFile
     dependsOn shadowJar
 }
 
 sourcesJar {
     def commonSources = project(":common").sourcesJar
-    dependsOn commonSources
+    //def sharedSources = project(":platforms:shared").sourcesJar
+    //dependsOn commonSources, sharedSources
     from commonSources.archiveFile.map { zipTree(it) }
+    //from sharedSources.archiveFile.map { zipTree(it) }
 }
 
 components.java {
@@ -73,7 +95,7 @@ components.java {
 publishing {
     publications {
         mavenFabric(MavenPublication) {
-            artifactId = rootProject.archives_base_name + "-" + project.name
+            artifactId = provider { "${rootProject.property('archive-base-name')}-${project.name}" }
             from components.java
         }
     }

@@ -14,14 +14,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-class MultipleLayersSurfaceGenerator extends SimpleSurfaceGenerator
+public class MultipleLayersSurfaceGenerator extends SimpleSurfaceGenerator
 {
 	// Must be sorted based on the noise field
 	protected List<MultipleLayersSurfaceGeneratorLayer> layers;
 
 	protected MultipleLayersSurfaceGenerator() { }
 	
-	MultipleLayersSurfaceGenerator(String[] args, IMaterialReader materialReader) throws InvalidConfigException
+	public MultipleLayersSurfaceGenerator(String[] args, IMaterialReader materialReader) throws InvalidConfigException
 	{
 		this.layers = new ArrayList<MultipleLayersSurfaceGeneratorLayer>();
 		int entryLength = 3;

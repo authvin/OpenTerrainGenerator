@@ -17,11 +17,6 @@ public class FabricPresetLoader extends LocalPresetLoader {
     }
 
     @Override
-    public List<ResourceKey<Biome>> getBiomeResourceKeys(String presetFolderName) {
-        return List.of();
-    }
-
-    @Override
     public IBiome[] getGlobalIdMapping(String presetFolderName) {
         return new IBiome[0];
     }

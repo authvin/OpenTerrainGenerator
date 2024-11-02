@@ -71,6 +71,10 @@ session.lock
 /platforms/forge/server.properties
 /platforms/forge/white-list.txt
 /platforms/forge/run/
+/platforms/fabric/run/
+/platforms/fabric/.architectury-transformer/
+/.architectury-transformer/
+/platforms/shared/run/
 
 # Filesystem dust
 Thumbs.db

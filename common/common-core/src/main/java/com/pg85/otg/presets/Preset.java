@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.config.preset.PresetConfig;
@@ -22,13 +23,16 @@ public class Preset {
     @Getter
     private String folderName;
     @Getter
-    private String shortPresetName;
+    private String presetRegistryName;
 
     // Note: Since we're not using Supplier<>, we need to be careful about any classes fetching
     // and caching our worldconfig/biomeconfigs etc, or they won't update when reloaded from disk.
     // BiomeGen and ChunkGen cache some settings during a session, so they'll only update on world exit/rejoin.
     @Getter
     private PresetSettings presetConfig;
+
+    private final List<BiomeConfig> biomeConfigList;
+
     private HashMap<OTGBiomeID, BiomeConfig> biomeConfigs = new HashMap<>();
 
     private final HashSet<OTGBiomeID> biomeIDS = new HashSet<>();
@@ -43,19 +47,16 @@ public class Preset {
     @Getter
     private HashMap<OTGBiomeID, Integer> biomeColorMap = new HashMap<>();
 
-    public Preset(Path presetFolder, String shortPresetName, PresetConfig presetConfig, ArrayList<BiomeConfig> biomeConfigs) {
+    public Preset(Path presetFolder, String presetRegistryName, PresetConfig presetConfig, ArrayList<BiomeConfig> biomeConfigs) {
         this.presetFolder = presetFolder;
         this.folderName = presetFolder.toFile().getName();
-        this.shortPresetName = shortPresetName;
+        this.presetRegistryName = presetRegistryName;
         this.presetConfig = presetConfig;
         this.author = presetConfig.getPresetInfo().getAuthor();
         this.description = presetConfig.getPresetInfo().getDescription();
         this.majorVersion = presetConfig.getPresetInfo().getMajorVersion();
 
-        for (BiomeConfig biomeConfig : biomeConfigs) {
-            this.biomeConfigs.put(biomeConfig.getOTGBiomeID(), biomeConfig);
-            biomeIDS.add(biomeConfig.getOTGBiomeID());
-        }
+        biomeConfigList = biomeConfigs;
     }
 
     public void update(Preset preset) {
@@ -99,10 +100,15 @@ public class Preset {
     }
 
     public ArrayList<BiomeConfig> getBiomeConfigList() {
-        return new ArrayList<>(this.biomeConfigs.values());
+        return new ArrayList<>(this.biomeConfigList);
     }
 
     public ArrayList<String> getAllBiomeNames() {
         return new ArrayList<>(this.biomeConfigs.keySet().stream().map(OTGBiomeID::biomeName).toList());
+    }
+
+    @Override
+    public String toString() {
+        return this.folderName;
     }
 }

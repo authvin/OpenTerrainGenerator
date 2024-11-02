@@ -1,11 +1,13 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "net.fabricmc.example.mixin",
+  "package": "com.pg85.otg.fabric.mixin.",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "com.pg85.otg.fabric.mixin.BiomeDataMixin",
-    "com.pg85.otg.fabric.mixin.BuiltInRegistriesAccessor"
+    "BiomeDataMixin",
+    "BuiltInRegistriesMixin",
+    "RegistryLoaderMixin",
+    "WorldPresetTagsMixin"
   ],
   "client": [
   ],

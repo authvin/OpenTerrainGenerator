@@ -6,13 +6,55 @@ import com.pg85.otg.util.logging.LogLevel;
 
 public final class OTGLog {
     private static ILogger logger = new BasicLogger();
-    public static void setLogger(ILogger logger)
-    {
+    public static void setLogger(ILogger logger) {
         OTGLog.logger = logger;
     }
-    public static ILogger getLogger()
-    {
+    public static ILogger getLogger() {
         return OTGLog.logger;
+    }
+    
+    public static void log(LogLevel level, LogCategory category, String message) {
+        logger.log(level, category, message);
+    }
+    
+    public static void printStackTrace(LogLevel marker, LogCategory category, Exception e) {
+        logger.printStackTrace(marker, category, e);
+    }
+    
+    public static boolean canLogForPreset(String presetFolderName) {
+        return logger.canLogForPreset(presetFolderName);
+    }
+
+    public static void info(LogCategory category, String message, Object... objects) {
+        log(LogLevel.INFO, category, String.format(message, objects));
+    }
+
+    public static void warn(LogCategory category, String message, Object... objects) {
+        log(LogLevel.WARN, category, String.format(message, objects));
+    }
+
+    public static void error(LogCategory category, String message, Object... objects) {
+        log(LogLevel.ERROR, category, String.format(message, objects));
+    }
+
+    public static void fatal(LogCategory category, String message, Object... objects) {
+        log(LogLevel.FATAL, category, String.format(message, objects));
+    }
+
+    public static void info(String message, Object... objects) {
+        info(LogCategory.MAIN, message, objects);
+    }
+
+    public static void warn(String message, Object... objects) {
+        warn(LogCategory.MAIN, message, objects);
+    }
+
+    public static void error(String message, Object... objects) {
+        error(LogCategory.MAIN, message, objects);
+    }
+
+    public static void fatal(String message, Object... objects) {
+        fatal(LogCategory.MAIN, message, objects);
     }
 
     // Not for use by platform code; it's a fallback for when code is executed and the engine isn't running

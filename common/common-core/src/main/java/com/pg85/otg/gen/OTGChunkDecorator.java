@@ -22,6 +22,7 @@ import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.ChunkCoordinate;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -111,7 +112,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 
 		Path otgRootFolder = OTG.getEngine().getOTGRootFolder();
 		CustomObjectManager customObjectManager = OTG.getEngine().getCustomObjectManager();
-		IMaterialReader materialReader = OTG.getEngine().getPresetLoader().getMaterialReader();
+		IMaterialReader materialReader = OTGMaterialReader.get();
 		CustomObjectResourcesManager customObjectResourcesManager = OTG.getEngine().getCustomObjectResourcesManager();
 		IModLoadedChecker modLoadedChecker = OTG.getEngine().getModLoadedChecker();
 

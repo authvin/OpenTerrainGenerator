@@ -10,7 +10,7 @@ import com.pg85.otg.presets.Preset;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.gen.JigsawStructureData;
-import com.pg85.otg.util.gen.WorldHeight;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.MathHelper;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -18,12 +18,8 @@ import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.QuartPos;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.WorldGenRegion;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.LevelHeightAccessor;
-import net.minecraft.world.level.NoiseColumn;
-import net.minecraft.world.level.StructureManager;
+import net.minecraft.world.level.*;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.Blocks;
@@ -32,7 +28,6 @@ import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ProtoChunk;
-import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.*;
 import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.carver.CarvingContext;
@@ -50,8 +45,8 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
     public static final Codec<OTGFabricChunkGenerator> CODEC =
             RecordCodecBuilder.create(instance ->
                     instance.group(
-                            NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter(OTGFabricChunkGenerator::getSettings),
-                            OTGFabricBiomeProvider.CODEC.fieldOf("biome_source").forGetter(OTGFabricChunkGenerator::getBiomeSource)
+                            OTGFabricBiomeProvider.CODEC.fieldOf("biome_source").forGetter(OTGFabricChunkGenerator::getBiomeSource),
+                            NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter(OTGFabricChunkGenerator::getSettings)
                     ).apply(instance, instance.stable(OTGFabricChunkGenerator::new)));
 
     private final Holder<NoiseGeneratorSettings> settings;
@@ -60,19 +55,38 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
     private final Preset preset;
     private final NoiseBasedChunkGenerator horribleDelegateForCarvers;
     private final Aquifer.FluidPicker globalFluidPicker;
+    private Long seed = null;
 
-    public OTGFabricChunkGenerator(Holder<NoiseGeneratorSettings> settings, OTGFabricBiomeProvider biomeSource) {
+    public OTGFabricChunkGenerator(OTGFabricBiomeProvider biomeSource, Holder<NoiseGeneratorSettings> settings) {
         super(biomeSource);
         this.settings = settings;
         this.biomeSource = biomeSource;
         this.internalGenerator = new OTGChunkGenerator(
-                OTG.getEngine().getPresetLoader().getPresetByFolderName(biomeSource.getPresetFolderName()), 
-                biomeSource.getSeed(), 
-                biomeSource, 
-                OTG.getEngine().getPresetLoader().getGlobalIdMapping(biomeSource.getPresetFolderName()));
+                OTG.getEngine().getPresetLoader().getPresetByFolderName(biomeSource.getPresetFolderName()),
+                biomeSource,
+                OTG.getEngine().getPresetLoader().getGlobalIdMapping(biomeSource.getPresetFolderName())
+        );
         preset = OTG.getEngine().getPresetLoader().getPresetByFolderName(biomeSource.getPresetFolderName());
         horribleDelegateForCarvers = new NoiseBasedChunkGenerator(biomeSource, settings);
         globalFluidPicker = createFluidPicker(settings.value());
+    }
+
+    public void setSeed(Long seed) {
+        synchronized (this) {
+            if (this.seed == null) {
+                this.seed = seed;
+                biomeSource.setSeed(seed);
+                internalGenerator.setSeed(seed);
+            }
+        }
+    }
+
+    @Override
+    public void createReferences(WorldGenLevel worldGenLevel, StructureManager structureManager, ChunkAccess chunkAccess) {
+        if (this.seed == null) {
+            this.setSeed(worldGenLevel.getSeed());
+        }
+        super.createReferences(worldGenLevel, structureManager, chunkAccess);
     }
 
     private static Aquifer.FluidPicker createFluidPicker(NoiseGeneratorSettings noiseGeneratorSettings) {
@@ -116,14 +130,13 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
                 BiomeGenerationSettings biomeGenerationSettings = chunkAccess22.carverBiome(() -> this.getBiomeGenerationSettings(this.biomeSource.getNoiseBiome(QuartPos.fromBlock(chunkPos2.getMinBlockX()), 0, QuartPos.fromBlock(chunkPos2.getMinBlockZ()), randomState.sampler())));
                 Iterable<Holder<ConfiguredWorldCarver<?>>> iterable = biomeGenerationSettings.getCarvers(carving);
                 int m = 0;
-                for (Holder<ConfiguredWorldCarver<?>> holder : iterable) {
-                    ConfiguredWorldCarver<?> configuredWorldCarver = holder.value();
+                for (Holder<ConfiguredWorldCarver<?>> carver : iterable) {
                     if (defaultCavesAndRavines.stream().noneMatch(
-                            b -> b.equalsIgnoreCase(
-                                    Objects.requireNonNull(BuiltInRegistries.CARVER.getKey(configuredWorldCarver.worldCarver())).toString()
-                            )
-                    )) {
-                        worldgenRandom.setLargeFeatureSeed(seed + (long)m, chunkPos2.x, chunkPos2.z);
+                            b -> b.equalsIgnoreCase(carver.unwrapKey().map(Objects::toString).orElse(""))
+                    ) && carver.isBound())
+                    {
+                        ConfiguredWorldCarver<?> configuredWorldCarver = carver.value();
+                        worldgenRandom.setLargeFeatureSeed(seed + (long) m, chunkPos2.x, chunkPos2.z);
                         if (configuredWorldCarver.isStartChunk(worldgenRandom)) {
                             configuredWorldCarver.carve(carvingContext, chunkAccess, biomeManager2::getBiome, worldgenRandom, aquifer, chunkPos2, carvingMask);
                         }
@@ -147,9 +160,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
             for (Holder<ConfiguredWorldCarver<?>> carver : iterable)
             {
                 if (defaultCaves.stream().noneMatch(
-                        b -> b.equalsIgnoreCase(
-                                Objects.requireNonNull(BuiltInRegistries.CARVER.getKey(carver.value().worldCarver())).toString()
-                        )
+                        b -> b.equalsIgnoreCase(carver.unwrapKey().map(Objects::toString).orElse(""))
                 ))
                 {
                     cavesEnabled = false;
@@ -165,9 +176,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
             for (Holder<ConfiguredWorldCarver<?>> carver : iterable)
             {
                 if (defaultRavines.stream().noneMatch(
-                        b -> b.equalsIgnoreCase(
-                                Objects.requireNonNull(BuiltInRegistries.CARVER.getKey(carver.value().worldCarver())).toString()
-                        )
+                        b -> b.equalsIgnoreCase(carver.unwrapKey().map(Objects::toString).orElse(""))
                 ))
                 {
                     ravinesEnabled = false;
@@ -237,9 +246,10 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
                 }
             }
         }
-        WorldHeight worldHeight = new WorldHeight(0, 255);
+        OTGWorldInfo worldHeight = new OTGWorldInfo(0, 255, seed);
         // we have no more world random, so this is a bit of a stopgap for now. Seems to be mainly used for bedrock and surface
         Random random = new Random(chunkCoord.getChunkX()*341873128712L + chunkCoord.getChunkZ()*132897987541L);
+
         this.internalGenerator.populateNoise(worldHeight, buffer, buffer.getChunkCoordinate(), structures, random);
         return CompletableFuture.completedFuture(chunkAccess);
     }

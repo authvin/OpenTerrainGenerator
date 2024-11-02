@@ -6,9 +6,11 @@ import com.pg85.otg.util.logging.LogLevel;
 import com.pg85.otg.util.logging.Logger;
 import org.apache.logging.log4j.LogManager;
 
-public class FabricLogger extends Logger {
+import java.util.Locale;
 
-    private final org.apache.logging.log4j.Logger logger = LogManager.getLogger(Constants.MOD_ID_SHORT);
+public class FabricLogger extends Logger {
+    private final String modId = Constants.MOD_ID_SHORT.toUpperCase(Locale.ROOT);
+    private final org.apache.logging.log4j.Logger logger = LogManager.getLogger(modId);
     @Override
     public void log(LogLevel level, LogCategory category, String message)
     {
@@ -18,22 +20,23 @@ public class FabricLogger extends Logger {
             return;
         }
 
-        message = " [" + Constants.MOD_ID_SHORT + "] " + message;
         // Fabric automatically adds the OpenTerrainGenerator prefix,
         // so we don't need to do that ourselves.
+        // message = " [" + modId + "] " + message;
+
         switch (level)
         {
             case FATAL:
-                this.logger.fatal(category.getLogTag() + " " + message);
+                this.logger.fatal("{} {}", category.getLogTag(), message);
                 break;
             case ERROR:
-                this.logger.error(category.getLogTag() + " " + message);
+                this.logger.error("{} {}", category.getLogTag(), message);
                 break;
             case WARN:
-                this.logger.warn(category.getLogTag() + " " + message);
+                this.logger.warn("{} {}", category.getLogTag(), message);
                 break;
             case INFO:
-                this.logger.info(category.getLogTag() + " " + message);
+                this.logger.info("{} {}", category.getLogTag(), message);
                 break;
             default:
                 break;

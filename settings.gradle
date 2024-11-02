@@ -5,18 +5,17 @@ pluginManagement {
         maven { url "https://maven.architectury.dev/" }
         maven { url "https://maven.minecraftforge.net/" }
     }
-
-    includeBuild("build-logic")
 }
 
 rootProject.name = "OpenTerrainGenerator"
 
 include(
-    "common:common-util",
-    "common:common-customobject",
-    "common:common-generator",
-    "common:common-core",
-    //"platforms:forge",
-    "platforms:fabric",
-    //"platforms:paper",
+        "common:common-util",
+        "common:common-customobject",
+        "common:common-generator",
+        "common:common-core",
+        //"platforms:forge",
+        //"platforms:shared",
+        "platforms:fabric",
+        //"platforms:paper",
 )

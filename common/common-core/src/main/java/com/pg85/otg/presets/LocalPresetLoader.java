@@ -7,6 +7,7 @@ import java.text.MessageFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.pg85.otg.OTG;
 import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.config.biome.BiomeConfigFinder;
 import com.pg85.otg.config.io.FileSettingsReader;
@@ -23,8 +24,6 @@ import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.world.level.biome.Biome;
 
 /**
  * A base class for a platform-specific preset loader, which loads 
@@ -38,7 +37,6 @@ public abstract class LocalPresetLoader
 	protected final File presetsDir;
 	protected final HashMap<String, Preset> presets = new HashMap<>();
 	protected final HashMap<String, String> aliasMap = new HashMap<>();
-	protected HashMap<String, IMaterialReader> materialReaderByPresetFolderName = new HashMap<>();
 
 	public LocalPresetLoader(Path otgRootFolder)
 	{
@@ -49,7 +47,7 @@ public abstract class LocalPresetLoader
 	{
 		return OTGMaterialReader.get();
 	}
-	
+
 
 	public Preset getPresetByShortNameOrFolderName(String name)
 	{
@@ -78,33 +76,47 @@ public abstract class LocalPresetLoader
 	
 	public String getDefaultPresetFolderName()
 	{
-		return this.presets.keySet().size() == 0 ? Constants.DEFAULT_PRESET_NAME : this.presets.keySet().contains(Constants.DEFAULT_PRESET_NAME) ? Constants.DEFAULT_PRESET_NAME : (String) this.presets.keySet().toArray()[0];
+		return this.presets.keySet().isEmpty() ? Constants.DEFAULT_PRESET_NAME
+				: this.presets.containsKey(Constants.DEFAULT_PRESET_NAME)
+						? Constants.DEFAULT_PRESET_NAME
+						: (String) this.presets.keySet().toArray()[0];
 	}
 		
-	public void loadPresetsFromDisk(IConfigFunctionProvider biomeResourcesManager, ILogger logger)
+	public void loadPresetsFromDisk()
 	{
 		if(this.presetsDir.exists() && this.presetsDir.isDirectory())
 		{
+			OTGLog.getLogger().log(
+				LogLevel.INFO,
+				LogCategory.CONFIGS,
+				"Loading presets from " + this.presetsDir
+			);
 			for(File presetDir : Objects.requireNonNull(this.presetsDir.listFiles()))
 			{
 				if(presetDir.isDirectory())
 				{
 					for(File file : Objects.requireNonNull(presetDir.listFiles()))
 					{
-						if(file.getName().equals(Constants.PRESET_CONFIG_FILE))
+						if(file.getName().equals(Constants.PRESET_CONFIG_FILE) || file.getName().equals(Constants.LEGACY_WORLD_CONFIG_FILE))
 						{
-							Preset preset = loadPreset(presetDir.toPath(), biomeResourcesManager, logger);
+							Preset preset = loadPreset(presetDir.toPath());
 							this.presets.put(preset.getFolderName(), preset);
-							this.aliasMap.put(preset.getShortPresetName(), preset.getFolderName());
+							this.aliasMap.put(preset.getPresetRegistryName(), preset.getFolderName());
 							break;
 						}
 					}
 				}
 			}
+		} else {
+			OTGLog.getLogger().log(
+				LogLevel.INFO,
+				LogCategory.CONFIGS,
+				"No presets found in " + this.presetsDir
+			);
 		}
 	}
 	
-	protected Preset loadPreset(Path presetDir, IConfigFunctionProvider biomeResourcesManager, ILogger logger)
+	protected Preset loadPreset(Path presetDir)
 	{
 		File presetConfigFile = new File(presetDir.toString(), Constants.PRESET_CONFIG_FILE);
 		File biomesDirectory = new File(presetDir.toString(), Constants.BIOMES_FOLDER);
@@ -115,11 +127,16 @@ public abstract class LocalPresetLoader
 		String presetFolderName = presetDir.toFile().getName();
 		
 		SettingsMap presetConfigSettings = FileSettingsReader.read(presetFolderName, presetConfigFile);
-		PresetConfig presetConfig = new PresetConfig(presetDir, presetConfigSettings, addBiomesFromDirRecursive(biomesDirectory), biomeResourcesManager, logger, getMaterialReader());
+		PresetConfig presetConfig = new PresetConfig(
+				presetDir,
+				presetConfigSettings,
+				addBiomesFromDirRecursive(biomesDirectory),
+				OTGMaterialReader.get()
+		);
 		FileSettingsWriter.writeToFile(presetConfig.getSettingsAsMap(), presetConfigFile, presetConfig.getPresetInfo().getSettingsMode());
 
 		// use shortPresetName to register the biomes, instead of presetName
-		ArrayList<BiomeConfig> biomeConfigs = loadBiomeConfigs(presetDir, biomesDirectory.toPath(), presetConfig, biomeResourcesManager);
+		ArrayList<BiomeConfig> biomeConfigs = loadBiomeConfigs(presetDir, biomesDirectory.toPath(), presetConfig, OTG.getEngine().getBiomeResourceManager());
 		return new Preset(presetDir, presetConfig.getPresetInfo().getRegistryName(), presetConfig, biomeConfigs);
 	}
 	
@@ -226,8 +243,6 @@ public abstract class LocalPresetLoader
 			}
 		}
 	}
-
-	public abstract List<ResourceKey<Biome>> getBiomeResourceKeys(String presetFolderName);
 
 	public abstract IBiome[] getGlobalIdMapping(String presetFolderName);
 

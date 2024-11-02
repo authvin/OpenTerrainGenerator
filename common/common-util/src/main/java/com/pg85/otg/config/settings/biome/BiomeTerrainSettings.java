@@ -6,6 +6,7 @@ import com.pg85.otg.config.settingType.Setting;
 import com.pg85.otg.config.settingType.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.config.settings.preset.TerrainSettings;
+import com.pg85.otg.constants.Constants;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -143,7 +144,7 @@ public class BiomeTerrainSettings extends ConfigSection {
     public static class BiomeTerrainSettingsBuilder {
         protected double[] readHeightSettings(SettingsMap settings)
         {
-            double[] heightMatrix = new double[this.parent.getWorldHeightCap() / this.parent.getWorldHeightScale() + 1];
+            double[] heightMatrix = new double[this.parent.getWorldHeightCap() / Constants.PIECE_Y_SIZE + 1];
             double[] keys = settings.getSetting(CUSTOM_HEIGHT_CONTROL);
             for (int i = 0; i < heightMatrix.length && i < keys.length; i++)
             {

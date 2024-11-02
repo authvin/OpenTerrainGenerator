@@ -14,6 +14,14 @@ import lombok.Getter;
  */
 @Getter
 public abstract class PresetSettings implements ConfigFile {
+	/* This class is a container for all settings at the preset level
+	* In order to add a new setting, there are four steps:
+	* 1. Add a field to one of the classes below
+	* 2. Add a public static setting to the class, including a getter and a description
+	* 3. Add the setting to the builder of the class
+	* 4. Add the setting to the write method of the class
+	* 4a. If the class has no write method yet, add it to the PresetWriter directly in the appropriate section
+	 */
 	protected GameRuleSettings gameRuleSettings;
 	protected StructureSettings structureSettings;
 	protected CarverSettings carverSettings;

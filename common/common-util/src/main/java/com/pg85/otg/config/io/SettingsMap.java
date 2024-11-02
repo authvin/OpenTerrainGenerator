@@ -3,6 +3,7 @@ package com.pg85.otg.config.io;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.io.RawSettingValue.ValueType;
 import com.pg85.otg.config.settingType.Setting;
+import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.interfaces.IPluginConfig;
 
 import java.nio.file.Path;
@@ -102,6 +103,14 @@ public interface SettingsMap
 	 *				 own line.
 	 */
 	<S> void putSetting(Setting<S> setting, S value, String... comments);
+
+	/**
+	 * Adds a setting to the map. Only usable when the setting has description and getter set
+	 * @param setting The setting to set
+	 * @param holder The ConfigSection holder of the setting
+	 * @param <S> Type value of the setting
+	 */
+	<S> void putSetting(Setting<S> setting, ConfigSection holder);
 
 	/**
 	 * Adds a raw setting to this map. If this setting has a type of

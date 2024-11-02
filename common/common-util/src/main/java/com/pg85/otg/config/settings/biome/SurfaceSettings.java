@@ -117,8 +117,24 @@ public class SurfaceSettings extends ConfigSection {
             "Used for vanilla Frozen Ocean and Deep Frozen Ocean biomes to create patches of water/ice."
     );
 
-    // This field is set statically by SurfaceGeneratorSetting.java, which is not available in Util
-    public static Setting<ISurfaceGenerator> SURFACE_GENERATOR;
+    public static final Setting<ISurfaceGenerator> SURFACE_GENERATOR = Settings.surfaceGeneratorSetting(
+            "SurfaceAndGroundControl",
+            section -> ((SurfaceSettings) section).getSurfaceGenerator(),
+            "Setting for biomes with more complex surface and ground blocks.",
+            "Each column in the world has a noise value from what appears to be -7 to 7.",
+            "Values near 0 are more common than values near -7 and 7. This setting is",
+            "used to change the surface block based on the noise value for the column.",
+            "1.12.2 Syntax: SurfaceBlockName,GroundBlockName,MaxNoise[,AnotherSurfaceBlockName,AnotherGroundBlockName,MaxNoise][,...]",
+            "Example: " + SurfaceSettings.SURFACE_GENERATOR + ": STONE,STONE,-0.8,GRAVEL,STONE,0.0,DIRT,DIRT,10.0",
+            "1.16.x Syntax: SurfaceBlockName,UnderWaterSurfaceBlockName,GroundBlockName,MaxNoise,[AnotherSurfaceBlockName,AnotherUnderWaterSurfaceBlockName,AnotherGroundBlockName,MaxNoise[,...]]",
+            "  When the noise is below -0.8, stone is the surface and ground block, between -0.8 and 0",
+            "  gravel with stone just below and between 0.0 and 10.0 there's only dirt.",
+            "  Because 10.0 is higher than the noise can ever get, the normal " + SurfaceSettings.SURFACE_BLOCK,
+            "  and " + SurfaceSettings.GROUND_BLOCK + " will never appear in this biome.", "",
+            "Alternatively, you can use Mesa, MesaForest or MesaBryce to get blocks",
+            "like the blocks found in the Mesa biomes.",
+            "You can also use Iceberg to get iceberg generation like in vanilla frozen oceans. Iceberg accepts a normal SAGC string: \"Iceberg <SAGC>\", so you can use normal SAGC with it."
+    );
 
     public static SurfaceSettings getSurfaceSettings(SettingsMap settingsReader, IMaterialReader materialReader, BlockSettings parent) {
         SurfaceSettingsBuilder builder = SurfaceSettings.builder();
@@ -247,6 +263,7 @@ public class SurfaceSettings extends ConfigSection {
     public LocalMaterialData getDefaultGroundBlock() {
         return groundBlock;
     }
+
     public void doSurfaceAndGroundControl(long worldSeed, GeneratingChunk generatingChunk, ChunkBuffer chunkBuffer, int x, int z, IBiome biome) {
         this.surfaceGenerator.spawn(worldSeed, generatingChunk, chunkBuffer, biome, x, z);
     }

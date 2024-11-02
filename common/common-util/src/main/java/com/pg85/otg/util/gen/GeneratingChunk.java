@@ -15,12 +15,12 @@ public final class GeneratingChunk
 
 	private static final int BEDROCK_LAYER_HEIGHT = 5;
 	@Getter
-	private final WorldHeight worldHeight;
+	private final OTGWorldInfo worldHeight;
 	public final Random random;
 	private final int[] waterLevel;
 	private final double[] surfaceNoise;
 
-	public GeneratingChunk(Random random, int[] waterLevel, double[] surfaceNoise, WorldHeight worldHeight)
+	public GeneratingChunk(Random random, int[] waterLevel, double[] surfaceNoise, OTGWorldInfo worldHeight)
 	{
 		this.random = random;
 		this.waterLevel = waterLevel;
@@ -81,7 +81,7 @@ public final class GeneratingChunk
 		{
 			return y <= worldHeight.getXAboveMin(BEDROCK_LAYER_HEIGHT, random);
 		}
-		if (ceilingBedrock && y > worldHeight.getXBelowMax(BEDROCK_LAYER_HEIGHT) && y < worldHeight.getMaxY())
+		if (ceilingBedrock && y > worldHeight.getXBelowMax(BEDROCK_LAYER_HEIGHT) && y < worldHeight.maxY())
 		{
 			int amountBelowHeightCap = worldHeight.getXBelowMax(y + 1);
 			if (amountBelowHeightCap < 0 || amountBelowHeightCap > BEDROCK_LAYER_HEIGHT)

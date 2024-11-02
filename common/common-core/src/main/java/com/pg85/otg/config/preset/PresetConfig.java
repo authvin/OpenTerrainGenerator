@@ -1,15 +1,16 @@
 package com.pg85.otg.config.preset;
 
+import com.pg85.otg.OTG;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.biome.BiomeGroupFunction;
 import com.pg85.otg.config.biome.TemplateBiome;
-import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settingType.Setting;
 import com.pg85.otg.config.settingType.Settings;
 import com.pg85.otg.config.settings.preset.*;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import lombok.Getter;
@@ -44,14 +45,15 @@ public class PresetConfig extends PresetSettings {
     protected boolean biomeConfigsHaveReplacement = false;
     protected int maxSmoothRadius = 2;
 
-    public PresetConfig(Path settingsDir, SettingsMap settingsReader, ArrayList<String> biomes, IConfigFunctionProvider biomeResourcesManager, ILogger logger, IMaterialReader materialReader) {
+    public PresetConfig(Path settingsDir, SettingsMap settingsReader, ArrayList<String> biomes, IMaterialReader materialReader) {
         super(settingsReader.getName());
-        this.renameOldSettings(settingsReader, logger, materialReader);
+        this.renameOldSettings(settingsReader, OTGLog.getLogger(), materialReader);
         presetInfo = PresetInfo.buildPresetInfo(settingsReader);
         visualSettings = VisualSettings.builder().fogColor(settingsReader.getSetting(VisualSettings.PRESET_FOG_COLOR)).build();
         resourceSettings = ResourceSettings.getResourceSettings(settingsReader);
         blockSettings = BlockSettings.getBlockSettings(settingsReader);
-        generationSettings = GenerationSettings.getBiomeSettings(this, settingsReader, biomeResourcesManager, biomes, materialReader, settingsDir);
+        generationSettings = GenerationSettings.getBiomeSettings(
+                this, settingsReader, OTG.getEngine().getBiomeResourceManager(), biomes, materialReader, settingsDir);
         terrainSettings = TerrainSettings.getTerrainSettings(settingsReader);
         imageSettings = ImageSettings.getImageSettings(settingsReader, biomes);
         structureSettings = StructureSettings.getStructureSettings(settingsReader);

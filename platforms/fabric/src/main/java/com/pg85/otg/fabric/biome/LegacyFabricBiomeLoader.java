@@ -9,24 +9,26 @@ import com.mojang.serialization.Lifecycle;
 import com.pg85.otg.OTG;
 import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.config.biome.BiomeGroupFunction;
-import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.fabric.mixin.BiomeDataMixin;
 import com.pg85.otg.gen.biome.BiomeData;
 import com.pg85.otg.gen.biome.layers.BiomeLayerData;
 import com.pg85.otg.gen.biome.layers.BiomeGroup;
 import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IBiomeResourceLocation;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.config.settings.preset.PresetSettings;
+import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.presets.LocalPresetLoader;
 import com.pg85.otg.presets.Preset;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.biome.OTGBiomeResourceLocation;
 import com.pg85.otg.util.biome.WeightedMobSpawnGroup;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 
+import lombok.Getter;
+import lombok.Setter;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.registries.Registries;
@@ -39,22 +41,32 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
 import net.minecraft.world.level.biome.BiomeSpecialEffects;
 import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
+import static com.pg85.otg.util.logging.LogCategory.CONFIGS;
+
 
 public class LegacyFabricBiomeLoader extends LocalPresetLoader {
+    // Static fields to store the references
+    public static HolderGetter<PlacedFeature> PLACED_FEATURE_HOLDER;
+    public static HolderGetter<ConfiguredWorldCarver<?>> CONFIGURED_CARVER_HOLDER;
+    public static boolean BIOME_DATA_INITIALIZED = false;
     private Map<String, List<ResourceKey<Biome>>> biomesByPresetFolderName = new LinkedHashMap<>();
     private HashMap<String, IBiome[]> globalIdMapping = new HashMap<>();
     private Map<String, BiomeLayerData> presetGenerationData = new HashMap<>();
+
+    // Place to store our LevelStem between registry rounds
+    @Getter
+    @Setter
+    private Map<ResourceKey<LevelStem>, LevelStem> levelStems = new HashMap<>();
     
     public LegacyFabricBiomeLoader(Path otgRootFolder)
     {
         super(otgRootFolder);
     }
 
-
-    @Override
     public List<ResourceKey<Biome>> getBiomeResourceKeys(String presetFolderName)
     {
         return this.biomesByPresetFolderName.get(presetFolderName);
@@ -73,7 +85,7 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
     }
 
     // Note: BiomeGen and ChunkGen cache some settings during a session, so they'll only update on world exit/rejoin.
-    public void reloadPresetFromDisk(String presetFolderName, IConfigFunctionProvider biomeResourcesManager, ILogger logger, WritableRegistry<Biome> biomeRegistry)
+    public void reloadPresetFromDisk(String presetFolderName, WritableRegistry<Biome> biomeRegistry)
     {
         clearCaches();
 
@@ -87,7 +99,7 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
                     {
                         if(file.getName().equals(Constants.PRESET_CONFIG_FILE))
                         {
-                            Preset preset = loadPreset(presetDir.toPath(), biomeResourcesManager, logger);
+                            Preset preset = loadPreset(presetDir.toPath());
                             Preset existingPreset = this.presets.get(preset.getFolderName());
                             existingPreset.update(preset);
                             break;
@@ -96,7 +108,7 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
                 }
             }
         }
-        registerBiomes(true, biomeRegistry);
+        registerBiomes(biomeRegistry);
     }
 
     protected void clearCaches()
@@ -104,7 +116,6 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
         this.globalIdMapping = new HashMap<>();
         this.presetGenerationData = new HashMap<>();
         this.biomesByPresetFolderName = new LinkedHashMap<>();
-        this.materialReaderByPresetFolderName = new HashMap<>();
     }
 
     public void reRegisterBiomes(String presetFolderName, WritableRegistry<Biome> biomeRegistry)
@@ -113,30 +124,31 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
         this.presetGenerationData.remove(presetFolderName);
         this.biomesByPresetFolderName.remove(presetFolderName);
 
-        registerBiomes(true, biomeRegistry);
+        registerBiomes(biomeRegistry);
     }
 
     public void registerBiomes()
     {
-        registerBiomes(false, null);
+        registerBiomes(null);
     }
 
-    private void registerBiomes(boolean refresh, WritableRegistry<Biome> biomeRegistry)
+    public void registerBiomes(WritableRegistry<Biome> biomeRegistry)
     {
         for(Preset preset : this.presets.values())
         {
-            registerBiomesForPreset(refresh, preset, biomeRegistry);
+            registerBiomesForPreset(preset, biomeRegistry);
         }
     }
 
-    private void registerBiomesForPreset(boolean refresh, Preset preset, WritableRegistry<Biome> biomeRegistry)
+    private void registerBiomesForPreset(Preset preset, WritableRegistry<Biome> biomeRegistry)
     {
-        if (!BiomeDataMixin.INITIALIZED) {
+        if (!BIOME_DATA_INITIALIZED) {
             // should always be initialized, but better safe than sorry. Would rather have a sensical error message than nonsensical
             throw new IllegalStateException("BiomeDataMixin not initialized");
         }
-        HolderGetter<PlacedFeature> featureHolder = BiomeDataMixin.PLACED_FEATURE_HOLDER;
-        HolderGetter<ConfiguredWorldCarver<?>> carverHolder = BiomeDataMixin.CONFIGURED_CARVER_HOLDER;
+        HolderGetter<PlacedFeature> featureHolder = PLACED_FEATURE_HOLDER;
+        HolderGetter<ConfiguredWorldCarver<?>> carverHolder = CONFIGURED_CARVER_HOLDER;
+
         // Index BiomeColors for FromImageMode and /otg map
         HashMap<Integer, Integer> biomeColorMap = new HashMap<Integer, Integer>();
 
@@ -170,7 +182,7 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
             if(!biomeConfig.getIsTemplateForBiome())
             {
                 // Normal OTG biome, not a template biome.
-                IBiomeResourceLocation otgLocation = new OTGBiomeResourceLocation(preset.getPresetFolder(), preset.getShortPresetName(), preset.getMajorVersion(), biomeConfig.getIdentitySettings().getBiomeName());
+                IBiomeResourceLocation otgLocation = new OTGBiomeResourceLocation(preset.getPresetFolder(), preset.getPresetRegistryName(), preset.getMajorVersion(), biomeConfig.getIdentitySettings().getBiomeName());
                 biomeConfigsByResourceLocation.put(otgLocation, biomeConfig);
                 biomeConfigsByName.put(biomeConfig.getIdentitySettings().getBiomeName(), biomeConfig);
             }
@@ -197,10 +209,11 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
             ResourceLocation resourceLocation = new ResourceLocation(iBiomeResourceLocation.toResourceLocationString());
             ResourceKey<Biome> resourceKey;
             Biome biome;
+            Holder.Reference<Biome> ref;
             // templates, and non-developer refresh, both just get the biome from the registry
             if(biomeConfig.getIsTemplateForBiome()
-                    || (refresh
-                        && !OTG.getEngine().getPluginConfig().getDeveloperModeEnabled())
+//                    || (refresh
+//                        && !OTG.getEngine().getPluginConfig().getDeveloperModeEnabled())
             ) {
                 biome = biomeRegistry.get(resourceLocation);
                 if (biome == null) {
@@ -219,6 +232,8 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
                     }
                     continue;
                 }
+                ref = biomeRegistry.getHolder(resourceKey).orElseThrow();
+
             } else {
                 if(!(iBiomeResourceLocation instanceof OTGBiomeResourceLocation))
                 {
@@ -239,12 +254,10 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
                 });
 
                 biome = LegacyFabricBiomeLoader.createOTGBiome(isOceanBiome, preset.getPresetConfig(), biomeConfig, featureHolder, carverHolder);
-                if (refresh) {
+                /*if (refresh) {
                     biomeRegistry.registerMapping(0, resourceKey, biome, Lifecycle.stable());
-                } else {
-                    biomeRegistry.register(resourceKey, biome, Lifecycle.stable());
-                }
-
+                }*/
+                ref = biomeRegistry.register(resourceKey, biome, Lifecycle.stable());
             }
             presetBiomes.add(resourceKey);
             biomeConfig.setRegistryKey(iBiomeResourceLocation);
@@ -271,10 +284,15 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
                 oceanTemperatures[3] = otgBiomeId;
             }
 
-            IBiome otgBiome = new FabricBiome(biomeConfig, biome);
+            IBiome otgBiome = new FabricBiome(biomeConfig, biome, ref);
             if(otgBiomeId >= presetIdMapping.length)
             {
-                OTG.getEngine().getLogger().log(LogLevel.FATAL, LogCategory.CONFIGS, "Fatal error while registering OTG biome id's for preset " + preset.getFolderName() + ", most likely you've assigned a DefaultOceanBiome that doesn't exist.");
+                OTGLog.fatal(CONFIGS, "Fatal error while registering OTG biome id's for preset " + preset.getFolderName() + ", most likely you've assigned a DefaultOceanBiome that doesn't exist.");
+
+                OTGLog.info(CONFIGS, "Registered biomes: " + presetIdMapping.length);
+                OTGLog.info(CONFIGS, "Current id: " + otgBiomeId);
+                OTGLog.info(CONFIGS, "List of biomes: " + Arrays.toString(presetIdMapping));
+
                 throw new RuntimeException("Fatal error while registering OTG biome id's for preset " + preset.getFolderName() + ", most likely you've assigned a DefaultOceanBiome that doesn't exist.");
             }
             presetIdMapping[otgBiomeId] = otgBiome;
@@ -360,7 +378,7 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
         // Mob spawning
         MobSpawnSettings.Builder mobSpawnSettings = createMobSpawnSettings(biomeConfig);
 
-        BiomeDefaultFeatures.addDefaultCarversAndLakes(generationSettings);
+        //BiomeDefaultFeatures.addDefaultCarversAndLakes(generationSettings);
 
         float temperature = biomeConfig.getVisualSettings().getBiomeTemperature();
         
@@ -372,7 +390,13 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
         specialEffects.fogColor(biomeConfig.getVisualSettings().getFogColor().getColor());
         specialEffects.skyColor(biomeConfig.getVisualSettings().getSkyColor().getColor());
 
-        return new Biome.BiomeBuilder().generationSettings(generationSettings.build()).mobSpawnSettings(mobSpawnSettings.build()).specialEffects(specialEffects.build()).downfall(downfall).temperature(temperature).build();
+        return new Biome.BiomeBuilder()
+                .generationSettings(generationSettings.build())
+                .mobSpawnSettings(mobSpawnSettings.build())
+                .specialEffects(specialEffects.build())
+                .downfall(downfall)
+                .temperature(temperature)
+                .build();
     }
 
     private static MobSpawnSettings.Builder createMobSpawnSettings(BiomeSettings biomeConfig)

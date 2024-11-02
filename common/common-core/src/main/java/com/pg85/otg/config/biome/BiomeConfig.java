@@ -173,8 +173,8 @@ public class BiomeConfig extends BiomeSettings
 	}
 
 	@Override
-	public double getCHCData(int y) {
-		return this.getTerrainSettings().getCustomHeightControl()[y];
+	public double getCHCData(int controlLayer) {
+		return this.getTerrainSettings().getCustomHeightControl()[controlLayer];
 	}
 
 

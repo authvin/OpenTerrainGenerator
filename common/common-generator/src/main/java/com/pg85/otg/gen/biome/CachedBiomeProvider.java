@@ -24,7 +24,7 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 	static int cacheHits = 0;
 	static int smallCacheHits = 0;
 
-    private final long seed;
+    private long seed;
 	private final ILayerSource biomeProvider;
 	private final IBiome[] biomesById;
 	
@@ -37,9 +37,8 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 	private final Object noiseLock = new Object();
 	private final FifoMap<ChunkCoordinate, BiomeSettings[]> noiseBiomeConfigsCache = new FifoMap<>(1024);
 
-	public CachedBiomeProvider(long seed, ILayerSource biomeProvider, IBiome[] biomesById)
+	public CachedBiomeProvider(ILayerSource biomeProvider, IBiome[] biomesById)
 	{
-		this.seed = seed;
 		this.biomeProvider = biomeProvider;
 		this.biomesById = biomesById;
 	}
@@ -308,6 +307,14 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 	private IBiome getNoiseBiome(int noiseX, int noiseZ, boolean cacheChunk)
 	{
 		return this.biomesById[this.biomeProvider.getSampler().sample(noiseX, noiseZ)];
+	}
+
+	public void setSeed(long seed) {
+		this.seed = seed;
+	}
+
+	public long getSeed() {
+		return seed;
 	}
 
 	/**

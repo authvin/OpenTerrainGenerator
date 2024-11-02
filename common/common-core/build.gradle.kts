@@ -4,6 +4,4 @@ dependencies {
     api(project(":common:common-util"))
     api(project(":common:common-customobject"))
     api(project(":common:common-generator"))
-
-
 }

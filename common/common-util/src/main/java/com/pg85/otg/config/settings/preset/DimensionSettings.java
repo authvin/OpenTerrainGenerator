@@ -4,14 +4,19 @@ import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settingType.Setting;
 import com.pg85.otg.config.settingType.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
+import com.pg85.otg.util.minecraft.OTGDimensionType;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
 import java.util.OptionalLong;
 
 @Builder
 @Getter
 public class DimensionSettings extends ConfigSection {
+    private final OTGDimensionType dimensionType;
+    private final List<String> defaultDimensions;
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     private final OptionalLong fixedTime;
     private final boolean hasSkyLight;
     private final boolean hasCeiling;
@@ -23,11 +28,32 @@ public class DimensionSettings extends ConfigSection {
     private final boolean bedWorks;
     private final boolean respawnAnchorWorks;
     private final boolean hasRaids;
+    private final int minY;
+    private final int height;
     private final int logicalHeight;
     private final String infiniburn;
     private final String effectsLocation;
     private final double ambientLight;
+    private final int monsterSpawnLightLimit;
+    private final int monsterSpawnLightVariationMin;
+    private final int monsterSpawnLightVariationMax;
 
+    public static final Setting<List<String>> DEFAULT_DIMENSIONS = Settings.stringListSetting(
+            "DefaultDimensions", new String[]{"this", "minecraft:the_nether", "minecraft:the_end"},
+            t -> ((DimensionSettings) t).getDefaultDimensions(),
+            "The default dimensions for the world, overworld, nether, end by default.",
+            "Order of entries matter; first will be loaded as overworld, second as nether, third as the end.",
+            "Any additional dimensions will be loaded as OTG dimensions.",
+            "To specify another preset, use the format \"otg:my_preset\".",
+            "The current preset can be referenced either with its full name, or \"this\"."
+    );
+    public static final Setting<OTGDimensionType> DIMENSION_TYPE = Settings.enumSetting(
+            "DimensionType", OTGDimensionType.OVERWORLD,
+            t -> ((DimensionSettings) t).getDimensionType(),
+            "The dimension type, either OVERWORLD, NETHER, END, or OTG.",
+            "Defaults to overworld.",
+            "To use the settings below, must be set to OTG. Otherwise, dimension settings of the given dimensions apply."
+    );
     public static final Setting<String> INFINIBURN = Settings.stringSetting(
             "InfiniBurn", "minecraft:infiniburn_overworld",
             t -> ((DimensionSettings) t).getInfiniburn(),
@@ -40,10 +66,24 @@ public class DimensionSettings extends ConfigSection {
             "Effects registry key, minecraft:overworld by default.",
             "Can be either overworld/nether/end (or potentially modded)."
     );
+    public static final Setting<Integer> MIN_Y = Settings.intSetting(
+            "MinY", 0, -2032, 2016,
+            t -> ((DimensionSettings) t).getMinY(),
+            "Minimum Y value for this dimension, 0 by default.",
+            "Must be a multiple of 16."
+    );
+    public static final Setting<Integer> HEIGHT = Settings.intSetting(
+            "Height", 256, 16, 4064,
+            t -> ((DimensionSettings) t).getHeight(),
+            "Total height of this dimension, 256 by default (0 to 255).",
+            "Must be a multiple of 16."
+    );
     public static final Setting<Integer> LOGICAL_HEIGHT = Settings.intSetting(
-            "LogicalHeight", 256, 0, Integer.MAX_VALUE,
+            "LogicalHeight", 256, 16, 4064,
             t -> ((DimensionSettings) t).getLogicalHeight(),
-            "World height, 256 by default. Affects portals and chorus fruits."
+            "The max height at which nether portals and chorus fruits can safely teleport players in this dimension.",
+            "Does not affect existing portals.",
+            "Cannot be greater than "+HEIGHT.getName()+"."
     );
     public static final Setting<Long> FIXED_TIME = Settings.longSetting(
             "FixedTime", -1L, -1L, 24000L,
@@ -118,10 +158,27 @@ public class DimensionSettings extends ConfigSection {
             t -> ((DimensionSettings) t).getAmbientLight(),
             "The base ambient light level for the world, 0.0 for overworld/end, 0.1 for nether."
     );
+    public static final Setting<Integer> MONSTER_SPAWN_LIGHT_LIMIT = Settings.intSetting(
+            "MonsterSpawnLightLevel", 7, 0, 15,
+            t -> ((DimensionSettings) t).getMonsterSpawnLightLimit(),
+            "The light level at which monsters can spawn, 7 by default."
+    );
+    public static final Setting<Integer> MONSTER_SPAWN_LIGHT_VARIATION_MIN = Settings.intSetting(
+            "MonsterSpawnLightVariationMin", 0, 0, 15,
+            t -> ((DimensionSettings) t).getMonsterSpawnLightVariationMin(),
+            "The minimum light level variation for monster spawning, 0 by default."
+    );
+    public static final Setting<Integer> MONSTER_SPAWN_LIGHT_VARIATION_MAX = Settings.intSetting(
+            "MonsterSpawnLightVariationMax", 7, 0, 15,
+            t -> ((DimensionSettings) t).getMonsterSpawnLightVariationMax(),
+            "The maximum light level variation for monster spawning, 7 by default.",
+            "Must be greater than or equal to "+MONSTER_SPAWN_LIGHT_VARIATION_MIN.getName()+"."
+    );
 
     public static DimensionSettings getDimensionSettings(SettingsMap reader) {
         var dimensionSettingsBuilder = builder();
-
+        dimensionSettingsBuilder.defaultDimensions(reader.getSetting(DEFAULT_DIMENSIONS));
+        dimensionSettingsBuilder.dimensionType(reader.getSetting(DIMENSION_TYPE));
         long fixedTime = reader.getSetting(FIXED_TIME);
         dimensionSettingsBuilder.fixedTime(fixedTime == -1L ? OptionalLong.empty() : OptionalLong.of(fixedTime));
         dimensionSettingsBuilder.hasSkyLight(reader.getSetting(HAS_SKYLIGHT));
@@ -134,12 +191,42 @@ public class DimensionSettings extends ConfigSection {
         dimensionSettingsBuilder.bedWorks(reader.getSetting(BED_WORKS));
         dimensionSettingsBuilder.respawnAnchorWorks(reader.getSetting(RESPAWN_ANCHOR_WORKS));
         dimensionSettingsBuilder.hasRaids(reader.getSetting(HAS_RAIDS));
+        dimensionSettingsBuilder.minY(reader.getSetting(MIN_Y));
+        dimensionSettingsBuilder.height(reader.getSetting(HEIGHT));
         dimensionSettingsBuilder.logicalHeight(reader.getSetting(LOGICAL_HEIGHT));
         dimensionSettingsBuilder.infiniburn(reader.getSetting(INFINIBURN));
         dimensionSettingsBuilder.effectsLocation(reader.getSetting(EFFECTS_LOCATION));
         dimensionSettingsBuilder.ambientLight(reader.getSetting(AMBIENT_LIGHT).floatValue());
+        dimensionSettingsBuilder.monsterSpawnLightLimit(reader.getSetting(MONSTER_SPAWN_LIGHT_LIMIT));
+        dimensionSettingsBuilder.monsterSpawnLightVariationMin(reader.getSetting(MONSTER_SPAWN_LIGHT_VARIATION_MIN));
+        dimensionSettingsBuilder.monsterSpawnLightVariationMax(reader.getSetting(MONSTER_SPAWN_LIGHT_VARIATION_MAX));
 
         return dimensionSettingsBuilder.build();
+    }
+    
+    public void writeSettings(SettingsMap writer) {
+        writer.putSetting(DimensionSettings.DEFAULT_DIMENSIONS, this);
+        writer.putSetting(DimensionSettings.DIMENSION_TYPE, this);
+        writer.putSetting(DimensionSettings.FIXED_TIME, this);
+        writer.putSetting(DimensionSettings.HAS_SKYLIGHT, this);
+        writer.putSetting(DimensionSettings.HAS_CEILING, this);
+        writer.putSetting(DimensionSettings.ULTRA_WARM, this);
+        writer.putSetting(DimensionSettings.NATURAL, this);
+        writer.putSetting(DimensionSettings.COORDINATE_SCALE, this);
+        writer.putSetting(DimensionSettings.CREATE_DRAGON_FLIGHT, this);
+        writer.putSetting(DimensionSettings.PIGLIN_SAFE, this);
+        writer.putSetting(DimensionSettings.BED_WORKS, this);
+        writer.putSetting(DimensionSettings.RESPAWN_ANCHOR_WORKS, this);
+        writer.putSetting(DimensionSettings.HAS_RAIDS, this);
+        writer.putSetting(DimensionSettings.MIN_Y, this);
+        writer.putSetting(DimensionSettings.HEIGHT, this);
+        writer.putSetting(DimensionSettings.LOGICAL_HEIGHT, this);
+        writer.putSetting(DimensionSettings.INFINIBURN, this);
+        writer.putSetting(DimensionSettings.EFFECTS_LOCATION, this);
+        writer.putSetting(DimensionSettings.AMBIENT_LIGHT, this);
+        writer.putSetting(DimensionSettings.MONSTER_SPAWN_LIGHT_LIMIT, this);
+        writer.putSetting(DimensionSettings.MONSTER_SPAWN_LIGHT_VARIATION_MIN, this);
+        writer.putSetting(DimensionSettings.MONSTER_SPAWN_LIGHT_VARIATION_MAX, this);
     }
 
     @Override

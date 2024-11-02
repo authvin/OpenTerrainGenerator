@@ -7,12 +7,16 @@ import com.pg85.otg.gen.biome.layers.BiomeLayers;
 import com.pg85.otg.gen.biome.layers.util.CachingLayerSampler;
 import com.pg85.otg.interfaces.ILayerSampler;
 import com.pg85.otg.interfaces.ILayerSource;
+import com.pg85.otg.util.logging.LogCategory;
+import com.pg85.otg.util.logging.LogLevel;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
 import net.minecraft.core.Holder;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.stream.Stream;
 
@@ -20,17 +24,17 @@ import java.util.stream.Stream;
 public class OTGFabricBiomeProvider extends BiomeSource implements ILayerSource, BiomeManager.NoiseBiomeSource {
     public static final Codec<OTGFabricBiomeProvider> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
-                    Codec.STRING.fieldOf("preset_name").stable().forGetter(OTGFabricBiomeProvider::getPresetFolderName),
-                    Codec.LONG.fieldOf("seed").stable().forGetter(OTGFabricBiomeProvider::getSeed)
+                    Codec.STRING.fieldOf("preset_name").stable().forGetter(OTGFabricBiomeProvider::getPresetFolderName)
             ).apply(instance, instance.stable(OTGFabricBiomeProvider::new)));
     private final String presetFolderName;
-    private final Long seed;
-    private final ThreadLocal<CachingLayerSampler> layer;
+    //this.layer = ThreadLocal.withInitial(() -> BiomeLayers.create(seed, OTG.getEngine().getPresetLoader().getPresetGenerationData().get(presetFolderName), OTG.getEngine().getLogger()));
 
-    public OTGFabricBiomeProvider(String presetFolderName, Long seed) {
+    private long seed;
+    private ThreadLocal<CachingLayerSampler> layer;
+    private final Int2ObjectOpenHashMap<Holder<Biome>> keyLookup = new Int2ObjectOpenHashMap<>();
+
+    public OTGFabricBiomeProvider(String presetFolderName) {
         this.presetFolderName = presetFolderName;
-        this.seed = seed;
-        this.layer = ThreadLocal.withInitial(() -> BiomeLayers.create(seed, OTG.getEngine().getPresetLoader().getPresetGenerationData().get(presetFolderName), OTG.getEngine().getLogger()));
     }
 
     @Override
@@ -40,21 +44,35 @@ public class OTGFabricBiomeProvider extends BiomeSource implements ILayerSource,
 
     @Override
     protected Codec<? extends BiomeSource> codec() {
-        return codec();
+        return CODEC;
     }
 
     @Override
-    protected Stream<Holder<Biome>> collectPossibleBiomes() {
-        return Stream.empty();
+    protected @NotNull Stream<Holder<Biome>> collectPossibleBiomes() {
+        var iBiomes = OTG.getEngine().getPresetLoader().getGlobalIdMapping(presetFolderName);
+        if (iBiomes == null) {
+            OTG.getEngine().getLogger().log(LogLevel.ERROR, LogCategory.BIOME_REGISTRY,
+                    "Biome mapping for preset " + presetFolderName + " is null.");
+            return Stream.empty();
+        }
+        for (int otgBiomeID = 0; otgBiomeID < iBiomes.length; otgBiomeID++) {
+            keyLookup.put(otgBiomeID, ((FabricBiome) iBiomes[otgBiomeID]).getBiomeHolder());
+        }
+        return Stream.of(iBiomes).map(iBiome -> ((FabricBiome) iBiome).getBiomeHolder());
     }
 
     @Override
     public Holder<Biome> getNoiseBiome(int i, int j, int k, Climate.Sampler sampler) {
-        return null;
+        return keyLookup.get(this.getLayer().get().sample(i, k));
     }
 
     @Override
     public Holder<Biome> getNoiseBiome(int i, int j, int k) {
-        return null;
+        return keyLookup.get(this.getLayer().get().sample(i, k));
+    }
+
+    public void setSeed(long seed) {
+        this.seed = seed;
+        layer = ThreadLocal.withInitial(() -> BiomeLayers.create(seed, OTG.getEngine().getPresetLoader().getPresetGenerationData().get(presetFolderName), OTG.getEngine().getLogger()));
     }
 }

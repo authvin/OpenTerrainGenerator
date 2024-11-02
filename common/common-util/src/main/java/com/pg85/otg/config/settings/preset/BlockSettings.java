@@ -78,6 +78,7 @@ public class BlockSettings extends ConfigSection {
         blockSettingsBuilder.removeSurfaceStone(reader.getSetting(REMOVE_SURFACE_STONE));
         blockSettingsBuilder.waterBlock(reader.getSetting(WATER_BLOCK));
         blockSettingsBuilder.bedrockBlock(reader.getSetting(BEDROCK_BLOCK));
+        blockSettingsBuilder.defaultBedrockBlock(LocalMaterials.BEDROCK);
         blockSettingsBuilder.cooledLavaBlock(reader.getSetting(COOLED_LAVA_BLOCK));
         blockSettingsBuilder.iceBlock(reader.getSetting(ICE_BLOCK));
         blockSettingsBuilder.carverLavaBlock(reader.getSetting(CARVER_LAVA_BLOCK));
