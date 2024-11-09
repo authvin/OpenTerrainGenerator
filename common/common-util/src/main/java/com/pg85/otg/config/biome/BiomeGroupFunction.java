@@ -10,6 +10,7 @@ import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 import com.pg85.otg.util.minecraft.BiomeRegistryNames;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.text.MessageFormat;
 import java.util.*;
@@ -43,6 +44,7 @@ public final class BiomeGroupFunction extends ConfigFunction<PresetSettings>
 	@Getter
     private int groupRarity;
 	@Getter
+	@Setter
     private int generationDepth = 0;
 	private double minTemp = 0;
 	private double maxTemp = 0;
@@ -63,7 +65,9 @@ public final class BiomeGroupFunction extends ConfigFunction<PresetSettings>
 		// Must have at least a GroupName and a Biome that belongs to it
 		assureSize(4, args);
 		this.name = args.get(0);
-		this.generationDepth = readInt(args.get(1), 0, config.getGenerationSettings().getGenerationDepth());
+		// In future, would want to read the generation depth from the config
+		// For now, since it is currently being initialized, we instead clamp it later using BiomeGroupManager::clampGenerationDepth
+		this.generationDepth = readInt(args.get(1), 0, Integer.MAX_VALUE);//config.getGenerationSettings().getGenerationDepth());
 		this.groupRarity = readInt(args.get(2), 1, Integer.MAX_VALUE);
 		
 		try

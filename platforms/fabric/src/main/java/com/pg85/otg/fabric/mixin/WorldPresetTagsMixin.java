@@ -39,7 +39,7 @@ public class WorldPresetTagsMixin {
         presets.keySet().forEach(id -> {
             // check it's in the OTG name space
             if (!id.getNamespace().equalsIgnoreCase(Constants.MOD_ID_SHORT)) {
-                OTGLog.getLogger().info("Skipping preset %s as it's not in the OTG namespace", id.toString());
+                //OTGLog.getLogger().info("Skipping preset %s as it's not in the OTG namespace", id.toString());
                 return;
             }
             // can't use direct holders, need reference

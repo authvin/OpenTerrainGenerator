@@ -243,6 +243,8 @@ public class GenerationSettings extends ConfigSection {
         // BiomeGroups requires that values like genDepth are initialized
         generationSettingsBuilder.templateBiomes(readTemplateBiomes(reader, presetConfig, biomeResourcesManager));
         generationSettingsBuilder.biomeGroupManager(readBiomeGroups(reader, presetConfig, biomeResourcesManager));
+        // Temporary fix since we can't access generationDepth inside the biome group constructor without separating GenerationSettings into two classes
+        generationSettingsBuilder.biomeGroupManager.clampGenerationDepth(generationSettingsBuilder.generationDepth);
 
         generationSettingsBuilder.biomeGroupManager.filterBiomes(biomes);
 

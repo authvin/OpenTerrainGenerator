@@ -161,6 +161,17 @@ public final class BiomeGroupManager
 		return totalRarity[totalRarity.length - 1];
 	}
 
+	public void clampGenerationDepth(int maxDepth)
+	{
+		for (BiomeGroupFunction group : getGroups())
+		{
+			if (group.getGenerationDepth() > maxDepth)
+			{
+				group.setGenerationDepth(maxDepth);
+			}
+		}
+	}
+
 	/**
 	 * Filters all biome names in the groups. Invalid biomes names will be
 	 * removed.
