@@ -70,7 +70,7 @@ public class IceSpikeResource extends FrequencyResourceBase
 		}
 	}
 
-	private void spawnBasement(IWorldGenRegion worldGenRegion, Random random,int x, int z)
+	private void spawnBasement(IWorldGenRegion worldGenRegion, Random random, int x, int z)
 	{
 		int y = RandomHelper.numberInRange(random, this.minAltitude, this.maxAltitude);
 

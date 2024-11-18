@@ -7,12 +7,16 @@ import java.util.Map.Entry;
 
 import com.mojang.serialization.Lifecycle;
 import com.pg85.otg.OTG;
+import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.config.biome.BiomeGroupFunction;
+import com.pg85.otg.config.settings.biome.BiomeVisualSettings;
+import com.pg85.otg.config.settings.preset.VisualSettings;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.gen.biome.BiomeData;
 import com.pg85.otg.gen.biome.layers.BiomeLayerData;
 import com.pg85.otg.gen.biome.layers.BiomeGroup;
+import com.pg85.otg.gen.resource.RegistryResource;
 import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IBiomeResourceLocation;
@@ -23,27 +27,36 @@ import com.pg85.otg.presets.Preset;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.biome.OTGBiomeResourceLocation;
 import com.pg85.otg.util.biome.WeightedMobSpawnGroup;
+import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.Registry;
 import net.minecraft.core.WritableRegistry;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BiomeDefaultFeatures;
+import net.minecraft.data.worldgen.DesertVillagePools;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.Music;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.biome.BiomeGenerationSettings;
-import net.minecraft.world.level.biome.BiomeSpecialEffects;
-import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.biome.*;
 import net.minecraft.world.level.dimension.LevelStem;
+import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
+import org.jetbrains.annotations.NotNull;
 
 import static com.pg85.otg.util.logging.LogCategory.CONFIGS;
 
@@ -373,6 +386,7 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
     }
 
     public static Biome createOTGBiome(boolean isOceanBiome, PresetSettings presetConfig, BiomeSettings biomeConfig, HolderGetter<PlacedFeature> featureHolderGetter, HolderGetter<ConfiguredWorldCarver<?>> carverHolderGetter) {
+
         BiomeGenerationSettings.Builder generationSettings = new BiomeGenerationSettings.Builder(featureHolderGetter, carverHolderGetter);
 
         // Mob spawning
@@ -380,15 +394,38 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
 
         //BiomeDefaultFeatures.addDefaultCarversAndLakes(generationSettings);
 
+
+        // Register any Registry() resources to the biome, to be handled by MC.
+        for (ConfigFunction<BiomeSettings> res : biomeConfig.getResourceQueue())
+        {
+            if (res instanceof RegistryResource registryResource)
+            {
+                GenerationStep.Decoration stage = GenerationStep.Decoration.valueOf(registryResource.getDecorationStage());
+                Optional<Holder.Reference<PlacedFeature>> placedFeatureReference = featureHolderGetter.get(ResourceKey.create(Registries.PLACED_FEATURE, new ResourceLocation(registryResource.getFeatureKey())));
+                if(
+                        placedFeatureReference.isPresent()
+                        && placedFeatureReference.get().isBound()
+                        && placedFeatureReference.get().unwrapKey().isPresent()
+                ) {
+                    generationSettings.addFeature(stage, placedFeatureReference.get().unwrapKey().get());
+                } else {
+                    if(OTG.getEngine().getLogger().getLogCategoryEnabled(LogCategory.DECORATION))
+                    {
+                        OTG.getEngine().getLogger().log(LogLevel.ERROR, LogCategory.DECORATION, "Registry() " + registryResource.getFeatureKey() + " could not be found for biomeconfig " + biomeConfig.getIdentitySettings().getBiomeName());
+                    }
+                }
+            }
+        }
+
+        // Add default structures
+        // TODO: Find a way to add our biomes to the relevant structure biome tags...
+
+
         float temperature = biomeConfig.getVisualSettings().getBiomeTemperature();
         
         float downfall = biomeConfig.getVisualSettings().getBiomeWetness();
 
-        BiomeSpecialEffects.Builder specialEffects = new BiomeSpecialEffects.Builder();
-        specialEffects.waterColor(biomeConfig.getVisualSettings().getWaterColor().getColor());
-        specialEffects.waterFogColor(biomeConfig.getVisualSettings().getWaterFogColor().getColor());
-        specialEffects.fogColor(biomeConfig.getVisualSettings().getFogColor().getColor());
-        specialEffects.skyColor(biomeConfig.getVisualSettings().getSkyColor().getColor());
+        BiomeSpecialEffects.Builder specialEffects = getSpecialEffects(presetConfig, biomeConfig);
 
         return new Biome.BiomeBuilder()
                 .generationSettings(generationSettings.build())
@@ -398,6 +435,105 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
                 .temperature(temperature)
                 .build();
     }
+
+    private static BiomeSpecialEffects.Builder getSpecialEffects(PresetSettings presetConfig, BiomeSettings biomeConfig) {
+        BiomeVisualSettings biomeVisualSettings = biomeConfig.getVisualSettings();
+        float safeTemperature = biomeConfig.getVisualSettings().getBiomeTemperature();
+        if (safeTemperature >= 0.1 && safeTemperature <= 0.2)
+        {
+            // Avoid temperatures between 0.1 and 0.2, Minecraft restriction
+            safeTemperature = safeTemperature >= 1.5 ? 0.2f : 0.1f;
+        }
+
+        BiomeSpecialEffects.Builder specialEffects =
+                new BiomeSpecialEffects.Builder()
+                        .fogColor(
+                                (!Objects.equals(biomeVisualSettings.getFogColor(), BiomeVisualSettings.FOG_COLOR.getDefaultValue())
+                                        ? biomeVisualSettings.getFogColor()
+                                        : presetConfig.getVisualSettings().getFogColor()
+                                ).intValue()
+                        )
+                        .waterFogColor(
+                                !Objects.equals(biomeVisualSettings.getWaterFogColor(), BiomeVisualSettings.WATER_FOG_COLOR.getDefaultValue())
+                                        ? biomeVisualSettings.getWaterFogColor().intValue()
+                                        : 329011
+                        )
+                        .waterColor(
+                                !Objects.equals(biomeVisualSettings.getWaterColor(), BiomeVisualSettings.WATER_COLOR.getDefaultValue())
+                                        ? biomeVisualSettings.getWaterColor().intValue()
+                                        : 4159204
+                        )
+                        .skyColor(
+                                !Objects.equals(biomeVisualSettings.getSkyColor(), BiomeVisualSettings.SKY_COLOR.getDefaultValue())
+                                        ? biomeVisualSettings.getSkyColor().intValue()
+                                        : getSkyColorForTemp(safeTemperature)
+                        ) // TODO: Sky color is normally based on temp, make a setting for that?
+                ;
+        //Optional<Holder.Reference<ParticleType<?>>> ambientParticle = getFromRegistry(BuiltInRegistries.PARTICLE_TYPE, Registries.PARTICLE_TYPE, biomeVisualSettings.getParticleType());
+        // TODO: Particles have become incredibly tricky to work with, let's avoid this for now
+
+        Optional<Holder.Reference<SoundEvent>> ambientLoopSoundEvent = getFromRegistry(BuiltInRegistries.SOUND_EVENT, Registries.SOUND_EVENT, biomeVisualSettings.getAmbientSound());
+        ambientLoopSoundEvent.ifPresent(specialEffects::ambientLoopSound);
+        Optional<Holder.Reference<SoundEvent>> ambientMoodSound = getFromRegistry(BuiltInRegistries.SOUND_EVENT, Registries.SOUND_EVENT, biomeVisualSettings.getMoodSound());
+        if (ambientMoodSound.isPresent()) {
+            AmbientMoodSettings ambientMoodSettings = new AmbientMoodSettings(
+                    ambientMoodSound.get(),
+                    biomeVisualSettings.getMoodSoundDelay(),
+                    biomeVisualSettings.getMoodSearchRange(),
+                    biomeVisualSettings.getMoodOffset()
+            );
+            specialEffects.ambientMoodSound(ambientMoodSettings);
+        }
+        Optional<Holder.Reference<SoundEvent>> ambientAdditionsSound = getFromRegistry(BuiltInRegistries.SOUND_EVENT, Registries.SOUND_EVENT, biomeVisualSettings.getAdditionsSound());
+        if (ambientAdditionsSound.isPresent()) {
+            AmbientAdditionsSettings ambientAdditionsSettings = new AmbientAdditionsSettings(
+                    ambientAdditionsSound.get(),
+                    biomeVisualSettings.getAdditionsTickChance()
+            );
+            specialEffects.ambientAdditionsSound(ambientAdditionsSettings);
+        }
+        Optional<Holder.Reference<SoundEvent>> backgroundMusic = getFromRegistry(BuiltInRegistries.SOUND_EVENT, Registries.SOUND_EVENT, biomeVisualSettings.getMusic());
+        if (backgroundMusic.isPresent()) {
+            Music music = new Music(
+                    backgroundMusic.get(),
+                    biomeVisualSettings.getMusicMinDelay(),
+                    biomeVisualSettings.getMusicMaxDelay(),
+                    biomeVisualSettings.isReplaceCurrentMusic()
+            );
+            specialEffects.backgroundMusic(music);
+        }
+
+        if(biomeVisualSettings.getFoliageColor().intValue() != 0xffffff) {
+            specialEffects.foliageColorOverride(biomeVisualSettings.getFoliageColor().intValue());
+        }
+
+        if(biomeVisualSettings.getGrassColor().intValue() != 0xffffff) {
+            specialEffects.grassColorOverride(biomeVisualSettings.getGrassColor().intValue());
+        }
+
+        switch(biomeVisualSettings.getGrassColorModifier()) {
+            case Swamp:
+                specialEffects.grassColorModifier(BiomeSpecialEffects.GrassColorModifier.SWAMP);
+                break;
+            case DarkForest:
+                specialEffects.grassColorModifier(BiomeSpecialEffects.GrassColorModifier.DARK_FOREST);
+                break;
+            default:
+                break;
+        }
+
+        return specialEffects;
+    }
+
+    private static <T> Optional<Holder.Reference<T>> getFromRegistry(Registry<T> registry, ResourceKey<Registry<T>> registryResourceKey, String locationString) {
+        try {
+            return registry.getHolder(ResourceKey.create(registryResourceKey, new ResourceLocation(locationString)));
+        } catch (Exception e) {
+            OTGLog.error(CONFIGS, "Could not find registry entry for '" + locationString + "'");
+            return Optional.empty();
+        }
+    }
+
 
     private static MobSpawnSettings.Builder createMobSpawnSettings(BiomeSettings biomeConfig)
     {
@@ -519,5 +655,11 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
             groupRegistry.put(bg.id, bg);
         }
         return groupRegistry;
+    }
+
+    private static int getSkyColorForTemp(float temp) {
+        float skyColor = temp / 3.0F;
+        skyColor = Mth.clamp(skyColor, -1.0F, 1.0F);
+        return Mth.hsvToRgb(0.62222224F - skyColor * 0.05F, 0.5F + skyColor * 0.1F, 1.0F);
     }
 }

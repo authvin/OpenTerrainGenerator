@@ -5,6 +5,7 @@ import java.util.Random;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.util.ChunkCoordinate;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.nbt.NamedBinaryTag;
 import com.pg85.otg.util.gen.DecorationArea;
@@ -13,12 +14,14 @@ import com.pg85.otg.util.minecraft.TreeType;
 
 public interface IWorldGenRegion extends ISurfaceGeneratorNoiseProvider
 {
-	ILogger getLogger();
+	default ILogger getLogger() {
+		return OTGLog.getLogger();
+	}
 	IPluginConfig getPluginConfig();
 	PresetSettings getPresetConfig();
 	String getPresetFolderName();
 	long getSeed();
-	Random getWorldRandom();
+
 	ChunkCoordinate getSpawnChunk();
 	
 	// Any getBiome/getBiomeConfig requests done as a part

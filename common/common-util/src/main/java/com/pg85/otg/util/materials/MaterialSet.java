@@ -26,7 +26,7 @@ public class MaterialSet
 	private int[] materialIntSet = new int[0];
 	private final Set<LocalMaterialData> materials = new LinkedHashSet<>();
 	private Set<LocalMaterialTag> tags = new LinkedHashSet<>();
-	private MaterialGroup group = null;
+	private MaterialGroup group = MaterialGroup.NONE;
 	private boolean intSetUpToDate = true;
 
 	/**
@@ -163,7 +163,7 @@ public class MaterialSet
 	{
 		StringBuilder builder = new StringBuilder();
 		// Check for solid materials
-		if (this.group != null)
+		if (this.group != MaterialGroup.NONE)
 		{
 			builder.append(this.group.getKeyword()).append(',');
 		}

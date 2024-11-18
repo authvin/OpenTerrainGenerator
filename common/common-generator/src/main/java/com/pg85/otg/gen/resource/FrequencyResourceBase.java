@@ -41,5 +41,5 @@ public abstract class FrequencyResourceBase extends BiomeResourceBase implements
 		}
 	}
 
-	public abstract void spawn(IWorldGenRegion world, Random random, int x, int z);	
+	public abstract void spawn(IWorldGenRegion world, Random random, int x, int z);
 }

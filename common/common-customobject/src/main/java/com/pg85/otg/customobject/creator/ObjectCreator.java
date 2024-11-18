@@ -43,10 +43,10 @@ public class ObjectCreator
 {
 	// Method for creating either object or structure; used by Export to cut down code duplication
 	public static StructuredCustomObject create(
-		ObjectType type, Corner min, Corner max, Corner center, LocalMaterialData centerBlock, String objectName, boolean includeAir, boolean isStructure, boolean leaveIllegalLeaves, Path objectPath,
-		LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, List<BlockFunction<?>> extraBlocks, CustomObjectConfigFile template,
-		String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
-		IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc, List<LocalMaterialData> excludes
+            ObjectType type, Corner min, Corner max, Corner center, LocalMaterialData centerBlock, String objectName, boolean includeAir, boolean isStructure, boolean leaveIllegalLeaves, Path objectPath,
+            LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, List<BlockFunction<?>> extraBlocks, CustomObjectConfigFile template,
+            String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
+            IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc, List<LocalMaterialData> excludes
 	)
 	{
 		if (isStructure)
@@ -62,10 +62,10 @@ public class ObjectCreator
 	}
 
 	public static StructuredCustomObject create(
-			ObjectType type, Corner min, Corner max, Corner center, LocalMaterialData centerBlock, String objectName, boolean includeAir, boolean isStructure, boolean leaveIllegalLeaves, Path objectPath,
-			LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, List<BlockFunction<?>> extraBlocks, CustomObjectConfigFile template,
-			String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
-			IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc
+            ObjectType type, Corner min, Corner max, Corner center, LocalMaterialData centerBlock, String objectName, boolean includeAir, boolean isStructure, boolean leaveIllegalLeaves, Path objectPath,
+            LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, List<BlockFunction<?>> extraBlocks, CustomObjectConfigFile template,
+            String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
+            IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc
 	) {
 		return create(type, min, max, center, centerBlock, objectName, includeAir, isStructure, leaveIllegalLeaves, objectPath,
 				localWorld, nbtHelper, extraBlocks, template, presetFolderName, rootPath, logger, boManager,
@@ -73,10 +73,10 @@ public class ObjectCreator
 	}
 
 	public static StructuredCustomObject createObject(
-			ObjectType type, Corner min, Corner max, Corner center, LocalMaterialData centerBlock, String objectName, boolean includeAir, boolean leaveIllegalLeaves, Path exportPath,
-			LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, List<BlockFunction<?>> extraBlocks, CustomObjectConfigFile template,
-			String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
-			IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc
+            ObjectType type, Corner min, Corner max, Corner center, LocalMaterialData centerBlock, String objectName, boolean includeAir, boolean leaveIllegalLeaves, Path exportPath,
+            LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, List<BlockFunction<?>> extraBlocks, CustomObjectConfigFile template,
+            String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
+            IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc
 	) {
 		return createObject(type, min, max, center, centerBlock, objectName, includeAir, leaveIllegalLeaves, exportPath, localWorld,
 		nbtHelper, extraBlocks, template, presetFolderName, rootPath, logger, boManager, mr, manager, mlc, new ArrayList<>());
@@ -84,10 +84,10 @@ public class ObjectCreator
 
 	// Method for creating a custom object
 	public static StructuredCustomObject createObject(
-		ObjectType type, Corner min, Corner max, Corner center, LocalMaterialData centerBlock, String objectName, boolean includeAir, boolean leaveIllegalLeaves, Path exportPath,
-		LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, List<BlockFunction<?>> extraBlocks, CustomObjectConfigFile template,
-		String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
-		IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc, List<LocalMaterialData> excludes
+            ObjectType type, Corner min, Corner max, Corner center, LocalMaterialData centerBlock, String objectName, boolean includeAir, boolean leaveIllegalLeaves, Path exportPath,
+            LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, List<BlockFunction<?>> extraBlocks, CustomObjectConfigFile template,
+            String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
+            IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc, List<LocalMaterialData> excludes
 	)
 	{
 		File exportFolder = exportPath.toFile();
@@ -152,10 +152,10 @@ public class ObjectCreator
 
 	// Separate branch for creating a structure, since structures need to create branches
 	public static StructuredCustomObject createStructure(
-		ObjectType type, Corner min, Corner max, Corner center, String objectName, boolean includeAir, boolean leaveIllegalLeaves, Path objectPath,
-		LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, CustomObjectConfigFile template,
-		String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
-		IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc, List<LocalMaterialData> excludes
+            ObjectType type, Corner min, Corner max, Corner center, String objectName, boolean includeAir, boolean leaveIllegalLeaves, Path objectPath,
+            LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, CustomObjectConfigFile template,
+            String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
+            IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc, List<LocalMaterialData> excludes
 	)
 	{
 		File branchFolder = new File(objectPath.toFile(), objectName);

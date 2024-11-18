@@ -57,6 +57,10 @@ public final class OTGLog {
         fatal(LogCategory.MAIN, message, objects);
     }
 
+    public static boolean getLogCategoryEnabled(LogCategory logCategory) {
+        return logger.getLogCategoryEnabled(logCategory);
+    }
+
     // Not for use by platform code; it's a fallback for when code is executed and the engine isn't running
     // like when generating YAML schema from settings
     private static class BasicLogger implements ILogger

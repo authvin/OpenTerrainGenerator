@@ -69,7 +69,7 @@ public class BasaltColumnResource extends FrequencyResourceBase
 	}
 
 	private void placeColumn(IWorldGenRegion world, int p_236248_2_, int x, int y, int z, int p_236248_4_,
-			int p_236248_5_)
+                             int p_236248_5_)
 	{
 
 		for (int[] lvt_8_1_ : PositionHelper.betweenClosed(x - p_236248_5_, y, z - p_236248_5_, x + p_236248_5_, y,

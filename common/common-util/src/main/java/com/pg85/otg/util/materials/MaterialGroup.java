@@ -10,7 +10,8 @@ public enum MaterialGroup {
     ALL_MATERIALS("All"), // ALL Materials
     SOLID_MATERIALS("Solid"), // Solid Materials
     NON_SOLID_MATERIALS("NonSolid"), // Non-Solid Materials
-    LIQUIDS("Liquid"),; // Liquid Materials
+    LIQUIDS("Liquid"),
+    NONE("None"); // Liquid Materials
 
     private final String keyword;
 
@@ -32,6 +33,7 @@ public enum MaterialGroup {
             case SOLID_MATERIALS -> material.isSolid();
             case NON_SOLID_MATERIALS -> !material.isSolid();
             case LIQUIDS -> material.isLiquid();
+            case NONE -> false;
         };
     }
 }

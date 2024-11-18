@@ -64,7 +64,7 @@ processResources {
         expand map
     }
 }
-
+var otg_version = project.property("otg_version").toString()
 shadowJar {
     exclude "architectury.common.json"
 
@@ -76,6 +76,8 @@ remapJar {
     //injectAccessWidener = true
     input.set shadowJar.archiveFile
     dependsOn shadowJar
+
+    archiveVersion = project.property("otg_version").toString()
 }
 
 sourcesJar {

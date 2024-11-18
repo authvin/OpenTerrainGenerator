@@ -3,9 +3,14 @@ package com.pg85.otg.fabric.gen;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.pg85.otg.OTG;
+import com.pg85.otg.constants.Constants;
+import com.pg85.otg.constants.settings.structure.CustomStructureType;
+import com.pg85.otg.customobject.structures.CustomStructureCache;
 import com.pg85.otg.fabric.biome.FabricBiome;
 import com.pg85.otg.fabric.biome.OTGFabricBiomeProvider;
+import com.pg85.otg.gen.OTGChunkDecorator;
 import com.pg85.otg.gen.OTGChunkGenerator;
+import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.presets.Preset;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.gen.ChunkBuffer;
@@ -33,8 +38,10 @@ import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.carver.CarvingContext;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.structure.*;
+import net.minecraft.world.level.storage.LevelResource;
 
 import javax.annotation.Nullable;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -55,7 +62,10 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
     private final Preset preset;
     private final NoiseBasedChunkGenerator horribleDelegateForCarvers;
     private final Aquifer.FluidPicker globalFluidPicker;
+    private final OTGChunkDecorator chunkDecorator;
+    private CustomStructureCache structureCache = null;
     private Long seed = null;
+    private OTGWorldInfo otgWorldInfo;
 
     public OTGFabricChunkGenerator(OTGFabricBiomeProvider biomeSource, Holder<NoiseGeneratorSettings> settings) {
         super(biomeSource);
@@ -69,6 +79,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
         preset = OTG.getEngine().getPresetLoader().getPresetByFolderName(biomeSource.getPresetFolderName());
         horribleDelegateForCarvers = new NoiseBasedChunkGenerator(biomeSource, settings);
         globalFluidPicker = createFluidPicker(settings.value());
+        this.chunkDecorator = new OTGChunkDecorator();
     }
 
     public void setSeed(Long seed) {
@@ -77,8 +88,56 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
                 this.seed = seed;
                 biomeSource.setSeed(seed);
                 internalGenerator.setSeed(seed);
+                otgWorldInfo = new OTGWorldInfo(0, 255, seed);
             }
         }
+    }
+
+    @Override
+    public void applyBiomeDecoration(WorldGenLevel worldGenLevel, ChunkAccess chunkAccess, StructureManager structureManager) {
+        if(!OTG.getEngine().getPluginConfig().getDecorationEnabled()) {
+            return;
+        }
+        // Do OTG resource decoration, then MC decoration for any non-OTG resources registered to this biome, then snow.
+        ChunkCoordinate chunkBeingDecorated = getChunkCoordinate(worldGenLevel, chunkAccess);
+        FabricWorldGenRegion FabricChunkAccess = new FabricWorldGenRegion(this.preset.getFolderName(), OTG.getEngine().getPluginConfig(), this.preset.getPresetConfig(), otgWorldInfo, worldGenLevel, chunkAccess, this);
+        IBiome biome = this.internalGenerator.getCachedBiomeProvider().getNoiseBiome((chunkAccess.getPos().x << 2) + 2, (chunkAccess.getPos().z << 2) + 2);
+
+        // World save folder name may not be identical to level name, fetch it.
+        Path worldSaveFolder = worldGenLevel.getLevel().getServer().getWorldPath(LevelResource.PLAYER_DATA_DIR).getParent();
+
+        this.chunkDecorator.decorate(chunkBeingDecorated, FabricChunkAccess, biome.getBiomeSettings(), getStructureCache(worldSaveFolder));
+        super.applyBiomeDecoration(worldGenLevel, chunkAccess, structureManager);
+
+        // Template biomes handle their own snow, OTG biomes use OTG snow.
+        // TODO: Snow is handled per chunk, so this may cause some artifacts on biome borders.
+        if(!biome.getBiomeSettings().getIsTemplateForBiome()) {
+            this.chunkDecorator.doSnowAndIce(FabricChunkAccess, chunkBeingDecorated);
+        }
+
+    }
+
+    private static ChunkCoordinate getChunkCoordinate(WorldGenLevel worldGenLevel, ChunkAccess chunkAccess) {
+        int worldX = chunkAccess.getPos().x * Constants.CHUNK_SIZE;
+        int worldZ = chunkAccess.getPos().z * Constants.CHUNK_SIZE;
+
+        WorldgenRandom worldgenRandom = new WorldgenRandom(worldGenLevel.getRandom());
+        worldgenRandom.setDecorationSeed(worldGenLevel.getSeed(), worldX, worldZ);
+
+        return ChunkCoordinate.fromBlockCoords(worldX, worldZ);
+    }
+
+    public CustomStructureCache getStructureCache(Path worldSaveFolder)
+    {
+        if(this.structureCache == null)
+        {
+            this.structureCache = OTG.getEngine().createCustomStructureCache(
+                    this.preset.getFolderName(),
+                    worldSaveFolder,
+                    this.seed,
+                    CustomStructureType.BO4 == this.preset.getPresetConfig().getResourceSettings().getCustomStructureType());
+        }
+        return this.structureCache;
     }
 
     @Override
@@ -246,11 +305,10 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
                 }
             }
         }
-        OTGWorldInfo worldHeight = new OTGWorldInfo(0, 255, seed);
         // we have no more world random, so this is a bit of a stopgap for now. Seems to be mainly used for bedrock and surface
         Random random = new Random(chunkCoord.getChunkX()*341873128712L + chunkCoord.getChunkZ()*132897987541L);
 
-        this.internalGenerator.populateNoise(worldHeight, buffer, buffer.getChunkCoordinate(), structures, random);
+        this.internalGenerator.populateNoise(otgWorldInfo, buffer, buffer.getChunkCoordinate(), structures, random);
         return CompletableFuture.completedFuture(chunkAccess);
     }
 
