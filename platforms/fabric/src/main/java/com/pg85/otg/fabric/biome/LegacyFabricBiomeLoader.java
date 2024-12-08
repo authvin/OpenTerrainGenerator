@@ -11,7 +11,6 @@ import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.config.biome.BiomeGroupFunction;
 import com.pg85.otg.config.settings.biome.BiomeVisualSettings;
-import com.pg85.otg.config.settings.preset.VisualSettings;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.gen.biome.BiomeData;
 import com.pg85.otg.gen.biome.layers.BiomeLayerData;
@@ -21,28 +20,20 @@ import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IBiomeResourceLocation;
 import com.pg85.otg.config.settings.preset.PresetSettings;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.presets.LocalPresetLoader;
 import com.pg85.otg.presets.Preset;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.biome.OTGBiomeResourceLocation;
 import com.pg85.otg.util.biome.WeightedMobSpawnGroup;
-import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 
-import lombok.Getter;
-import lombok.Setter;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.Registry;
 import net.minecraft.core.WritableRegistry;
-import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BiomeDefaultFeatures;
-import net.minecraft.data.worldgen.DesertVillagePools;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
@@ -51,12 +42,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.biome.*;
-import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
-import org.jetbrains.annotations.NotNull;
 
 import static com.pg85.otg.util.logging.LogCategory.CONFIGS;
 
@@ -69,11 +57,6 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
     private Map<String, List<ResourceKey<Biome>>> biomesByPresetFolderName = new LinkedHashMap<>();
     private HashMap<String, IBiome[]> globalIdMapping = new HashMap<>();
     private Map<String, BiomeLayerData> presetGenerationData = new HashMap<>();
-
-    // Place to store our LevelStem between registry rounds
-    @Getter
-    @Setter
-    private Map<ResourceKey<LevelStem>, LevelStem> levelStems = new HashMap<>();
     
     public LegacyFabricBiomeLoader(Path otgRootFolder)
     {

@@ -45,6 +45,10 @@ public class PresetWriter {
                 "The shortened name for the preset, used in biome resource locations and similar"
         );
 
+        writer.putSetting(PresetInfo.SELECTABLE_IN_WORLD_CREATION, presetConfig.getPresetInfo().isSelectableInWorldCreation(),
+                "Whether this preset should be selectable in the world creation screen."
+        );
+
         writer.header2("Visual Settings",
                 "Controls the world's fog colors. Sky, grass and foliage colors are defined inside the biome configs."
         );
@@ -337,6 +341,10 @@ public class PresetWriter {
         writer.putSetting(BlockSettings.COOLED_LAVA_BLOCK, presetConfig.getBlockSettings().getCooledLavaBlock(),
                 "Block used as cooled or frozen lava.",
                 "Set this to OBSIDIAN for \"frozen\" lava lakes in cold biomes"
+        );
+
+        writer.putSetting(BlockSettings.DEFAULT_STONE_BLOCK, presetConfig.getBlockSettings().getDefaultStoneBlock(),
+                "Block used as stone in biomes where stone block is not specified."
         );
 
         writer.putSetting(TerrainSettings.BETTER_SNOW_FALL, presetConfig.getTerrainSettings().isBetterSnowFall(),

@@ -18,6 +18,7 @@ public class PresetInfo extends ConfigSection {
     private final int minorVersion;
     private final String author;
     private final String description;
+    private final boolean selectableInWorldCreation;
 
     public static final Setting<ConfigMode> SETTINGS_MODE = Settings.enumSetting(
             "SettingsMode", ConfigMode.WriteAll,
@@ -55,6 +56,12 @@ public class PresetInfo extends ConfigSection {
             "while increasing the major version will make the PresetPacker save a new copy"
     );
 
+    public static final Setting<Boolean> SELECTABLE_IN_WORLD_CREATION = Settings.booleanSetting(
+            "SelectableInWorldCreation", true,
+            t -> ((PresetInfo) t).isSelectableInWorldCreation(),
+            "Whether this preset should be selectable in the world creation screen"
+    );
+
     public static PresetInfo buildPresetInfo(SettingsMap reader) {
         var presetInfoBuilder = builder();
 
@@ -64,6 +71,7 @@ public class PresetInfo extends ConfigSection {
         presetInfoBuilder.registryName(reader.getSetting(REGISTRY_NAME));
         presetInfoBuilder.majorVersion(reader.getSetting(MAJOR_VERSION));
         presetInfoBuilder.minorVersion(reader.getSetting(MINOR_VERSION));
+        presetInfoBuilder.selectableInWorldCreation(reader.getSetting(SELECTABLE_IN_WORLD_CREATION));
 
         return presetInfoBuilder.build();
     }

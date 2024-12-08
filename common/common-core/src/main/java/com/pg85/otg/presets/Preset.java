@@ -1,14 +1,12 @@
 package com.pg85.otg.presets;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
+import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.biome.OTGBiomeID;
 import lombok.Getter;
@@ -109,5 +107,16 @@ public class Preset {
     @Override
     public String toString() {
         return this.folderName;
+    }
+
+    public List<String> getDimensionNames() {
+        return getPresetConfig().getDimensionSettings().getDefaultDimensions()
+                .stream()
+                .map(
+                        string -> string.equalsIgnoreCase("this")
+                                ? Constants.MOD_ID_SHORT + ':' + getPresetRegistryName()
+                                : string)
+                .map(s -> s.toLowerCase(Locale.ROOT))
+                .toList();
     }
 }

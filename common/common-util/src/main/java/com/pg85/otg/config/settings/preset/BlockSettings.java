@@ -33,6 +33,13 @@ public class BlockSettings extends ConfigSection {
             t -> ((BlockSettings) t).isRemoveSurfaceStone(),
             "Set this to true to place the biome surface block on top of all exposed stone."
     );
+
+    public static final Setting<LocalMaterialData> DEFAULT_STONE_BLOCK = new MaterialSetting(
+            "DefaultStoneBlock", LocalMaterials.STONE_NAME,
+            t -> ((BlockSettings) t).getDefaultStoneBlock(),
+            "Block used as stone in biomes where stone block is not specified."
+    );
+
     public static final Setting<LocalMaterialData> WATER_BLOCK = new MaterialSetting(
             "WaterBlock", LocalMaterials.WATER_NAME,
             t -> ((BlockSettings) t).getWaterBlock(),
@@ -62,6 +69,7 @@ public class BlockSettings extends ConfigSection {
             "Defaults to: LAVA"
     );
     private final boolean removeSurfaceStone;
+    private final LocalMaterialData defaultStoneBlock;
     private final LocalMaterialData waterBlock;
     private final LocalMaterialData bedrockBlock;
     private final LocalMaterialData defaultBedrockBlock;
@@ -76,6 +84,7 @@ public class BlockSettings extends ConfigSection {
         var blockSettingsBuilder = builder();
 
         blockSettingsBuilder.removeSurfaceStone(reader.getSetting(REMOVE_SURFACE_STONE));
+        blockSettingsBuilder.defaultStoneBlock(reader.getSetting(DEFAULT_STONE_BLOCK));
         blockSettingsBuilder.waterBlock(reader.getSetting(WATER_BLOCK));
         blockSettingsBuilder.bedrockBlock(reader.getSetting(BEDROCK_BLOCK));
         blockSettingsBuilder.defaultBedrockBlock(LocalMaterials.BEDROCK);

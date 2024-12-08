@@ -61,7 +61,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
     private final OTGChunkGenerator internalGenerator;
     private final Preset preset;
     private final NoiseBasedChunkGenerator horribleDelegateForCarvers;
-    private final Aquifer.FluidPicker globalFluidPicker;
+    private Aquifer.FluidPicker globalFluidPicker = null;
     private final OTGChunkDecorator chunkDecorator;
     private CustomStructureCache structureCache = null;
     private Long seed = null;
@@ -78,7 +78,6 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
         );
         preset = OTG.getEngine().getPresetLoader().getPresetByFolderName(biomeSource.getPresetFolderName());
         horribleDelegateForCarvers = new NoiseBasedChunkGenerator(biomeSource, settings);
-        globalFluidPicker = createFluidPicker(settings.value());
         this.chunkDecorator = new OTGChunkDecorator();
     }
 
@@ -88,7 +87,10 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
                 this.seed = seed;
                 biomeSource.setSeed(seed);
                 internalGenerator.setSeed(seed);
-                otgWorldInfo = new OTGWorldInfo(0, 255, seed);
+                int minY = settings.value().noiseSettings().minY();
+                int maxY = settings.value().noiseSettings().height() + minY - 1;
+                otgWorldInfo = new OTGWorldInfo(minY, maxY, seed);
+                globalFluidPicker = createFluidPicker(settings.value());
             }
         }
     }
@@ -179,7 +181,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
         int i2 = 8;
         ChunkPos chunkPos = chunkAccess.getPos();
         NoiseChunk noiseChunk = chunkAccess.getOrCreateNoiseChunk(chunkAccess2 -> this.createNoiseChunk(chunkAccess2, structureManager, Blender.of(worldGenRegion), randomState));
-        CarvingMask carvingMask = ((ProtoChunk) chunkAccess).getOrCreateCarvingMask(carving);;
+        CarvingMask carvingMask = ((ProtoChunk) chunkAccess).getOrCreateCarvingMask(carving);
         Aquifer aquifer = noiseChunk.aquifer();
         CarvingContext carvingContext = new CarvingContext(this.horribleDelegateForCarvers, worldGenRegion.registryAccess(), chunkAccess.getHeightAccessorForGeneration(), noiseChunk, randomState, this.settings.value().surfaceRule());
         for (int j2 = -8; j2 <= 8; ++j2) {

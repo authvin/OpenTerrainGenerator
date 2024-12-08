@@ -3,30 +3,30 @@ package com.pg85.otg.fabric.mixin;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Lifecycle;
 import com.pg85.otg.OTG;
-import com.pg85.otg.config.settings.preset.DimensionSettings;
+import com.pg85.otg.config.settings.preset.*;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.fabric.biome.LegacyFabricBiomeLoader;
 import com.pg85.otg.fabric.biome.OTGFabricBiomeProvider;
 import com.pg85.otg.fabric.gen.OTGFabricChunkGenerator;
+import com.pg85.otg.fabric.materials.FabricMaterialData;
 import com.pg85.otg.presets.Preset;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.minecraft.OTGDimensionType;
-import net.minecraft.core.HolderGetter;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.WritableRegistry;
+import net.minecraft.core.*;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.worldgen.SurfaceRuleData;
 import net.minecraft.resources.RegistryDataLoader;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.biome.*;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.dimension.LevelStem;
-import net.minecraft.world.level.levelgen.NoiseGeneratorSettings;
+import net.minecraft.world.level.levelgen.*;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
@@ -56,27 +56,45 @@ public class RegistryLoaderMixin {
     )
     private static void loadOTGPresets(ResourceManager resourceManager, RegistryAccess registryAccess, List<RegistryDataLoader.RegistryData<?>> list,
                                        CallbackInfoReturnable ci, Map errorMap, List<Pair<WritableRegistry<?>, Object>> registries) {
-        WritableRegistry<WorldPreset> worldPresets = getRegistry(registries, Registries.WORLD_PRESET);
-        if (worldPresets == null ) {
+        if (getRegistry(registries, Registries.DIMENSION) != null ) {
             // vanilla auto-registers the level stems based on the world preset, so we can ignore this
             return;
         }
 
         OTGLog.getLogger().info("Registering the following OTG presets: %s", OTG.getEngine().getPresetLoader().getAllPresets());
-        // register dimension types
 
         //printAllRegistriesForDebug(registries);
 
+        // register biomes
         registerBiomes(registries);
 
-        HashMap<Preset, ResourceKey<DimensionType>> map = registerDimensionTypes(registries);
-        Map<ResourceKey<LevelStem>, LevelStem> levelStems = createLevelStems(registries, map);
-        if (OTG.getEngine().getPresetLoader() instanceof LegacyFabricBiomeLoader loader) {
-            loader.setLevelStems(levelStems);
+        // Register our dimension types in the format otg:preset
+        HashMap<Preset, ResourceKey<DimensionType>> dimensionTypes = registerDimensionTypes(registries);
+
+        // register noise generator settings for each preset
+        for (Preset preset : dimensionTypes.keySet()) {
+            registerNoiseGenSettings(preset, registries, registryAccess);
         }
-        // TODO: register noise generator settings
-        // register world presets
-        registerWorldPresets(worldPresets, map, levelStems);
+
+        WritableRegistry<WorldPreset> worldPresets = getRegistry(registries, Registries.WORLD_PRESET);
+        if (worldPresets == null) {
+            OTGLog.getLogger().error("Could not find world preset registry");
+            return;
+        }
+
+        for (Preset preset : dimensionTypes.keySet()) {
+            if (!preset.getPresetConfig().getPresetInfo().isSelectableInWorldCreation()) {
+                continue;
+            }
+
+            OTGLog.getLogger().info("Registering world preset: %s", dimensionTypes.get(preset).location());
+
+            // create level stems, with at least one using the Overworld resource key
+            Map<ResourceKey<LevelStem>, LevelStem> levelStems = createLevelStems(preset, registries);
+
+            // register world presets, using the level stems
+            registerWorldPresets(preset, worldPresets, levelStems);
+        }
     }
 
     private static void registerBiomes(List<Pair<WritableRegistry<?>, Object>> registries) {
@@ -99,78 +117,209 @@ public class RegistryLoaderMixin {
     }
 
     private static Map<ResourceKey<LevelStem>, LevelStem> createLevelStems(
-            List<Pair<WritableRegistry<?>, Object>> registries,
-            HashMap<Preset, ResourceKey<DimensionType>> map
+            Preset preset,
+            List<Pair<WritableRegistry<?>, Object>> registries
     ) {
-        Map<ResourceKey<LevelStem>, LevelStem> levelStems = new HashMap<>();
-        for (Map.Entry<Preset, ResourceKey<DimensionType>> entry : map.entrySet()) {
-            Preset preset = entry.getKey();
-            ResourceKey<DimensionType> dimensionKey = entry.getValue();
-            HolderGetter<DimensionType> dimensionHolders = getRegistry(registries, Registries.DIMENSION_TYPE).asLookup();
-            HolderGetter<NoiseGeneratorSettings> noiseHolders = getRegistry(registries, Registries.NOISE_SETTINGS).asLookup();
+        var dimensionNames = preset.getDimensionNames();
+        int counter = 0;
 
-            ResourceKey<LevelStem> key = ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation(Constants.MOD_ID_SHORT, preset.getPresetRegistryName()));
-            // Get dimension, then if it doesn't exist, check if it's an OTG location. If so, create it and register, then move on.
-            LevelStem levelStem = handleMissingLevelStem(preset, dimensionHolders, noiseHolders, dimensionKey);
+        Map<ResourceKey<LevelStem>, LevelStem> levelStems = new HashMap<>();
+        HolderGetter<DimensionType> dimensionHolders = getRegistry(registries, Registries.DIMENSION_TYPE).asLookup();
+        HolderGetter<NoiseGeneratorSettings> noiseHolders = getRegistry(registries, Registries.NOISE_SETTINGS).asLookup();
+
+        for (String dim : dimensionNames) {
+            ResourceKey<LevelStem> key;
+            LevelStem levelStem;
+            if (counter == 0) {
+                key = LevelStem.OVERWORLD;
+            } else if (counter == 1) {
+                key = LevelStem.NETHER;
+            } else if (counter == 2) {
+                key = LevelStem.END;
+            } else {
+                key = ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation(dim));
+            }
+
+            ChunkGenerator chunkGenerator;
+
+            if (dim.startsWith(Constants.MOD_ID_SHORT)) {
+                Preset dimPreset = null;
+                for (Preset p : OTG.getEngine().getPresetLoader().getAllPresets()) {
+                    if (dim.equals(Constants.MOD_ID_SHORT + ":" + p.getPresetRegistryName())) {
+                        dimPreset = p;
+                        break;
+                    }
+                }
+                if (dimPreset == null) {
+                    OTGLog.getLogger().error("Could not find preset for dimension %s", dim);
+                    continue;
+                }
+
+                ResourceKey<DimensionType> dimensionKey = switch (dimPreset.getPresetConfig().getDimensionSettings().getDimensionType()) {
+                    // OTG dimension
+                    case OTG -> ResourceKey.create(Registries.DIMENSION_TYPE, new ResourceLocation(Constants.MOD_ID_SHORT, dimPreset.getPresetRegistryName()));
+                    case OVERWORLD -> BuiltinDimensionTypes.OVERWORLD;
+                    case NETHER -> BuiltinDimensionTypes.NETHER;
+                    case END -> BuiltinDimensionTypes.END;
+                };
+
+                ResourceKey<NoiseGeneratorSettings> noiseKey = switch (dimPreset.getPresetConfig().getDimensionSettings().getDimensionType()) {
+                    case OVERWORLD -> NoiseGeneratorSettings.OVERWORLD;
+                    case NETHER -> NoiseGeneratorSettings.NETHER;
+                    case END -> NoiseGeneratorSettings.END;
+                    case OTG -> ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(Constants.MOD_ID_SHORT, dimPreset.getPresetRegistryName()));
+                };
+
+                Holder.Reference<DimensionType> dimensionReference = dimensionHolders.getOrThrow(dimensionKey);
+                if (!dimensionReference.isBound()) {
+                    OTGLog.getLogger().error("Dimension reference for dimension %s is not bound", dim);
+                    //continue;
+                }
+
+                Holder.Reference<NoiseGeneratorSettings> noiseReference = noiseHolders.getOrThrow(noiseKey);
+                if (!noiseReference.isBound()) {
+                    OTGLog.getLogger().error("Noise reference for dimension %s is not bound", dim);
+                    //continue;
+                }
+
+                chunkGenerator = new OTGFabricChunkGenerator(
+                        new OTGFabricBiomeProvider(preset.getFolderName()),
+                        noiseReference
+                );
+                levelStem = new LevelStem(
+                        dimensionReference,
+                        chunkGenerator
+                );
+            } else {
+                ResourceKey<DimensionType> dimensionKey = ResourceKey.create(Registries.DIMENSION_TYPE, new ResourceLocation(dim));
+                Optional<Holder.Reference<DimensionType>> dimensionTypeHolder = dimensionHolders.get(dimensionKey);
+                if (dimensionTypeHolder.isEmpty()) {
+                    OTGLog.getLogger().error("Could not find dimension reference for dimension %s", dimensionKey.location());
+                    //continue;
+                }
+                if (!dimensionTypeHolder.get().isBound()) {
+                    OTGLog.getLogger().error("Dimension reference for dimension %s is not bound", dimensionKey.location());
+                    //continue;
+                }
+
+                if (dimensionKey == BuiltinDimensionTypes.OVERWORLD) {
+                    Holder<MultiNoiseBiomeSourceParameterList> overworldBiomeSource = getRegistry(registries, Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST)
+                            .asLookup().getOrThrow(MultiNoiseBiomeSourceParameterLists.OVERWORLD);
+                    if (!overworldBiomeSource.isBound()) {
+                        OTGLog.getLogger().error("Overworld biome source is not bound");
+                        //continue;
+                    }
+                    Holder<NoiseGeneratorSettings> overworldNoise = noiseHolders.getOrThrow(NoiseGeneratorSettings.OVERWORLD);
+                    chunkGenerator = new NoiseBasedChunkGenerator(
+                            MultiNoiseBiomeSource.createFromPreset(overworldBiomeSource),
+                            overworldNoise
+                    );
+                } else if (dimensionKey == BuiltinDimensionTypes.NETHER) {
+                    Holder<MultiNoiseBiomeSourceParameterList> netherBiomeSource = getRegistry(registries, Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST)
+                            .asLookup().getOrThrow(MultiNoiseBiomeSourceParameterLists.NETHER);
+                    if (!netherBiomeSource.isBound()) {
+                        OTGLog.getLogger().error("Nether biome source is not bound");
+                        //continue;
+                    }
+                    Holder<NoiseGeneratorSettings> netherNoise = noiseHolders.getOrThrow(NoiseGeneratorSettings.NETHER);
+                    chunkGenerator = new NoiseBasedChunkGenerator(
+                            MultiNoiseBiomeSource.createFromPreset(netherBiomeSource),
+                            netherNoise
+                    );
+                } else if (dimensionKey == BuiltinDimensionTypes.END) {
+                    var biomes = getRegistry(registries, Registries.BIOME).asLookup();
+                    Holder<NoiseGeneratorSettings> endNoise = noiseHolders.getOrThrow(NoiseGeneratorSettings.END);
+                    chunkGenerator = new NoiseBasedChunkGenerator(
+                            TheEndBiomeSource.create(biomes),
+                            endNoise
+                    );
+                } else {
+                    // how do we find an appropriate generator for a given non-otg dimension?
+                    OTGLog.error("Non-OTG dimension %s not yet supported", dimensionKey.location());
+                    continue;
+                }
+
+                levelStem = new LevelStem(
+                        dimensionTypeHolder.get(),
+                        chunkGenerator
+                );
+            }
             levelStems.put(key, levelStem);
+            counter++;
         }
+
         return levelStems;
     }
 
     private static void registerWorldPresets(
+            Preset preset,
             WritableRegistry<WorldPreset> worldPresets,
-            HashMap<Preset, ResourceKey<DimensionType>> map,
             Map<ResourceKey<LevelStem>, LevelStem> levelStems
     ) {
         OTGLog.info("%s", levelStems.keySet());
         OTGLog.info("%s", levelStems.values());
-        for (Map.Entry<Preset, ResourceKey<DimensionType>> entry : map.entrySet()) {
-            // for each preset, we set up a WorldPreset with an overworld, nether and end according to its settings
-            // potentially also with custom dimensions set up under OTG tags
-            // or with all vanilla biomes, plus an OTG dimension
-            // (latter will be good for testing a single preset, hopefully)
-            Preset preset = entry.getKey();
-            List<String> dimensionNames = preset.getPresetConfig().getDimensionSettings().getDefaultDimensions();
-            dimensionNames = dimensionNames.stream()
-                    .map(
-                            string -> string.equalsIgnoreCase("this")
-                                    ? Constants.MOD_ID_SHORT + ':' + preset.getPresetRegistryName()
-                                    : string)
-                    .map(s -> s.toLowerCase(Locale.ROOT))
-                    .toList();
-            Map<ResourceKey<LevelStem>, LevelStem> presetLevelStems = new HashMap<>();
-            boolean first = true;
-            for (String dimensionName : dimensionNames) {
-                ResourceKey<LevelStem> key = ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation(dimensionName));
-                LevelStem levelStem = levelStems.get(key);
-                if (levelStem == null) {
-                    OTGLog.getLogger().error("Could not find level stem for dimension %s", dimensionName);
-                    continue;
-                }
-                if (first) {
-                    // there always needs to be an overworld, so we'll use the first one as that
-                    key = LevelStem.OVERWORLD;
-                    first = false;
-                }
-                presetLevelStems.put(key, levelStem);
-            }
-            WorldPreset worldPreset = new WorldPreset(presetLevelStems);
-            // create a world preset for each preset
-            ResourceLocation id = new ResourceLocation(Constants.MOD_ID_SHORT, preset.getPresetRegistryName().toLowerCase(Locale.ROOT));
-            ResourceKey<WorldPreset> key = ResourceKey.create(Registries.WORLD_PRESET, id);
-            OTGLog.getLogger().info("Registering world preset: " + key.location());
-            worldPresets.register(key, worldPreset, Lifecycle.stable());
-        }
+        // for this preset, we set up a WorldPreset with an overworld, nether and end according to its settings
+        // potentially also with custom dimensions set up under OTG tags
+        // or with all vanilla biomes, plus an OTG dimension
+        // (latter will be good for testing a single preset, hopefully)
+
+        WorldPreset worldPreset = new WorldPreset(levelStems);
+        // create a world preset for thepreset
+        ResourceLocation id = new ResourceLocation(Constants.MOD_ID_SHORT, preset.getPresetRegistryName().toLowerCase(Locale.ROOT));
+        ResourceKey<WorldPreset> key = ResourceKey.create(Registries.WORLD_PRESET, id);
+        worldPresets.register(key, worldPreset, Lifecycle.stable());
+        OTGLog.getLogger().info("Registered world preset: " + key.location());
     }
 
-    private static LevelStem handleMissingLevelStem(Preset preset, HolderGetter<DimensionType> dimensionHolders, HolderGetter<NoiseGeneratorSettings> noiseHolders, ResourceKey<DimensionType> dimensionKey) {
-        return new LevelStem(
-                    dimensionHolders.getOrThrow(dimensionKey),
-                    new OTGFabricChunkGenerator(
-                            new OTGFabricBiomeProvider(preset.getFolderName()),
-                            noiseHolders.getOrThrow(NoiseGeneratorSettings.OVERWORLD)
-                    )
-            );
+    private static Holder<NoiseGeneratorSettings> registerNoiseGenSettings(
+            Preset preset,
+            List<Pair<WritableRegistry<?>, Object>> registries,
+            RegistryAccess registryAccess) {
+        PresetSettings presetSettings = preset.getPresetConfig();
+        DimensionSettings dimensionSettings = presetSettings.getDimensionSettings();
+        BlockSettings blockSettings = presetSettings.getBlockSettings();
+        ResourceSettings resourceSettings = presetSettings.getResourceSettings();
+        var ngs = new NoiseGeneratorSettings(
+                new NoiseSettings(0, 256, 1, 2),
+                ((FabricMaterialData) blockSettings.getDefaultStoneBlock()).getState(),
+                ((FabricMaterialData) blockSettings.getWaterBlock()).getState(),
+                getZeroNoiseRouter(),
+                SurfaceRuleData.overworld(),
+                new OverworldBiomeBuilder().spawnTarget(),
+                63,
+                false,
+                false, // is aquifers enabled
+                !resourceSettings.isDisableOreGen(), // is veins enabled
+                false // use legacy random source
+        );
+
+        // register the noise settings
+        WritableRegistry<NoiseGeneratorSettings> registry = getRegistry(registries, Registries.NOISE_SETTINGS);
+        if (registry == null) {
+            throw new RuntimeException("Could not find noise settings registry");
+        }
+        ResourceKey<NoiseGeneratorSettings> key = ResourceKey.create(Registries.NOISE_SETTINGS, new ResourceLocation(Constants.MOD_ID_SHORT, preset.getPresetRegistryName()));
+        return registry.register(key, ngs, Lifecycle.stable());
+    }
+
+    private static @NotNull NoiseRouter getZeroNoiseRouter() {
+        return new NoiseRouter(
+                DensityFunctions.zero(),
+                DensityFunctions.zero(),
+                DensityFunctions.zero(),
+                DensityFunctions.zero(),
+                DensityFunctions.zero(),
+                DensityFunctions.zero(),
+                DensityFunctions.zero(),
+                DensityFunctions.zero(),
+                DensityFunctions.zero(),
+                DensityFunctions.zero(),
+                DensityFunctions.zero(),
+                DensityFunctions.zero(),
+                DensityFunctions.zero(),
+                DensityFunctions.zero(),
+                DensityFunctions.zero()
+        );
     }
 
     private static @NotNull HashMap<Preset, ResourceKey<DimensionType>> registerDimensionTypes(List<Pair<WritableRegistry<?>, Object>> list2) {
@@ -189,6 +338,7 @@ public class RegistryLoaderMixin {
                     // register the dimension
                     WritableRegistry<DimensionType> dimensionTypes = getRegistry(list2, Registries.DIMENSION_TYPE);
                     dimensionTypes.register(dimensionTypeKey, dimensionType, Lifecycle.stable());
+                    OTGLog.info("Registered dimension type: %s", dimensionTypeKey.location());
                     // return the key for use elsewhere
                     yield dimensionTypeKey;
                 }

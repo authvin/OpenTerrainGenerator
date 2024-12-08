@@ -48,10 +48,10 @@ public class DimensionSettings extends ConfigSection {
             "The current preset can be referenced either with its full name, or \"this\"."
     );
     public static final Setting<OTGDimensionType> DIMENSION_TYPE = Settings.enumSetting(
-            "DimensionType", OTGDimensionType.OVERWORLD,
+            "DimensionType", OTGDimensionType.OTG,
             t -> ((DimensionSettings) t).getDimensionType(),
             "The dimension type, either OVERWORLD, NETHER, END, or OTG.",
-            "Defaults to overworld.",
+            "Defaults to OTG.",
             "To use the settings below, must be set to OTG. Otherwise, dimension settings of the given dimensions apply."
     );
     public static final Setting<String> INFINIBURN = Settings.stringSetting(
