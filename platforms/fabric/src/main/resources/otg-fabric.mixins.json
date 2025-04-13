@@ -7,8 +7,11 @@
     "BiomeDataMixin",
     "BuiltInRegistriesMixin",
     "RegistryLoaderMixin",
+    "ChunkAccessAccessor",
+    "WorldGenRegionAccessor",
     "WorldPresetTagsMixin",
-    "CocoaDecoratorMixin"
+    "CocoaDecoratorMixin",
+    "StructureManagerAccessor"
   ],
   "client": [
   ],

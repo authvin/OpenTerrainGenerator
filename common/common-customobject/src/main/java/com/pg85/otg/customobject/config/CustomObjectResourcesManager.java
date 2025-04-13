@@ -3,7 +3,6 @@ package com.pg85.otg.customobject.config;
 import com.pg85.otg.config.ErroredFunction;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.ICustomObjectResourcesManager;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 
 import java.util.ArrayList;
@@ -13,23 +12,18 @@ import java.util.Map;
 
 public class CustomObjectResourcesManager implements ICustomObjectResourcesManager
 {
-	private Map<String, ArrayList<Class<? extends CustomObjectConfigFunction<?>>>> configFunctions;
+	private final Map<String, ArrayList<Class<? extends CustomObjectConfigFunction<?>>>> configFunctions;
 
 	public CustomObjectResourcesManager()
 	{
 		// Also store in this class
-		this.configFunctions = new HashMap<String, ArrayList<Class<? extends CustomObjectConfigFunction<?>>>>();
+		this.configFunctions = new HashMap<>();
 	}
 
 	public void registerConfigFunction(String name, Class<? extends CustomObjectConfigFunction<?>> value)
 	{
-		ArrayList<Class<? extends CustomObjectConfigFunction<?>>> list = configFunctions.get(name.toLowerCase());
-		if(list == null)
-		{
-			list = new ArrayList<Class<? extends CustomObjectConfigFunction<?>>>();
-			configFunctions.put(name.toLowerCase(), list);
-		}
-		list.add(value);
+        ArrayList<Class<? extends CustomObjectConfigFunction<?>>> list = configFunctions.computeIfAbsent(name.toLowerCase(), k -> new ArrayList<>());
+        list.add(value);
 	}
 
 	/**
@@ -45,7 +39,7 @@ public class CustomObjectResourcesManager implements ICustomObjectResourcesManag
 	 */
 	// It's checked with clazz.getConstructor(holder.getClass(), ...))
 	@SuppressWarnings("unchecked")
-	public <T> CustomObjectConfigFunction<T> getConfigFunction(String name, T holder, List<String> args, ILogger logger, IMaterialReader materialReader)
+	public <T> CustomObjectConfigFunction<T> getConfigFunction(String name, T holder, List<String> args,  IMaterialReader materialReader)
 	{
 		// If a Block() tag has the parameters of a RandomBlock tag then transform it into a RandomBlock
 		// This allows users to edit Bo3's and change Blocks to RandomBlocks with a simple find/replace.
@@ -58,7 +52,7 @@ public class CustomObjectResourcesManager implements ICustomObjectResourcesManag
 		ArrayList<Class<? extends CustomObjectConfigFunction<?>>> clazzes = configFunctions.get(name.toLowerCase());
 		if (clazzes == null)
 		{
-			return new CustomObjectErroredFunction<T>(name, holder, args, "Resource type " + name + " not found");
+			return new CustomObjectErroredFunction<>(name, holder, args, "Resource type " + name + " not found");
 		}
 
 		// Get a config function
@@ -83,7 +77,7 @@ public class CustomObjectResourcesManager implements ICustomObjectResourcesManag
 			// Initialize the function
 			try
 			{
-				configFunction.init(holder, args, logger, materialReader);
+				configFunction.init(holder, args,  materialReader);
 			} catch (InvalidConfigException e)
 			{
 				configFunction.invalidate(name, args, e.getMessage());
@@ -92,7 +86,7 @@ public class CustomObjectResourcesManager implements ICustomObjectResourcesManag
 		}
 		if(configFunction == null)
 		{
-			return new CustomObjectErroredFunction<T>(name, holder, args, "Resource " + name + " cannot be placed in this config file");
+			return new CustomObjectErroredFunction<>(name, holder, args, "Resource " + name + " cannot be placed in this config file");
 		}
 		return configFunction;
 	}

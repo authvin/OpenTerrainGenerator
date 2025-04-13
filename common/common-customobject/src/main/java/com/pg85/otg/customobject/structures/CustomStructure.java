@@ -15,7 +15,7 @@ public abstract class CustomStructure
 	// The origin BO3 for this branching structure
 	public CustomStructureCoordinate start;
 	
-	public EntitiesManager entitiesManager = new EntitiesManager();
+	public final EntitiesManager entitiesManager = new EntitiesManager();
 	
 	protected Map<ChunkCoordinate, Set<CustomStructureCoordinate>> objectsToSpawn;
 	protected Random random;

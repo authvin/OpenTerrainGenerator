@@ -10,7 +10,6 @@ import com.pg85.otg.customobject.bo4.BO4Config;
 import com.pg85.otg.customobject.bofunctions.BlockFunction;
 import com.pg85.otg.customobject.structures.bo4.BO4CustomStructureCoordinate;
 import com.pg85.otg.util.nbt.NBTHelper;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.bo3.Rotation;
@@ -117,8 +116,7 @@ public class BO4BlockFunction extends BlockFunction<BO4Config>
 		}
 	}
 
-	public static BO4BlockFunction fromStream(int x, int z, String[] metaDataNames, LocalMaterialData[] materials, BO4Config holder, ByteBuffer buffer, ILogger logger) throws IOException
-	{
+	public static BO4BlockFunction fromStream(int x, int z, String[] metaDataNames, LocalMaterialData[] materials, BO4Config holder, ByteBuffer buffer) {
 		BO4BlockFunction rbf = new BO4BlockFunction(holder);
 		
 		File file = holder.getFile();
@@ -141,7 +139,7 @@ public class BO4BlockFunction extends BlockFunction<BO4Config>
 		if(rbf.nbtName != null)
 		{
 			// Get the file
-			rbf.nbt = NBTHelper.loadMetadata(rbf.nbtName, file, logger);
+			rbf.nbt = NBTHelper.loadMetadata(rbf.nbtName, file);
 			if(rbf.nbt == null)
 			{
 				rbf.nbtName = null;

@@ -11,7 +11,6 @@ import com.pg85.otg.customobject.bo4.BO4Config;
 import com.pg85.otg.customobject.structures.bo4.BO4CustomStructureCoordinate;
 import com.pg85.otg.util.nbt.NBTHelper;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
@@ -36,7 +35,7 @@ public class BO4RandomBlockFunction extends BO4BlockFunction
 	}
 	
 	@Override
-	public void load(List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
 	{
 		assureSize(5, args);
 		x = readInt(args.get(0), -100, 100);
@@ -98,7 +97,7 @@ public class BO4RandomBlockFunction extends BO4BlockFunction
 				// Maybe it's a NBT file?
 
 				// Get the file
-				NamedBinaryTag metaData = NBTHelper.loadMetadata(args.get(i), this.getHolder().getFile(), logger);
+				NamedBinaryTag metaData = NBTHelper.loadMetadata(args.get(i), this.getHolder().getFile());
 				if (metaData != null)
 				{
 					metaDataNames[blockCount] = args.get(i);
@@ -192,15 +191,15 @@ public class BO4RandomBlockFunction extends BO4BlockFunction
 	@Override
 	public String makeString()
 	{
-		String text = "RandomBlock(" + x + "," + y + "," + z;
+		StringBuilder text = new StringBuilder("RandomBlock(" + x + "," + y + "," + z);
 		for (int i = 0; i < blockCount; i++)
 		{
 			if (metaDataTags[i] == null)
 			{
-				text += "," + blocks[i] + "," + blockChances[i];
+				text.append(",").append(blocks[i]).append(",").append(blockChances[i]);
 			} else
 			{
-				text += "," + blocks[i] + "," + metaDataNames[i] + "," + blockChances[i];
+				text.append(",").append(blocks[i]).append(",").append(metaDataNames[i]).append(",").append(blockChances[i]);
 			}
 		}
 		return text + ")";
@@ -245,14 +244,12 @@ public class BO4RandomBlockFunction extends BO4BlockFunction
 		}
 		
 		boolean metaDataFound = false;
-		for(int i = 0; i < this.metaDataNames.length; i++)
-		{
-			if(this.metaDataNames[i] != null)
-			{
-				metaDataFound = true;
-				break;
-			}
-		}
+        for (String dataName : this.metaDataNames) {
+            if (dataName != null) {
+                metaDataFound = true;
+                break;
+            }
+        }
 		
 		if(metaDataFound)
 		{
@@ -262,15 +259,13 @@ public class BO4RandomBlockFunction extends BO4BlockFunction
 				bFound = false;
 				if(this.metaDataNames[i] != null)
 				{
-					for(int j = 0; j < metaDataNames.length; j++)
-					{
-						if(metaDataNames[j].equals(this.metaDataNames[i]))
-						{
-							stream.writeShort(i);
-							bFound = true;
-							break;
-						}
-					}
+                    for (String metaDataName : metaDataNames) {
+                        if (metaDataName.equals(this.metaDataNames[i])) {
+                            stream.writeShort(i);
+                            bFound = true;
+                            break;
+                        }
+                    }
 				}
 				if(!bFound)
 				{
@@ -282,8 +277,7 @@ public class BO4RandomBlockFunction extends BO4BlockFunction
 		}
 	}
 	
-	public static BO4RandomBlockFunction fromStream(int x, int z, String[] metaDataNames, LocalMaterialData[] materials, BO4Config holder, ByteBuffer buffer, ILogger logger) throws IOException
-	{		
+	public static BO4RandomBlockFunction fromStream(int x, int z, String[] metaDataNames, LocalMaterialData[] materials, BO4Config holder, ByteBuffer buffer) {
 		BO4RandomBlockFunction rbf = new BO4RandomBlockFunction(holder);
 		
 		File file = holder.getFile();
@@ -321,7 +315,7 @@ public class BO4RandomBlockFunction extends BO4BlockFunction
 			if(rbf.metaDataNames[i] != null)
 			{
 				// Get the file
-				NamedBinaryTag metaData = NBTHelper.loadMetadata(rbf.metaDataNames[i], file, logger);
+				NamedBinaryTag metaData = NBTHelper.loadMetadata(rbf.metaDataNames[i], file);
 						
 				if (metaData != null)
 				{

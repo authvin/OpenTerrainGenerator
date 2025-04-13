@@ -9,7 +9,7 @@ import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.pg85.otg.interfaces.ILogger;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 
@@ -18,7 +18,7 @@ public class NBTHelper
 	// A list of already loaded meta Tags. The path is the key, a NBT Tag is the value.
 	private static Map<String, NamedBinaryTag> LoadedTags = new HashMap<String, NamedBinaryTag>();
 
-	private static NamedBinaryTag loadTileEntityFromNBT(String path, ILogger logger)
+	private static NamedBinaryTag loadTileEntityFromNBT(String path)
 	{
 		// Load from file
 		NamedBinaryTag metadata;
@@ -31,9 +31,9 @@ public class NBTHelper
 			metadata = NamedBinaryTag.readFrom(stream, true);
 		} catch (FileNotFoundException e) {
 			// File not found
-			if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+			if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 			{
-				logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, MessageFormat.format("NBT file {0} not found", path));
+				OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, MessageFormat.format("NBT file {0} not found", path));
 			}
 			return null;
 		} catch (IOException e)
@@ -51,19 +51,19 @@ public class NBTHelper
 			}			 
 			catch (java.lang.ArrayIndexOutOfBoundsException corruptFile)
 			{
-				if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+				if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 				{
-					logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Failed to read NBT meta file: " + e.getMessage());
-					logger.printStackTrace(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, corruptFile);
+					OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Failed to read NBT meta file: " + e.getMessage());
+					OTGLog.printStackTrace(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, corruptFile);
 				}
 				return null;
 			}
 			catch (IOException corruptFile)
 			{
-				if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+				if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 				{
-					logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Failed to read NBT meta file: " + e.getMessage());
-					logger.printStackTrace(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, corruptFile);
+					OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Failed to read NBT meta file: " + e.getMessage());
+					OTGLog.printStackTrace(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, corruptFile);
 				}
 				return null;
 			} finally
@@ -99,9 +99,9 @@ public class NBTHelper
 			}
 		}
 		// Unknown/bad structure
-		if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+		if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 		{
-			logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Structure of NBT file is incorrect: " + path);
+			OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Structure of NBT file is incorrect: " + path);
 		}
 		return null;
 	}	
@@ -120,7 +120,7 @@ public class NBTHelper
 		}
 	}
 
-	public static NamedBinaryTag loadMetadata(String name, File bo3Folder, ILogger logger)
+	public static NamedBinaryTag loadMetadata(String name, File bo3Folder)
 	{
 		String path = bo3Folder.getParent() + File.separator + name;
 
@@ -130,7 +130,7 @@ public class NBTHelper
 			return LoadedTags.get(path);
 		}
 
-		NamedBinaryTag tag = loadTileEntityFromNBT(path, logger);
+		NamedBinaryTag tag = loadTileEntityFromNBT(path);
 		registerMetadata(path, tag);
 		return tag;
 	}

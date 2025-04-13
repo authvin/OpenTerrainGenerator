@@ -4,9 +4,11 @@ import com.pg85.otg.fabric.materials.FabricMaterialData;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.materials.LocalMaterialData;
+import lombok.Getter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.chunk.ChunkAccess;
 
+@Getter
 public class FabricChunkBuffer extends ChunkBuffer {
     private final ChunkAccess chunkAccess;
 

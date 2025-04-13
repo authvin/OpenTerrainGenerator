@@ -190,9 +190,12 @@ public class RegistryLoaderMixin {
                     //continue;
                 }
 
+                Registry<Biome> biomeRegistry = getRegistryOrThrow(registries, Registries.BIOME);
+
                 chunkGenerator = new OTGFabricChunkGenerator(
                         new OTGFabricBiomeProvider(preset.getFolderName()),
-                        noiseReference
+                        noiseReference,
+                        biomeRegistry
                 );
                 levelStem = new LevelStem(
                         dimensionReference,

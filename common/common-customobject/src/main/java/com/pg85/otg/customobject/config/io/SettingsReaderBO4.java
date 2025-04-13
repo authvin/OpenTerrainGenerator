@@ -3,7 +3,6 @@ package com.pg85.otg.customobject.config.io;
 import com.pg85.otg.config.settingType.Setting;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 
 import java.io.File;
@@ -46,7 +45,7 @@ public interface SettingsReaderBO4
 	 * fallback reader} must be used, false otherwise.
 	 * @return The config functions.
 	 */
-	<T> List<CustomObjectConfigFunction<T>> getConfigFunctions(T holder, boolean useFallback, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager);
+	<T> List<CustomObjectConfigFunction<T>> getConfigFunctions(T holder, boolean useFallback,  IMaterialReader materialReader, CustomObjectResourcesManager manager);
 
 	/**
 	 * Gets the file this reader if reading from. Will be null if this reader
@@ -91,7 +90,7 @@ public interface SettingsReaderBO4
 	 * @param defaultValue Default value for the setting.
 	 * @return The value of the setting.
 	 */
-	<S> S getSetting(Setting<S> setting, S defaultValue, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager);
+	<S> S getSetting(Setting<S> setting, S defaultValue,  IMaterialReader materialReader, CustomObjectResourcesManager manager);
 	
 
 	/**

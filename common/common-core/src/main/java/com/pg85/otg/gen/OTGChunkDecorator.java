@@ -22,6 +22,7 @@ import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.ChunkCoordinate;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.logging.LogCategory;
@@ -103,7 +104,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 				} else {
 					if(firstLog)
 					{
-						logger.log(LogLevel.WARN, LogCategory.MAIN, "Decorate waiting on SaveToDisk. Although other mods could be causing this and there may not be any problem, this can potentially cause an endless loop!");
+						OTGLog.log(LogLevel.WARN, LogCategory.MAIN, "Decorate waiting on SaveToDisk. Although other mods could be causing this and there may not be any problem, this can potentially cause an endless loop!");
 						firstLog = false;
 					}
 				}
@@ -116,7 +117,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 		CustomObjectResourcesManager customObjectResourcesManager = OTG.getEngine().getCustomObjectResourcesManager();
 		IModLoadedChecker modLoadedChecker = OTG.getEngine().getModLoadedChecker();
 
-		doDecorate(chunkCoord, worldGenRegion, biomeConfig, logger, materialReader, otgRootFolder, structureCache, customObjectManager, customObjectResourcesManager, modLoadedChecker);			
+		doDecorate(chunkCoord, worldGenRegion, biomeConfig, materialReader, otgRootFolder, structureCache, customObjectManager, customObjectResourcesManager, modLoadedChecker);			
 		
 		// Release the lock
 		synchronized(this.lockingObject)
@@ -126,13 +127,13 @@ public class OTGChunkDecorator implements IChunkDecorator
 	}
 
 	// TODO: Fire decoration events.
-	private void doDecorate(ChunkCoordinate chunkCoord, IWorldGenRegion worldGenRegion, BiomeSettings biomeConfig, ILogger logger, IMaterialReader materialReader, Path otgRootFolder, CustomStructureCache structureCache, CustomObjectManager customObjectManager, CustomObjectResourcesManager customObjectResourcesManager, IModLoadedChecker modLoadedChecker)
+	private void doDecorate(ChunkCoordinate chunkCoord, IWorldGenRegion worldGenRegion, BiomeSettings biomeConfig, IMaterialReader materialReader, Path otgRootFolder, CustomStructureCache structureCache, CustomObjectManager customObjectManager, CustomObjectResourcesManager customObjectResourcesManager, IModLoadedChecker modLoadedChecker)
 	{		
 		if (biomeConfig == null)
 		{
-			if(logger.getLogCategoryEnabled(LogCategory.DECORATION))
+			if(OTGLog.getLogCategoryEnabled(LogCategory.DECORATION))
 			{
-				logger.log(
+				OTGLog.log(
 					LogLevel.ERROR,
 					LogCategory.DECORATION,
 					MessageFormat.format(
@@ -161,7 +162,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 			// slow down any multithreaded chunk decoration implementation.
 			synchronized(asynChunkDecorationLock)
 			{
-				plotAndSpawnBO4s(structureCache, worldGenRegion, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX(), chunkCoord.getChunkZ()), chunkCoord, otgRootFolder, logger, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);
+				plotAndSpawnBO4s(structureCache, worldGenRegion, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX(), chunkCoord.getChunkZ()), chunkCoord, otgRootFolder, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);
 			}
 		}
 
@@ -182,45 +183,45 @@ public class OTGChunkDecorator implements IChunkDecorator
 			if (res instanceof ICustomObjectResource)
 			{
 				((ICustomObjectResource)res).processForChunkDecoration(structureCache, worldGenRegion, this.rand, otgRootFolder, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);
-				if(logger.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
+				if(OTGLog.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
 				{
-					logger.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Processing resource " + res.toString() + " in biome " + biomeConfig.getIdentitySettings().getBiomeName() + " took " + (System.currentTimeMillis() - startTime) + " Ms.");
+					OTGLog.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Processing resource " + res.toString() + " in biome " + biomeConfig.getIdentitySettings().getBiomeName() + " took " + (System.currentTimeMillis() - startTime) + " Ms.");
 				}
 			}
 			else if (res instanceof ICustomStructureResource)
 			{
 				((ICustomStructureResource)res).processForChunkDecoration(structureCache, worldGenRegion, this.rand, otgRootFolder, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);
-				if(logger.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
+				if(OTGLog.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
 				{
-					logger.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Processing resource " + res.toString() + " in biome " + biomeConfig.getIdentitySettings().getBiomeName() + " took " + (System.currentTimeMillis() - startTime) + " Ms.");
+					OTGLog.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Processing resource " + res.toString() + " in biome " + biomeConfig.getIdentitySettings().getBiomeName() + " took " + (System.currentTimeMillis() - startTime) + " Ms.");
 				}
 			}
 			else if (res instanceof IBasicResource)
 			{
 				((IBasicResource)res).processForChunkDecoration(worldGenRegion, this.rand);
-				if(logger.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
+				if(OTGLog.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
 				{
-					logger.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Processing resource " + res.toString() + " in biome " + biomeConfig.getIdentitySettings().getBiomeName() + " took " + (System.currentTimeMillis() - startTime) + " Ms.");
+					OTGLog.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Processing resource " + res.toString() + " in biome " + biomeConfig.getIdentitySettings().getBiomeName() + " took " + (System.currentTimeMillis() - startTime) + " Ms.");
 				}				
 			}
 			else if(res instanceof ErroredFunction)
 			{
-				if(logger.getLogCategoryEnabled(LogCategory.DECORATION))
+				if(OTGLog.getLogCategoryEnabled(LogCategory.DECORATION))
 				{
 					if(!((ErroredFunction<BiomeSettings>)res).isLogged)
 					{
 						((ErroredFunction<BiomeSettings>)res).isLogged = true;
-						if(logger.getLogCategoryEnabled(LogCategory.DECORATION))
+						if(OTGLog.getLogCategoryEnabled(LogCategory.DECORATION))
 						{
-							logger.log(LogLevel.ERROR, LogCategory.DECORATION, "Errored setting ignored for biome " + biomeConfig.getIdentitySettings().getBiomeName() + " : " + toString());
+							OTGLog.log(LogLevel.ERROR, LogCategory.DECORATION, "Errored setting ignored for biome " + biomeConfig.getIdentitySettings().getBiomeName() + " : " + toString());
 						}
 					}					
 				}
 			}
 		}
-		if(logger.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTimeAll) > 50)
+		if(OTGLog.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTimeAll) > 50)
 		{
-			logger.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Processing resources in biome " + biomeConfig.getIdentitySettings().getBiomeName() + " took " + (System.currentTimeMillis() - startTimeAll) + " Ms.");
+			OTGLog.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Processing resources in biome " + biomeConfig.getIdentitySettings().getBiomeName() + " took " + (System.currentTimeMillis() - startTimeAll) + " Ms.");
 		}
 	}
 
@@ -233,25 +234,25 @@ public class OTGChunkDecorator implements IChunkDecorator
 		FrozenSurfaceHelper.freezeChunk(worldGenRegion, chunkCoord);
 	}
 
-	private void plotAndSpawnBO4s(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, ChunkCoordinate chunkCoord, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager customObjectResourcesManager, IModLoadedChecker modLoadedChecker)
+	private void plotAndSpawnBO4s(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, ChunkCoordinate chunkCoord, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager customObjectResourcesManager, IModLoadedChecker modLoadedChecker)
 	{
 		// Plot and spawn BO4's for all chunks that may have blocks spawned on them while decorating this chunk, 
 		// so we can be sure those chunks have had a chance to plot+spawn bo4's before other resources.
 
-		structureCache.plotBo4Structures(worldGenRegion, this.rand, chunkCoord, otgRootFolder, logger, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);		
-		structureCache.plotBo4Structures(worldGenRegion, this.rand, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX() + 1, chunkCoord.getChunkZ()), otgRootFolder, logger, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);		
-		structureCache.plotBo4Structures(worldGenRegion, this.rand, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX() , chunkCoord.getChunkZ() + 1), otgRootFolder, logger, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);			
-		structureCache.plotBo4Structures(worldGenRegion, this.rand, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX() + 1, chunkCoord.getChunkZ() + 1), otgRootFolder, logger, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);	
+		structureCache.plotBo4Structures(worldGenRegion, this.rand, chunkCoord, otgRootFolder, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);		
+		structureCache.plotBo4Structures(worldGenRegion, this.rand, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX() + 1, chunkCoord.getChunkZ()), otgRootFolder, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);		
+		structureCache.plotBo4Structures(worldGenRegion, this.rand, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX() , chunkCoord.getChunkZ() + 1), otgRootFolder, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);			
+		structureCache.plotBo4Structures(worldGenRegion, this.rand, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX() + 1, chunkCoord.getChunkZ() + 1), otgRootFolder, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);	
 
-		spawnBO4(structureCache, worldGenRegion, chunkCoord, otgRootFolder, logger, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);
-		spawnBO4(structureCache, worldGenRegion, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX() + 1, chunkCoord.getChunkZ()), otgRootFolder, logger, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);	
-		spawnBO4(structureCache, worldGenRegion, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX(), chunkCoord.getChunkZ() + 1), otgRootFolder, logger, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);
-		spawnBO4(structureCache, worldGenRegion, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX() + 1, chunkCoord.getChunkZ() + 1), otgRootFolder, logger, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);		
+		spawnBO4(structureCache, worldGenRegion, chunkCoord, otgRootFolder, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);
+		spawnBO4(structureCache, worldGenRegion, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX() + 1, chunkCoord.getChunkZ()), otgRootFolder, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);	
+		spawnBO4(structureCache, worldGenRegion, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX(), chunkCoord.getChunkZ() + 1), otgRootFolder, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);
+		spawnBO4(structureCache, worldGenRegion, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX() + 1, chunkCoord.getChunkZ() + 1), otgRootFolder, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);		
 	}
 
-	private void spawnBO4(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, ChunkCoordinate chunkCoord, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private void spawnBO4(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, ChunkCoordinate chunkCoord, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		structureCache.spawnBo4Chunk(worldGenRegion, chunkCoord, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+		structureCache.spawnBo4Chunk(worldGenRegion, chunkCoord, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
 	}
 	
 	private void handleBO3AtSpawn(IWorldGenRegion worldGenRegion, ChunkCoordinate targetChunk, String bo3AtSpawn, String presetFolderName, Path otgRootFolder, CustomStructureCache structureCache, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager customObjectResourcesManager, IModLoadedChecker modLoadedChecker)
@@ -261,7 +262,6 @@ public class OTGChunkDecorator implements IChunkDecorator
 			bo3AtSpawn,
 			presetFolderName,
 			otgRootFolder,
-			worldGenRegion.getLogger(),
 			customObjectManager,
 			materialReader,
 			customObjectResourcesManager,

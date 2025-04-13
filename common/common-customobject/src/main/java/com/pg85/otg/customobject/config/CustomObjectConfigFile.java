@@ -7,7 +7,6 @@ import com.pg85.otg.customobject.config.io.SettingsReaderBO4;
 import com.pg85.otg.customobject.config.io.SettingsWriterBO4;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.ICustomObjectManager;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 
@@ -35,9 +34,9 @@ public abstract class CustomObjectConfigFile
 	 * @param setting The setting to read.
 	 * @return The value of the setting.
 	 */
-	protected <T> T readSettings(Setting<T> setting, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager)
+	protected <T> T readSettings(Setting<T> setting,  IMaterialReader materialReader, CustomObjectResourcesManager manager)
 	{
-		return readSettings(setting, setting.getDefaultValue(), logger, materialReader, manager);
+		return readSettings(setting, setting.getDefaultValue(),  materialReader, manager);
 	}
 
 	/**
@@ -48,9 +47,9 @@ public abstract class CustomObjectConfigFile
 	 * @param defaultValue Default value for the setting.
 	 * @return The value of the setting.
 	 */
-	private <T> T readSettings(Setting<T> setting, T defaultValue, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager)
+	private <T> T readSettings(Setting<T> setting, T defaultValue,  IMaterialReader materialReader, CustomObjectResourcesManager manager)
 	{
-		return reader.getSetting(setting, defaultValue, logger, materialReader, manager);
+		return reader.getSetting(setting, defaultValue,  materialReader, manager);
 	}
 
 	/**
@@ -60,7 +59,7 @@ public abstract class CustomObjectConfigFile
 	 * @param configMode
 	 * @throws IOException
 	 */
-	public void write(SettingsWriterBO4 writer, ConfigMode configMode, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
+	public void write(SettingsWriterBO4 writer, ConfigMode configMode,  IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
 	{
 		if (configMode == ConfigMode.WriteDisable)
 		{
@@ -70,10 +69,10 @@ public abstract class CustomObjectConfigFile
 		try
 		{
 			writer.open();
-			writeConfigSettings(writer, logger, materialReader, manager);
+			writeConfigSettings(writer,  materialReader, manager);
 		} finally
 		{
-			writer.close(logger);
+			writer.close();
 		}
 
 		/*
@@ -83,15 +82,15 @@ public abstract class CustomObjectConfigFile
 			File newFile = new File(writer.getFile().getParentFile(), this.getName() + ".BO4");
 			if (!writer.getFile().renameTo(newFile))
 			{
-				logger.log(LogMarker.INFO, "Could not rename file " + newFile.getName() + " to BO4, the file may be in use.");
+				OTGLog.log(LogMarker.INFO, "Could not rename file " + newFile.getName() + " to BO4, the file may be in use.");
 			}
 		}
 		*/
 	}
 
-	protected abstract void writeConfigSettings(SettingsWriterBO4 writer, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException;
+	protected abstract void writeConfigSettings(SettingsWriterBO4 writer,  IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException;
 
-	protected abstract void readConfigSettings(String presetFolderName, Path otgRootFolder, ILogger logger, ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException;
+	protected abstract void readConfigSettings(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException;
 	
 	protected abstract void correctSettings();
 
@@ -117,5 +116,5 @@ public abstract class CustomObjectConfigFile
 		return reader.getFile();
 	}
 
-	public abstract BlockFunction<?>[] getBlockFunctions(String presetFolderName, Path otgRootFolder, ILogger logger, ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker);
+	public abstract BlockFunction<?>[] getBlockFunctions(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker);
 }

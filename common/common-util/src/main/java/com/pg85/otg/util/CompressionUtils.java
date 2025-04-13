@@ -6,11 +6,9 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
-import com.pg85.otg.interfaces.ILogger;
-
 public class CompressionUtils
 {
-	public static byte[] compress(byte[] data, ILogger logger) throws IOException
+	public static byte[] compress(byte[] data) throws IOException
 	{  
 		Deflater deflater = new Deflater();  
 		deflater.setInput(data);  

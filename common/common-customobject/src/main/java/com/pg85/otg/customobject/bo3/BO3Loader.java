@@ -14,7 +14,6 @@ import com.pg85.otg.customobject.bo3.checks.LightCheck;
 import com.pg85.otg.customobject.bo3.checks.ModCheck;
 import com.pg85.otg.customobject.bo3.checks.ModCheckNot;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
-import com.pg85.otg.interfaces.ILogger;
 
 import java.io.*;
 
@@ -48,7 +47,7 @@ public class BO3Loader implements CustomObjectLoader
 	}
 
 	@Override
-	public CustomObject loadFromFile(String objectName, File file, ILogger logger)
+	public CustomObject loadFromFile(String objectName, File file)
 	{
 		return new BO3(objectName, file);
 	}

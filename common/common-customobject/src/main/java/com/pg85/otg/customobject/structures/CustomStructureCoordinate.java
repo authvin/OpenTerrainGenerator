@@ -1,5 +1,6 @@
 package com.pg85.otg.customobject.structures;
 
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.logging.LogCategory;
@@ -10,7 +11,6 @@ import java.nio.file.Path;
 import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IStructuredCustomObject;
@@ -66,18 +66,18 @@ public abstract class CustomStructureCoordinate
 	 *
 	 * @return The object.
 	 */
-	public IStructuredCustomObject getObject(Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public IStructuredCustomObject getObject(Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		if(this.object == null)
 		{
-			CustomObject object = customObjectManager.getGlobalObjects().getObjectByName(this.bo3Name, this.presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+			CustomObject object = customObjectManager.getGlobalObjects().getObjectByName(this.bo3Name, this.presetFolderName, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
 
 			if(object == null || !(object instanceof StructuredCustomObject))
 			{
 				object = null;
-				if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+				if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 				{
-					logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not find BO3/BO4 " + this.bo3Name + " in GlobalObjects or WorldObjects directory.");
+					OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not find BO3/BO4 " + this.bo3Name + " in GlobalObjects or WorldObjects directory.");
 				}
 			}
 
@@ -102,12 +102,11 @@ public abstract class CustomStructureCoordinate
 		{
 			return false;
 		}
-		if (!(otherObject instanceof CustomStructureCoordinate))
+		if (!(otherObject instanceof CustomStructureCoordinate otherCoord))
 		{
 			return false;
 		}
-		CustomStructureCoordinate otherCoord = (CustomStructureCoordinate) otherObject;
-		if (otherCoord.x != x)
+        if (otherCoord.x != x)
 		{
 			return false;
 		}

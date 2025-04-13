@@ -21,10 +21,10 @@ import com.pg85.otg.customobject.structures.StructuredCustomObject;
 import com.pg85.otg.customobject.util.BoundingBox;
 import com.pg85.otg.customobject.util.Corner;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.util.ChunkCoordinate;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 import com.pg85.otg.util.nbt.LocalNBTHelper;
@@ -45,7 +45,7 @@ public class ObjectCreator
 	public static StructuredCustomObject create(
             ObjectType type, Corner min, Corner max, Corner center, LocalMaterialData centerBlock, String objectName, boolean includeAir, boolean isStructure, boolean leaveIllegalLeaves, Path objectPath,
             LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, List<BlockFunction<?>> extraBlocks, CustomObjectConfigFile template,
-            String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
+            String presetFolderName, Path rootPath,  CustomObjectManager boManager,
             IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc, List<LocalMaterialData> excludes
 	)
 	{
@@ -53,40 +53,40 @@ public class ObjectCreator
 		{
 			return createStructure(
 				type, min, max, center, objectName, includeAir, leaveIllegalLeaves, objectPath, localWorld, nbtHelper,
-				template, presetFolderName, rootPath, logger, boManager, mr, manager, mlc, excludes);
+				template, presetFolderName, rootPath,  boManager, mr, manager, mlc, excludes);
 		} else {
 			return createObject(
 				type, min, max, center, centerBlock, objectName, includeAir, leaveIllegalLeaves, objectPath, localWorld, nbtHelper,
-				extraBlocks, template, presetFolderName, rootPath, logger, boManager, mr, manager, mlc, excludes);
+				extraBlocks, template, presetFolderName, rootPath,  boManager, mr, manager, mlc, excludes);
 		}
 	}
 
 	public static StructuredCustomObject create(
             ObjectType type, Corner min, Corner max, Corner center, LocalMaterialData centerBlock, String objectName, boolean includeAir, boolean isStructure, boolean leaveIllegalLeaves, Path objectPath,
             LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, List<BlockFunction<?>> extraBlocks, CustomObjectConfigFile template,
-            String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
+            String presetFolderName, Path rootPath,  CustomObjectManager boManager,
             IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc
 	) {
 		return create(type, min, max, center, centerBlock, objectName, includeAir, isStructure, leaveIllegalLeaves, objectPath,
-				localWorld, nbtHelper, extraBlocks, template, presetFolderName, rootPath, logger, boManager,
+				localWorld, nbtHelper, extraBlocks, template, presetFolderName, rootPath,  boManager,
 				mr, manager, mlc, new ArrayList<>());
 	}
 
 	public static StructuredCustomObject createObject(
             ObjectType type, Corner min, Corner max, Corner center, LocalMaterialData centerBlock, String objectName, boolean includeAir, boolean leaveIllegalLeaves, Path exportPath,
             LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, List<BlockFunction<?>> extraBlocks, CustomObjectConfigFile template,
-            String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
+            String presetFolderName, Path rootPath,  CustomObjectManager boManager,
             IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc
 	) {
 		return createObject(type, min, max, center, centerBlock, objectName, includeAir, leaveIllegalLeaves, exportPath, localWorld,
-		nbtHelper, extraBlocks, template, presetFolderName, rootPath, logger, boManager, mr, manager, mlc, new ArrayList<>());
+		nbtHelper, extraBlocks, template, presetFolderName, rootPath,  boManager, mr, manager, mlc, new ArrayList<>());
 	}
 
 	// Method for creating a custom object
 	public static StructuredCustomObject createObject(
             ObjectType type, Corner min, Corner max, Corner center, LocalMaterialData centerBlock, String objectName, boolean includeAir, boolean leaveIllegalLeaves, Path exportPath,
             LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, List<BlockFunction<?>> extraBlocks, CustomObjectConfigFile template,
-            String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
+            String presetFolderName, Path rootPath,  CustomObjectManager boManager,
             IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc, List<LocalMaterialData> excludes
 	)
 	{
@@ -94,9 +94,9 @@ public class ObjectCreator
 		searchForCenter:
 		{
 			if (centerBlock != null)
-				for (int x = min.x; x <= max.x; x++)
-					for (int z = min.z; z <= max.z; z++)
-						for (int y = min.y; y <= max.y; y++)
+				for (int x = min.x(); x <= max.x(); x++)
+					for (int z = min.z(); z <= max.z(); z++)
+						for (int y = min.y(); y <= max.y(); y++)
 						{
 							LocalMaterialData data = localWorld.getMaterial(x, y, z);
 							if (data != null && data.isMaterial(centerBlock))
@@ -124,37 +124,36 @@ public class ObjectCreator
 			}
 			catch (IOException e)
 			{
-				logger.log(LogLevel.ERROR, LogCategory.MAIN, "Failed to rename old file "+destinationPath.getFileName());
-				logger.printStackTrace(LogLevel.ERROR, LogCategory.MAIN, e);
+				OTGLog.log(LogLevel.ERROR, LogCategory.MAIN, "Failed to rename old file "+destinationPath.getFileName());
+				OTGLog.printStackTrace(LogLevel.ERROR, LogCategory.MAIN, e);
 			}
 		}
 
 		// Make new BO with the given blocks
 		CustomObjectConfigFile config = makeNewConfig(type, template, objectName, destinationPath,
-			max, min, center, blocks, null, presetFolderName, logger, rootPath, boManager, mr, manager, mlc);
+			max, min, center, blocks, null, presetFolderName,  rootPath, boManager, mr, manager, mlc);
 
-		return writeToFile(type, objectName, exportPath, logger, mr, manager, config);
+		return writeToFile(type, objectName, exportPath,  mr, manager, config);
 	}
 
-	private static StructuredCustomObject writeToFile(ObjectType type, String objectName, Path exportPath, ILogger logger, IMaterialReader mr, CustomObjectResourcesManager manager, CustomObjectConfigFile config) {
-		switch (type)
-		{
-			case BO3:
-				FileSettingsWriterBO4.writeToFile(config, config.getFile(), config.settingsMode, logger, mr, manager);
-				return new BO3(objectName, type.getObjectFilePathFromName(objectName, exportPath).toFile(), (BO3Config) config);
-			case BO4:
-				// Don't write the BO4 to file, that's done during this::makeNewConfig
-				return new BO4(objectName, type.getObjectFilePathFromName(objectName, exportPath).toFile(), (BO4Config) config);
-			default:
-				return null;
-		}
+	private static StructuredCustomObject writeToFile(ObjectType type, String objectName, Path exportPath,  IMaterialReader mr, CustomObjectResourcesManager manager, CustomObjectConfigFile config) {
+        return switch (type) {
+            case BO3 -> {
+                FileSettingsWriterBO4.writeToFile(config, config.getFile(), config.settingsMode, mr, manager);
+                yield new BO3(objectName, type.getObjectFilePathFromName(objectName, exportPath).toFile(), (BO3Config) config);
+            }
+            case BO4 ->
+                // Don't write the BO4 to file, that's done during this::makeNewConfig
+                    new BO4(objectName, type.getObjectFilePathFromName(objectName, exportPath).toFile(), (BO4Config) config);
+            default -> null;
+        };
 	}
 
 	// Separate branch for creating a structure, since structures need to create branches
 	public static StructuredCustomObject createStructure(
             ObjectType type, Corner min, Corner max, Corner center, String objectName, boolean includeAir, boolean leaveIllegalLeaves, Path objectPath,
             LocalWorldGenRegion localWorld, LocalNBTHelper nbtHelper, CustomObjectConfigFile template,
-            String presetFolderName, Path rootPath, ILogger logger, CustomObjectManager boManager,
+            String presetFolderName, Path rootPath,  CustomObjectManager boManager,
             IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc, List<LocalMaterialData> excludes
 	)
 	{
@@ -162,10 +161,10 @@ public class ObjectCreator
 		branchFolder.mkdirs();
 
 		// Plot out how many sub-objects we need
-		int chunksOnXAxis = Math.abs(max.x - min.x) / 16;
-		int chunksOnZAxis = Math.abs(max.z - min.z) / 16;
-		if ((max.x - min.x) % 16 > 0) chunksOnXAxis++;
-		if ((max.z - min.z) % 16 > 0) chunksOnZAxis++;
+		int chunksOnXAxis = Math.abs(max.x() - min.x()) / 16;
+		int chunksOnZAxis = Math.abs(max.z() - min.z()) / 16;
+		if ((max.x() - min.x()) % 16 > 0) chunksOnXAxis++;
+		if ((max.z() - min.z()) % 16 > 0) chunksOnZAxis++;
 
 		// Get the blocks for each branch, put them in a grid
 		//  - Make sure empty branches are ignored
@@ -180,12 +179,12 @@ public class ObjectCreator
 		{
 			for (int branchZ = 0; branchZ < chunksOnZAxis; branchZ++)
 			{
-				Corner branchMin = new Corner(min.x + (16 * branchX), min.y, min.z + (16 * branchZ));
+				Corner branchMin = new Corner(min.x() + (16 * branchX), min.y(), min.z() + (16 * branchZ));
 				// For max corner, we gotta make sure we don't extend over the edge
 				Corner branchMax = new Corner(
-					branchX == chunksOnXAxis - 1 ? max.x : branchMin.x + 15,
-					max.y,
-					branchZ == chunksOnZAxis - 1 ? max.z : branchMin.z + 15
+					branchX == chunksOnXAxis - 1 ? max.x() : branchMin.x() + 15,
+						max.y(),
+					branchZ == chunksOnZAxis - 1 ? max.z() : branchMin.z() + 15
 				);
 
 				String branchName = objectName + "_C" + branchX + "_R" + branchZ;
@@ -216,7 +215,7 @@ public class ObjectCreator
 				{
 					// This is the head of a graph, save it as such
 					processed[x][z] = true;
-					//logger.log(LogLevel.INFO, LogCategory.MAIN, "Head branch found at "+x+","+z);
+					//OTGLog.log(LogLevel.INFO, LogCategory.MAIN, "Head branch found at "+x+","+z);
 					heads.add(ChunkCoordinate.fromChunkCoords(x, z));
 				}
 
@@ -225,34 +224,34 @@ public class ObjectCreator
 				if (x < exists.length - 1 && exists[x + 1][z] && !processed[x + 1][z])
 				{ // East
 					processed[x + 1][z] = true;
-					addBranch(type, branches, objectName, 16, 0, 0, x+1, z, logger, mr);
+					addBranch(type, branches, objectName, 16, 0, 0, x+1, z,  mr);
 				}
 				if (z < exists[0].length - 1 && exists[x][z + 1] && !processed[x][z + 1])
 				{ // South
 					processed[x][z + 1] = true;
-					addBranch(type, branches, objectName, 0, 0, 16, x, z+1, logger, mr);
+					addBranch(type, branches, objectName, 0, 0, 16, x, z+1,  mr);
 				}
 				if (x > 0 && exists[x - 1][z] && !processed[x - 1][z])
 				{ // West
 					processed[x - 1][z] = true;
-					addBranch(type, branches, objectName, -16, 0, 0, x-1, z, logger, mr);
+					addBranch(type, branches, objectName, -16, 0, 0, x-1, z,  mr);
 				}
 				if (z > 0 && exists[x][z - 1] && !processed[x][z - 1])
 				{ // North
 					processed[x][z - 1] = true;
-					addBranch(type, branches, objectName, 0, 0, -16, x, z-1, logger, mr);
+					addBranch(type, branches, objectName, 0, 0, -16, x, z-1,  mr);
 				}
 				String branchName = objectName + "_C" + x + "_R" + z;
 				Path branchPath = type.getObjectFilePathFromName(branchName, branchFolder.toPath());
 
 				// For BO4's, we need to make fresh BO4 configs for each new branch
 				// For BO3's, we pass the template, as it is cloned
-				CustomObjectConfigFile branchTemplate = null;
+				CustomObjectConfigFile branchTemplate;
 				try
 				{
 					branchTemplate = type == ObjectType.BO4 ? new BO4Config(
-						new FileSettingsReaderBO4(branchName, branchPath.toFile(), logger),
-						true, presetFolderName, rootPath, logger, boManager, mr, manager, mlc
+						new FileSettingsReaderBO4(branchName, branchPath.toFile()),
+						true, presetFolderName, rootPath,  boManager, mr, manager, mlc
 					) : template;
 				}
 				catch (InvalidConfigException e)
@@ -260,11 +259,11 @@ public class ObjectCreator
 					e.printStackTrace();
 					return null;
 				}
-				Corner localmin = new Corner(min.x + (16 * x), min.y, min.z + (16 * z));
+				Corner localmin = new Corner(min.x() + (16 * x), min.y(), min.z() + (16 * z));
 				Corner localmax = new Corner(
-					x == chunksOnXAxis - 1 ? max.x : min.x + (16 * x) + 15,
-					max.y,
-					z == chunksOnZAxis - 1 ? max.z : min.z + (16 * z) + 15);
+					x == chunksOnXAxis - 1 ? max.x() : min.x() + (16 * x) + 15,
+						max.y(),
+					z == chunksOnZAxis - 1 ? max.z() : min.z() + (16 * z) + 15);
 
 				CustomObjectConfigFile branchConfig = makeNewConfig(
 					type, branchTemplate,  branchName,
@@ -272,10 +271,10 @@ public class ObjectCreator
 					localmin,
 					localmax,
 					localmin,
-					branchGrid[x][z], branches, presetFolderName, logger, rootPath, boManager, mr, manager, mlc);
+					branchGrid[x][z], branches, presetFolderName,  rootPath, boManager, mr, manager, mlc);
 
 				if (type != ObjectType.BO4) // Already written by MakeNewConfig
-					FileSettingsWriterBO4.writeToFile(branchConfig, branchConfig.getFile(), branchConfig.settingsMode, logger, mr, manager);
+					FileSettingsWriterBO4.writeToFile(branchConfig, branchConfig.getFile(), branchConfig.settingsMode,  mr, manager);
 			}
 		}
 
@@ -286,31 +285,31 @@ public class ObjectCreator
 		for (ChunkCoordinate coord : heads)
 		{
 			addBranch(type, branches, objectName, (coord.getChunkX() * 16), 0, (coord.getChunkZ() * 16),
-				coord.getChunkX(), coord.getChunkZ(), logger, mr);
+				coord.getChunkX(), coord.getChunkZ(),  mr);
 		}
-		logger.log(LogLevel.INFO, LogCategory.MAIN, "Creating structure "+objectName+" with "+branches.size()+" direct branches");
+		OTGLog.log(LogLevel.INFO, LogCategory.MAIN, "Creating structure "+objectName+" with "+branches.size()+" direct branches");
 		CustomObjectConfigFile config = makeNewConfig(type, template, objectName,
 			type.getObjectFilePathFromName(objectName, objectPath),
-			min, max, center, null, branches, presetFolderName, logger, rootPath, boManager, mr, manager, mlc);
+			min, max, center, null, branches, presetFolderName,  rootPath, boManager, mr, manager, mlc);
 
-		return writeToFile(type, objectName, objectPath, logger, mr, manager, config);
+		return writeToFile(type, objectName, objectPath,  mr, manager, config);
 	}
 
 	// Method for creating branches; had to be a separate method to avoid a switch statement everywhere this is called.
 	private static void addBranch(ObjectType type, List<BranchFunction<?>> branches, String objectName,
-								  int x, int y, int z, int chunkX, int chunkZ, ILogger logger, IMaterialReader mr)
+								  int x, int y, int z, int chunkX, int chunkZ,  IMaterialReader mr)
 	{
 		switch (type)
 		{
 			case BO3:
 			{
-				branches.add((BO3BranchFunction) CustomObjectConfigFunction.create(null, BO3BranchFunction.class, logger, mr,
+				branches.add((BO3BranchFunction) CustomObjectConfigFunction.create(null, BO3BranchFunction.class,  mr,
 					x, y, z, (objectName + "_C" + chunkX + "_R" + chunkZ), "NORTH", 100));
 				break;
 			}
 			case BO4:
 			{
-				branches.add(((BO4BranchFunction) CustomObjectConfigFunction.create(null, BO4BranchFunction.class, logger, mr,
+				branches.add(((BO4BranchFunction) CustomObjectConfigFunction.create(null, BO4BranchFunction.class,  mr,
 					x, y, z, true,
 					(objectName + "_C" + chunkX + "_R" + chunkZ), "NORTH", 100, 0)));
 				break;
@@ -323,10 +322,10 @@ public class ObjectCreator
 
 	private static CustomObjectConfigFile makeNewConfig
 		(ObjectType type, CustomObjectConfigFile template, String objectName, Path objectFilePath,  Corner max, Corner min, Corner center,
-		 List<BlockFunction<?>> blocks, List<BranchFunction<?>> branches, String presetFolderName, ILogger logger, Path rootPath,
+		 List<BlockFunction<?>> blocks, List<BranchFunction<?>> branches, String presetFolderName,  Path rootPath,
 		 CustomObjectManager boManager, IMaterialReader mr, CustomObjectResourcesManager manager, IModLoadedChecker mlc)
 	{
-		SettingsReaderBO4 reader = new FileSettingsReaderBO4(objectName, objectFilePath.toFile(), logger);
+		SettingsReaderBO4 reader = new FileSettingsReaderBO4(objectName, objectFilePath.toFile());
 		if (blocks == null)
 			blocks = new ArrayList<>();
 
@@ -340,12 +339,12 @@ public class ObjectCreator
 				if (config.settingsMode == ConfigMode.WriteDisable)
 					config.settingsMode = ConfigMode.WriteWithoutComments;
 				BoundingBox box = BoundingBox.newEmptyBox();
-				box.expandToFit(min.x - center.x, min.y - center.y, min.z - center.z);
-				box.expandToFit(max.x - center.x, max.y - center.y, max.z - center.z);
+				box.expandToFit(min.x() - center.x(), min.y() - center.y(), min.z() - center.z());
+				box.expandToFit(max.x() - center.x(), max.y() - center.y(), max.z() - center.z());
 
 				config.setBoundingBox(box);
 				config.extractBlocks(blocks);
-				config.rotateBlocksAndChecks(presetFolderName, rootPath, logger, boManager, mr, manager, mlc);
+				config.rotateBlocksAndChecks(presetFolderName, rootPath,  boManager, mr, manager, mlc);
 				return config;
 			}
 			case BO4:
@@ -362,7 +361,7 @@ public class ObjectCreator
 				
 				// Re-add any AIR blocks that were in the original BO4
 				List<BlockFunction<?>> mergedBlocks = new ArrayList<>(blocks);
-				BlockFunction<?>[] blocksListOriginal = config.getBlockFunctions(presetFolderName, rootPath, logger, boManager, mr, manager, mlc);				
+				BlockFunction<?>[] blocksListOriginal = config.getBlockFunctions(presetFolderName, rootPath,  boManager, mr, manager, mlc);				
 				for(BlockFunction<?> block : blocksListOriginal)
 				{
 					if(
@@ -381,15 +380,14 @@ public class ObjectCreator
 						config,
 						mergedBlocks,
 						branches,
-						logger, mr, manager
+						 mr, manager
 					)
 				;
 
 				BO4 object = (BO4) boManager.getObjectLoaders().get(type.getType().toLowerCase())
 					.loadFromFile(
 						objectName,
-						objectFilePath.toFile(),
-						logger
+						objectFilePath.toFile()
 				);
 
 				if (object == null)
@@ -397,7 +395,7 @@ public class ObjectCreator
 					throw new RuntimeException("Could not load BO4 "+objectName+" at "+objectFilePath);
 				}
 
-				if (!object.onEnable(presetFolderName, rootPath, logger, boManager, mr, manager, mlc))
+				if (!object.onEnable(presetFolderName, rootPath,  boManager, mr, manager, mlc))
 				{
 					throw new RuntimeException("Could not enable BO4 "+objectName);
 				}

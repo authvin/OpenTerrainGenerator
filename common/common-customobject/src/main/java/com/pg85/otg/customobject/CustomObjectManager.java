@@ -5,7 +5,7 @@ import com.pg85.otg.customobject.bo3.BO3Loader;
 import com.pg85.otg.customobject.bo4.BO4Loader;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.interfaces.ICustomObjectManager;
-import com.pg85.otg.interfaces.ILogger;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 
@@ -48,10 +48,10 @@ public class CustomObjectManager implements ICustomObjectManager
 	private final Map<String, CustomObjectLoader> loaders;	
 	private final CustomObjectCollection globalCustomObjects;
 
-	public CustomObjectManager(boolean developerMode, ILogger logger, Path otgRootFolder, Path otgPresetsFolder, CustomObjectResourcesManager manager)
+	public CustomObjectManager(boolean developerMode, Path otgRootFolder, Path otgPresetsFolder, CustomObjectResourcesManager manager)
 	{
 		// These are the actual lists, not just a copy.
-		this.loaders = new HashMap<String, CustomObjectLoader>();
+		this.loaders = new HashMap<>();
 
 		// Register loaders
 		registerCustomObjectLoader("bo2", new BO2Loader());
@@ -66,25 +66,22 @@ public class CustomObjectManager implements ICustomObjectManager
 		// also block until the indexing is done.
 		if(!developerMode)
 		{
-			new Thread() { 
-				public void run()
-				{
-					globalCustomObjects.indexGlobalObjectsFolder(logger, otgRootFolder);
-					
-					for(File file : otgPresetsFolder.toFile().listFiles())
-					{
-						if(file.isDirectory())
-						{
-							String presetFolderName = file.getName();
-							globalCustomObjects.indexPresetObjectsFolder(presetFolderName, logger, otgRootFolder);
-						}
-					}
-					if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
-					{
-						logger.log(LogLevel.INFO, LogCategory.CUSTOM_OBJECTS, "All CustomObject files indexed.");
-					}
-				}
-			}.start();
+			new Thread(() -> {
+                globalCustomObjects.indexGlobalObjectsFolder(otgRootFolder);
+
+                for(File file : otgPresetsFolder.toFile().listFiles())
+                {
+                    if(file.isDirectory())
+                    {
+                        String presetFolderName = file.getName();
+                        globalCustomObjects.indexPresetObjectsFolder(presetFolderName, otgRootFolder);
+                    }
+                }
+                if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+                {
+                    OTGLog.log(LogLevel.INFO, LogCategory.CUSTOM_OBJECTS, "All CustomObject files indexed.");
+                }
+            }).start();
 		}
 	}
 	

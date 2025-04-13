@@ -1,6 +1,7 @@
 package com.pg85.otg.customobject.structures.bo3;
 
 import com.pg85.otg.util.ChunkCoordinate;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.gen.DecorationArea;
 import com.pg85.otg.util.logging.LogCategory;
@@ -13,7 +14,6 @@ import com.pg85.otg.customobject.bo3.BO3;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.CustomStructureCoordinate;
 import com.pg85.otg.customobject.util.BoundingBox;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IStructuredCustomObject;
@@ -28,7 +28,7 @@ public class BO3CustomStructureCoordinate extends CustomStructureCoordinate
 		this.presetFolderName = presetFolderName;
 		this.object = object;
 
-		bo3Name = object != null ? object.getName() : customObjectName != null && customObjectName.length() > 0 ? customObjectName : null;
+		bo3Name = object != null ? object.getName() : customObjectName != null && !customObjectName.isEmpty() ? customObjectName : null;
 
 		this.rotation = rotation;
 		this.x = x;
@@ -39,23 +39,23 @@ public class BO3CustomStructureCoordinate extends CustomStructureCoordinate
 	/**
 	 * Gets the chunk that should spawn this object during decoration.
 	 */
-	ChunkCoordinate getDecoratingChunk(Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	ChunkCoordinate getDecoratingChunk(Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		// In the past we simply returned the chunk decorating for the origin
 		// of the object. However, the origin is not guaranteed to be at the
 		// center of the object. We need to know the exact center to choose
 		// the appropriate spawning chunk.
 
-		IStructuredCustomObject object = getObject(otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+		IStructuredCustomObject object = getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 		if(object == null)
 		{
 			return null;
 		}
 		if(!(object instanceof BO3))
 		{
-			if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+			if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 			{
-				logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "BO3CustomStructure loaded with non-BO3 object " + object.getName());
+				OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "BO3CustomStructure loaded with non-BO3 object " + object.getName());
 			}
 			return null;
 		}

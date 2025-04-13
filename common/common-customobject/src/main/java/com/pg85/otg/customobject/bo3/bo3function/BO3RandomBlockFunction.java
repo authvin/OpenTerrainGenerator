@@ -6,7 +6,6 @@ import java.util.Random;
 import com.pg85.otg.customobject.bo3.BO3Config;
 import com.pg85.otg.util.nbt.NBTHelper;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
@@ -50,7 +49,7 @@ public class BO3RandomBlockFunction extends BO3BlockFunction
 	}
 	
 	@Override
-	public void load(List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
 	{
 		assureSize(5, args);
 		x = readInt(args.get(0), -100, 100);
@@ -112,7 +111,7 @@ public class BO3RandomBlockFunction extends BO3BlockFunction
 				// Maybe it's a NBT file?
 
 				// Get the file
-				NamedBinaryTag metaData = NBTHelper.loadMetadata(args.get(i), this.getHolder().getFile(), logger);
+				NamedBinaryTag metaData = NBTHelper.loadMetadata(args.get(i), this.getHolder().getFile());
 				if (metaData != null)
 				{
 					if (metaData.getTag("Items") != null) {
@@ -188,15 +187,15 @@ public class BO3RandomBlockFunction extends BO3BlockFunction
 	@Override
 	public String makeString()
 	{
-		String text = "RB(" + x + "," + y + "," + z;
+		StringBuilder text = new StringBuilder("RB(" + x + "," + y + "," + z);
 		for (int i = 0; i < blockCount; i++)
 		{
 			if (metaDataTags[i] == null)
 			{
-				text += "," + blocks[i] + "," + blockChances[i];
+				text.append(",").append(blocks[i]).append(",").append(blockChances[i]);
 			} else
 			{
-				text += "," + blocks[i] + "," + metaDataNames[i] + "," + blockChances[i];
+				text.append(",").append(blocks[i]).append(",").append(metaDataNames[i]).append(",").append(blockChances[i]);
 			}
 		}
 		return text + ")";

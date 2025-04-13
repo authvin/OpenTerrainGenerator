@@ -6,7 +6,6 @@ import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.CustomStructureCoordinate;
 import com.pg85.otg.customobject.structures.bo4.BO4CustomStructureCoordinate;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.util.bo3.Rotation;
@@ -34,7 +33,7 @@ public class BO4WeightedBranchFunction extends BO4BranchFunction
 	}
 	
 	@Override
-	protected double readArgs(List<String> args, boolean accumulateChances, ILogger logger) throws InvalidConfigException
+	protected double readArgs(List<String> args, boolean accumulateChances) throws InvalidConfigException
 	{
 		double cumulativeChance = 0;
 		// assureSize only returns false if size() < size
@@ -56,7 +55,7 @@ public class BO4WeightedBranchFunction extends BO4BranchFunction
 		if (i < args.size())
 		{
 			String totalChanceOrBranchGroup = args.get(i);
-			if(totalChanceOrBranchGroup != null && totalChanceOrBranchGroup.length() > 0)
+			if(totalChanceOrBranchGroup != null && !totalChanceOrBranchGroup.isEmpty())
 			{
 				try
 				{
@@ -65,14 +64,14 @@ public class BO4WeightedBranchFunction extends BO4BranchFunction
 					totalChance = readDouble(args.get(i), 0, Double.MAX_VALUE);
 					i++;
 				}
-				catch(NumberFormatException ex) { }
+				catch(NumberFormatException ignored) { }
 			}
 		}
 
 		if (i < args.size())
 		{
 			String totalChanceOrBranchGroup = args.get(i);
-			if(totalChanceOrBranchGroup != null && totalChanceOrBranchGroup.length() > 0)
+			if(totalChanceOrBranchGroup != null && !totalChanceOrBranchGroup.isEmpty())
 			{
 				branchGroup = args.get(i);
 
@@ -86,14 +85,14 @@ public class BO4WeightedBranchFunction extends BO4BranchFunction
 	}
 
 	@Override
-	public void load(List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
 	{
-		branchesBO4 = new ArrayList<BO4BranchNode>();
-		cumulativeChance = readArgs(args, true, logger);
+		branchesBO4 = new ArrayList<>();
+		cumulativeChance = readArgs(args, true);
 	}
 
 	@Override
-	public CustomStructureCoordinate toCustomObjectCoordinate(String presetFolderName, Random random, Rotation rotation, int x, int y, int z, String startBO3Name, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public CustomStructureCoordinate toCustomObjectCoordinate(String presetFolderName, Random random, Rotation rotation, int x, int y, int z, String startBO3Name, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		int cumulativeChance = 0;
 		for (BO4BranchNode branch : branchesBO4)
@@ -114,7 +113,7 @@ public class BO4WeightedBranchFunction extends BO4BranchFunction
 			{
 				BO4CustomStructureCoordinate rotatedCoords = BO4CustomStructureCoordinate.getRotatedCoord(this.x, this.y, this.z, rotation);
 				Rotation newRotation = Rotation.getRotation((rotation.getRotationId() + branch.getRotation().getRotationId()) % 4);
-				return new BO4CustomStructureCoordinate(presetFolderName, branch.getCustomObject(false, presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker), branch.customObjectName, newRotation, x + rotatedCoords.getX(), (short)(y + rotatedCoords.getY()), z + rotatedCoords.getZ(), branch.branchDepth, branch.isRequiredBranch, true, branch.branchGroup);
+				return new BO4CustomStructureCoordinate(presetFolderName, branch.getCustomObject(false, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker), branch.customObjectName, newRotation, x + rotatedCoords.getX(), (short)(y + rotatedCoords.getY()), z + rotatedCoords.getZ(), branch.branchDepth, branch.isRequiredBranch, true, branch.branchGroup);
 			}
 			randomChance -= branch.getChance();
 			if(randomChance < 0)
@@ -125,7 +124,7 @@ public class BO4WeightedBranchFunction extends BO4BranchFunction
 		return null;
 	}
 
-	public BO4WeightedBranchFunction rotate(Rotation rotation, String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public BO4WeightedBranchFunction rotate(Rotation rotation, String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		BO4WeightedBranchFunction rotatedBranch = new BO4WeightedBranchFunction(this.getHolder());
 
@@ -148,8 +147,8 @@ public class BO4WeightedBranchFunction extends BO4BranchFunction
 
 		rotatedBranch.branchesBO4 = this.branchesBO4; // TODO: Make sure this won't cause problems
 
-		int newX = rotatedBranch.x;
-		int newZ = rotatedBranch.z;
+		int newX;
+		int newZ;
 
 		for(int i = 0; i < rotation.getRotationId(); i++)
 		{
@@ -160,10 +159,10 @@ public class BO4WeightedBranchFunction extends BO4BranchFunction
 			rotatedBranch.y = rotatedBranch.y;
 			rotatedBranch.z = newZ;
 
-			ArrayList<BO4BranchNode> rotatedBranchBranches = new ArrayList<BO4BranchNode>();
+			ArrayList<BO4BranchNode> rotatedBranchBranches = new ArrayList<>();
 			for (BO4BranchNode holder : rotatedBranch.branchesBO4)
 			{
-				rotatedBranchBranches.add(new BO4BranchNode(holder.branchDepth, holder.isRequiredBranch, holder.isWeightedBranch, holder.getRotation().next(), holder.getChance(), holder.getCustomObject(false, presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker), holder.customObjectName, holder.branchGroup));
+				rotatedBranchBranches.add(new BO4BranchNode(holder.branchDepth, holder.isRequiredBranch, holder.isWeightedBranch, holder.getRotation().next(), holder.getChance(), holder.getCustomObject(false, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker), holder.customObjectName, holder.branchGroup));
 			}
 			rotatedBranch.branchesBO4 = rotatedBranchBranches;
 		}
@@ -189,14 +188,14 @@ public class BO4WeightedBranchFunction extends BO4BranchFunction
 		StreamHelper.writeStringToStream(stream, makeString());
 	}
 
-	public static BO4WeightedBranchFunction fromStream(BO4Config holder, ByteBuffer buffer, ILogger logger, IMaterialReader materialReader) throws IOException, InvalidConfigException
+	public static BO4WeightedBranchFunction fromStream(BO4Config holder, ByteBuffer buffer,  IMaterialReader materialReader) throws IOException, InvalidConfigException
 	{
 		BO4WeightedBranchFunction branchFunction = new BO4WeightedBranchFunction(holder);
 		String configFunctionString = StreamHelper.readStringFromBuffer(buffer);
 		int bracketIndex = configFunctionString.indexOf('(');
 		String parameters = configFunctionString.substring(bracketIndex + 1, configFunctionString.length() - 1);
 		List<String> args = Arrays.asList(StringHelper.readCommaSeperatedString(parameters));
-		branchFunction.load(args, logger, materialReader);
+		branchFunction.load(args,  materialReader);
 		return branchFunction;
 	}
 }

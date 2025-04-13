@@ -27,7 +27,6 @@ import com.pg85.otg.customobject.util.BoundingBox;
 import com.pg85.otg.customobject.util.BO3Enums.OutsideSourceBlock;
 import com.pg85.otg.customobject.util.BO3Enums.SpawnHeightEnum;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
@@ -84,7 +83,7 @@ public class BO3 implements StructuredCustomObject
 	}
 
 	@Override
-	public boolean onEnable(String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public boolean onEnable(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		if(this.isInvalidConfig)
 		{
@@ -96,10 +95,10 @@ public class BO3 implements StructuredCustomObject
 		}
 		try
 		{
-			this.settings = new BO3Config(new FileSettingsReaderBO4(this.name, this.file, logger), presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+			this.settings = new BO3Config(new FileSettingsReaderBO4(this.name, this.file), presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 			if (this.settings.settingsMode != ConfigMode.WriteDisable)
 			{
-				FileSettingsWriterBO4.writeToFile(this.settings, this.settings.settingsMode, logger, materialReader, manager);
+				FileSettingsWriterBO4.writeToFile(this.settings, this.settings.settingsMode,  materialReader, manager);
 			}
 		}
 		catch (InvalidConfigException ex)
@@ -135,10 +134,10 @@ public class BO3 implements StructuredCustomObject
 	{
 		BO3BlockFunction[] blocks = this.settings.getBlocks(rotation.getRotationId());
 
-		ArrayList<BO3BlockFunction> blocksToSpawn = new ArrayList<BO3BlockFunction>();
+		ArrayList<BO3BlockFunction> blocksToSpawn = new ArrayList<>();
 
 		ObjectExtrusionHelper oeh = new ObjectExtrusionHelper(this.settings.extrudeMode, this.settings.extrudeThroughBlocks);
-		HashSet<ChunkCoordinate> chunks = new HashSet<ChunkCoordinate>();
+		HashSet<ChunkCoordinate> chunks = new HashSet<>();
 
 		LocalMaterialData localMaterial;
 		for (BO3BlockFunction block : blocks)
@@ -212,7 +211,7 @@ public class BO3 implements StructuredCustomObject
 	{
 		BO3BlockFunction[] blocks = this.settings.getBlocks(rotation.getRotationId());
 		ObjectExtrusionHelper oeh = new ObjectExtrusionHelper(this.settings.extrudeMode, this.settings.extrudeThroughBlocks);
-		HashSet<ChunkCoordinate> chunks = new HashSet<ChunkCoordinate>();
+		HashSet<ChunkCoordinate> chunks = new HashSet<>();
 
 		ReplaceBlockMatrix replaceBlocks = null;
 		int lastX = Integer.MIN_VALUE;
@@ -293,7 +292,7 @@ public class BO3 implements StructuredCustomObject
 	private boolean spawn(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random, int x, int z, int minY, int maxY)
 	{
 		Rotation rotation = this.settings.rotateRandomly ? Rotation.getRandomRotation(random) : Rotation.NORTH;
-		int offsetY = 0;
+		int offsetY;
 		int baseY = 0;
 		if (this.settings.getSpawnHeight() == SpawnHeightEnum.randomY)
 		{
@@ -344,7 +343,7 @@ public class BO3 implements StructuredCustomObject
 		}
 
 		BO3BlockFunction[] blocks = this.settings.getBlocks(rotation.getRotationId());
-		HashSet<ChunkCoordinate> loadedChunks = new HashSet<ChunkCoordinate>();
+		HashSet<ChunkCoordinate> loadedChunks = new HashSet<>();
 		ChunkCoordinate chunkCoord;
 		for (BO3BlockFunction block : blocks)
 		{
@@ -365,9 +364,9 @@ public class BO3 implements StructuredCustomObject
 			}
 		}
 
-		ArrayList<BO3BlockFunction> blocksToSpawn = new ArrayList<BO3BlockFunction>();
+		ArrayList<BO3BlockFunction> blocksToSpawn = new ArrayList<>();
 		ObjectExtrusionHelper oeh = new ObjectExtrusionHelper(this.settings.extrudeMode, this.settings.extrudeThroughBlocks);
-		HashSet<ChunkCoordinate> chunks = new HashSet<ChunkCoordinate>();
+		HashSet<ChunkCoordinate> chunks = new HashSet<>();
 
 		int blocksOutsideSourceBlock = 0;
 		int maxBlocksOutsideSourceBlock = (int) Math.ceil(blocks.length * (this.settings.maxPercentageOutsideSourceBlock / 100.0));
@@ -400,11 +399,8 @@ public class BO3 implements StructuredCustomObject
 				chunks.add(ChunkCoordinate.fromBlockCoords(x + block.x, z + block.z));
 				blocksToSpawn.add(block);
 			}
-			if (block instanceof BO3BlockFunction)
-			{
-				oeh.addBlock((BO3BlockFunction) block);
-			}
-		}
+            oeh.addBlock((BO3BlockFunction) block);
+        }
 
 		// Call event
 		//if (!worldGenRegion.fireCanCustomObjectSpawnEvent(this, x, y, z))
@@ -439,7 +435,7 @@ public class BO3 implements StructuredCustomObject
 
 	private void handleBO3Functions(CustomStructure structure, CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random, Rotation rotation, int x, int y, int z, HashSet<ChunkCoordinate> chunks)
 	{
-		HashSet<ChunkCoordinate> chunksCustomObject = new HashSet<ChunkCoordinate>();
+		HashSet<ChunkCoordinate> chunksCustomObject = new HashSet<>();
 
 		// StructureCache can be null for non-otg worlds, when using /otg spawn/edit/export.
 		if (structure != null && structureCache != null)

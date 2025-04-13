@@ -4,7 +4,6 @@ import com.pg85.otg.customobject.config.CustomObjectConfigFile;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
 import com.pg85.otg.customobject.structures.Branch;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 
 import java.util.*;
@@ -33,10 +32,10 @@ public abstract class BranchFunction<T extends CustomObjectConfigFile> extends C
 	protected boolean totalChanceSet = false;
 
 	@Override
-	public void load(List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
 	{
-		branches = new TreeSet<BranchNode>();
-		readArgs(args, false, logger);
+		branches = new TreeSet<>();
+		readArgs(args, false);
 	}
 
 	@Override
@@ -48,10 +47,9 @@ public abstract class BranchFunction<T extends CustomObjectConfigFile> extends C
 			.append(y).append(',')
 			.append(z);
 
-		for (Iterator<BranchNode> it = branches.iterator(); it.hasNext();)
-		{
-			output.append(it.next().toBranchString());
-		}
+        for (BranchNode branch : branches) {
+            output.append(branch.toBranchString());
+        }
 		if (totalChanceSet)
 		{
 			output.append(',').append(totalChance);
@@ -69,7 +67,7 @@ public abstract class BranchFunction<T extends CustomObjectConfigFile> extends C
 		return "Branch";
 	}
 
-	protected abstract double readArgs(List<String> args, boolean accumulateChances, ILogger logger) throws InvalidConfigException;
+	protected abstract double readArgs(List<String> args, boolean accumulateChances) throws InvalidConfigException;
 
 	@Override
 	public boolean isAnalogousTo(CustomObjectConfigFunction<T> other)

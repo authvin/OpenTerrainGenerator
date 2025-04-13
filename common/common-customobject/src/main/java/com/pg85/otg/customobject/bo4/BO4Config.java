@@ -23,9 +23,9 @@ import com.pg85.otg.customobject.util.BO3Enums.SpawnHeightEnum;
 import com.pg85.otg.customobject.util.BoundingBox;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.ICustomObjectManager;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.nbt.NamedBinaryTag;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.helpers.StreamHelper;
@@ -66,7 +66,7 @@ public class BO4Config extends CustomObjectConfigFile
 
 	public SpawnHeightEnum spawnHeight;
 	public boolean useCenterForHighestBlock;
-	public BoundingBox[] boundingBoxes = new BoundingBox[4];
+	public final BoundingBox[] boundingBoxes = new BoundingBox[4];
 
 	private BO4BlockFunction[][] heightMap;
 	
@@ -185,12 +185,12 @@ public class BO4Config extends CustomObjectConfigFile
 	 *
 	 * @param reader		The settings of the BO4.
 	 */
-	public BO4Config(SettingsReaderBO4 reader, boolean init, String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException
+	public BO4Config(SettingsReaderBO4 reader, boolean init, String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException
 	{
 		super(reader);
 		if(init)
 		{
-			init(presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+			init(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 		}
 	}
 
@@ -202,7 +202,7 @@ public class BO4Config extends CustomObjectConfigFile
 	static int BO4BlocksLoadedFromBO4Data = 0;
 	static int accumulatedTime = 0;
 	static int accumulatedTime2 = 0;
-	private void init(String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException
+	private void init(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException
 	{
 		this.minX = Integer.MAX_VALUE;
 		this.maxX = Integer.MIN_VALUE;
@@ -213,7 +213,7 @@ public class BO4Config extends CustomObjectConfigFile
 		if(!this.reader.getFile().getAbsolutePath().toLowerCase().endsWith(".bo4data"))
 		{
 			//long startTime = System.currentTimeMillis();
-			readConfigSettings(presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+			readConfigSettings(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 			//BO4BlocksLoaded++;
 			//long timeTaken = (System.currentTimeMillis() - startTime);
 			//accumulatedTime += timeTaken;
@@ -221,7 +221,7 @@ public class BO4Config extends CustomObjectConfigFile
 			//OTG.log(LogMarker.INFO, ".BO4 loaded in: " + timeTaken + " " + this.getName() + ".BO4");
 		} else {
 			//long startTime = System.currentTimeMillis();
-			this.readFromBO4DataFile(false, logger, materialReader);
+			this.readFromBO4DataFile(false,  materialReader);
 			//BO4BlocksLoadedFromBO4Data++;
 			//long timeTaken = (System.currentTimeMillis() - startTime);
 			//accumulatedTime2 += timeTaken;			
@@ -282,12 +282,12 @@ public class BO4Config extends CustomObjectConfigFile
 		return this.inheritedBO3s;
 	}
 
-	public BO4BlockFunction[][] getSmoothingHeightMap(BO4 start, String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public BO4BlockFunction[][] getSmoothingHeightMap(BO4 start, String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		return getSmoothingHeightMap(start, true, presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+		return getSmoothingHeightMap(start, true, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 	}
 	
-	private BO4BlockFunction[][] getSmoothingHeightMap(BO4 start, boolean fromFile, String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private BO4BlockFunction[][] getSmoothingHeightMap(BO4 start, boolean fromFile, String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		// TODO: Caching the heightmap will mean this BO4 can only be used with 1 master BO4,
 		// it won't pick up smoothing area settings if it is also used in another structure.
@@ -298,28 +298,28 @@ public class BO4Config extends CustomObjectConfigFile
 				BO4Config bo4Config = null;
 				try
 				{
-					bo4Config = new BO4Config(this.reader, false, presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+					bo4Config = new BO4Config(this.reader, false, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 				}
 				catch (InvalidConfigException e)
 				{
-					if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+					if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 					{
-						logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Error fetching smoothing heightmap for BO4 " + start.getName() + ": " + e.getMessage());
+						OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Error fetching smoothing heightmap for BO4 " + start.getName() + ": " + e.getMessage());
 					}
 				}
 				if(bo4Config != null)
 				{
 					try {
-						bo4Config.readFromBO4DataFile(true, logger, materialReader);
+						bo4Config.readFromBO4DataFile(true,  materialReader);
 					} catch (InvalidConfigException e) {
-						if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+						if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 						{
-							logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Error fetching smoothing heightmap for BO4Data " + start.getName() + ": " + e.getMessage());
+							OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Error fetching smoothing heightmap for BO4Data " + start.getName() + ": " + e.getMessage());
 						}
 						this.heightMap = new BO4BlockFunction[16][16];
 						return this.heightMap;
 					}
-					this.heightMap = bo4Config.getSmoothingHeightMap(start, false, presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+					this.heightMap = bo4Config.getSmoothingHeightMap(start, false, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 					return this.heightMap;
 				}
 			}
@@ -375,7 +375,7 @@ public class BO4Config extends CustomObjectConfigFile
 									((start.getConfig().overrideChildSettings && this.overrideChildSettings ? start.getConfig().smoothStartTop : this.smoothStartTop) && (this.heightMap[x][z] == null || y > this.heightMap[x][z].y))
 								)
 								{
-									BO4BlockFunction blockFunction = null;
+									BO4BlockFunction blockFunction;
 									if(isRandomBlock)
 									{
 										blockFunction = new BO4RandomBlockFunction();
@@ -407,39 +407,39 @@ public class BO4Config extends CustomObjectConfigFile
 		return this.heightMap;
 	}
 
-	BO4BlockFunction[] getBlocks(String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	BO4BlockFunction[] getBlocks(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		return getBlocks(true, presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+		return getBlocks(true, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 	}
 	
-	private BO4BlockFunction[] getBlocks(boolean fromFile, String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private BO4BlockFunction[] getBlocks(boolean fromFile, String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		if(fromFile && this.isBO4Data)
 		{
 			BO4Config bo4Config = null;
 			try
 			{
-				bo4Config = new BO4Config(this.reader, false, presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+				bo4Config = new BO4Config(this.reader, false, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 			}
 			catch (InvalidConfigException e)
 			{
-				if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+				if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 				{
-					logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, " Error fetching blocks for BO4 " + this.getName() + ": " + e.getMessage());
+					OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, " Error fetching blocks for BO4 " + this.getName() + ": " + e.getMessage());
 				}
 			}
 			if(bo4Config != null)
 			{
 				try {
-					bo4Config.readFromBO4DataFile(true, logger, materialReader);
+					bo4Config.readFromBO4DataFile(true,  materialReader);
 				} catch (InvalidConfigException e) {
-					if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+					if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 					{
-						logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, " Error fetching blocks for BO4Data " + this.getName() + ": " + e.getMessage());
+						OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, " Error fetching blocks for BO4Data " + this.getName() + ": " + e.getMessage());
 					}
 					return null;
 				}
-				return bo4Config.getBlocks(false, presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+				return bo4Config.getBlocks(false, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 			}
 		}
 		
@@ -494,9 +494,9 @@ public class BO4Config extends CustomObjectConfigFile
 		return this.entityDataBO4;
 	}
 	
-	void loadInheritedBO3(String presetFolderName, Path otgRootFolder, ILogger logger, ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	void loadInheritedBO3(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		if(this.inheritBO3 != null && this.inheritBO3.trim().length() > 0 && !this.inheritedBO3Loaded)
+		if(this.inheritBO3 != null && !this.inheritBO3.trim().isEmpty() && !this.inheritedBO3Loaded)
 		{
 			File currentFile = this.getFile().getParentFile();
 			this.presetFolderName = currentFile.getName();
@@ -513,30 +513,30 @@ public class BO4Config extends CustomObjectConfigFile
 			
 			// TODO: Re-wire this so we don't have to cast CustomObjectManager :(
 			CustomObjectManager customObjectManager2 = (CustomObjectManager)customObjectManager;			
-			CustomObject parentBO3 = customObjectManager2.getGlobalObjects().getObjectByName(this.inheritBO3, this.presetFolderName, otgRootFolder, logger, customObjectManager2, materialReader, manager, modLoadedChecker);
+			CustomObject parentBO3 = customObjectManager2.getGlobalObjects().getObjectByName(this.inheritBO3, this.presetFolderName, otgRootFolder,  customObjectManager2, materialReader, manager, modLoadedChecker);
 			if(parentBO3 != null)
 			{
-				BO4BlockFunction[] blocks = getBlocks(this.presetFolderName, otgRootFolder, logger, customObjectManager2, materialReader, manager, modLoadedChecker);
+				BO4BlockFunction[] blocks = getBlocks(this.presetFolderName, otgRootFolder,  customObjectManager2, materialReader, manager, modLoadedChecker);
 				
 				this.inheritedBO3Loaded = true;
 
 				this.inheritedBO3s.addAll(((BO4)parentBO3).getConfig().getInheritedBO3s());
 
 				this.removeAir = ((BO4)parentBO3).getConfig().removeAir;
-				this.replaceAbove = this.replaceAbove == null || this.replaceAbove.length() == 0 ? ((BO4)parentBO3).getConfig().replaceAbove : this.replaceAbove;
-				this.replaceBelow = this.replaceBelow == null || this.replaceBelow.length() == 0 ? ((BO4)parentBO3).getConfig().replaceBelow : this.replaceBelow;
+				this.replaceAbove = this.replaceAbove == null || this.replaceAbove.isEmpty() ? ((BO4)parentBO3).getConfig().replaceAbove : this.replaceAbove;
+				this.replaceBelow = this.replaceBelow == null || this.replaceBelow.isEmpty() ? ((BO4)parentBO3).getConfig().replaceBelow : this.replaceBelow;
 
 				BO4CustomStructureCoordinate rotatedParentMaxCoords = BO4CustomStructureCoordinate.getRotatedBO3Coords(((BO4)parentBO3).getConfig().maxX, ((BO4)parentBO3).getConfig().maxY, ((BO4)parentBO3).getConfig().maxZ, this.inheritBO3Rotation);
 				BO4CustomStructureCoordinate rotatedParentMinCoords = BO4CustomStructureCoordinate.getRotatedBO3Coords(((BO4)parentBO3).getConfig().minX, ((BO4)parentBO3).getConfig().minY, ((BO4)parentBO3).getConfig().minZ, this.inheritBO3Rotation);
 
-				int parentMaxX = rotatedParentMaxCoords.getX() > rotatedParentMinCoords.getX() ? rotatedParentMaxCoords.getX() : rotatedParentMinCoords.getX();
-				int parentMinX = rotatedParentMaxCoords.getX() < rotatedParentMinCoords.getX() ? rotatedParentMaxCoords.getX() : rotatedParentMinCoords.getX();
+				int parentMaxX = Math.max(rotatedParentMaxCoords.getX(), rotatedParentMinCoords.getX());
+				int parentMinX = Math.min(rotatedParentMaxCoords.getX(), rotatedParentMinCoords.getX());
 
 				int parentMaxY = rotatedParentMaxCoords.getY() > rotatedParentMinCoords.getY() ? rotatedParentMaxCoords.getY() : rotatedParentMinCoords.getY();
 				int parentMinY = rotatedParentMaxCoords.getY() < rotatedParentMinCoords.getY() ? rotatedParentMaxCoords.getY() : rotatedParentMinCoords.getY();
 
-				int parentMaxZ = rotatedParentMaxCoords.getZ() > rotatedParentMinCoords.getZ() ? rotatedParentMaxCoords.getZ() : rotatedParentMinCoords.getZ();
-				int parentMinZ = rotatedParentMaxCoords.getZ() < rotatedParentMinCoords.getZ() ? rotatedParentMaxCoords.getZ() : rotatedParentMinCoords.getZ();
+				int parentMaxZ = Math.max(rotatedParentMaxCoords.getZ(), rotatedParentMinCoords.getZ());
+				int parentMinZ = Math.min(rotatedParentMaxCoords.getZ(), rotatedParentMinCoords.getZ());
 
 				if(parentMaxX > this.maxX)
 				{
@@ -563,10 +563,10 @@ public class BO4Config extends CustomObjectConfigFile
 					this.minZ = parentMinZ;
 				}
 
-				BO4BlockFunction[] parentBlocks = ((BO4)parentBO3).getConfig().getBlocks(presetFolderName, otgRootFolder, logger, customObjectManager2, materialReader, manager, modLoadedChecker);				
+				BO4BlockFunction[] parentBlocks = ((BO4)parentBO3).getConfig().getBlocks(presetFolderName, otgRootFolder,  customObjectManager2, materialReader, manager, modLoadedChecker);				
 				ArrayList<BlockFunction<?>> newBlocks = new ArrayList<>();				
-				newBlocks.addAll(new ArrayList<BO4BlockFunction>(Arrays.asList(parentBlocks)));
-				newBlocks.addAll(new ArrayList<BO4BlockFunction>(Arrays.asList(blocks)));
+				newBlocks.addAll(new ArrayList<>(Arrays.asList(parentBlocks)));
+				newBlocks.addAll(new ArrayList<>(Arrays.asList(blocks)));
 					
 				short[][] columnSizes = new short[16][16];
 				for(BlockFunction<?> block : newBlocks)
@@ -576,63 +576,57 @@ public class BO4Config extends CustomObjectConfigFile
 				
 				loadBlockArrays(newBlocks, columnSizes);
 				
-				this.isCollidable = newBlocks.size() > 0;
+				this.isCollidable = !newBlocks.isEmpty();
 				
-				ArrayList<BO4BranchFunction> newBranches = new ArrayList<BO4BranchFunction>();
+				ArrayList<BO4BranchFunction> newBranches = new ArrayList<>();
 				if(this.branchesBO4 != null)
 				{
-					for(BO4BranchFunction branch : this.branchesBO4)
-					{
-						newBranches.add(branch);
-					}
+                    newBranches.addAll(Arrays.asList(this.branchesBO4));
 				}
 				for(BO4BranchFunction branch : ((BO4)parentBO3).getConfig().branchesBO4)
 				{
-					newBranches.add(branch.rotate(this.inheritBO3Rotation, presetFolderName, otgRootFolder, logger, customObjectManager2, materialReader, manager, modLoadedChecker));
+					newBranches.add(branch.rotate(this.inheritBO3Rotation, presetFolderName, otgRootFolder,  customObjectManager2, materialReader, manager, modLoadedChecker));
 				}
-				this.branchesBO4 = newBranches.toArray(new BO4BranchFunction[newBranches.size()]);
+				this.branchesBO4 = newBranches.toArray(new BO4BranchFunction[0]);
 
-				ArrayList<BO4EntityFunction> newEntityData = new ArrayList<BO4EntityFunction>();
+				ArrayList<BO4EntityFunction> newEntityData = new ArrayList<>();
 				if(this.entityDataBO4 != null)
 				{
-					for(BO4EntityFunction entityData : this.entityDataBO4)
-					{
-						newEntityData.add(entityData);
-					}
+                    newEntityData.addAll(Arrays.asList(this.entityDataBO4));
 				}
 				for(BO4EntityFunction entityData : ((BO4)parentBO3).getConfig().entityDataBO4)
 				{
 					newEntityData.add(entityData.rotate(this.inheritBO3Rotation));
 				}
-				this.entityDataBO4 = newEntityData.toArray(new BO4EntityFunction[newEntityData.size()]);
+				this.entityDataBO4 = newEntityData.toArray(new BO4EntityFunction[0]);
 	
 				this.inheritedBO3s.addAll(((BO4)parentBO3).getConfig().getInheritedBO3s());
 			}
 			if(!this.inheritedBO3Loaded)
 			{
-				if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+				if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 				{
-					logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "could not load BO4 parent for InheritBO3: " + this.inheritBO3 + " in BO4 " + this.getName());
+					OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "could not load BO4 parent for InheritBO3: " + this.inheritBO3 + " in BO4 " + this.getName());
 				}
 			}
 		}
 	}
 
 	static int BO4BlocksLoaded = 0;
-	private void readResources(ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager) throws InvalidConfigException
+	private void readResources( IMaterialReader materialReader, CustomObjectResourcesManager manager) throws InvalidConfigException
 	{		
-		List<BO4BlockFunction> tempBlocksList = new ArrayList<BO4BlockFunction>();
-		List<BO4BranchFunction> tempBranchesList = new ArrayList<BO4BranchFunction>();
-		List<BO4EntityFunction> tempEntitiesList = new ArrayList<BO4EntityFunction>();
+		List<BO4BlockFunction> tempBlocksList = new ArrayList<>();
+		List<BO4BranchFunction> tempBranchesList = new ArrayList<>();
+		List<BO4EntityFunction> tempEntitiesList = new ArrayList<>();
 
 		short[][] columnSizes = new short[xSize][zSize];
 		
-		ArrayList<CustomObjectConfigFunction<BO4Config>> resources = new ArrayList<CustomObjectConfigFunction<BO4Config>>();
+		ArrayList<CustomObjectConfigFunction<BO4Config>> resources = new ArrayList<>();
 		int minX = 0;
 		int maxX = 0;
 		int minZ = 0;
 		int maxZ = 0;
-		for (CustomObjectConfigFunction<BO4Config> res : reader.getConfigFunctions(this, true, logger, materialReader, manager))
+		for (CustomObjectConfigFunction<BO4Config> res : reader.getConfigFunctions(this, true,  materialReader, manager))
 		{
 			if (res.isValid())
 			{
@@ -666,9 +660,9 @@ public class BO4Config extends CustomObjectConfigFile
 		int zSize = Math.abs(minZ - maxZ);
 		if(xSize > 15 || zSize > 15)
 		{
-			if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+			if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 			{
-				logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "BO4 " + this.getName() + " was too large (" + xSize + "x" + zSize + "), BO4's can be max 16x16 blocks.");
+				OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "BO4 " + this.getName() + " was too large (" + xSize + "x" + zSize + "), BO4's can be max 16x16 blocks.");
 			}
 			throw new InvalidConfigException("BO4 " + this.getName() + " was too large, BO4's can be max 16x16 blocks.");
 		}
@@ -822,14 +816,12 @@ public class BO4Config extends CustomObjectConfigFile
 		{
 			for(int z = 0; z < this.zSize; z++)
 			{
-				for(int h = 0; h < tempBlocksList.size(); h++)
-				{
-					if(tempBlocksList.get(h).x == x && tempBlocksList.get(h).z == z)
-					{
-						blocksSorted[blocksSortedIndex] = tempBlocksList.get(h);
-						blocksSortedIndex++;
-					}
-				}
+                for (BO4BlockFunction bo4BlockFunction : tempBlocksList) {
+                    if (bo4BlockFunction.x == x && bo4BlockFunction.z == z) {
+                        blocksSorted[blocksSortedIndex] = bo4BlockFunction;
+                        blocksSortedIndex++;
+                    }
+                }
 			}
 		}
 		BO4BlockFunction block;
@@ -873,26 +865,26 @@ public class BO4Config extends CustomObjectConfigFile
 				illegalEntityData = true;
 			}
 		}
-		this.entityDataBO4 = tempEntitiesList.toArray(new BO4EntityFunction[tempEntitiesList.size()]);
+		this.entityDataBO4 = tempEntitiesList.toArray(new BO4EntityFunction[0]);
 
-		if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+		if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 		{
 			if(illegalBlock)
 			{
-				logger.log(LogLevel.WARN, LogCategory.CUSTOM_OBJECTS, "Warning: BO4 contains Blocks or RandomBlocks that are placed outside the chunk(s) that the BO3 will be placed in. This can slow down world generation. BO4: " + this.getName());
+				OTGLog.log(LogLevel.WARN, LogCategory.CUSTOM_OBJECTS, "Warning: BO4 contains Blocks or RandomBlocks that are placed outside the chunk(s) that the BO3 will be placed in. This can slow down world generation. BO4: " + this.getName());
 			}
 			if(illegalEntityData)
 			{
-				logger.log(LogLevel.WARN, LogCategory.CUSTOM_OBJECTS, "Warning: BO4 contains an Entity() that may be placed outside the chunk(s) that the BO3 will be placed in. This can slow down world generation. BO4: " + this.getName());
+				OTGLog.log(LogLevel.WARN, LogCategory.CUSTOM_OBJECTS, "Warning: BO4 contains an Entity() that may be placed outside the chunk(s) that the BO3 will be placed in. This can slow down world generation. BO4: " + this.getName());
 			}
 		}
 
-		this.branchesBO4 = tempBranchesList.toArray(new BO4BranchFunction[tempBranchesList.size()]);
+		this.branchesBO4 = tempBranchesList.toArray(new BO4BranchFunction[0]);
     }
     
 	public void setBranches(List<BranchFunction<?>> branches)
 	{
-		this.branchesBO4 = branches.toArray(new BO4BranchFunction[branches.size()]);
+		this.branchesBO4 = branches.toArray(new BO4BranchFunction[0]);
 	}
 
 	/**
@@ -906,30 +898,30 @@ public class BO4Config extends CustomObjectConfigFile
 	}
 
 	@Override
-	public BlockFunction<?>[] getBlockFunctions(String presetFolderName, Path otgRootFolder, ILogger logger, ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public BlockFunction<?>[] getBlockFunctions(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		return getBlocks(presetFolderName, otgRootFolder, logger, (CustomObjectManager) customObjectManager, materialReader, manager, modLoadedChecker);
+		return getBlocks(presetFolderName, otgRootFolder,  (CustomObjectManager) customObjectManager, materialReader, manager, modLoadedChecker);
 	}
 
 	@Override
-	protected void writeConfigSettings(SettingsWriterBO4 writer, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
+	protected void writeConfigSettings(SettingsWriterBO4 writer,  IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
 	{
-		writeSettings(writer, null, null, logger, materialReader, manager);
+		writeSettings(writer, null, null,  materialReader, manager);
 	}
 
-	public void writeWithData(SettingsWriterBO4 writer, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
+	public void writeWithData(SettingsWriterBO4 writer, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList,  IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
 	{
 		writer.setConfigMode(ConfigMode.WriteAll);
 		try
 		{
 			writer.open();
-			writeSettings(writer, blocksList, branchesList, logger, materialReader, manager);
+			writeSettings(writer, blocksList, branchesList,  materialReader, manager);
 		} finally {
-			writer.close(logger);
+			writer.close();
 		}
 	}
 	
-	private void writeSettings(SettingsWriterBO4 writer, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
+	private void writeSettings(SettingsWriterBO4 writer, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList,  IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
 	{
 		// The object
 		writer.bigTitle("BO4 object");
@@ -1074,7 +1066,7 @@ public class BO4Config extends CustomObjectConfigFile
 		writer.setting(BO4Settings.DO_REPLACE_BLOCKS, this.doReplaceBlocks);
 		
 		// Blocks and other things
-		writeResources(writer, blocksList, branchesList, logger, materialReader, manager);
+		writeResources(writer, blocksList, branchesList,  materialReader, manager);
 		
 		if(this.reader != null) // Can be true for BO4Creator?
 		{
@@ -1083,134 +1075,124 @@ public class BO4Config extends CustomObjectConfigFile
 	}
 
 	@Override
-	protected void readConfigSettings(String presetFolderName, Path otgRootFolder, ILogger logger, ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException
+	protected void readConfigSettings(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException
 	{
-		this.branchFrequency = readSettings(BO4Settings.BRANCH_FREQUENCY, logger, materialReader, manager);
+		this.branchFrequency = readSettings(BO4Settings.BRANCH_FREQUENCY,  materialReader, manager);
 		
-		this.branchFrequencyGroup = readSettings(BO4Settings.BRANCH_FREQUENCY_GROUP, logger, materialReader, manager);
-		this.branchFrequencyGroups = new HashMap<String, Integer>();
-		if(this.branchFrequencyGroup != null && this.branchFrequencyGroup.trim().length() > 0)
+		this.branchFrequencyGroup = readSettings(BO4Settings.BRANCH_FREQUENCY_GROUP,  materialReader, manager);
+		this.branchFrequencyGroups = new HashMap<>();
+		if(this.branchFrequencyGroup != null && !this.branchFrequencyGroup.trim().isEmpty())
 		{
 			String[] groupStrings = this.branchFrequencyGroup.split(",");
-			if(groupStrings != null && groupStrings.length > 0)
+			if(groupStrings.length > 0)
 			{
-				for(int i = 0; i < groupStrings.length; i++)
-				{
-					String[] groupString = groupStrings[i].trim().length() > 0 ? groupStrings[i].split(":") : null;
-					if(groupString != null && groupString.length == 2)
-					{
-						this.branchFrequencyGroups.put(groupString[0].trim(), Integer.parseInt(groupString[1].trim()));
-					}
-				}
+                for (String string : groupStrings) {
+                    String[] groupString = string.trim().length() > 0 ? string.split(":") : null;
+                    if (groupString != null && groupString.length == 2) {
+                        this.branchFrequencyGroups.put(groupString[0].trim(), Integer.parseInt(groupString[1].trim()));
+                    }
+                }
 			}
 		}
 		
-		this.heightOffset = readSettings(BO4Settings.HEIGHT_OFFSET, logger, materialReader, manager);
-		this.inheritBO3Rotation = readSettings(BO4Settings.INHERITBO3ROTATION, logger, materialReader, manager);
+		this.heightOffset = readSettings(BO4Settings.HEIGHT_OFFSET,  materialReader, manager);
+		this.inheritBO3Rotation = readSettings(BO4Settings.INHERITBO3ROTATION,  materialReader, manager);
 
-		this.configRemoveAir = readSettings(BO4Settings.REMOVEAIR, logger, materialReader, manager);
+		this.configRemoveAir = readSettings(BO4Settings.REMOVEAIR,  materialReader, manager);
 		this.removeAir = this.configRemoveAir;
-		this.isSpawnPoint = readSettings(BO4Settings.ISSPAWNPOINT, logger, materialReader, manager);
-		this.useCenterForHighestBlock = readSettings(BO4Settings.USE_CENTER_FOR_HIGHEST_BLOCK, logger, materialReader, manager);
-		this.configReplaceAbove = readSettings(BO4Settings.REPLACEABOVE, logger, materialReader, manager);
+		this.isSpawnPoint = readSettings(BO4Settings.ISSPAWNPOINT,  materialReader, manager);
+		this.useCenterForHighestBlock = readSettings(BO4Settings.USE_CENTER_FOR_HIGHEST_BLOCK,  materialReader, manager);
+		this.configReplaceAbove = readSettings(BO4Settings.REPLACEABOVE,  materialReader, manager);
 		this.replaceAbove = this.configReplaceAbove;
-		this.configReplaceBelow = readSettings(BO4Settings.REPLACEBELOW, logger, materialReader, manager);
+		this.configReplaceBelow = readSettings(BO4Settings.REPLACEBELOW,  materialReader, manager);
 		this.replaceBelow = this.configReplaceBelow;
-		this.replaceWithBiomeBlocks = readSettings(BO4Settings.REPLACEWITHBIOMEBLOCKS, logger, materialReader, manager);
-		this.replaceWithGroundBlock = readSettings(BO4Settings.REPLACEWITHGROUNDBLOCK, logger, materialReader, manager);
-		this.replaceWithSurfaceBlock = readSettings(BO4Settings.REPLACEWITHSURFACEBLOCK, logger, materialReader, manager);
-		this.replaceWithStoneBlock = readSettings(BO4Settings.REPLACEWITHSTONEBLOCK, logger, materialReader, manager);
+		this.replaceWithBiomeBlocks = readSettings(BO4Settings.REPLACEWITHBIOMEBLOCKS,  materialReader, manager);
+		this.replaceWithGroundBlock = readSettings(BO4Settings.REPLACEWITHGROUNDBLOCK,  materialReader, manager);
+		this.replaceWithSurfaceBlock = readSettings(BO4Settings.REPLACEWITHSURFACEBLOCK,  materialReader, manager);
+		this.replaceWithStoneBlock = readSettings(BO4Settings.REPLACEWITHSTONEBLOCK,  materialReader, manager);
 		
-		this.bo3Group = readSettings(BO4Settings.BO3GROUP, logger, materialReader, manager);
-		this.bo4Groups = new HashMap<String, Integer>();
-		if(this.bo3Group != null && this.bo3Group.trim().length() > 0)
+		this.bo3Group = readSettings(BO4Settings.BO3GROUP,  materialReader, manager);
+		this.bo4Groups = new HashMap<>();
+		if(this.bo3Group != null && !this.bo3Group.trim().isEmpty())
 		{
 			String[] groupStrings = this.bo3Group.split(",");
-			if(groupStrings != null && groupStrings.length > 0)
+			if(groupStrings.length > 0)
 			{
-				for(int i = 0; i < groupStrings.length; i++)
-				{
-					String[] groupString = groupStrings[i].trim().length() > 0 ? groupStrings[i].split(":") : null;
-					if(groupString != null && groupString.length == 2)
-					{
-						this.bo4Groups.put(groupString[0].trim(), Integer.parseInt(groupString[1].trim()));
-					}
-				}
+                for (String string : groupStrings) {
+                    String[] groupString = string.trim().length() > 0 ? string.split(":") : null;
+                    if (groupString != null && groupString.length == 2) {
+                        this.bo4Groups.put(groupString[0].trim(), Integer.parseInt(groupString[1].trim()));
+                    }
+                }
 			}
 		}
 		
-		this.canOverride = readSettings(BO4Settings.CANOVERRIDE, logger, materialReader, manager);
-		this.mustBeBelowOther = readSettings(BO4Settings.MUSTBEBELOWOTHER, logger, materialReader, manager);
-		this.mustBeInsideWorldBorders = readSettings(BO4Settings.MUSTBEINSIDEWORLDBORDERS, logger, materialReader, manager);
+		this.canOverride = readSettings(BO4Settings.CANOVERRIDE,  materialReader, manager);
+		this.mustBeBelowOther = readSettings(BO4Settings.MUSTBEBELOWOTHER,  materialReader, manager);
+		this.mustBeInsideWorldBorders = readSettings(BO4Settings.MUSTBEINSIDEWORLDBORDERS,  materialReader, manager);
 		
-		this.mustBeInside = readSettings(BO4Settings.MUSTBEINSIDE, logger, materialReader, manager);
-		this.mustBeInsideBranches = new ArrayList<String>();
-		if(this.mustBeInside != null && this.mustBeInside.trim().length() > 0)
+		this.mustBeInside = readSettings(BO4Settings.MUSTBEINSIDE,  materialReader, manager);
+		this.mustBeInsideBranches = new ArrayList<>();
+		if(this.mustBeInside != null && !this.mustBeInside.trim().isEmpty())
 		{
 			String[] mustBeInsideStrings = this.mustBeInside.split(",");
-			if(mustBeInsideStrings != null && mustBeInsideStrings.length > 0)
+			if(mustBeInsideStrings.length > 0)
 			{
-				for(int i = 0; i < mustBeInsideStrings.length; i++)
-				{
-					String mustBeInsideString = mustBeInsideStrings[i].trim();
-					if(mustBeInsideString.length() > 0)
-					{
-						this.mustBeInsideBranches.add(mustBeInsideString);
-					}
-				}
+                for (String beInsideString : mustBeInsideStrings) {
+                    String mustBeInsideString = beInsideString.trim();
+                    if (!mustBeInsideString.isEmpty()) {
+                        this.mustBeInsideBranches.add(mustBeInsideString);
+                    }
+                }
 			}
 		}
 		
-		this.cannotBeInside =  readSettings(BO4Settings.CANNOTBEINSIDE, logger, materialReader, manager);
-		this.cannotBeInsideBranches = new ArrayList<String>();
-		if(this.cannotBeInside != null && this.cannotBeInside.trim().length() > 0)
+		this.cannotBeInside =  readSettings(BO4Settings.CANNOTBEINSIDE,  materialReader, manager);
+		this.cannotBeInsideBranches = new ArrayList<>();
+		if(this.cannotBeInside != null && !this.cannotBeInside.trim().isEmpty())
 		{
 			String[] cannotBeInsideStrings = this.cannotBeInside.split(",");
-			if(cannotBeInsideStrings != null && cannotBeInsideStrings.length > 0)
+			if(cannotBeInsideStrings.length > 0)
 			{
-				for(int i = 0; i < cannotBeInsideStrings.length; i++)
-				{
-					String cannotBeInsideString = cannotBeInsideStrings[i].trim();
-					if(cannotBeInsideString.length() > 0)
-					{
-						this.cannotBeInsideBranches.add(cannotBeInsideString);
-					}
-				}
+                for (String beInsideString : cannotBeInsideStrings) {
+                    String cannotBeInsideString = beInsideString.trim();
+                    if (!cannotBeInsideString.isEmpty()) {
+                        this.cannotBeInsideBranches.add(cannotBeInsideString);
+                    }
+                }
 			}
 		}
 		
-		this.replacesBO3 = readSettings(BO4Settings.REPLACESBO3, logger, materialReader, manager);
-		this.replacesBO3Branches = new ArrayList<String>();
-		if(this.replacesBO3 != null && this.replacesBO3.trim().length() > 0)
+		this.replacesBO3 = readSettings(BO4Settings.REPLACESBO3,  materialReader, manager);
+		this.replacesBO3Branches = new ArrayList<>();
+		if(this.replacesBO3 != null && !this.replacesBO3.trim().isEmpty())
 		{
 			String[] replacesBO3Strings = replacesBO3.split(",");
-			if(replacesBO3Strings != null && replacesBO3Strings.length > 0)
+			if(replacesBO3Strings.length > 0)
 			{
-				for(int i = 0; i < replacesBO3Strings.length; i++)
-				{
-					String replacesBO3String = replacesBO3Strings[i].trim();
-					if(replacesBO3String.length() > 0)
-					{
-						this.replacesBO3Branches.add(replacesBO3String);
-					}
-				}
+                for (String bo3String : replacesBO3Strings) {
+                    String replacesBO3String = bo3String.trim();
+                    if (!replacesBO3String.isEmpty()) {
+                        this.replacesBO3Branches.add(replacesBO3String);
+                    }
+                }
 			}
 		}
 
 		//smoothHeightOffset = readSettings(BO3Settings.SMOOTH_HEIGHT_OFFSET).equals("HeightOffset") ? heightOffset : Integer.parseInt(readSettings(BO3Settings.SMOOTH_HEIGHT_OFFSET));
-		this.smoothHeightOffset = readSettings(BO4Settings.SMOOTH_HEIGHT_OFFSET, logger, materialReader, manager);
-		this.canSpawnOnWater = readSettings(BO4Settings.CANSPAWNONWATER, logger, materialReader, manager);
-		this.spawnOnWaterOnly = readSettings(BO4Settings.SPAWNONWATERONLY, logger, materialReader, manager);
-		this.spawnUnderWater = readSettings(BO4Settings.SPAWNUNDERWATER, logger, materialReader, manager);
-		this.spawnAtWaterLevel = readSettings(BO4Settings.SPAWNATWATERLEVEL, logger, materialReader, manager);
-		this.inheritBO3 = readSettings(BO4Settings.INHERITBO3, logger, materialReader, manager);
-		this.overrideChildSettings = readSettings(BO4Settings.OVERRIDECHILDSETTINGS, logger, materialReader, manager);
-		this.overrideParentHeight = readSettings(BO4Settings.OVERRIDEPARENTHEIGHT, logger, materialReader, manager);
-		this.smoothRadius = readSettings(BO4Settings.SMOOTHRADIUS, logger, materialReader, manager);
-		this.smoothStartTop = readSettings(BO4Settings.SMOOTHSTARTTOP, logger, materialReader, manager);
-		this.smoothStartWood = readSettings(BO4Settings.SMOOTHSTARTWOOD, logger, materialReader, manager);
-		this.smoothingSurfaceBlock = readSettings(BO4Settings.SMOOTHINGSURFACEBLOCK, logger, materialReader, manager);
-		this.smoothingGroundBlock = readSettings(BO4Settings.SMOOTHINGGROUNDBLOCK, logger, materialReader, manager);
+		this.smoothHeightOffset = readSettings(BO4Settings.SMOOTH_HEIGHT_OFFSET,  materialReader, manager);
+		this.canSpawnOnWater = readSettings(BO4Settings.CANSPAWNONWATER,  materialReader, manager);
+		this.spawnOnWaterOnly = readSettings(BO4Settings.SPAWNONWATERONLY,  materialReader, manager);
+		this.spawnUnderWater = readSettings(BO4Settings.SPAWNUNDERWATER,  materialReader, manager);
+		this.spawnAtWaterLevel = readSettings(BO4Settings.SPAWNATWATERLEVEL,  materialReader, manager);
+		this.inheritBO3 = readSettings(BO4Settings.INHERITBO3,  materialReader, manager);
+		this.overrideChildSettings = readSettings(BO4Settings.OVERRIDECHILDSETTINGS,  materialReader, manager);
+		this.overrideParentHeight = readSettings(BO4Settings.OVERRIDEPARENTHEIGHT,  materialReader, manager);
+		this.smoothRadius = readSettings(BO4Settings.SMOOTHRADIUS,  materialReader, manager);
+		this.smoothStartTop = readSettings(BO4Settings.SMOOTHSTARTTOP,  materialReader, manager);
+		this.smoothStartWood = readSettings(BO4Settings.SMOOTHSTARTWOOD,  materialReader, manager);
+		this.smoothingSurfaceBlock = readSettings(BO4Settings.SMOOTHINGSURFACEBLOCK,  materialReader, manager);
+		this.smoothingGroundBlock = readSettings(BO4Settings.SMOOTHINGGROUNDBLOCK,  materialReader, manager);
 
 		// Make sure that the BO3 wont try to spawn below Y 0 because of the height offset
 		if(this.heightOffset < 0 && this.minHeight < -this.heightOffset)
@@ -1218,33 +1200,33 @@ public class BO4Config extends CustomObjectConfigFile
 			this.minHeight = -this.heightOffset;
 		}
 
-		this.inheritedBO3s = new ArrayList<String>();
+		this.inheritedBO3s = new ArrayList<>();
 		this.inheritedBO3s.add(this.getName()); // TODO: Make this cleaner?
-		if(this.inheritBO3 != null && this.inheritBO3.trim().length() > 0)
+		if(this.inheritBO3 != null && !this.inheritBO3.trim().isEmpty())
 		{
 			this.inheritedBO3s.add(this.inheritBO3);
 		}
 
-		this.author = readSettings(BO4Settings.AUTHOR, logger, materialReader, manager);
-		this.description = readSettings(BO4Settings.DESCRIPTION, logger, materialReader, manager);
-		this.settingsMode = readSettings(BO3Config.SETTINGS_MODE_BO3, logger, materialReader, manager);
+		this.author = readSettings(BO4Settings.AUTHOR,  materialReader, manager);
+		this.description = readSettings(BO4Settings.DESCRIPTION,  materialReader, manager);
+		this.settingsMode = readSettings(BO3Config.SETTINGS_MODE_BO3,  materialReader, manager);
 
-		this.frequency = readSettings(BO4Settings.FREQUENCY, logger, materialReader, manager);
-		this.spawnHeight = readSettings(BO4Settings.SPAWN_HEIGHT, logger, materialReader, manager);
-		this.minHeight = readSettings(BO4Settings.MIN_HEIGHT, logger, materialReader, manager);
-		this.maxHeight = readSettings(BO4Settings.MAX_HEIGHT, logger, materialReader, manager);
-		this.maxHeight = this.maxHeight < this.minHeight ? this.minHeight : this.maxHeight;
+		this.frequency = readSettings(BO4Settings.FREQUENCY,  materialReader, manager);
+		this.spawnHeight = readSettings(BO4Settings.SPAWN_HEIGHT,  materialReader, manager);
+		this.minHeight = readSettings(BO4Settings.MIN_HEIGHT,  materialReader, manager);
+		this.maxHeight = readSettings(BO4Settings.MAX_HEIGHT,  materialReader, manager);
+		this.maxHeight = Math.max(this.maxHeight, this.minHeight);
 
-		this.doReplaceBlocks = readSettings(BO4Settings.DO_REPLACE_BLOCKS, logger, materialReader, manager);
+		this.doReplaceBlocks = readSettings(BO4Settings.DO_REPLACE_BLOCKS,  materialReader, manager);
 
-		String fixedRotation = readSettings(BO4Settings.FIXED_ROTATION, logger, materialReader, manager);
+		String fixedRotation = readSettings(BO4Settings.FIXED_ROTATION,  materialReader, manager);
 		this.fixedRotation = Rotation.getRotation(fixedRotation);
 
 		// Read the resources
-		readResources(logger, materialReader, manager);
+		readResources( materialReader, manager);
 	}
 	
-	private void writeResources(SettingsWriterBO4 writer, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
+	private void writeResources(SettingsWriterBO4 writer, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList,  IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
 	{
 		writer.bigTitle("Blocks");
 		writer.comment("All the blocks used in the BO4 are listed here. Possible blocks:");
@@ -1258,15 +1240,15 @@ public class BO4Config extends CustomObjectConfigFile
 		writer.comment(" MinecraftObject(0,0,0," + DefaultStructurePart.IGLOO_BOTTOM.getPath() + ")");
 		writer.comment(" spawns the bottom part of an igloo.");
 
-		ArrayList<BO4EntityFunction> entitiesList = new ArrayList<BO4EntityFunction>();
+		ArrayList<BO4EntityFunction> entitiesList = new ArrayList<>();
 		
 		// Re-read the raw data, if no data was supplied. Don't save any loaded data, since it has been processed/transformed.
-		if(blocksList == null || branchesList == null || entitiesList == null)
+		if(blocksList == null || branchesList == null)
 		{
 			blocksList = new ArrayList<>();
 			branchesList = new ArrayList<>();
 			
-			for (CustomObjectConfigFunction<BO4Config> res : reader.getConfigFunctions(this, true, logger, materialReader, manager))
+			for (CustomObjectConfigFunction<BO4Config> res : reader.getConfigFunctions(this, true,  materialReader, manager))
 			{
 				if (res.isValid())
 				{
@@ -1293,8 +1275,7 @@ public class BO4Config extends CustomObjectConfigFile
 				}
 			}
 		}
-		else if(blocksList != null)
-		{
+		else {
 			// The blockslist passed is not used after this,
 			// so it's ok to edit the block objects.
 			for(BlockFunction<?> block : blocksList)
@@ -1360,8 +1341,8 @@ public class BO4Config extends CustomObjectConfigFile
 		}
 	}
 
-	private int bo4DataVersion = 3;
-	void writeToStream(DataOutput stream, String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws IOException
+	private final int bo4DataVersion = 3;
+	void writeToStream(DataOutput stream, String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws IOException
 	{		
 		stream.writeInt(this.bo4DataVersion);
 		// Version 3 added fixedRotation		
@@ -1424,7 +1405,7 @@ public class BO4Config extends CustomObjectConfigFile
 		stream.writeBoolean(this.useCenterForHighestBlock);
 
 		stream.writeInt(this.branchesBO4.length);
-		for(BO4BranchFunction func : Arrays.asList(this.branchesBO4))
+		for(BO4BranchFunction func : this.branchesBO4)
 		{
 			if(func instanceof BO4WeightedBranchFunction)
 			{
@@ -1436,7 +1417,7 @@ public class BO4Config extends CustomObjectConfigFile
 		}
 		
 		stream.writeInt(this.entityDataBO4.length);
-		for(BO4EntityFunction func : Arrays.asList(this.entityDataBO4))
+		for(BO4EntityFunction func : this.entityDataBO4)
 		{
 			func.writeToStream(stream);
 		}
@@ -1445,11 +1426,11 @@ public class BO4Config extends CustomObjectConfigFile
 		stream.writeInt(0); // Used to be spawnerdata length
 		stream.writeInt(0); // Used to be moddata length
 		
-		ArrayList<LocalMaterialData> materials = new ArrayList<LocalMaterialData>();
-		ArrayList<String> metaDataNames = new ArrayList<String>();
+		ArrayList<LocalMaterialData> materials = new ArrayList<>();
+		ArrayList<String> metaDataNames = new ArrayList<>();
 		int randomBlockCount = 0;
 		int nonRandomBlockCount = 0;
-		BO4BlockFunction[] blocks = getBlocks(presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+		BO4BlockFunction[] blocks = getBlocks(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 		for(BO4BlockFunction block : blocks)
 		{		
 			if(block instanceof BO4RandomBlockFunction)
@@ -1476,20 +1457,18 @@ public class BO4Config extends CustomObjectConfigFile
 			}
 		}
 		
-		String[] metaDataNamesArr = metaDataNames.toArray(new String[metaDataNames.size()]);
-		LocalMaterialData[] blocksArr = materials.toArray(new LocalMaterialData[materials.size()]);
+		String[] metaDataNamesArr = metaDataNames.toArray(new String[0]);
+		LocalMaterialData[] blocksArr = materials.toArray(new LocalMaterialData[0]);
 		
 		stream.writeShort(metaDataNamesArr.length);
-		for(int i = 0; i < metaDataNamesArr.length; i++)
-		{
-			StreamHelper.writeStringToStream(stream, metaDataNamesArr[i]);
-		}
+        for (String s : metaDataNamesArr) {
+            StreamHelper.writeStringToStream(stream, s);
+        }
 		
 		stream.writeShort(blocksArr.length);
-		for(int i = 0; i < blocksArr.length; i++)
-		{
-			StreamHelper.writeStringToStream(stream, blocksArr[i].getName());
-		}
+        for (LocalMaterialData localMaterialData : blocksArr) {
+            StreamHelper.writeStringToStream(stream, localMaterialData.getName());
+        }
 		
 		// TODO: This assumes that loading blocks in a different order won't matter, which may not be true?
 		// Anything that spawns on top, entities/spawners etc, should be spawned last tho, so shouldn't be a problem?
@@ -1502,7 +1481,7 @@ public class BO4Config extends CustomObjectConfigFile
 			{
 				for(int z = this.getminZ(); z < zSize; z++)
 				{
-					blocksInColumn = new ArrayList<BO4BlockFunction>();
+					blocksInColumn = new ArrayList<>();
 					for(BO4BlockFunction blockFunction : blocks)
 					{
 						if(!(blockFunction instanceof BO4RandomBlockFunction))
@@ -1514,7 +1493,7 @@ public class BO4Config extends CustomObjectConfigFile
 						}
 					}
 					stream.writeShort(blocksInColumn.size());
-					if(blocksInColumn.size() > 0)
+					if(!blocksInColumn.isEmpty())
 					{
 						for(BO4BlockFunction blockFunction : blocksInColumn)
 						{
@@ -1542,7 +1521,7 @@ public class BO4Config extends CustomObjectConfigFile
 			{
 				for(int z = this.getminZ(); z < zSize; z++)
 				{
-					blocksInColumn = new ArrayList<BO4BlockFunction>();
+					blocksInColumn = new ArrayList<>();
 					for(BO4BlockFunction blockFunction : blocks)
 					{
 						if(blockFunction instanceof BO4RandomBlockFunction)
@@ -1554,7 +1533,7 @@ public class BO4Config extends CustomObjectConfigFile
 						}
 					}
 					stream.writeShort(blocksInColumn.size());
-					if(blocksInColumn.size() > 0)
+					if(!blocksInColumn.isEmpty())
 					{
 						for(BO4BlockFunction blockFunction : blocksInColumn)
 						{
@@ -1575,7 +1554,7 @@ public class BO4Config extends CustomObjectConfigFile
 		}
 	}
 
-	private BO4Config readFromBO4DataFile(boolean getBlocks, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	private BO4Config readFromBO4DataFile(boolean getBlocks,  IMaterialReader materialReader) throws InvalidConfigException
 	{
 		FileInputStream fis;
 		ByteBuffer bufferCompressed = null;
@@ -1656,7 +1635,7 @@ public class BO4Config extends CustomObjectConfigFile
 				int minHeight = bufferDecompressed.getInt();
 				int maxHeight = bufferDecompressed.getInt();
 				short inheritedBO3sSize = bufferDecompressed.getShort();
-				ArrayList<String> inheritedBO3s = new ArrayList<String>();
+				ArrayList<String> inheritedBO3s = new ArrayList<>();
 				for(int i = 0; i < inheritedBO3sSize; i++)
 				{
 					inheritedBO3s.add(StreamHelper.readStringFromBuffer(bufferDecompressed));
@@ -1698,88 +1677,78 @@ public class BO4Config extends CustomObjectConfigFile
 				boolean isCollidable = bufferDecompressed.get() != 0;
 				boolean useCenterForHighestBlock = bufferDecompressed.get() != 0;				
 			
-				HashMap<String, Integer> branchFrequencyGroups = new HashMap<String, Integer>();
-				if(branchFrequencyGroup != null && branchFrequencyGroup.trim().length() > 0)
+				HashMap<String, Integer> branchFrequencyGroups = new HashMap<>();
+				if(branchFrequencyGroup != null && !branchFrequencyGroup.trim().isEmpty())
 				{
 					String[] groupStrings = branchFrequencyGroup.split(",");
 					if(groupStrings != null && groupStrings.length > 0)
 					{
-						for(int i = 0; i < groupStrings.length; i++)
-						{
-							String[] groupString = groupStrings[i].trim().length() > 0 ? groupStrings[i].split(":") : null;
-							if(groupString != null && groupString.length == 2)
-							{
-								branchFrequencyGroups.put(groupString[0].trim(), Integer.parseInt(groupString[1].trim()));
-							}
-						}
+                        for (String string : groupStrings) {
+                            String[] groupString = string.trim().length() > 0 ? string.split(":") : null;
+                            if (groupString != null && groupString.length == 2) {
+                                branchFrequencyGroups.put(groupString[0].trim(), Integer.parseInt(groupString[1].trim()));
+                            }
+                        }
 					}
 				}
 				
-				HashMap<String, Integer> bo4Groups = new HashMap<String, Integer>();
-				if(bo3Group != null && bo3Group.trim().length() > 0)
+				HashMap<String, Integer> bo4Groups = new HashMap<>();
+				if(bo3Group != null && !bo3Group.trim().isEmpty())
 				{
 					String[] groupStrings = bo3Group.split(",");
 					if(groupStrings != null && groupStrings.length > 0)
 					{
-						for(int i = 0; i < groupStrings.length; i++)
-						{
-							String[] groupString = groupStrings[i].trim().length() > 0 ? groupStrings[i].split(":") : null;
-							if(groupString != null && groupString.length == 2)
-							{
-								bo4Groups.put(groupString[0].trim(), Integer.parseInt(groupString[1].trim()));
-							}
-						}
+                        for (String string : groupStrings) {
+                            String[] groupString = string.trim().length() > 0 ? string.split(":") : null;
+                            if (groupString != null && groupString.length == 2) {
+                                bo4Groups.put(groupString[0].trim(), Integer.parseInt(groupString[1].trim()));
+                            }
+                        }
 					}
 				}			
 							
-				ArrayList<String> mustBeInsideBranches = new ArrayList<String>();
-				if(mustBeInside != null && mustBeInside.trim().length() > 0)
+				ArrayList<String> mustBeInsideBranches = new ArrayList<>();
+				if(mustBeInside != null && !mustBeInside.trim().isEmpty())
 				{
 					String[] mustBeInsideStrings = mustBeInside.split(",");
 					if(mustBeInsideStrings != null && mustBeInsideStrings.length > 0)
 					{
-						for(int i = 0; i < mustBeInsideStrings.length; i++)
-						{
-							String mustBeInsideString = mustBeInsideStrings[i].trim();
-							if(mustBeInsideString.length() > 0)
-							{
-								mustBeInsideBranches.add(mustBeInsideString);
-							}
-						}
+                        for (String beInsideString : mustBeInsideStrings) {
+                            String mustBeInsideString = beInsideString.trim();
+                            if (!mustBeInsideString.isEmpty()) {
+                                mustBeInsideBranches.add(mustBeInsideString);
+                            }
+                        }
 					}
 				}
 				
-				ArrayList<String> cannotBeInsideBranches = new ArrayList<String>();
-				if(cannotBeInside != null && cannotBeInside.trim().length() > 0)
+				ArrayList<String> cannotBeInsideBranches = new ArrayList<>();
+				if(cannotBeInside != null && !cannotBeInside.trim().isEmpty())
 				{
 					String[] cannotBeInsideStrings = cannotBeInside.split(",");
 					if(cannotBeInsideStrings != null && cannotBeInsideStrings.length > 0)
 					{
-						for(int i = 0; i < cannotBeInsideStrings.length; i++)
-						{
-							String cannotBeInsideString = cannotBeInsideStrings[i].trim();
-							if(cannotBeInsideString.length() > 0)
-							{
-								cannotBeInsideBranches.add(cannotBeInsideString);
-							}
-						}
+                        for (String beInsideString : cannotBeInsideStrings) {
+                            String cannotBeInsideString = beInsideString.trim();
+                            if (!cannotBeInsideString.isEmpty()) {
+                                cannotBeInsideBranches.add(cannotBeInsideString);
+                            }
+                        }
 					}
 				}
 				
-				ArrayList<String> replacesBO3Branches = new ArrayList<String>();
-				if(replacesBO3 != null && replacesBO3.trim().length() > 0)
+				ArrayList<String> replacesBO3Branches = new ArrayList<>();
+				if(replacesBO3 != null && !replacesBO3.trim().isEmpty())
 				{
 					String[] replacesBO3Strings = replacesBO3.split(",");
 					if(replacesBO3Strings != null && replacesBO3Strings.length > 0)
 					{
-						for(int i = 0; i < replacesBO3Strings.length; i++)
-						{
-							String replacesBO3String = replacesBO3Strings[i].trim();
-							if(replacesBO3String.length() > 0)
-							{
-								replacesBO3Branches.add(replacesBO3String);
-							}
-						}
+                        for (String bo3String : replacesBO3Strings) {
+                            String replacesBO3String = bo3String.trim();
+                            if (!replacesBO3String.isEmpty()) {
+                                replacesBO3Branches.add(replacesBO3String);
+                            }
+                        }
 					}
 				}
 			
@@ -1792,9 +1761,9 @@ public class BO4Config extends CustomObjectConfigFile
 					branchType = bufferDecompressed.get() != 0;
 					if(branchType)
 					{
-						branch = BO4WeightedBranchFunction.fromStream(this, bufferDecompressed, logger, materialReader);
+						branch = BO4WeightedBranchFunction.fromStream(this, bufferDecompressed,  materialReader);
 					} else {
-						branch = BO4BranchFunction.fromStream(this, bufferDecompressed, logger, materialReader);
+						branch = BO4BranchFunction.fromStream(this, bufferDecompressed,  materialReader);
 					}
 					branchesBO4[i] = branch;
 				}
@@ -1803,7 +1772,7 @@ public class BO4Config extends CustomObjectConfigFile
 				BO4EntityFunction[] entityDataBO4 = new BO4EntityFunction[entityDataOTGPlusLength];
 				for(int i = 0; i < entityDataOTGPlusLength; i++)
 				{
-					entityDataBO4[i] = BO4EntityFunction.fromStream(this, bufferDecompressed, logger);
+					entityDataBO4[i] = BO4EntityFunction.fromStream(this, bufferDecompressed);
 				}
 
 				// Legacy settings, hoping they were always 0 and noone actually used them :/.
@@ -1840,9 +1809,9 @@ public class BO4Config extends CustomObjectConfigFile
 						try {
 							blocksArr[i] = materialReader.readMaterial(materialName);
 						} catch (InvalidConfigException e) {
-							if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+							if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 							{
-								logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not read material \"" + materialName + "\" for BO4 \"" + this.getName() + "\"");
+								OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not read material \"" + materialName + "\" for BO4 \"" + this.getName() + "\"");
 								e.printStackTrace();
 							}
 						}
@@ -1854,7 +1823,7 @@ public class BO4Config extends CustomObjectConfigFile
 					// Anything that spawns on top, entities/spawners etc, should be spawned last tho, so shouldn't be a problem?
 					int nonRandomBlockCount = bufferDecompressed.getInt();
 					int nonRandomBlockIndex = 0;
-					ArrayList<BO4BlockFunction> nonRandomBlocks = new ArrayList<BO4BlockFunction>();
+					ArrayList<BO4BlockFunction> nonRandomBlocks = new ArrayList<>();
 					if(nonRandomBlockCount > 0)
 					{
 						for(int x = this.getminX(); x < this.xSize; x++)
@@ -1865,7 +1834,7 @@ public class BO4Config extends CustomObjectConfigFile
 								for(int j = 0; j < blocksInColumnSize; j++)
 								{
 									columnSizes[x][z]++;
-									nonRandomBlocks.add(BO4BlockFunction.fromStream(x, z, metaDataNames, blocksArr, this, bufferDecompressed, logger));
+									nonRandomBlocks.add(BO4BlockFunction.fromStream(x, z, metaDataNames, blocksArr, this, bufferDecompressed));
 									nonRandomBlockIndex++;
 									if(nonRandomBlockCount == nonRandomBlockIndex)
 									{
@@ -1886,7 +1855,7 @@ public class BO4Config extends CustomObjectConfigFile
 									
 					int randomBlockCount = bufferDecompressed.getInt();
 					int randomBlockIndex = 0;
-					ArrayList<BO4RandomBlockFunction> randomBlocks = new ArrayList<BO4RandomBlockFunction>();
+					ArrayList<BO4RandomBlockFunction> randomBlocks = new ArrayList<>();
 					if(randomBlockCount > 0)
 					{
 						for(int x = this.getminX(); x < this.xSize; x++)
@@ -1897,7 +1866,7 @@ public class BO4Config extends CustomObjectConfigFile
 								for(int j = 0; j < blocksInColumnSize; j++)
 								{
 									columnSizes[x][z]++;
-									randomBlocks.add(BO4RandomBlockFunction.fromStream(x, z, metaDataNames, blocksArr, this, bufferDecompressed, logger));
+									randomBlocks.add(BO4RandomBlockFunction.fromStream(x, z, metaDataNames, blocksArr, this, bufferDecompressed));
 									randomBlockIndex++;
 									if(randomBlockCount == randomBlockIndex)
 									{
@@ -2081,28 +2050,26 @@ public class BO4Config extends CustomObjectConfigFile
 				}
 			}
 		}
-		for(int i = 0; i < newBlocks.size(); i++)
-		{
-			block = (BO4BlockFunction) newBlocks.get(i);
+        for (BlockFunction<?> newBlock : newBlocks) {
+            block = (BO4BlockFunction) newBlock;
 
-			this.blocks[block.x][block.z][columnBlockIndex[block.x][block.z]] = (short) block.y;
+            this.blocks[block.x][block.z][columnBlockIndex[block.x][block.z]] = (short) block.y;
 
-			int blockIndex = columnBlockIndex[block.x][block.z] + getColumnBlockIndex(columnSizes, block.x, block.z);
+            int blockIndex = columnBlockIndex[block.x][block.z] + getColumnBlockIndex(columnSizes, block.x, block.z);
 
-			this.blocksMaterial[blockIndex] = block.material;
-			this.blocksMetaDataName[blockIndex] = block.nbtName;
-			this.blocksMetaDataTag[blockIndex] = block.nbt;
-			
-			if(block instanceof BO4RandomBlockFunction)
-			{
-				this.randomBlocksBlocks[blockIndex] = ((BO4RandomBlockFunction)block).blocks;
-				this.randomBlocksBlockChances[blockIndex] = ((BO4RandomBlockFunction)block).blockChances;
-				this.randomBlocksMetaDataNames[blockIndex] = ((BO4RandomBlockFunction)block).metaDataNames;
-				this.randomBlocksMetaDataTags[blockIndex] = ((BO4RandomBlockFunction)block).metaDataTags;
-				this.randomBlocksBlockCount[blockIndex] = ((BO4RandomBlockFunction)block).blockCount;
-			}
-			columnBlockIndex[block.x][block.z]++;
-		}
+            this.blocksMaterial[blockIndex] = block.material;
+            this.blocksMetaDataName[blockIndex] = block.nbtName;
+            this.blocksMetaDataTag[blockIndex] = block.nbt;
+
+            if (block instanceof BO4RandomBlockFunction) {
+                this.randomBlocksBlocks[blockIndex] = ((BO4RandomBlockFunction) block).blocks;
+                this.randomBlocksBlockChances[blockIndex] = ((BO4RandomBlockFunction) block).blockChances;
+                this.randomBlocksMetaDataNames[blockIndex] = ((BO4RandomBlockFunction) block).metaDataNames;
+                this.randomBlocksMetaDataTags[blockIndex] = ((BO4RandomBlockFunction) block).metaDataTags;
+                this.randomBlocksBlockCount[blockIndex] = ((BO4RandomBlockFunction) block).blockCount;
+            }
+            columnBlockIndex[block.x][block.z]++;
+        }
 	}
 	
 	private int getColumnBlockIndex(short[][] columnSizes, int columnX, int columnZ)

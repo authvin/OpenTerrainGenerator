@@ -4,8 +4,8 @@ import com.pg85.otg.config.settingType.Setting;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -26,7 +26,7 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 {  
 	private static final <T, C extends CustomObjectConfigFunction<T>> List<C> mergeListsCustomObject(Collection<? extends C> childList, Collection<? extends C> parentList)
 	{
-		List<C> returnList = new ArrayList<C>(childList);
+		List<C> returnList = new ArrayList<>(childList);
 		for (C parentFunction : parentList)
 		{
 			if (!hasAnalogousFunction(parentFunction, childList))
@@ -48,48 +48,27 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 		}
 		return false;
 	}
-	
-	private static final class StringOnLine
-	{
-		private final String string;
-		private final int line;
 
-		private StringOnLine(String string, int line)
-		{
-			this.string = string;
-			this.line = line;
-		}
+	private record StringOnLine(String string, int line) {
 	}
 
-	private static final class Line implements Map.Entry<String, String>
-	{
-		private final String key;
-		private final String value;
-
-		private Line(String key, String value)
-		{
-			this.key = key;
-			this.value = value;
-		}
+	private record Line(String key, String value) implements Entry<String, String> {
 
 		@Override
-		public String getKey()
-		{
-			return key;
-		}
+			public String getKey() {
+				return key;
+			}
 
-		@Override
-		public String getValue()
-		{
-			return value;
-		}
+			@Override
+			public String getValue() {
+				return value;
+			}
 
-		@Override
-		public String setValue(String value)
-		{
-			throw new UnsupportedOperationException();
+			@Override
+			public String setValue(String value) {
+				throw new UnsupportedOperationException();
+			}
 		}
-	}
 	
 	private final List<StringOnLine> configFunctions;
 	private SettingsReaderBO4 fallback;
@@ -109,15 +88,15 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 	 * @param name Name of the config file, like "PresetConfig" or "Taiga".
 	 * @param file File where the settings are stored.
 	 */
-	public FileSettingsReaderBO4(String name, File file, ILogger logger)
+	public FileSettingsReaderBO4(String name, File file)
 	{
 		this.name = name;
 		
 		this.file = file;
-		this.settingsCache = new HashMap<String, StringOnLine>();
-		this.configFunctions = new ArrayList<StringOnLine>();
+		this.settingsCache = new HashMap<>();
+		this.configFunctions = new ArrayList<>();
 
-		readSettings(logger);
+		readSettings();
 	}
 
 	public void flushCache()
@@ -133,9 +112,9 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 	}
 
 	@Override
-	public <T> List<CustomObjectConfigFunction<T>> getConfigFunctions(T holder, boolean useFallback, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager)
+	public <T> List<CustomObjectConfigFunction<T>> getConfigFunctions(T holder, boolean useFallback,  IMaterialReader materialReader, CustomObjectResourcesManager manager)
 	{
-		List<CustomObjectConfigFunction<T>> result = new ArrayList<CustomObjectConfigFunction<T>>(configFunctions.size());
+		List<CustomObjectConfigFunction<T>> result = new ArrayList<>(configFunctions.size());
 		for (StringOnLine configFunctionLine : configFunctions)
 		{
 			String configFunctionString = configFunctionLine.string;
@@ -143,15 +122,15 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 			String functionName = configFunctionString.substring(0, bracketIndex);
 			String parameters = configFunctionString.substring(bracketIndex + 1, configFunctionString.length() - 1);
 			List<String> args = Arrays.asList(StringHelper.readCommaSeperatedString(parameters));
-			CustomObjectConfigFunction<T> function = manager.getConfigFunction(functionName, holder, args, logger, materialReader);
+			CustomObjectConfigFunction<T> function = manager.getConfigFunction(functionName, holder, args,  materialReader);
 			if(function == null)
 			{
-				function = manager.getConfigFunction(functionName, holder, args, logger, materialReader);	
+				function = manager.getConfigFunction(functionName, holder, args,  materialReader);	
 			}
 			result.add(function);
-			if (!function.isValid() && logger.getLogCategoryEnabled(LogCategory.CONFIGS))
+			if (!function.isValid() && OTGLog.getLogCategoryEnabled(LogCategory.CONFIGS))
 			{
-				logger.log(
+				OTGLog.log(
 					LogLevel.ERROR,
 					LogCategory.CONFIGS,
 					MessageFormat.format(
@@ -168,7 +147,7 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 		// Add inherited functions
 		if (useFallback && fallback != null)
 		{
-			return FileSettingsReaderBO4.mergeListsCustomObject(result, fallback.getConfigFunctions(holder, true, logger, materialReader, manager));
+			return FileSettingsReaderBO4.mergeListsCustomObject(result, fallback.getConfigFunctions(holder, true,  materialReader, manager));
 		}
 
 		return result;
@@ -189,7 +168,7 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 	@Override
 	public Iterable<Entry<String, String>> getRawSettings()
 	{
-		List<Entry<String, String>> lines = new ArrayList<Entry<String, String>>(this.settingsCache.size());
+		List<Entry<String, String>> lines = new ArrayList<>(this.settingsCache.size());
 		for (Entry<String, StringOnLine> rawSetting : this.settingsCache.entrySet())
 		{
 			lines.add(new Line(rawSetting.getKey(), rawSetting.getValue().string));
@@ -198,7 +177,7 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 	}
 
 	@Override
-	public <S> S getSetting(Setting<S> setting, S defaultValue, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager)
+	public <S> S getSetting(Setting<S> setting, S defaultValue,  IMaterialReader materialReader, CustomObjectResourcesManager manager)
 	{
 		// Try reading the setting from the file
 		StringOnLine stringWithLineNumber = this.settingsCache.get(setting.getName().toLowerCase());
@@ -211,9 +190,9 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 			}
 			catch (InvalidConfigException e)
 			{
-				if(logger.getLogCategoryEnabled(LogCategory.CONFIGS))
+				if(OTGLog.getLogCategoryEnabled(LogCategory.CONFIGS))
 				{
-					logger.log(
+					OTGLog.log(
 						LogLevel.ERROR, 
 						LogCategory.CONFIGS,
 						MessageFormat.format(
@@ -232,7 +211,7 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 		// Try the fallback
 		if (this.fallback != null)
 		{
-			return this.fallback.getSetting(setting, defaultValue, logger, materialReader, manager);
+			return this.fallback.getSetting(setting, defaultValue,  materialReader, manager);
 		}
 
 		// Return default value
@@ -265,7 +244,7 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 		this.settingsCache.put(setting.getName().toLowerCase(), new StringOnLine(setting.write(value), -1));
 	}
 
-	private void readSettings(ILogger logger)
+	private void readSettings()
 	{
 		BufferedReader settingsReader = null;
 
@@ -312,7 +291,7 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 		}
 		catch (IOException e)
 		{
-			logger.log(LogLevel.ERROR, LogCategory.CONFIGS, String.format("Exception when reading file: ", (Object[])e.getStackTrace()));
+			OTGLog.log(LogLevel.ERROR, LogCategory.CONFIGS, String.format("Exception when reading file: ", (Object[])e.getStackTrace()));
 		} finally {
 			if (settingsReader != null)
 			{
@@ -322,7 +301,7 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 				}
 				catch (IOException localIOException2)
 				{
-					logger.log(LogLevel.ERROR, LogCategory.CONFIGS, String.format("Exception when closing file: ", (Object[])localIOException2.getStackTrace()));
+					OTGLog.log(LogLevel.ERROR, LogCategory.CONFIGS, String.format("Exception when closing file: ", (Object[])localIOException2.getStackTrace()));
 				}
 			}
 		}

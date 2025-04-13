@@ -14,9 +14,9 @@ class BO4BranchNode extends BranchNode
 	 * The max branch depth of the branch given to it by its parent
 	 * Used to make certain branches longer than others
 	 */
-	int branchDepth;
-	boolean isRequiredBranch;
-	boolean isWeightedBranch;
+    final int branchDepth;
+	final boolean isRequiredBranch;
+	final boolean isWeightedBranch;
 	String branchGroup;
 
 	/**
@@ -28,7 +28,7 @@ class BO4BranchNode extends BranchNode
 		this.rotation = rotation;
 		this.chance = chance;
 
-		this.customObjectName = customObject != null ? customObject.getName() : customObjectName != null && customObjectName.length() > 0 ? customObjectName : null;
+		this.customObjectName = customObject != null ? customObject.getName() : customObjectName != null && !customObjectName.isEmpty() ? customObjectName : null;
 		this.customObject = customObject;
 
 		this.isRequiredBranch = isRequiredBranch;

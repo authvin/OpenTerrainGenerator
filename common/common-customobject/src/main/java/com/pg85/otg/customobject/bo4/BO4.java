@@ -20,11 +20,11 @@ import com.pg85.otg.customobject.structures.StructuredCustomObject;
 import com.pg85.otg.customobject.util.BoundingBox;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.ChunkCoordinate;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.nbt.NamedBinaryTag;
 import com.pg85.otg.util.bo3.Rotation;
@@ -80,7 +80,7 @@ public class BO4 implements StructuredCustomObject
 	}
 
 	@Override
-	public boolean onEnable(String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public boolean onEnable(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		if(isInvalidConfig)
 		{
@@ -93,19 +93,19 @@ public class BO4 implements StructuredCustomObject
 		
 		try
 		{
-			this.config = new BO4Config(new FileSettingsReaderBO4(name, file, logger), true, presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+			this.config = new BO4Config(new FileSettingsReaderBO4(name, file), true, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 			if(this.config.settingsMode != ConfigMode.WriteDisable && !this.config.isBO4Data)
 			{
-				FileSettingsWriterBO4.writeToFile(this.config, this.config.settingsMode, logger, materialReader, manager);
+				FileSettingsWriterBO4.writeToFile(this.config, this.config.settingsMode,  materialReader, manager);
 			}
 			// Merge inherited resources (after writing)
-			this.config.loadInheritedBO3(presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+			this.config.loadInheritedBO3(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 		}
 		catch(InvalidConfigException ex)
 		{
-			if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+			if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 			{
-				logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Error occurred while enabling BO4 " + this.getName() + ": " + ex.getMessage());
+				OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Error occurred while enabling BO4 " + this.getName() + ": " + ex.getMessage());
 			}
 			isInvalidConfig = true;
 			return false;
@@ -187,76 +187,76 @@ public class BO4 implements StructuredCustomObject
 	}
 
 	// BO4's should always spawn within decoration bounds, so there is no SpawnForced, only TrySpawnAt
-	public boolean trySpawnAt(String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker, IWorldGenRegion worldGenRegion, Random random, Rotation rotation, ChunkCoordinate chunkCoord, int x, int y, int z, String replaceAbove, String replaceBelow, boolean replaceWithBiomeBlocks, String replaceWithSurfaceBlock, String replaceWithGroundBlock, String replaceWithStoneBlock, boolean spawnUnderWater, int waterLevel, boolean isStructureAtSpawn, boolean doReplaceAboveBelowOnly, boolean doBiomeConfigReplaceBlocks)
+	public boolean trySpawnAt(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker, IWorldGenRegion worldGenRegion, Random random, Rotation rotation, ChunkCoordinate chunkCoord, int x, int y, int z, String replaceAbove, String replaceBelow, boolean replaceWithBiomeBlocks, String replaceWithSurfaceBlock, String replaceWithGroundBlock, String replaceWithStoneBlock, boolean spawnUnderWater, int waterLevel, boolean isStructureAtSpawn, boolean doReplaceAboveBelowOnly, boolean doBiomeConfigReplaceBlocks)
 	{
 		//OTG.log(LogMarker.INFO, "Spawning " + this.getName() + " in Chunk X" + chunkCoord.getChunkX() + "Z" + chunkCoord.getChunkZ() + " at pos " + x + " " + y + " " + z);
 
-		LocalMaterialData replaceBelowMaterial = null;
-		LocalMaterialData replaceAboveMaterial = null;
+		LocalMaterialData replaceBelowMaterial;
+		LocalMaterialData replaceAboveMaterial;
 
-		LocalMaterialData bo3SurfaceBlock = null;
-		LocalMaterialData bo3GroundBlock = null;
-		LocalMaterialData bo3StoneBlock = null;	
+		LocalMaterialData bo3SurfaceBlock;
+		LocalMaterialData bo3GroundBlock;
+		LocalMaterialData bo3StoneBlock;
 
 		if(config == null)
 		{
-			logger.log(LogLevel.FATAL, LogCategory.CUSTOM_OBJECTS, "Settings was null for BO4 " + this.getName() + ". This should not be happening, please contact team OTG about this crash.");
+			OTGLog.log(LogLevel.FATAL, LogCategory.CUSTOM_OBJECTS, "Settings was null for BO4 " + this.getName() + ". This should not be happening, please contact team OTG about this crash.");
 			throw new RuntimeException("Settings was null for BO4 " + this.getName() + ". This should not be happening, please contact team OTG about this crash.");
 		}
 
 		try {
-			bo3SurfaceBlock = replaceWithSurfaceBlock != null && replaceWithSurfaceBlock.length() > 0 ? materialReader.readMaterial(replaceWithSurfaceBlock) : LocalMaterials.GRASS;
+			bo3SurfaceBlock = replaceWithSurfaceBlock != null && !replaceWithSurfaceBlock.isEmpty() ? materialReader.readMaterial(replaceWithSurfaceBlock) : LocalMaterials.GRASS;
 		} catch (InvalidConfigException e1) {
 			bo3SurfaceBlock = LocalMaterials.GRASS;
-			if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+			if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 			{
-				logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Value " + replaceWithSurfaceBlock + " for replaceWithSurfaceBlock in BO4 " + this.getName() + " was not recognised. Using GRASS instead.");
+				OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Value " + replaceWithSurfaceBlock + " for replaceWithSurfaceBlock in BO4 " + this.getName() + " was not recognised. Using GRASS instead.");
 			}
 		}
 		try {
-			bo3GroundBlock = replaceWithGroundBlock != null && replaceWithGroundBlock.length() > 0 ? materialReader.readMaterial(replaceWithGroundBlock) : LocalMaterials.DIRT;
+			bo3GroundBlock = replaceWithGroundBlock != null && !replaceWithGroundBlock.isEmpty() ? materialReader.readMaterial(replaceWithGroundBlock) : LocalMaterials.DIRT;
 		} catch (InvalidConfigException e1) {
 			bo3GroundBlock = LocalMaterials.DIRT;
-			if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+			if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 			{
-				logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Value " + replaceWithGroundBlock + " for replaceWithGroundBlock in BO4 " + this.getName() + " was not recognised. Using DIRT instead.");
+				OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Value " + replaceWithGroundBlock + " for replaceWithGroundBlock in BO4 " + this.getName() + " was not recognised. Using DIRT instead.");
 			}
 		}
 		try {
-			bo3StoneBlock = replaceWithStoneBlock != null && replaceWithStoneBlock.length() > 0 ? materialReader.readMaterial(replaceWithStoneBlock) : LocalMaterials.STONE;
+			bo3StoneBlock = replaceWithStoneBlock != null && !replaceWithStoneBlock.isEmpty() ? materialReader.readMaterial(replaceWithStoneBlock) : LocalMaterials.STONE;
 		} catch (InvalidConfigException e1) {
 			bo3StoneBlock = LocalMaterials.STONE;
-			if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+			if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 			{
-				logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Value " + replaceWithStoneBlock + " for replaceWithStoneBlock in BO4 " + this.getName() + " was not recognised. Using STONE instead.");
+				OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Value " + replaceWithStoneBlock + " for replaceWithStoneBlock in BO4 " + this.getName() + " was not recognised. Using STONE instead.");
 			}
 		}
 		
 		try {
-			replaceBelowMaterial = config.replaceBelow != null && config.replaceBelow.toLowerCase().equals("none") ? null : replaceBelow != null && replaceBelow.length() > 0 ? materialReader.readMaterial(replaceBelow) : null;
+			replaceBelowMaterial = config.replaceBelow != null && config.replaceBelow.equalsIgnoreCase("none") ? null : replaceBelow != null && !replaceBelow.isEmpty() ? materialReader.readMaterial(replaceBelow) : null;
 		} catch (InvalidConfigException e1) {
 			replaceBelowMaterial = LocalMaterials.DIRT;
-			if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+			if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 			{
-				logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Value " + config.replaceBelow + " for replaceBelow in BO4 " + this.getName() + " was not recognised. Using DIRT instead.");
+				OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Value " + config.replaceBelow + " for replaceBelow in BO4 " + this.getName() + " was not recognised. Using DIRT instead.");
 			}
 		}
 		try {
-			replaceAboveMaterial = config.replaceAbove != null && config.replaceAbove.toLowerCase().equals("none") ? null : replaceAbove != null && replaceAbove.length() > 0 ? materialReader.readMaterial(replaceAbove) : null;
+			replaceAboveMaterial = config.replaceAbove != null && config.replaceAbove.equalsIgnoreCase("none") ? null : replaceAbove != null && !replaceAbove.isEmpty() ? materialReader.readMaterial(replaceAbove) : null;
 		} catch (InvalidConfigException e1) {
 			replaceAboveMaterial = LocalMaterials.AIR;
-			if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+			if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 			{
-				logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Value " + config.replaceAbove + " for replaceAbove in BO4 " + this.getName() + " was not recognised. Using AIR instead.");
+				OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Value " + config.replaceAbove + " for replaceAbove in BO4 " + this.getName() + " was not recognised. Using AIR instead.");
 			}
 		}
 
 		boolean isOnBiomeBorder = false;
 
-		BiomeSettings biomeConfig = null;
-		BiomeSettings biomeConfig2 = null;
-		BiomeSettings biomeConfig3 = null;
-		BiomeSettings biomeConfig4 = null;
+		BiomeSettings biomeConfig;
+		BiomeSettings biomeConfig2;
+		BiomeSettings biomeConfig3;
+		BiomeSettings biomeConfig4;
 
 		biomeConfig = worldGenRegion.getBiomeConfigForDecoration(x, z);
 		if(replaceWithBiomeBlocks)
@@ -273,10 +273,11 @@ public class BO4 implements StructuredCustomObject
 
 		// Get the right coordinates based on rotation
 
-		ArrayList<Object[]> coordsAboveDone = new ArrayList<Object[]>();
-		ArrayList<Object[]> coordsBelowDone = new ArrayList<Object[]>();
+		ArrayList<Object[]> coordsAboveDone = new ArrayList<>();
+		ArrayList<Object[]> coordsBelowDone = new ArrayList<>();
 
-		BO4BlockFunction blockToQueueForSpawn = new BO4BlockFunction();
+        new BO4BlockFunction();
+        BO4BlockFunction blockToQueueForSpawn;
 		LocalMaterialData sourceBlockMaterial;
 
 		boolean outOfBounds = false;
@@ -291,10 +292,10 @@ public class BO4 implements StructuredCustomObject
 		
 		// Spawn
 		long startTime = System.currentTimeMillis();
-		BO4BlockFunction[] blocks = config.getBlocks(presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+		BO4BlockFunction[] blocks = config.getBlocks(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 		if(blocks != null)
 		{
-			for (BO4BlockFunction block : config.getBlocks(presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker))
+			for (BO4BlockFunction block : config.getBlocks(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
 			{
 				if(block instanceof BO4RandomBlockFunction)
 				{
@@ -756,15 +757,15 @@ public class BO4 implements StructuredCustomObject
 			}
 			if(outOfBounds)
 			{
-				if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+				if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 				{
-					logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "BO4 " + this.getName() + " tried to spawn blocks outside of the chunk being decorated, the blocks have been ignored. This can happen if a BO3 is not sliced into 16x16 pieces or has branches positioned in such a way that they cross a chunk border. OTG is more strict than TC in how branching BO4's used as CustomStructures() should be designed, BO4 creators have to design their BO4's and position their branches so that they fit neatly into a 16x16 grid. Hopefully in a future release OTG can be made to automatically slice branching structures instead of forcing the BO4 creator to do it.");
+					OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "BO4 " + this.getName() + " tried to spawn blocks outside of the chunk being decorated, the blocks have been ignored. This can happen if a BO3 is not sliced into 16x16 pieces or has branches positioned in such a way that they cross a chunk border. OTG is more strict than TC in how branching BO4's used as CustomStructures() should be designed, BO4 creators have to design their BO4's and position their branches so that they fit neatly into a 16x16 grid. Hopefully in a future release OTG can be made to automatically slice branching structures instead of forcing the BO4 creator to do it.");
 				}
 			}
 	
-			if(logger.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
+			if(OTGLog.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
 			{
-				logger.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Spawning BO4 " + this.getName()  + " took " + (System.currentTimeMillis() - startTime) + " Ms.");
+				OTGLog.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Spawning BO4 " + this.getName()  + " took " + (System.currentTimeMillis() - startTime) + " Ms.");
 			}
 		}
 

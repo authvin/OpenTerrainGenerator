@@ -8,8 +8,8 @@ import com.pg85.otg.customobject.bofunctions.BranchFunction;
 import com.pg85.otg.customobject.config.CustomObjectConfigFile;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 
@@ -41,9 +41,9 @@ public class FileSettingsWriterBO4 implements SettingsWriterBO4
 	 * @param configMode The configuration mode. If this is set to
 	 * WriteDisable, this method does nothing.
 	 */
-	public static void writeToFile(CustomObjectConfigFile config, ConfigMode configMode, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager)
+	public static void writeToFile(CustomObjectConfigFile config, ConfigMode configMode,  IMaterialReader materialReader, CustomObjectResourcesManager manager)
 	{
-		writeToFile(config, config.getFile(), configMode, logger, materialReader, manager);
+		writeToFile(config, config.getFile(), configMode,  materialReader, manager);
 	}
 
 	/**
@@ -55,7 +55,7 @@ public class FileSettingsWriterBO4 implements SettingsWriterBO4
 	 * @param configMode The configuration mode. If this is set to
 	 * WriteDisable, this method does nothing.
 	 */
-	public static void writeToFile(CustomObjectConfigFile config, File file, ConfigMode configMode, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager)
+	public static void writeToFile(CustomObjectConfigFile config, File file, ConfigMode configMode,  IMaterialReader materialReader, CustomObjectResourcesManager manager)
 	{
 		if (configMode == ConfigMode.WriteDisable)
 		{
@@ -65,9 +65,9 @@ public class FileSettingsWriterBO4 implements SettingsWriterBO4
 		try
 		{
 			SettingsWriterBO4 writer = new FileSettingsWriterBO4(file);
-			config.write(writer, configMode, logger, materialReader, manager);
+			config.write(writer, configMode,  materialReader, manager);
 		} catch (IOException e) {
-			logger.log(
+			OTGLog.log(
 				LogLevel.ERROR,
 				LogCategory.CONFIGS,
 				String.format("Failed to write to file " + file + ", error: ",(Object[])e.getStackTrace())
@@ -81,7 +81,7 @@ public class FileSettingsWriterBO4 implements SettingsWriterBO4
 	 * @param blocksList The list of blocks to be written to the config
 	 * @param branchesList The list of branches to be written to the config
 	 */
-	public static void writeToFileWithData(BO4Config config, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager)
+	public static void writeToFileWithData(BO4Config config, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList,  IMaterialReader materialReader, CustomObjectResourcesManager manager)
 	{
 		FileSettingsWriterBO4 writer = new FileSettingsWriterBO4(config.getFile());
 		try
@@ -91,12 +91,12 @@ public class FileSettingsWriterBO4 implements SettingsWriterBO4
 					writer,
 					blocksList == null ? new ArrayList<>() : blocksList,
 					branchesList == null ? new ArrayList<>() : branchesList,
-					logger,
+					
 					materialReader,
 					manager
 				);
 		} catch (IOException e) {
-			logger.log(
+			OTGLog.log(
 				LogLevel.ERROR,
 				LogCategory.CONFIGS,
 				String.format("Failed to write BO4 config " + config.getName() + ", error: ",(Object[])e.getStackTrace())
@@ -143,7 +143,7 @@ public class FileSettingsWriterBO4 implements SettingsWriterBO4
 	}
 
 	@Override
-	public void close(ILogger logger)
+	public void close()
 	{
 		if (writer == null)
 		{
@@ -158,7 +158,7 @@ public class FileSettingsWriterBO4 implements SettingsWriterBO4
 		}
 		catch (IOException e)
 		{
-			logger.log(
+			OTGLog.log(
 				LogLevel.ERROR,
 				LogCategory.CONFIGS,
 				MessageFormat.format(
@@ -177,7 +177,7 @@ public class FileSettingsWriterBO4 implements SettingsWriterBO4
 		checkState();
 		if (!this.writeComments)
 			return;
-		if (comment.length() > 0)
+		if (!comment.isEmpty())
 			writer.write("# " + comment);
 		writer.newLine();
 	}
@@ -233,10 +233,7 @@ public class FileSettingsWriterBO4 implements SettingsWriterBO4
 		checkState();
 		int titleLength = title.length();
 		StringBuilder rowBuilder = new StringBuilder(titleLength + 4);
-		for (int i = 0; i < titleLength + 4; i++)
-		{
-			rowBuilder.append('#');
-		}
+        rowBuilder.append("#".repeat(Math.max(0, titleLength + 4)));
 		writer.write(rowBuilder.toString());
 		writer.newLine();
 		writer.write("# " + title + " #");

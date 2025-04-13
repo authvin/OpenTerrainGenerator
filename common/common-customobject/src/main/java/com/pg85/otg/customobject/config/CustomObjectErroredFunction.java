@@ -1,7 +1,5 @@
 package com.pg85.otg.customobject.config;
 
-import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
 
@@ -30,8 +28,7 @@ public final class CustomObjectErroredFunction<T> extends CustomObjectConfigFunc
 	}
 
 	@Override
-	protected void load(List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
-	{
+	protected void load(List<String> args,  IMaterialReader materialReader) {
 		throw new UnsupportedOperationException();
 	}
 

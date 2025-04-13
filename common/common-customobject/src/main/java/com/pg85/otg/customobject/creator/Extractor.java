@@ -25,11 +25,11 @@ public class Extractor
 		File nbtFolder = new File(objectFolder, objectName);
 		ArrayList<BlockFunction<?>> blocks = new ArrayList<>();
 
-		for (int x = min.x; x <= max.x; x++)
+		for (int x = min.x(); x <= max.x(); x++)
 		{
-			for (int z = min.z; z <= max.z; z++)
+			for (int z = min.z(); z <= max.z(); z++)
 			{
-				for (int y = min.y; y <= max.y; y++)
+				for (int y = min.y(); y <= max.y(); y++)
 				{
 					LocalMaterialData materialData = localWorld.getMaterial(x, y, z);
 					boolean stop = false;
@@ -53,25 +53,17 @@ public class Extractor
 						materialData = materialData.legalOrPersistentLeaves(leaveIllegalLeaves);
 					}
 
-					BlockFunction<?> block;
-					switch(type)
-					{
-						case BO3:
-							block = new BO3BlockFunction();
-							break;
-						case BO4:
-							block = new BO4BlockFunction();
-							break;
-						case BO2:
-						default:
-							throw new RuntimeException("Tried to make BlockFunctions for a BO2");
-					}
-					block.material = materialData;
+					BlockFunction<?> block = switch (type) {
+                        case BO3 -> new BO3BlockFunction();
+                        case BO4 -> new BO4BlockFunction();
+                        default -> throw new RuntimeException("Tried to make BlockFunctions for a BO2");
+                    };
+                    block.material = materialData;
 					block.nbt = null;
 					block.nbtName = "";
-					block.x = x - center.x;
-					block.y = (short) (y - center.y);
-					block.z = z - center.z;
+					block.x = x - center.x();
+					block.y = (short) (y - center.y());
+					block.z = z - center.z();
 
 					NamedBinaryTag nbt = nbtHelper.getNBTFromLocation(localWorld, x, y, z);
 					if (nbt != null)

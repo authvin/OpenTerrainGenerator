@@ -7,7 +7,6 @@ import com.pg85.otg.customobject.config.CustomObjectConfigFile;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
 import com.pg85.otg.util.nbt.NBTHelper;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
@@ -26,7 +25,7 @@ public abstract class BlockFunction<T extends CustomObjectConfigFile> extends Cu
 	public String nbtName;
 
 	@Override
-	public void load(List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
 	{
 		assureSize(4, args);
 		// Those limits are arbitrary, LocalWorld.setBlock will limit it
@@ -44,7 +43,7 @@ public abstract class BlockFunction<T extends CustomObjectConfigFile> extends Cu
 		if (args.size() >= 5)
 		{
 			// Code that converts legacy block ids inside chests - Frank
-			nbt = NBTHelper.loadMetadata(args.get(4), getHolder().getFile(), logger);
+			nbt = NBTHelper.loadMetadata(args.get(4), getHolder().getFile());
 			if (nbt != null)
 			{
 				if (nbt.getTag("Items") != null) {

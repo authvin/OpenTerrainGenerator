@@ -6,7 +6,6 @@ import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.StructuredCustomObject;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.util.bo3.Rotation;
@@ -38,7 +37,7 @@ public class BranchNode implements Comparable<BranchNode>
 		this.rotation = rotation;
 		this.chance = chance;
 		this.customObject = branch;
-		this.customObjectName = branch != null ? branch.getName() : customObjectName != null && customObjectName.length() > 0 ? customObjectName : null;
+		this.customObjectName = branch != null ? branch.getName() : customObjectName != null && !customObjectName.isEmpty() ? customObjectName : null;
 	}
 
 	/**
@@ -60,14 +59,14 @@ public class BranchNode implements Comparable<BranchNode>
 	/**
 	 * @return the branch CustomObject
 	 */
-	public StructuredCustomObject getCustomObject(boolean lazyLoad, String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public StructuredCustomObject getCustomObject(boolean lazyLoad, String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		if(customObject != null || !lazyLoad)
 		{
 			return customObject;
 		}
 
-		CustomObject customObject = customObjectManager.getGlobalObjects().getObjectByName(customObjectName, presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+		CustomObject customObject = customObjectManager.getGlobalObjects().getObjectByName(customObjectName, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 		if(customObject != null && !(customObject instanceof StructuredCustomObject))
 		{
 			customObject = null;

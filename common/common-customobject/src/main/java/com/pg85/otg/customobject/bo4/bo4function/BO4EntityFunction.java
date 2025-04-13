@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 import com.pg85.otg.customobject.bo4.BO4Config;
 import com.pg85.otg.customobject.bofunctions.EntityFunction;
 import com.pg85.otg.customobject.structures.bo4.BO4CustomStructureCoordinate;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.helpers.StreamHelper;
 
@@ -67,7 +66,7 @@ public class BO4EntityFunction extends EntityFunction<BO4Config>
 		StreamHelper.writeStringToStream(stream, this.originalNameTagOrNBTFileName);			
 	}
 	
-	public static BO4EntityFunction fromStream(BO4Config holder, ByteBuffer buffer, ILogger logger) throws IOException
+	public static BO4EntityFunction fromStream(BO4Config holder, ByteBuffer buffer) throws IOException
 	{
 		BO4EntityFunction entityFunction = new BO4EntityFunction(holder);
 
@@ -75,13 +74,13 @@ public class BO4EntityFunction extends EntityFunction<BO4Config>
 		entityFunction.y = buffer.getInt();
 		entityFunction.z = buffer.getInt();
 
-		entityFunction.processEntityName(StreamHelper.readStringFromBuffer(buffer), logger);
+		entityFunction.processEntityName(StreamHelper.readStringFromBuffer(buffer));
 		entityFunction.groupSize = buffer.getInt();
 		entityFunction.nameTagOrNBTFileName= StreamHelper.readStringFromBuffer(buffer);
 		entityFunction.originalNameTagOrNBTFileName= StreamHelper.readStringFromBuffer(buffer);
 		if (entityFunction.originalNameTagOrNBTFileName != null)
 		{
-			entityFunction.processNameTagOrFileName(entityFunction.originalNameTagOrNBTFileName, logger);
+			entityFunction.processNameTagOrFileName(entityFunction.originalNameTagOrNBTFileName);
 		}
 		entityFunction.rotation = 0;
 

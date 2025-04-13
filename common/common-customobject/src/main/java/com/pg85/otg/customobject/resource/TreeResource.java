@@ -8,10 +8,10 @@ import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.CustomStructureCache;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 
@@ -38,8 +38,8 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 		assureSize(3, args);
 
 		this.frequency = readInt(args.get(0), 1, 100);
-		this.treeNames = new ArrayList<String>();
-		this.treeChances = new ArrayList<Integer>();
+		this.treeNames = new ArrayList<>();
+		this.treeChances = new ArrayList<>();
 
 		// If there is a boolean parameter "true" after source blocks, read extended parameters (maxSpawn)
 		boolean useExtendedParams = false;		
@@ -53,7 +53,7 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 				args = args.subList(0, args.size() - 2);
 				useExtendedParams = true;
 			}
-			catch (InvalidConfigException ex) { }
+			catch (InvalidConfigException ignored) { }
 		}
 		this.useExtendedParams = useExtendedParams;
 		this.maxSpawn = maxSpawn;
@@ -68,7 +68,7 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 	@Override
 	public void spawnForChunkDecoration(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		loadTrees(worldGenRegion.getPresetFolderName(), otgRootFolder, worldGenRegion.getLogger(), customObjectManager, materialReader, manager, modLoadedChecker);
+		loadTrees(worldGenRegion.getPresetFolderName(), otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
 
 		int x;
 		int z;
@@ -101,7 +101,7 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 	}
 	
 	// TODO: Could this cause problems for developer mode / flushcache, trees not updating during a session?
-	private void loadTrees(String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private void loadTrees(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		if(!this.treesLoaded)
 		{
@@ -121,8 +121,7 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 			for (int treeNumber = 0; treeNumber < this.treeNames.size(); treeNumber++)
 			{
 				treeName = this.treeNames.get(treeNumber);
-				tree = null;
-				minHeight = -1;
+                minHeight = -1;
 				maxHeight = -1;
 	
 				this.treeObjectMinChances[treeNumber] = minHeight;
@@ -132,13 +131,13 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 				{
 					params = treeName.replace(")", "").split("\\(");
 					treeName = params[0];
-					tree = customObjectManager.getGlobalObjects().getObjectByName(treeName, presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+					tree = customObjectManager.getGlobalObjects().getObjectByName(treeName, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 					this.treeObjects[treeNumber] = tree;				
 					if(tree == null)
 					{
-						if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+						if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 						{
-							logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Error: Could not find BO3 for Tree, BO3: " + this.treeNames.get(treeNumber));
+							OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Error: Could not find BO3 for Tree, BO3: " + this.treeNames.get(treeNumber));
 						}
 						continue;
 					}
@@ -152,15 +151,15 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 						maxHeight = Integer.parseInt(sMaxHeight);
 						this.treeObjectMinChances[treeNumber] = minHeight;
 						this.treeObjectMaxChances[treeNumber] = maxHeight;					
-					} catch(NumberFormatException ex) {  }
+					} catch(NumberFormatException ignored) {  }
 				} else {
-					tree = customObjectManager.getGlobalObjects().getObjectByName(treeName, presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);				
+					tree = customObjectManager.getGlobalObjects().getObjectByName(treeName, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);				
 					this.treeObjects[treeNumber] = tree;
 					if(tree == null)
 					{
-						if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+						if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 						{
-							logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Error: Could not find BO3 for Tree, BO3: " + this.treeNames.get(treeNumber));
+							OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Error: Could not find BO3 for Tree, BO3: " + this.treeNames.get(treeNumber));
 						}
 						continue;
 					}
@@ -172,14 +171,14 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 	@Override
 	public String toString()
 	{
-		String output = "Tree(" + this.frequency;
+		StringBuilder output = new StringBuilder("Tree(" + this.frequency);
 		for (int i = 0; i < this.treeNames.size(); i++)
 		{
-			output += "," + this.treeNames.get(i) + "," + this.treeChances.get(i);
+			output.append(",").append(this.treeNames.get(i)).append(",").append(this.treeChances.get(i));
 		}
 		if(this.useExtendedParams)
 		{
-			output += ",true," + this.maxSpawn;
+			output.append(",true,").append(this.maxSpawn);
 		}
 		return output + ")";
 	}	

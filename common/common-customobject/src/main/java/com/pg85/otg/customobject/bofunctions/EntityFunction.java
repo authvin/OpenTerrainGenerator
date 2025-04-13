@@ -4,8 +4,8 @@ import com.pg85.otg.customobject.config.CustomObjectConfigFile;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.IEntityFunction;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.nbt.NamedBinaryTag;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -66,7 +66,7 @@ public abstract class EntityFunction<T extends CustomObjectConfigFile> extends C
 	}
 	
 	@Override
-	public void load(List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	public void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
 	{
 		assureSize(5, args);
 		// Those limits are arbitrary, LocalWorld.setBlock will limit it
@@ -74,16 +74,16 @@ public abstract class EntityFunction<T extends CustomObjectConfigFile> extends C
 		this.x = readInt(args.get(0), -100, 100);
 		this.y = readInt(args.get(1), -1000, 1000);
 		this.z = readInt(args.get(2), -100, 100);
-		processEntityName(args.get(3), logger);
+		processEntityName(args.get(3));
 		this.groupSize = readInt(args.get(4), 0, Integer.MAX_VALUE);
 
 		if(args.size() > 5)
 		{
-			processNameTagOrFileName(args.get(5), logger);
+			processNameTagOrFileName(args.get(5));
 		}
 	}
 
-	public void processEntityName(String name, ILogger logger)
+	public void processEntityName(String name)
 	{
 		// When loading from file, it will contain either a mob name or a resource location.
 		// If a mob name, we get the mob's vanilla resource location
@@ -99,16 +99,16 @@ public abstract class EntityFunction<T extends CustomObjectConfigFile> extends C
 			this.resourceLocation = EntityNames.toInternalName(name);
 			if (!this.resourceLocation.contains(":"))
 			{
-				if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+				if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 				{
-					logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not find entity '" + name + "', are you sure you spelled it correctly?");
+					OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not find entity '" + name + "', are you sure you spelled it correctly?");
 				}
 			}
 		}
 		this.name = this.resourceLocation.split(":")[1];
 	}
 
-	public void processNameTagOrFileName(String s, ILogger logger)
+	public void processNameTagOrFileName(String s)
 	{
 		this.originalNameTagOrNBTFileName = s;
 
@@ -126,9 +126,9 @@ public abstract class EntityFunction<T extends CustomObjectConfigFile> extends C
 					FileInputStream stream = new FileInputStream(this.nameTagOrNBTFileName);
 					this.namedBinaryTag = NamedBinaryTag.readFrom(stream, true);
 				} catch (FileNotFoundException e) {
-					if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+					if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 					{
-						logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not find file: " + this.nameTagOrNBTFileName);
+						OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not find file: " + this.nameTagOrNBTFileName);
 					}
 					// Set it to null so we don't go looking for this later
 					this.nameTagOrNBTFileName = null;
@@ -145,34 +145,28 @@ public abstract class EntityFunction<T extends CustomObjectConfigFile> extends C
 	@Override
 	public String makeString()
 	{
-		return "Entity(" + x + ',' + y + ',' + z + ',' + this.resourceLocation + ',' + this.groupSize + (this.originalNameTagOrNBTFileName != null && this.originalNameTagOrNBTFileName.length() > 0 ? ',' + this.originalNameTagOrNBTFileName : "") + ')';
+		return "Entity(" + x + ',' + y + ',' + z + ',' + this.resourceLocation + ',' + this.groupSize + (this.originalNameTagOrNBTFileName != null && !this.originalNameTagOrNBTFileName.isEmpty() ? ',' + this.originalNameTagOrNBTFileName : "") + ')';
 	}
 
 	public String getMetaData()
 	{
-		if(this.nameTagOrNBTFileName != null && this.nameTagOrNBTFileName.length() > 0 && this.metaDataTag == null)
+		if(this.nameTagOrNBTFileName != null && !this.nameTagOrNBTFileName.isEmpty() && this.metaDataTag == null)
 		{
 			File metaDataFile = new File(this.nameTagOrNBTFileName);
 			StringBuilder stringbuilder = new StringBuilder();
 			if(metaDataFile.exists())
 			{
 				try {
-					BufferedReader reader = new BufferedReader(new FileReader(metaDataFile));
-					try {
-						String line = reader.readLine();
+                    try (BufferedReader reader = new BufferedReader(new FileReader(metaDataFile))) {
+                        String line = reader.readLine();
 
-						while (line != null) {
-							stringbuilder.append(line);
-							//sb.append(System.lineSeparator());
-							line = reader.readLine();
-						}
-					} finally {
-						reader.close();
-					}
-				} catch (FileNotFoundException e1) {
-					e1.printStackTrace();
-				}
-				catch (IOException e1) {
+                        while (line != null) {
+                            stringbuilder.append(line);
+                            //sb.append(System.lineSeparator());
+                            line = reader.readLine();
+                        }
+                    }
+				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
 			}

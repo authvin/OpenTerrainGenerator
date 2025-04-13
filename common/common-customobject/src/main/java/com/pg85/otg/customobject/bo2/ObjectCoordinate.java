@@ -6,10 +6,10 @@ import com.pg85.otg.util.materials.LocalMaterialData;
 
 class ObjectCoordinate
 {
-	int x;
-	int y;
-	int z;
-	private int hash;
+	final int x;
+	final int y;
+	final int z;
+	private final int hash;
 	LocalMaterialData material;
 	private int branchDirection;
 	private int branchOdds;
@@ -27,10 +27,9 @@ class ObjectCoordinate
 	@Override
 	public boolean equals(Object obj)
 	{
-		if (obj instanceof ObjectCoordinate)
+		if (obj instanceof ObjectCoordinate object)
 		{
-			ObjectCoordinate object = (ObjectCoordinate) obj;
-			return object.x == this.x && object.y == this.y && object.z == this.z;
+            return object.x == this.x && object.y == this.y && object.z == this.z;
 		}
 		return false;
 	}
@@ -90,13 +89,9 @@ class ObjectCoordinate
 
 			return newCoordinate;
 		}
-		catch (NumberFormatException e)
+		catch (NumberFormatException | InvalidConfigException e)
 		{
 			return null;
 		}
-		catch (InvalidConfigException e)
-		{
-			return null;
-		}
-	}
+    }
 }

@@ -3,7 +3,6 @@ package com.pg85.otg.customobject;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.CustomStructureCache;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
@@ -23,9 +22,9 @@ import java.util.Random;
  */
 class TreeObject implements CustomObject
 {
-	private TreeType type;
-	private int minHeight = Constants.WORLD_DEPTH;
-	private int maxHeight = Constants.WORLD_HEIGHT - 1;
+	private final TreeType type;
+	private final int minHeight = Constants.WORLD_DEPTH;
+	private final int maxHeight = Constants.WORLD_HEIGHT - 1;
 
 	TreeObject(TreeType type)
 	{
@@ -33,7 +32,7 @@ class TreeObject implements CustomObject
 	}
 
 	@Override
-	public boolean onEnable(String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public boolean onEnable(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		return true;
 	}

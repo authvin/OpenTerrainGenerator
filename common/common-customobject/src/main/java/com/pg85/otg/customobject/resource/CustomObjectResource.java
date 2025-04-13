@@ -5,9 +5,7 @@ import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.CustomStructureCache;
-import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
@@ -23,27 +21,23 @@ public class CustomObjectResource extends BiomeResourceBase implements ICustomOb
 	private final List<CustomObject> objects;
 	private final List<String> objectNames;
 
-	public CustomObjectResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
-	{
+	public CustomObjectResource(BiomeSettings biomeConfig, List<String> args) {
 		super(biomeConfig, args);
 		if (args.isEmpty() || (args.size() == 1 && args.get(0).trim().isEmpty()))
 		{
 			// Backwards compatibility
-			args = new ArrayList<String>();
+			args = new ArrayList<>();
 			args.add("UseWorld");
 		}
-		this.objects = new ArrayList<CustomObject>();
-		this.objectNames = new ArrayList<String>();
-		for (String arg : args)
-		{
-			this.objectNames.add(arg);
-		}
+		this.objects = new ArrayList<>();
+		this.objectNames = new ArrayList<>();
+        this.objectNames.addAll(args);
 	}
 	
 	@Override
 	public void spawnForChunkDecoration(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		for (CustomObject object : getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder, worldGenRegion.getLogger(), customObjectManager, materialReader, manager, modLoadedChecker))
+		for (CustomObject object : getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker))
 		{
 			if(object != null) // if null then BO2/BO3 file could not be found
 			{
@@ -52,16 +46,15 @@ public class CustomObjectResource extends BiomeResourceBase implements ICustomOb
 		}
 	}	
 	
-	private List<CustomObject> getObjects(String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private List<CustomObject> getObjects(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		if(this.objects.isEmpty() && !this.objectNames.isEmpty())
 		{
 			CustomObject object;
-			for (int i = 0; i < this.objectNames.size(); i ++)
-			{
-				object = customObjectManager.getGlobalObjects().getObjectByName(this.objectNames.get(i), presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
-				this.objects.add(object);				  	
-			}
+            for (String objectName : this.objectNames) {
+                object = customObjectManager.getGlobalObjects().getObjectByName(objectName, presetFolderName, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
+                this.objects.add(object);
+            }
 		}
 		return this.objects;
 	}

@@ -1,6 +1,5 @@
 package com.pg85.otg.customobject.bo2;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +24,6 @@ import com.pg85.otg.customobject.util.BoundingBox;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ICustomObjectManager;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
@@ -41,7 +39,7 @@ import com.pg85.otg.util.materials.MaterialSet;
  */
 public class BO2 extends CustomObjectConfigFile implements CustomObject
 {	
-	private ObjectCoordinate[][] data = new ObjectCoordinate[4][];
+	private final ObjectCoordinate[][] data = new ObjectCoordinate[4][];
 	private boolean isEnabled = false;
 	public MaterialSet spawnOnBlockType;
 	private MaterialSet collisionBlockType;
@@ -90,7 +88,7 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 	public boolean spawnFromSapling(IWorldGenRegion worldGenRegion, Random random, Rotation rotation, int x, int y, int z)
 	{
 		ObjectCoordinate[] data = this.data[rotation.getRotationId()];
-		ArrayList<ObjectCoordinate> blocksToSpawn = new ArrayList<ObjectCoordinate>();
+		ArrayList<ObjectCoordinate> blocksToSpawn = new ArrayList<>();
 
 		for (ObjectCoordinate point : data)
 		{
@@ -134,30 +132,29 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 		return true;
 	}
 
-	public BO3Config getConvertedConfig(String presetFolderName, Path otgRootFolder, ILogger logger,
+	public BO3Config getConvertedConfig(String presetFolderName, Path otgRootFolder, 
 										CustomObjectManager customObjectManager, IMaterialReader materialReader,
 										CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException
 	{
 		BO3Config newConfig = new BO3Config(new FileSettingsReaderBO4(
 			this.getName(),
-			ObjectType.BO3.getObjectFilePathFromName(this.getName(), this.getFile().getParentFile().toPath()).toFile(),
-			logger),
-			presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+			ObjectType.BO3.getObjectFilePathFromName(this.getName(), this.getFile().getParentFile().toPath()).toFile()
+			),
+			presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 
 		// Convert the blocks
 		BoundingBox box = BoundingBox.newEmptyBox();
-		newConfig.extractBlocks(Arrays.asList(getBlockFunctions(presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker)));
+		newConfig.extractBlocks(Arrays.asList(getBlockFunctions(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)));
 		newConfig.addBlockCheckFromBO2(this.spawnOnBlockType);
-		for (BlockFunction<?> res : newConfig.getBlockFunctions(presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker))
+		for (BlockFunction<?> res : newConfig.getBlockFunctions(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
 		{
-			if (res instanceof BO3BlockFunction)
+			if (res instanceof BO3BlockFunction block)
 			{
-				BO3BlockFunction block = (BO3BlockFunction) res;
-				box.expandToFit(block.x, block.y, block.z);
+                box.expandToFit(block.x, block.y, block.z);
 			}
 		}
 		newConfig.setBoundingBox(box);
-		newConfig.rotateBlocksAndChecks(presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+		newConfig.rotateBlocksAndChecks(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 
 		// Convert settings
 		newConfig.getSettingsFromBO2(this);
@@ -166,7 +163,7 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 	}
 
 	@Override
-	public BlockFunction<?>[] getBlockFunctions(String presetFolderName, Path otgRootFolder, ILogger logger, ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public BlockFunction<?>[] getBlockFunctions(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		ObjectCoordinate[] data = this.data[0];
 		BlockFunction<?>[] blockFunctions = new BO3BlockFunction[data.length];
@@ -299,7 +296,7 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 			}
 		}		
 
-		HashSet<ChunkCoordinate> loadedChunks = new HashSet<ChunkCoordinate>();
+		HashSet<ChunkCoordinate> loadedChunks = new HashSet<>();
 		ChunkCoordinate chunkCoord;
 		ObjectCoordinate[] objData = this.data[rotation.getRotationId()];
 		for (ObjectCoordinate point : objData)
@@ -469,32 +466,31 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 	}
 
 	@Override
-	protected void writeConfigSettings(SettingsWriterBO4 writer, ILogger logger, IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
-	{
+	protected void writeConfigSettings(SettingsWriterBO4 writer,  IMaterialReader materialReader, CustomObjectResourcesManager manager) {
 		// It doesn't write.
 	}
 
 	@Override
-	protected void readConfigSettings(String presetFolderName, Path otgRootFolder, ILogger logger, ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	protected void readConfigSettings(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		this.spawnOnBlockType = readSettings(BO2Settings.SPAWN_ON_BLOCK_TYPE, logger, materialReader, manager);
-		this.collisionBlockType = readSettings(BO2Settings.COLLISION_BLOCK_TYPE, logger, materialReader, manager);
-		this.spawnSunlight = readSettings(BO2Settings.SPAWN_SUNLIGHT, logger, materialReader, manager);
-		this.spawnDarkness = readSettings(BO2Settings.SPAWN_DARKNESS, logger, materialReader, manager);
-		this.spawnWater = readSettings(BO2Settings.SPAWN_WATER, logger, materialReader, manager);
-		this.spawnLava = readSettings(BO2Settings.SPAWN_LAVA, logger, materialReader, manager);
-		this.spawnAboveGround = readSettings(BO2Settings.SPAWN_ABOVE_GROUND, logger, materialReader, manager);
-		this.spawnUnderGround = readSettings(BO2Settings.SPAWN_UNDER_GROUND, logger, materialReader, manager);
-		this.randomRotation = readSettings(BO2Settings.RANDON_ROTATION, logger, materialReader, manager);
-		this.dig = readSettings(BO2Settings.DIG, logger, materialReader, manager);
-		this.tree = readSettings(BO2Settings.TREE, logger, materialReader, manager);
-		this.branch = readSettings(BO2Settings.BRANCH, logger, materialReader, manager);
-		this.needsFoundation = readSettings(BO2Settings.NEEDS_FOUNDATION, logger, materialReader, manager);
-		this.doReplaceBlocks = readSettings(BO2Settings.DO_REPLACE_BLOCKS, logger, materialReader, manager);
-		this.rarity = readSettings(BO2Settings.RARITY, logger, materialReader, manager);
-		this.collisionPercentage = readSettings(BO2Settings.COLLISION_PERCENTAGE, logger, materialReader, manager);
-		this.spawnElevationMin = readSettings(BO2Settings.SPAWN_ELEVATION_MIN, logger, materialReader, manager);
-		this.spawnElevationMax = readSettings(BO2Settings.SPAWN_ELEVATION_MAX, logger, materialReader, manager);
+		this.spawnOnBlockType = readSettings(BO2Settings.SPAWN_ON_BLOCK_TYPE,  materialReader, manager);
+		this.collisionBlockType = readSettings(BO2Settings.COLLISION_BLOCK_TYPE,  materialReader, manager);
+		this.spawnSunlight = readSettings(BO2Settings.SPAWN_SUNLIGHT,  materialReader, manager);
+		this.spawnDarkness = readSettings(BO2Settings.SPAWN_DARKNESS,  materialReader, manager);
+		this.spawnWater = readSettings(BO2Settings.SPAWN_WATER,  materialReader, manager);
+		this.spawnLava = readSettings(BO2Settings.SPAWN_LAVA,  materialReader, manager);
+		this.spawnAboveGround = readSettings(BO2Settings.SPAWN_ABOVE_GROUND,  materialReader, manager);
+		this.spawnUnderGround = readSettings(BO2Settings.SPAWN_UNDER_GROUND,  materialReader, manager);
+		this.randomRotation = readSettings(BO2Settings.RANDON_ROTATION,  materialReader, manager);
+		this.dig = readSettings(BO2Settings.DIG,  materialReader, manager);
+		this.tree = readSettings(BO2Settings.TREE,  materialReader, manager);
+		this.branch = readSettings(BO2Settings.BRANCH,  materialReader, manager);
+		this.needsFoundation = readSettings(BO2Settings.NEEDS_FOUNDATION,  materialReader, manager);
+		this.doReplaceBlocks = readSettings(BO2Settings.DO_REPLACE_BLOCKS,  materialReader, manager);
+		this.rarity = readSettings(BO2Settings.RARITY,  materialReader, manager);
+		this.collisionPercentage = readSettings(BO2Settings.COLLISION_PERCENTAGE,  materialReader, manager);
+		this.spawnElevationMin = readSettings(BO2Settings.SPAWN_ELEVATION_MIN,  materialReader, manager);
+		this.spawnElevationMax = readSettings(BO2Settings.SPAWN_ELEVATION_MAX,  materialReader, manager);
 		this.readCoordinates(materialReader);
 	}
 
@@ -506,7 +502,7 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 
 	private void readCoordinates(IMaterialReader materialReader)
 	{
-		ArrayList<ObjectCoordinate> coordinates = new ArrayList<ObjectCoordinate>();
+		ArrayList<ObjectCoordinate> coordinates = new ArrayList<>();
 		for (Entry<String, String> line : this.reader.getRawSettings())
 		{
 			ObjectCoordinate buffer = ObjectCoordinate.getCoordinateFromString(line.getKey(), line.getValue(), materialReader);
@@ -546,19 +542,19 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 	}
 	
 	@Override
-	public boolean onEnable(String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public boolean onEnable(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		if(!this.isEnabled)
 		{
 			this.isEnabled = true;
-			enable(presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+			enable(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 		}
 		return true;
 	}
 
-	private void enable(String presetFolderName, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private void enable(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		readConfigSettings(presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+		readConfigSettings(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 		correctSettings();
 	}
 

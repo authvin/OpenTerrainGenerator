@@ -9,11 +9,11 @@ import com.pg85.otg.customobject.bo4.BO4;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.Branch;
 import com.pg85.otg.customobject.util.BO3Enums.SpawnHeightEnum;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.ChunkCoordinate;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -22,23 +22,23 @@ class BranchDataItem
 {
 	private static int BranchDataItemCounter = -1;
 	
-	BO4CustomStructureCoordinate branch;
-	ChunkCoordinate chunkCoordinate;
-	BranchDataItem parent;
+	final BO4CustomStructureCoordinate branch;
+	final ChunkCoordinate chunkCoordinate;
+	final BranchDataItem parent;
 	boolean doneSpawning = false;
 	boolean spawnDelayed = false;
 	boolean cannotSpawn = false;
 
 	boolean wasDeleted = false;
 	boolean isBeingRolledBack = false;
-	int branchNumber = -1;
-	int currentDepth = 0;
-	int maxDepth = 0;
+	int branchNumber;
+	int currentDepth;
+	int maxDepth;
 	
-	private boolean minimumSize = false;
-	private Random random;
-	private Stack<BranchDataItem> children = new Stack<BranchDataItem>();
-	private String startBO3Name;
+	private boolean minimumSize;
+	private final Random random;
+	private final Stack<BranchDataItem> children = new Stack<>();
+	private final String startBO3Name;
 
 	BranchDataItem(Random random, BranchDataItem parent, BO4CustomStructureCoordinate branch, String startBO3Name, int currentDepth, int maxDepth, boolean minimumSize)
 	{
@@ -55,7 +55,7 @@ class BranchDataItem
 		branchNumber = BranchDataItem.BranchDataItemCounter;
 	}	
 	
-	Stack<BranchDataItem> getChildren(boolean dontSpawn, IWorldGenRegion worldGenRegion, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	Stack<BranchDataItem> getChildren(boolean dontSpawn, IWorldGenRegion worldGenRegion, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		// We may target unloaded/ungenerated chunks, so we'll use shadowgen when doing height/material checks.
 		
@@ -64,16 +64,16 @@ class BranchDataItem
 			throw new RuntimeException();
 		}
 
-		if(!dontSpawn && this.children.size() == 0)
+		if(!dontSpawn && this.children.isEmpty())
 		{
-			Branch[] branches = ((BO4)this.branch.getStructuredObject(otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker)).getBranches();
+			Branch[] branches = ((BO4)this.branch.getStructuredObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getBranches();
 			for (Branch branch1 : branches)
 			{
-				BO4CustomStructureCoordinate childCoordObject = (BO4CustomStructureCoordinate)branch1.toCustomObjectCoordinate(worldGenRegion.getPresetFolderName(), this.random, this.branch.getRotation(), this.branch.getX(), this.branch.getY(), this.branch.getZ(), this.startBO3Name != null ? this.startBO3Name : this.branch.bo3Name, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+				BO4CustomStructureCoordinate childCoordObject = (BO4CustomStructureCoordinate)branch1.toCustomObjectCoordinate(worldGenRegion.getPresetFolderName(), this.random, this.branch.getRotation(), this.branch.getX(), this.branch.getY(), this.branch.getZ(), this.startBO3Name != null ? this.startBO3Name : this.branch.bo3Name, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 				// Can be null if spawn roll fails TODO: dont roll for spawn in branch.toCustomObjectCoordinate?
 				if(childCoordObject != null)
 				{
-					BO4 childBO3 = ((BO4)childCoordObject.getObject(otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker));
+					BO4 childBO3 = ((BO4)childCoordObject.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker));
 					if(childBO3 == null)
 					{
 						continue;
@@ -86,14 +86,14 @@ class BranchDataItem
 					// this is enforced by making sure that canOverride optional branches cannot be in a branch group with other branches.
 					if(
 						childCoordObject.branchGroup != null &&
-						childCoordObject.branchGroup.trim().length() > 0 &&
+                                !childCoordObject.branchGroup.trim().isEmpty() &&
 						childBO3.getConfig().canOverride &&
 						!childCoordObject.isRequiredBranch
 					)
 					{
-						if(logger.getLogCategoryEnabled(LogCategory.STRUCTURE_PLOTTING))
+						if(OTGLog.getLogCategoryEnabled(LogCategory.STRUCTURE_PLOTTING))
 						{
-							logger.log(LogLevel.ERROR, LogCategory.STRUCTURE_PLOTTING, "canOverride optional branches cannot be in a branch group, ignoring branch: " + childBO3.getName() + " in BO3: " + this.branch.bo3Name);
+							OTGLog.log(LogLevel.ERROR, LogCategory.STRUCTURE_PLOTTING, "canOverride optional branches cannot be in a branch group, ignoring branch: " + childBO3.getName() + " in BO3: " + this.branch.bo3Name);
 						}
 						continue;
 					}

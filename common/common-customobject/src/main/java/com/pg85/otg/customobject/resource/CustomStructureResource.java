@@ -10,11 +10,9 @@ import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ICustomObjectManager;
 import com.pg85.otg.interfaces.ICustomObjectResourcesManager;
 import com.pg85.otg.interfaces.ICustomStructureGen;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IStructuredCustomObject;
-import lombok.Getter;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -29,8 +27,8 @@ public class CustomStructureResource extends BiomeResourceBase implements ICusto
 	public CustomStructureResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
 		super(biomeConfig, args);
-		this.objectNames = new ArrayList<String>();
-		this.objectChances = new ArrayList<Double>();
+		this.objectNames = new ArrayList<>();
+		this.objectChances = new ArrayList<>();
 		for (int i = 0; i < args.size() - 1; i += 2)
 		{
 			this.objectNames.add(args.get(i));
@@ -68,19 +66,18 @@ public class CustomStructureResource extends BiomeResourceBase implements ICusto
 	}
 	
 	@Override
-	public List<IStructuredCustomObject> getObjects(String presetFolderName, Path otgRootFolder, ILogger logger, ICustomObjectManager customObjectManager, IMaterialReader materialReader, ICustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public List<IStructuredCustomObject> getObjects(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, ICustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		List<IStructuredCustomObject> objects = new ArrayList<>();
 		if(!this.objectNames.isEmpty())
 		{
 			CustomObject object;
-			for (int i = 0; i < this.objectNames.size(); i ++)
-			{
-				// TODO: Refactor this so we don't have to cast CustomObjectManager/CustomObjectResourcesManager :(
-				// TODO: Remove any dependency on common-customobjects, interfaces only?
-				object = ((CustomObjectManager)customObjectManager).getGlobalObjects().getObjectByName(objectNames.get(i), presetFolderName, otgRootFolder, logger, (CustomObjectManager)customObjectManager, materialReader, (CustomObjectResourcesManager)manager, modLoadedChecker);
-				objects.add((StructuredCustomObject) object);
-			}
+            for (String objectName : this.objectNames) {
+                // TODO: Refactor this so we don't have to cast CustomObjectManager/CustomObjectResourcesManager :(
+                // TODO: Remove any dependency on common-customobjects, interfaces only?
+                object = ((CustomObjectManager) customObjectManager).getGlobalObjects().getObjectByName(objectName, presetFolderName, otgRootFolder, (CustomObjectManager) customObjectManager, materialReader, (CustomObjectResourcesManager) manager, modLoadedChecker);
+                objects.add((StructuredCustomObject) object);
+            }
 		}
 		return objects;
 	}	
@@ -92,10 +89,10 @@ public class CustomStructureResource extends BiomeResourceBase implements ICusto
 		{
 			return "CustomStructure()";
 		}
-		String output = "CustomStructure(" + objectNames.get(0) + "," + objectChances.get(0);
+		StringBuilder output = new StringBuilder("CustomStructure(" + objectNames.get(0) + "," + objectChances.get(0));
 		for (int i = 1; i < objectNames.size(); i++)
 		{
-			output += "," + objectNames.get(i) + "," + objectChances.get(i);
+			output.append(",").append(objectNames.get(i)).append(",").append(objectChances.get(i));
 		}
 		return output + ")";
 	}

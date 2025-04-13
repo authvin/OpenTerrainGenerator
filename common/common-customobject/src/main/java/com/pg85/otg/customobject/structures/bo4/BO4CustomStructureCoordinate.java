@@ -1,5 +1,6 @@
 package com.pg85.otg.customobject.structures.bo4;
 
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -11,7 +12,6 @@ import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.CustomStructureCoordinate;
 import com.pg85.otg.customobject.structures.StructuredCustomObject;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IStructuredCustomObject;
@@ -22,15 +22,15 @@ import com.pg85.otg.interfaces.IStructuredCustomObject;
 public class BO4CustomStructureCoordinate extends CustomStructureCoordinate
 {
 	public boolean isSpawned;
-	int branchDepth;
-	boolean isRequiredBranch;
-	boolean isWeightedBranch;
-	String branchGroup;
+	final int branchDepth;
+	final boolean isRequiredBranch;
+	final boolean isWeightedBranch;
+	final String branchGroup;
 		
 	public BO4CustomStructureCoordinate(String presetFolderName, IStructuredCustomObject object, String customObjectName, Rotation rotation, int x, short y, int z, int branchDepth, boolean isRequiredBranch, boolean isWeightedBranch, String branchGroup)
 	{
 		this.presetFolderName = presetFolderName;
-		this.bo3Name = object != null ? object.getName() : customObjectName != null && customObjectName.length() > 0 ? customObjectName : null;
+		this.bo3Name = object != null ? object.getName() : customObjectName != null && !customObjectName.isEmpty() ? customObjectName : null;
 		this.object = object;
 		this.rotation = rotation != null ? rotation : Rotation.NORTH;
 		this.x = x;
@@ -47,18 +47,18 @@ public class BO4CustomStructureCoordinate extends CustomStructureCoordinate
 	 *
 	 * @return The object.
 	 */
-	public IStructuredCustomObject getObject(Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public IStructuredCustomObject getObject(Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		if(this.object == null)
 		{
-			CustomObject object = customObjectManager.getGlobalObjects().getObjectByName(this.bo3Name, this.presetFolderName, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+			CustomObject object = customObjectManager.getGlobalObjects().getObjectByName(this.bo3Name, this.presetFolderName, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
 
 			if(object == null || !(object instanceof StructuredCustomObject))
 			{
 				object = null;
-				if(logger.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
+				if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 				{
-					logger.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not find BO3/BO4 " + this.bo3Name + " in GlobalObjects or WorldObjects directory.");
+					OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not find BO3/BO4 " + this.bo3Name + " in GlobalObjects or WorldObjects directory.");
 				}
 			}
 
@@ -77,9 +77,9 @@ public class BO4CustomStructureCoordinate extends CustomStructureCoordinate
 	 *
 	 * @return The casted object.
 	*/
-	StructuredCustomObject getStructuredObject(Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	StructuredCustomObject getStructuredObject(Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		return (StructuredCustomObject)getObject(otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+		return (StructuredCustomObject)getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 	}
 		
 	@Override
@@ -95,12 +95,11 @@ public class BO4CustomStructureCoordinate extends CustomStructureCoordinate
 		{
 			return false;
 		}
-		if (!(otherObject instanceof BO4CustomStructureCoordinate))
+		if (!(otherObject instanceof BO4CustomStructureCoordinate otherCoord))
 		{
 			return false;
 		}
-		BO4CustomStructureCoordinate otherCoord = (BO4CustomStructureCoordinate) otherObject;
-		if (otherCoord.x != x)
+        if (otherCoord.x != x)
 		{
 			return false;
 		}
@@ -134,8 +133,8 @@ public class BO4CustomStructureCoordinate extends CustomStructureCoordinate
 		int rotatedX = x;
 		int rotatedZ = z;
 
-		int newX = x;
-		int newZ = z;
+		int newX;
+		int newZ;
 
 		for(int i = 0; i < rotations; i++)
 		{
@@ -156,8 +155,8 @@ public class BO4CustomStructureCoordinate extends CustomStructureCoordinate
 		int rotatedX = x;
 		int rotatedZ = z;
 
-		int newX = x;
-		int newZ = z;
+		int newX;
+		int newZ;
 		for(int i = 0; i < rotations; i++)
 		{
 			newX = rotatedZ;
@@ -180,8 +179,8 @@ public class BO4CustomStructureCoordinate extends CustomStructureCoordinate
 		int rotatedX = x;
 		int rotatedZ = z;
 
-		int newX = x;
-		int newZ = z;
+		int newX;
+		int newZ;
 		for(int i = 0; i < rotations; i++)
 		{
 			// TODO: Bo3's appear to be exported with the center block (0,0) in the top right quadrant of an x,z grid (European style).
@@ -222,7 +221,7 @@ public class BO4CustomStructureCoordinate extends CustomStructureCoordinate
 		// Assuming initial rotation is always north
 
 		int newX = 0;
-		short newY = 0;
+		short newY;
 		int newZ = 0;
 		int rotations = 0;
 

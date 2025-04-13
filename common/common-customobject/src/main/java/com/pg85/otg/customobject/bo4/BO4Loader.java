@@ -10,7 +10,6 @@ import com.pg85.otg.customobject.bo4.bo4function.BO4EntityFunction;
 import com.pg85.otg.customobject.bo4.bo4function.BO4RandomBlockFunction;
 import com.pg85.otg.customobject.bo4.bo4function.BO4WeightedBranchFunction;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
-import com.pg85.otg.interfaces.ILogger;
 
 public class BO4Loader implements CustomObjectLoader
 {
@@ -30,7 +29,7 @@ public class BO4Loader implements CustomObjectLoader
 	}
 
 	@Override
-	public CustomObject loadFromFile(String objectName, File file, ILogger logger)
+	public CustomObject loadFromFile(String objectName, File file)
 	{
 		return new BO4(objectName, file);
 	}

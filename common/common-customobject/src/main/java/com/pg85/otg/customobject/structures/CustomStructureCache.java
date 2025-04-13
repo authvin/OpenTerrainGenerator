@@ -13,13 +13,13 @@ import com.pg85.otg.interfaces.IChunkDecorator;
 import com.pg85.otg.interfaces.ICustomObjectManager;
 import com.pg85.otg.interfaces.ICustomObjectResourcesManager;
 import com.pg85.otg.interfaces.ICustomStructureGen;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IStructuredCustomObject;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.FifoMap;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -43,12 +43,12 @@ public class CustomStructureCache
 	private final long worldSeed;
 	
 	// BO3
-	private FifoMap<ChunkCoordinate, BO3CustomStructure> bo3StructureCache;
+	private final FifoMap<ChunkCoordinate, BO3CustomStructure> bo3StructureCache;
 	
 	// BO4
 	
 	// Contains bo4StructureCache of plotted but not yet decorated branches
-	private CustomStructurePlotter plotter; 
+	private final CustomStructurePlotter plotter;
 
 	// Common
 
@@ -60,16 +60,16 @@ public class CustomStructureCache
 	// WorldInfoChunks is used as little as possible, due to its size and slowness.
 	private Map<ChunkCoordinate, StructureDataRegion> worldInfoChunks;
 	
-	public CustomStructureCache(String presetFolderName, Path worldSaveDir, long worldSeed, boolean isBO4Enabled, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public CustomStructureCache(String presetFolderName, Path worldSaveDir, long worldSeed, boolean isBO4Enabled, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		this.worldInfoChunks = new HashMap<ChunkCoordinate, StructureDataRegion>();
+		this.worldInfoChunks = new HashMap<>();
 		this.plotter = new CustomStructurePlotter();
-		this.bo3StructureCache = new FifoMap<ChunkCoordinate, BO3CustomStructure>(400);
+		this.bo3StructureCache = new FifoMap<>(400);
 		this.worldSaveDir = worldSaveDir;
 		this.isBO4Enabled = isBO4Enabled;
 		this.presetFolderName = presetFolderName;
 		this.worldSeed = worldSeed;
-		loadStructureCache(otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+		loadStructureCache(otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
 	}
 	
 	// WorldInfoChunks
@@ -188,11 +188,11 @@ public class CustomStructureCache
 		{
 			return null;
 		}
-		for (int objectNumber = 0; objectNumber < structureGen.getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder, worldGenRegion.getLogger(), customObjectManager, materialReader, manager, modLoadedChecker).size(); objectNumber++)
+		for (int objectNumber = 0; objectNumber < structureGen.getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker).size(); objectNumber++)
 		{
 			if (random.nextDouble() * 100.0 < structureGen.getObjectChance(objectNumber))
 			{
-				IStructuredCustomObject object = structureGen.getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder, worldGenRegion.getLogger(), customObjectManager, materialReader, manager, modLoadedChecker).get(objectNumber);
+				IStructuredCustomObject object = structureGen.getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker).get(objectNumber);
 				if(object != null && object instanceof BO3)
 				{
 					return (BO3CustomStructureCoordinate)((BO3)object).makeCustomStructureCoordinate(worldGenRegion.getPresetFolderName(), worldGenRegion.getPresetConfig().getResourceSettings().isUseOldBO3StructureRarity(), random, chunkX, chunkZ);
@@ -240,28 +240,28 @@ public class CustomStructureCache
 	}
 	
 	// Only used by ChunkDecorator during decoration
-	public void plotBo4Structures(IWorldGenRegion worldGenRegion, Random rand, ChunkCoordinate chunkCoord, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public void plotBo4Structures(IWorldGenRegion worldGenRegion, Random rand, ChunkCoordinate chunkCoord, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		plotter.plotStructures(this, worldGenRegion, rand, chunkCoord, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+		plotter.plotStructures(this, worldGenRegion, rand, chunkCoord, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
 	}
 
 	// Only used by ChunkDecorator during decoration
-	public void spawnBo4Chunk(IWorldGenRegion worldGenRegion, ChunkCoordinate chunkCoord, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public void spawnBo4Chunk(IWorldGenRegion worldGenRegion, ChunkCoordinate chunkCoord, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		this.plotter.spawnBO4Chunk(chunkCoord, this, worldGenRegion, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+		this.plotter.spawnBO4Chunk(chunkCoord, this, worldGenRegion, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
 	}
 	
 	// Only used by /spawn command	
-	public ChunkCoordinate plotBo4Structure(IWorldGenRegion worldGenRegion, BO4 structure, ArrayList<String> biomes, ChunkCoordinate chunkCoord, Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker, boolean force)
+	public ChunkCoordinate plotBo4Structure(IWorldGenRegion worldGenRegion, BO4 structure, ArrayList<String> biomes, ChunkCoordinate chunkCoord, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker, boolean force)
 	{
-		return plotter.plotStructures(structure, biomes, this, worldGenRegion, new Random(), chunkCoord, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker, force);
+		return plotter.plotStructures(structure, biomes, this, worldGenRegion, new Random(), chunkCoord, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker, force);
 	}
 
 	// Persistence - WorldInfoChunks for BO3+BO4, plotter structurecache for BO4
 
-	public void saveToDisk(ILogger logger, IChunkDecorator chunkPopulator)
+	public void saveToDisk(IChunkDecorator chunkPopulator)
 	{
-		logger.log(LogLevel.INFO, LogCategory.MAIN, "Saving structure and pregenerator data.");
+		OTGLog.log(LogLevel.INFO, LogCategory.MAIN, "Saving structure and pregenerator data.");
 		boolean firstLog = false;
 		long starTime = System.currentTimeMillis();
 		while(true)
@@ -275,50 +275,45 @@ public class CustomStructureCache
 					break;
 				}
 			}
-			if(firstLog)
-			{
-				logger.log(LogLevel.WARN, LogCategory.MAIN, "SaveToDisk waiting on Populate. Although other mods could be causing this and there may not be any problem, this can potentially cause an endless loop!");
-				firstLog = false;
-			}
-			int interval = 300;
+            int interval = 300;
 			if(System.currentTimeMillis() - starTime > (interval * 1000))
 			{
-				logger.log(LogLevel.FATAL, LogCategory.MAIN, "SaveToDisk waited on decorate longer than " + interval + " seconds, something went wrong!");
+				OTGLog.log(LogLevel.FATAL, LogCategory.MAIN, "SaveToDisk waited on decorate longer than " + interval + " seconds, something went wrong!");
 				throw new RuntimeException("SaveToDisk waited on decorate longer than " + interval + " seconds, something went wrong!");
 			}
 		}
 
-		saveStructureCache(logger);
+		saveStructureCache();
 
 		synchronized(chunkPopulator.getLockingObject())
 		{
 			chunkPopulator.endSave();
 		}
-		logger.log(LogLevel.INFO, LogCategory.MAIN, "Structure and pregenerator data saved.");
+		OTGLog.log(LogLevel.INFO, LogCategory.MAIN, "Structure and pregenerator data saved.");
 	}
 
-	private void saveStructureCache(ILogger logger)
+	private void saveStructureCache()
 	{
-		CustomStructureFileManager.saveStructureData(this.worldInfoChunks, this.presetFolderName, this.worldSaveDir, logger);
+		CustomStructureFileManager.saveStructureData(this.worldInfoChunks, this.presetFolderName, this.worldSaveDir);
 		
 		if(this.isBO4Enabled)
 		{
-			plotter.saveStructureCache(this.worldSaveDir, this.presetFolderName, this.isBO4Enabled, logger);
+			plotter.saveStructureCache(this.worldSaveDir, this.presetFolderName, true);
 		}
 	}
 
-	private void loadStructureCache(Path otgRootFolder, ILogger logger, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private void loadStructureCache(Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{		
-		logger.log(LogLevel.INFO, LogCategory.MAIN, "Loading structure data");
+		OTGLog.log(LogLevel.INFO, LogCategory.MAIN, "Loading structure data");
 
-		this.worldInfoChunks = new HashMap<ChunkCoordinate, StructureDataRegion>();
+		this.worldInfoChunks = new HashMap<>();
 		
-		Map<CustomStructure, ArrayList<ChunkCoordinate>> loadedStructures = CustomStructureFileManager.loadStructureData(this.presetFolderName, this.worldSaveDir, this.worldSeed, this.isBO4Enabled, otgRootFolder, logger, customObjectManager, materialReader, manager, modLoadedChecker);
+		Map<CustomStructure, ArrayList<ChunkCoordinate>> loadedStructures = CustomStructureFileManager.loadStructureData(this.presetFolderName, this.worldSaveDir, this.worldSeed, this.isBO4Enabled, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
 		if(loadedStructures != null)
 		{
 			if(this.isBO4Enabled)
 			{
-				this.plotter.loadStructureCache(this.worldSaveDir, this.presetFolderName, this.isBO4Enabled, loadedStructures, logger);
+				this.plotter.loadStructureCache(this.worldSaveDir, this.presetFolderName, true, loadedStructures);
 			}
 
 			for(Entry<CustomStructure, ArrayList<ChunkCoordinate>> loadedStructure : loadedStructures.entrySet())
@@ -335,6 +330,6 @@ public class CustomStructureCache
 			}
 		}
 
-		logger.log(LogLevel.INFO, LogCategory.MAIN, "Loading done");
+		OTGLog.log(LogLevel.INFO, LogCategory.MAIN, "Loading done");
 	}
 }

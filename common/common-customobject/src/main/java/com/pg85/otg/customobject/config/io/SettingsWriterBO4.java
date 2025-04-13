@@ -3,7 +3,6 @@ package com.pg85.otg.customobject.config.io;
 import com.pg85.otg.config.settingType.Setting;
 import com.pg85.otg.constants.settings.ConfigMode;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
-import com.pg85.otg.interfaces.ILogger;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +30,7 @@ public interface SettingsWriterBO4
 	 * Closes the settings writer.
 	 * @throws IOException If closing fails.
 	 */
-	void close(ILogger logger) throws IOException;
+	void close() throws IOException;
 
 	/**
 	 * Writes a comment to the configuration file.

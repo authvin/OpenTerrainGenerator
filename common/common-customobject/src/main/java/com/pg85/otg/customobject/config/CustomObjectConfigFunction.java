@@ -1,8 +1,8 @@
 package com.pg85.otg.customobject.config;
 
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -45,9 +45,9 @@ public abstract class CustomObjectConfigFunction<T>
 	 * @param args
 	 * @return
 	 */
-	public static final <T> CustomObjectConfigFunction<T> create(T holder, Class<? extends CustomObjectConfigFunction<T>> clazz, ILogger logger, IMaterialReader materialReader, Object... args)
+	public static final <T> CustomObjectConfigFunction<T> create(T holder, Class<? extends CustomObjectConfigFunction<T>> clazz,  IMaterialReader materialReader, Object... args)
 	{
-		List<String> stringArgs = new ArrayList<String>(args.length);
+		List<String> stringArgs = new ArrayList<>(args.length);
 		for (Object arg : args)
 		{
 			stringArgs.add("" + arg);
@@ -57,19 +57,16 @@ public abstract class CustomObjectConfigFunction<T>
 		try
 		{
 			configFunction = clazz.newInstance();
-		} catch (InstantiationException e)
-		{
-			return null;
-		} catch (IllegalAccessException e)
+		} catch (InstantiationException | IllegalAccessException e)
 		{
 			return null;
 		}
-		configFunction.setHolder(holder);
+        configFunction.setHolder(holder);
 		try
 		{
-			configFunction.load(stringArgs, logger, materialReader);
+			configFunction.load(stringArgs,  materialReader);
 		} catch (InvalidConfigException e) {
-			logger.log(
+			OTGLog.log(
 				LogLevel.ERROR,
 				LogCategory.CUSTOM_OBJECTS,
 				String.format(
@@ -139,10 +136,10 @@ public abstract class CustomObjectConfigFunction<T>
 	 * @param args	Arguments to parse.
 	 * @throws InvalidConfigException If the arguments are invalid.
 	 */
-	final void init(T holder, List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException
+	final void init(T holder, List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
 	{
 		this.holder = holder;
-		load(args, logger, materialReader);
+		load(args,  materialReader);
 	}
 
 	/**
@@ -187,7 +184,7 @@ public abstract class CustomObjectConfigFunction<T>
 	 * @param args The arguments to parse.
 	 * @throws InvalidConfigException If the syntax is invalid.
 	 */
-	protected abstract void load(List<String> args, ILogger logger, IMaterialReader materialReader) throws InvalidConfigException;
+	protected abstract void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException;
 	
 	/**
 	 * Formats the material list as a string list.
@@ -299,7 +296,7 @@ public abstract class CustomObjectConfigFunction<T>
 		{
 			throw new UnsupportedOperationException("Use the invalidate method");
 		}
-		if (valid == true && !isValid())
+		if (!isValid())
 		{
 			throw new UnsupportedOperationException("Revalidating objects is no longer supported");
 		}
@@ -311,7 +308,7 @@ public abstract class CustomObjectConfigFunction<T>
 		if (!valid)
 		{
 			// Show error message
-			return "## INVALID " + inputName.toUpperCase() + " - " + error + " ##" + System.getProperty("line.separator") + inputName + "("
+			return "## INVALID " + inputName.toUpperCase() + " - " + error + " ##" + System.lineSeparator() + inputName + "("
 					+ StringHelper.join(inputArgs, ",") + ")";
 		} else
 		{

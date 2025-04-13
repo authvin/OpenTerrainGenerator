@@ -125,8 +125,7 @@ public abstract class OTGEngine
 
 		this.customObjectResourcesManager = new CustomObjectResourcesManager();
 		this.customObjectManager = new CustomObjectManager(
-			getPluginConfig().getDeveloperModeEnabled(), 
-			this.logger, 
+			getPluginConfig().getDeveloperModeEnabled(),
 			this.otgRootFolder, 
 			getPresetsDirectory(), 
 			this.customObjectResourcesManager
@@ -319,8 +318,7 @@ public abstract class OTGEngine
 			worldSavepath, 
 			worldSeed, 
 			isBo4Enabled, 
-			getOTGRootFolder(), 
-			getLogger(), 
+			getOTGRootFolder(),
 			getCustomObjectManager(),
 			OTGMaterialReader.get(),
 			getCustomObjectResourcesManager(), 
