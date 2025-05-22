@@ -96,7 +96,9 @@ public class BiomeConfig extends BiomeSettings
 		surfaceSettings = SurfaceSettings.getSurfaceSettings(
 				settingsMap,
 				materialReader,
-				presetSettings.getBlockSettings());
+				presetSettings.getBlockSettings(),
+				presetSettings.getTerrainSettings()
+				);
 
 		resourceSettings = BiomeResourceSettings.getResourceSettings(
 				settingsMap,

@@ -28,7 +28,9 @@ public class SurfaceSettings extends ConfigSection {
     private final ISurfaceGenerator surfaceGenerator;
     private final ReplaceBlockMatrix replacedBlocks;
     private final BlockSettings blockSettings;
+    private final int configWaterLevelMax;
     private final int waterLevelMax;
+    private final int configWaterLevelMin;
     private final int waterLevelMin;
     private final boolean useWorldWaterLevel;
     private final boolean useFrozenOceanTemperature;
@@ -136,15 +138,25 @@ public class SurfaceSettings extends ConfigSection {
             "You can also use Iceberg to get iceberg generation like in vanilla frozen oceans. Iceberg accepts a normal SAGC string: \"Iceberg <SAGC>\", so you can use normal SAGC with it."
     );
 
-    public static SurfaceSettings getSurfaceSettings(SettingsMap settingsReader, IMaterialReader materialReader, BlockSettings parent) {
+    public static SurfaceSettings getSurfaceSettings(SettingsMap settingsReader, IMaterialReader materialReader,
+                                                     BlockSettings presetBLocks, TerrainSettings presetTerrain) {
         SurfaceSettingsBuilder builder = SurfaceSettings.builder();
 
         builder.surfaceGenerator(settingsReader.getSetting(SURFACE_GENERATOR));
         builder.replacedBlocks(settingsReader.getSetting(REPLACED_BLOCKS));
-        builder.blockSettings(parent);
-        builder.waterLevelMax(settingsReader.getSetting(WATER_LEVEL_MAX));
-        builder.waterLevelMin(settingsReader.getSetting(WATER_LEVEL_MIN));
+        builder.blockSettings(presetBLocks);
         builder.useWorldWaterLevel(settingsReader.getSetting(USE_WORLD_WATER_LEVEL));
+        builder.configWaterLevelMax(settingsReader.getSetting(WATER_LEVEL_MAX));
+        builder.configWaterLevelMin(settingsReader.getSetting(WATER_LEVEL_MIN));
+
+        if (builder.useWorldWaterLevel) {
+            builder.waterLevelMin(presetTerrain.getWaterLevelMin());
+            builder.waterLevelMax(presetTerrain.getWaterLevelMax());
+        } else {
+            builder.waterLevelMin(builder.configWaterLevelMin);
+            builder.waterLevelMax(builder.configWaterLevelMax);
+        }
+
         builder.useFrozenOceanTemperature(settingsReader.getSetting(USE_FROZEN_OCEAN_TEMPERATURE));
         builder.stoneBlock(settingsReader.getSetting(STONE_BLOCK));
         builder.surfaceBlock(settingsReader.getSetting(SURFACE_BLOCK));
@@ -170,7 +182,7 @@ public class SurfaceSettings extends ConfigSection {
             return this;
         }
         public void checkWaterLevelMax() {
-            waterLevelMax = Math.max(waterLevelMax, waterLevelMin);
+            configWaterLevelMax = Math.max(configWaterLevelMax, configWaterLevelMin);
         }
     }
 

@@ -218,10 +218,10 @@ public class BiomeConfigWriter {
         writer.putSetting(SurfaceSettings.USE_WORLD_WATER_LEVEL, biomeConfig.getSurfaceSettings().isUseWorldWaterLevel(),
                 "Set this to false to use the \"Water / Lava & Frozen States\" settings of this biome.");
 
-        writer.putSetting(SurfaceSettings.WATER_LEVEL_MAX, biomeConfig.getSurfaceSettings().getWaterLevelMax(),
+        writer.putSetting(SurfaceSettings.WATER_LEVEL_MAX, biomeConfig.getSurfaceSettings().getConfigWaterLevelMax(),
                 "Set water level. Every empty between this levels will be fill water or another block from WaterBlock.");
 
-        writer.putSetting(SurfaceSettings.WATER_LEVEL_MIN, biomeConfig.getSurfaceSettings().getWaterLevelMin());
+        writer.putSetting(SurfaceSettings.WATER_LEVEL_MIN, biomeConfig.getSurfaceSettings().getConfigWaterLevelMin());
 
         writer.putSetting(SurfaceSettings.WATER_BLOCK, biomeConfig.getSurfaceSettings().getWaterBlock(),
                 "The block used when placing water in the biome.");
