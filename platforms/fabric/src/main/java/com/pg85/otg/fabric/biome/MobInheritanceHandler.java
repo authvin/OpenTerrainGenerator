@@ -102,7 +102,7 @@ public class MobInheritanceHandler {
     }
 
     private MobSettings getVanillaMobSettings(BiomeConfig biomeConfig, String parentName) {
-        Optional<Biome> optionalParent = biomeRegistry.getOptional(ResourceKey.create(Registries.BIOME, new ResourceLocation(parentName)));
+        Optional<Biome> optionalParent = biomeRegistry.getOptional(ResourceKey.create(Registries.BIOME, new ResourceLocation(parentName.toLowerCase(Locale.ROOT))));
         if (optionalParent.isPresent()) {
             MobSettings.MobSettingsBuilder builder = MobSettings.builder();
             Biome parent = optionalParent.get();

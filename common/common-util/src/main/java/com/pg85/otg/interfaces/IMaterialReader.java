@@ -10,7 +10,7 @@ public interface IMaterialReader
 	LocalMaterialData readMaterial(String material) throws InvalidConfigException;
 	LocalMaterialTag readTag(String tag) throws InvalidConfigException;
 	default LocalMaterialBase read(String input) throws InvalidConfigException {
-		if (input.startsWith("#")) {
+		if (input.startsWith("#") || input.startsWith("otg:")) {
 			return readTag(input);
 		}
 		return readMaterial(input);

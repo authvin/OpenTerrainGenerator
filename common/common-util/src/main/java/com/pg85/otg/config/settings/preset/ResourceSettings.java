@@ -8,6 +8,8 @@ import com.pg85.otg.constants.settings.structure.CustomStructureType;
 import lombok.Builder;
 import lombok.Getter;
 
+import static com.pg85.otg.config.settingType.Settings.booleanSetting;
+
 @Builder
 @Getter
 public class ResourceSettings extends ConfigSection {
@@ -60,10 +62,20 @@ public class ResourceSettings extends ConfigSection {
             "the CustomStructure resource in the biome configuration files. Not used for BO4's."
     );
 
+    // For legacy support, remove in future versions
+    public static final Setting<Boolean> ISOTGPLUS = booleanSetting("IsOTGPlus", false);
+
+
     public static ResourceSettings getResourceSettings(SettingsMap reader) {
         var resourceSettingsBuilder = builder();
         resourceSettingsBuilder.disableOreGen(reader.getSetting(DISABLE_OREGEN));
-        resourceSettingsBuilder.customStructureType(reader.getSetting(CUSTOM_STRUCTURE_TYPE));
+
+        boolean isOTGPlus = reader.getSetting(ISOTGPLUS);
+        if(isOTGPlus) {
+            resourceSettingsBuilder.customStructureType(CustomStructureType.BO4);
+        } else {
+            resourceSettingsBuilder.customStructureType(reader.getSetting(CUSTOM_STRUCTURE_TYPE));
+        }
         resourceSettingsBuilder.useOldBO3StructureRarity(reader.getSetting(USE_OLD_BO3_STRUCTURE_RARITY));
         resourceSettingsBuilder.decorationBoundsCheck(reader.getSetting(DECORATION_BOUNDS_CHECK));
         resourceSettingsBuilder.maximumCustomStructureRadius(reader.getSetting(MAXIMUM_CUSTOM_STRUCTURE_RADIUS));

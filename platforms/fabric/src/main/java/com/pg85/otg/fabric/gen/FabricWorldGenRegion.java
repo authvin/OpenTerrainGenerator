@@ -628,8 +628,8 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
         ChunkAccess chunk = this.worldGenLevel.getChunk(pos.x, pos.z, ChunkStatus.CARVERS, false);
 
         if (chunk == null) {
-            //TODO: Returns null since we don't have shadow generation yet
-            return null;
+
+            return this.chunkGenerator.getMaterialInUnloadedChunk(x, y, z);
         }
         return FabricMaterialData.ofBlockState(worldGenLevel.getBlockState(new BlockPos(x, y, z)));
     }
@@ -645,8 +645,7 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
 
         // Chunk is in decoration area, but not yet ready to get blocks from
         if (chunk == null) {
-            //TODO: Returns null since we don't have shadow generation yet
-            return MIN_RETURN_VALUE;
+            return this.chunkGenerator.getHighestBlockYInUnloadedChunk(x, z, findSolid, findLiquid, ignoreLiquid, ignoreSnow);
         }
 
         return getHighestBlockYAt(worldGenLevel, x, worldGenLevel.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z), z, findSolid, findLiquid, ignoreLiquid, ignoreSnow, ignoreLeaves);

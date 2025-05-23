@@ -31,10 +31,6 @@ public class FabricMaterialReader implements IMaterialReader {
     private final FifoMap<String, LocalMaterialTag> cachedTags = new FifoMap<>(4096);
     private static final HolderLookup.Provider vanillaRegistries = VanillaRegistries.createLookup();
 
-    public FabricMaterialReader() {
-
-    }
-
     @Override
     public LocalMaterialData readMaterial(String material) throws InvalidConfigException
     {

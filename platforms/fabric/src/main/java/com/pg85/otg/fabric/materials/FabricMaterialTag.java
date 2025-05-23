@@ -16,7 +16,9 @@ public class FabricMaterialTag extends LocalMaterialTag {
     }
 
     public static LocalMaterialTag ofString(String tag) {
-        if (!tag.contains(":") || !tag.startsWith("#")) {
+        if (!tag.contains(":") ||
+                (!tag.startsWith("#") && !tag.startsWith("otg"))
+        ) {
             return null;
         }
         TagKey<Block> tagKey = TagKey.create(Registries.BLOCK, new ResourceLocation(tag));

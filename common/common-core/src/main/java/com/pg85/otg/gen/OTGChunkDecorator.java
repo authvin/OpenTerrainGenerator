@@ -48,7 +48,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 	private int decorating = 0;
 	private boolean saving;
 	private boolean saveRequired;
-	private Object asynChunkDecorationLock = new Object();
+	private final Object asynChunkDecorationLock = new Object();
 
 	public OTGChunkDecorator()
 	{
@@ -88,8 +88,6 @@ public class OTGChunkDecorator implements IChunkDecorator
 
 	public void decorate(ChunkCoordinate chunkCoord, IWorldGenRegion worldGenRegion, BiomeSettings biomeConfig, CustomStructureCache structureCache)
 	{
-		ILogger logger = OTG.getEngine().getLogger();
-		
 		// Wait for another thread running SaveToDisk, then place a lock.
 		boolean firstLog = false;
 		while(true)

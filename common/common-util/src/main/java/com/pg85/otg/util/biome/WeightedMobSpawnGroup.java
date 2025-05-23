@@ -31,7 +31,7 @@ public class WeightedMobSpawnGroup
 	@JsonCreator
 	public WeightedMobSpawnGroup(@JsonProperty String mob, @JsonProperty int weight, @JsonProperty int min, @JsonProperty int max)
 	{
-		this.mob = mob;
+		this.mob = EntityNames.toInternalName(mob);
 		this.weight = weight;
 		this.min = min;
 		this.max = max;

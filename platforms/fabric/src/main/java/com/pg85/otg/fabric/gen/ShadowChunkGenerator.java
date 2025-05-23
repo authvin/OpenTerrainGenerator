@@ -544,9 +544,10 @@ public class ShadowChunkGenerator {
 
     public LocalMaterialData getMaterialInUnloadedChunk(
             ServerLevel serverLevel,
-            OTGFabricChunkGenerator otgChunkGenerator, OTGWorldInfo otgWorldInfo, int x, int y, int z) {
-        LocalMaterialData[] blockColumn = getBlockColumnInUnloadedChunk(serverLevel, otgChunkGenerator, otgWorldInfo, x,
-                                                                        z
+            OTGFabricChunkGenerator otgChunkGenerator, OTGWorldInfo otgWorldInfo, int x, int y, int z
+    ) {
+        LocalMaterialData[] blockColumn = getBlockColumnInUnloadedChunk(
+                serverLevel, otgChunkGenerator, otgWorldInfo, x, z
         );
         return blockColumn[y];
     }

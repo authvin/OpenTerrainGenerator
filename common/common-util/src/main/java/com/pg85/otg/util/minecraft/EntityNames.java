@@ -64,7 +64,7 @@ public enum EntityNames
 	WOLF("wolf", "wolf"),
 	ZOMBIE("zombie", "zombie"),
 	ZOMBIE_HORSE("zombie_horse", "zombiehorse", "horsezombie"),
-	ZOMBIE_PIGMAN("zombie_pigman", "zombiepigman", "pigzombie"),
+	ZOMBIE_PIGMAN("zombie_piglin", "zombie_pigman", "zombiepigman", "pigzombie"),
 	ZOMBIE_VILLAGER("zombie_villager", "zombievillager", "villagerzombie"),
 
 	// Projectiles
@@ -108,13 +108,11 @@ public enum EntityNames
 	WITHER_SKULL("wither_skull", "witherskull");
 	
 	// Contains all aliases (alias, internalName)
-	private static Map<String, String> MobAliases = new HashMap<String, String>();
+	private static final Map<String, String> MobAliases = new HashMap<String, String>();
 
 	// Auto-register all aliases in the enum
-	static
-	{
-		for (EntityNames alt : EntityNames.values())
-		{
+	static {
+		for (EntityNames alt : EntityNames.values()) {
 			register(alt.internalMinecraftName, alt.aliases);
 		}
 	}
@@ -126,21 +124,23 @@ public enum EntityNames
 	 * @param alias The alias.
 	 * @return The internal name, or if it can't be found, the alias.
 	 */
-	public static String toInternalName(String alias)
-	{
-		for(String key : MobAliases.keySet())
-		{
-			if(
-				key.toLowerCase().trim().replace("minecraft:","").replace("entity","").trim().replace("_","").equalsIgnoreCase(
-					alias.toLowerCase().trim().replace("minecraft:","").replace("entity","").trim().replace("_","")
-				)
-			)
-			{
+	public static String toInternalName(String alias) {
+		for(String key : MobAliases.keySet()) {
+			if(simplifyMobName(key).equalsIgnoreCase(simplifyMobName(alias))) {
 				return MobAliases.get(key);
 			}
 		}
 		
 		return alias;
+	}
+
+	public static String simplifyMobName(String input) {
+		return input
+				.toLowerCase()
+				.replace("minecraft:", "")
+				.replace("entity", "")
+				.replace("_", "")
+				.trim();
 	}
 
 	/**
@@ -149,19 +149,16 @@ public enum EntityNames
 	 * @param internalMinecraftName The internal Minecraft mob id, for example Ozelot
 	 * @param aliases				The alias, for example Ocelot
 	 */
-	private static void register(String internalMinecraftName, String... aliases)
-	{
-		for (String alias : aliases)
-		{
+	private static void register(String internalMinecraftName, String... aliases) {
+		for (String alias : aliases) {
 			MobAliases.put("minecraft:" + alias, "minecraft:" + internalMinecraftName);
 		}
 	}
 
-	private String[] aliases;
-	private String internalMinecraftName;
+	private final String[] aliases;
+	private final String internalMinecraftName;
 
-	private EntityNames(String internalMinecraftName, String... aliases)
-	{
+	EntityNames(String internalMinecraftName, String... aliases) {
 		this.internalMinecraftName = internalMinecraftName;
 		this.aliases = aliases;
 	}

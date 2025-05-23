@@ -189,6 +189,7 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
         MobInheritanceHandler.handleMobInheritance(biomeRegistry, biomeConfigs);
 
         IBiome[] presetIdMapping = new IBiome[biomeConfigsByResourceLocation.entrySet().size()];
+        boolean hasOceanBiome = false;
         for(Entry<IBiomeResourceLocation, BiomeConfig> biomeConfigEntry : biomeConfigsByResourceLocation.entrySet())
         {
             IBiomeResourceLocation iBiomeResourceLocation = biomeConfigEntry.getKey();
@@ -200,9 +201,28 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
             {
                 oceanBiomeConfig = biomeConfig;
                 isOceanBiome = true;
+                hasOceanBiome = true;
             }
 
             int otgBiomeId = isOceanBiome ? 0 : currentId;
+
+            // Some legacy presets have invalid ocean biomes
+            // This check forces the final biome into ID 0 to be ocean biome
+            // This avoids a crash on modern versions
+            if(otgBiomeId == presetIdMapping.length && !hasOceanBiome) {
+                otgBiomeId = 0;
+            }
+
+            if(otgBiomeId > presetIdMapping.length)
+            {
+                OTGLog.fatal(CONFIGS, "Fatal error while registering OTG biome id's for preset " + preset.getFolderName());
+
+                OTGLog.info(CONFIGS, "Total number of biomes to register: " + presetIdMapping.length);
+                OTGLog.info(CONFIGS, "Current id: " + otgBiomeId);
+                OTGLog.info(CONFIGS, "List of biomes: " + Arrays.toString(presetIdMapping));
+
+                throw new RuntimeException("Fatal error while registering OTG biome id's for preset " + preset.getFolderName());
+            }
 
             // When using TemplateForBiome, we'll fetch the non-OTG biome from the registry, including any settings registered to it.
             // For normal biomes we create our own new OTG biome and apply settings from the biome config.
@@ -253,11 +273,12 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
 //                    }
                 });
 
-                biome = LegacyFabricBiomeLoader.createOTGBiome(isOceanBiome, preset.getPresetConfig(), biomeConfig, featureHolder, carverHolder);
+                biome = LegacyFabricBiomeLoader.createOTGBiome(preset.getPresetConfig(), biomeConfig, featureHolder, carverHolder);
 
                 ref = biomeRegistry.register(resourceKey, biome, Lifecycle.stable());
             }
             presetBiomes.add(resourceKey);
+
             biomeConfig.setOTGBiomeId(otgBiomeId);
 
             // Populate our map for syncing
@@ -282,16 +303,7 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
             }
 
             IBiome otgBiome = new FabricBiome(biomeConfig, biome, ref);
-            if(otgBiomeId >= presetIdMapping.length)
-            {
-                OTGLog.fatal(CONFIGS, "Fatal error while registering OTG biome id's for preset " + preset.getFolderName() + ", most likely you've assigned a DefaultOceanBiome that doesn't exist.");
 
-                OTGLog.info(CONFIGS, "Registered biomes: " + presetIdMapping.length);
-                OTGLog.info(CONFIGS, "Current id: " + otgBiomeId);
-                OTGLog.info(CONFIGS, "List of biomes: " + Arrays.toString(presetIdMapping));
-
-                throw new RuntimeException("Fatal error while registering OTG biome id's for preset " + preset.getFolderName() + ", most likely you've assigned a DefaultOceanBiome that doesn't exist.");
-            }
             presetIdMapping[otgBiomeId] = otgBiome;
 
             List<Integer> idsForBiome = worldBiomes.computeIfAbsent(biomeConfig.getIdentitySettings().getBiomeName(), k -> new ArrayList<>());
@@ -369,7 +381,7 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
         this.presetGenerationData.put(preset.getFolderName(), data);
     }
 
-    public static Biome createOTGBiome(boolean isOceanBiome, PresetSettings presetConfig, BiomeConfig biomeConfig, HolderGetter<PlacedFeature> featureHolderGetter, HolderGetter<ConfiguredWorldCarver<?>> carverHolderGetter) {
+    public static Biome createOTGBiome(PresetSettings presetConfig, BiomeConfig biomeConfig, HolderGetter<PlacedFeature> featureHolderGetter, HolderGetter<ConfiguredWorldCarver<?>> carverHolderGetter) {
 
         BiomeGenerationSettings.Builder generationSettings = new BiomeGenerationSettings.Builder(featureHolderGetter, carverHolderGetter);
 

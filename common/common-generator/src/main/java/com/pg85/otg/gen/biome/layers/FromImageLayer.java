@@ -31,6 +31,11 @@ public class FromImageLayer implements ParentedLayer
 		try
 		{
 			final File image = new File(data.presetDir.toFile(), imageSettings.getImageFile());
+			if (!image.exists())
+			{
+				logger.log(LogLevel.FATAL, LogCategory.CONFIGS, String.format("FromImageLayer encountered a critical error: %s does not exist", image.getAbsolutePath()));
+				throw new RuntimeException("FromImageLayer encountered a critical error: File does not exist");
+			}
 			final BufferedImage map = ImageIO.read(image);
 
 			this.mapWidth = map.getWidth(null);
@@ -109,8 +114,9 @@ public class FromImageLayer implements ParentedLayer
 		}
 		catch (IOException ioexception)
 		{
-			logger.log(LogLevel.FATAL, LogCategory.CONFIGS, String.format("FromImageLayer encountered a critical error: ", (Object[])ioexception.getStackTrace()));
-			throw new RuntimeException(String.format("FromImageLayer encountered a critical error: ", (Object[])ioexception.getStackTrace()));
+			logger.log(LogLevel.FATAL, LogCategory.CONFIGS, String.format("FromImageLayer encountered a critical error: %s", ioexception.getMessage()));
+			ioexception.printStackTrace(System.err);
+			throw new RuntimeException("FromImageLayer encountered a critical error", ioexception);
 		}
 	}
 

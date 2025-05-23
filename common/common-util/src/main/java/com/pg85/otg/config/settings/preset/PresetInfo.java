@@ -80,7 +80,7 @@ public class PresetInfo extends ConfigSection {
 
     public static class PresetInfoBuilder {
         public PresetInfoBuilder fixSettings(String presetFolderName) {
-            if (this.registryName.isBlank()) {
+            if (this.registryName.isBlank() || this.registryName.equalsIgnoreCase("default")) {
                 this.registryName = presetFolderName;
             }
             this.registryName = this.registryName

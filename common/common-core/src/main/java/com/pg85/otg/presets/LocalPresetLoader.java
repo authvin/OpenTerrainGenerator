@@ -186,8 +186,9 @@ public abstract class LocalPresetLoader
 				LogLevel.INFO,
 				LogCategory.CONFIGS,
 				MessageFormat.format(
-					"{0} biomes Loaded", 
-					biomeConfigs.size()
+					"{0} biomes loaded for preset {1}",
+					biomeConfigs.size(),
+					presetConfig.getConfigName()
 				)
 			);
 			logger.log(

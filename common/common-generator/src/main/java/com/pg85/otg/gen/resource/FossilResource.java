@@ -18,17 +18,24 @@ public final class FossilResource extends FrequencyResourceBase
 	public FossilResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
 		super(biomeConfig, args);
-		assureSize(3, args);
+		assureSize(1, args);
 
 		this.frequency = 1;
 		this.rarity = readInt(args.get(0), 1, Integer.MAX_VALUE);
-		this.minAltitude = readInt(args.get(1), Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1);
-		this.maxAltitude = readInt(args.get(2), minAltitude, Constants.WORLD_HEIGHT - 1);		
+		if (args.size() >= 3) {
+			this.minAltitude = readInt(args.get(1), Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1);
+			this.maxAltitude = readInt(args.get(2), minAltitude, Constants.WORLD_HEIGHT - 1);
+		} else {
+			// Extremely rough default for legacy presets
+			this.minAltitude = 30;
+			this.maxAltitude = 60;
+		}
 	}
 
 	@Override
 	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random)
 	{
+		// Intentionally empty, since frequency does not work with fossils
 	}
 
 	@Override
