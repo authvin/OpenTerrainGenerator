@@ -33,7 +33,7 @@ public class WeightedMobSpawnGroup
 	{
 		this.mob = EntityNames.toInternalName(mob);
 		this.weight = weight;
-		this.min = min;
+		this.min = Math.max(1, min);
 		this.max = max;
 	}
 
@@ -50,7 +50,7 @@ public class WeightedMobSpawnGroup
     public static List<WeightedMobSpawnGroup> fromJson(String originalJson) throws InvalidConfigException
 	{
 		// Example: [{"mob": "Sheep", "weight": 12, "min": 4, "max": 4}]
-		List<WeightedMobSpawnGroup> mobGroups = new ArrayList<WeightedMobSpawnGroup>();
+		List<WeightedMobSpawnGroup> mobGroups = new ArrayList<>();
 
 		String json = originalJson.trim();
 		if (json.length() <= 2)
@@ -205,21 +205,16 @@ public class WeightedMobSpawnGroup
 		{
 			return false;
 		}
-		if (!(obj instanceof WeightedMobSpawnGroup))
+		if (!(obj instanceof WeightedMobSpawnGroup other))
 		{
 			return false;
 		}
-		WeightedMobSpawnGroup other = (WeightedMobSpawnGroup) obj;
-		if (max != other.max || min != other.min || weight != other.weight)
+        if (max != other.max || min != other.min || weight != other.weight)
 		{
 			return false;
 		}
-		if (!getMob().equals(other.getMob()))
-		{
-			return false;
-		}
-		return true;
-	}
+        return getMob().equals(other.getMob());
+    }
 
 	private static String removeFirstAndLastChar(String string)
 	{

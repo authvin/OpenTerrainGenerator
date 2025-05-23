@@ -1,6 +1,8 @@
 package com.pg85.otg.fabric;
 
 import com.pg85.otg.OTG;
+import com.pg85.otg.fabric.events.WorldSaveCallback;
+import com.pg85.otg.fabric.gen.OTGFabricChunkGenerator;
 import com.pg85.otg.fabric.materials.FabricMaterialReader;
 import com.pg85.otg.fabric.util.FabricLogger;
 import com.pg85.otg.util.OTGLog;
@@ -8,7 +10,9 @@ import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 import net.fabricmc.api.ModInitializer;
+import net.minecraft.world.level.chunk.ChunkGenerator;
 
+@SuppressWarnings("unused")
 public class OTGPlugin implements ModInitializer {
 	@Override
 	public void onInitialize() {
@@ -19,6 +23,19 @@ public class OTGPlugin implements ModInitializer {
 		OTGLog.getLogger().log(LogLevel.INFO, LogCategory.MAIN, "OTG Engine starting");
 		OTGMaterialReader.set(new FabricMaterialReader());
 		OTG.startEngine(new FabricEngine());
+
+		registerWorldSave();
+
 		OTG.log("OTG Engine started, presets loaded");
+	}
+
+	void registerWorldSave() {
+		WorldSaveCallback.EVENT.register((serverLevel) -> {
+			ChunkGenerator chunkGenerator = serverLevel.getChunkSource().getGenerator();
+			if (chunkGenerator instanceof OTGFabricChunkGenerator fabricChunkGenerator) {
+				OTGLog.info(LogCategory.STRUCTURE_PLOTTING, "Saving structure cache for world " + fabricChunkGenerator.getPreset().getFolderName());
+				fabricChunkGenerator.saveStructureCache();
+			}
+		});
 	}
 }
