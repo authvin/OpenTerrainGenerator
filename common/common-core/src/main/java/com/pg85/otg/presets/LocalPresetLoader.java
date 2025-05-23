@@ -100,8 +100,17 @@ public abstract class LocalPresetLoader
 						if(file.getName().equals(Constants.PRESET_CONFIG_FILE) || file.getName().equals(Constants.LEGACY_WORLD_CONFIG_FILE))
 						{
 							Preset preset = loadPreset(presetDir.toPath());
-							this.presets.put(preset.getFolderName(), preset);
-							this.aliasMap.put(preset.getPresetRegistryName(), preset.getFolderName());
+							if (this.aliasMap.containsKey(preset.getPresetRegistryName())) {
+								OTGLog.getLogger().log(
+									LogLevel.ERROR,
+									LogCategory.MAIN,
+									"Duplicate preset registry name found: " + preset.getPresetRegistryName() + ". Preset " + preset.getFolderName() + " will be ignored."
+								);
+								continue;
+							} else {
+								this.presets.put(preset.getFolderName(), preset);
+								this.aliasMap.put(preset.getPresetRegistryName(), preset.getFolderName());
+							}
 							break;
 						}
 					}
