@@ -620,15 +620,20 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
 
     @Override
     public LocalMaterialData getMaterialWithoutLoading(int x, int y, int z) {
-        if (isOutsideBounds(x, y, z))
+        if (isOutsideWorldHeight(y))
         {
             return null;
         }
         ChunkPos pos = ChunkPos.minFromRegion(x, z);
-        ChunkAccess chunk = this.worldGenLevel.getChunk(pos.x, pos.z, ChunkStatus.CARVERS, false);
+        ChunkAccess chunk = null;
+
+        if (this.decorationArea.isInAreaBeingDecorated(x, z)) {
+            chunk = this.worldGenLevel.hasChunk(pos.x, pos.z)
+                    ? this.worldGenLevel.getChunk(pos.x, pos.z, ChunkStatus.CARVERS, false)
+                    : null;
+        }
 
         if (chunk == null) {
-
             return this.chunkGenerator.getMaterialInUnloadedChunk(x, y, z);
         }
         return FabricMaterialData.ofBlockState(worldGenLevel.getBlockState(new BlockPos(x, y, z)));
@@ -636,19 +641,22 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
 
     @Override
     public int getHighestBlockYAtWithoutLoading(int x, int z, boolean findSolid, boolean findLiquid, boolean ignoreLiquid, boolean ignoreSnow, boolean ignoreLeaves) {
-        if (isOutsideDecorationArea(x, z))
-        {
-            return MIN_RETURN_VALUE;
-        }
-        ChunkPos pos = ChunkPos.minFromRegion(x, z);
-        ChunkAccess chunk = this.worldGenLevel.getChunk(pos.x, pos.z, ChunkStatus.CARVERS, false);
 
-        // Chunk is in decoration area, but not yet ready to get blocks from
-        if (chunk == null) {
+        ChunkPos pos = ChunkPos.minFromRegion(x, z);
+        ChunkAccess chunk = null;
+
+
+        if (this.decorationArea.isInAreaBeingDecorated(x, z)) {
+            chunk = this.worldGenLevel.hasChunk(pos.x, pos.z)
+                    ? this.worldGenLevel.getChunk(pos.x, pos.z, ChunkStatus.CARVERS, false)
+                    : null;
+        }
+        if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.CARVERS)) {
             return this.chunkGenerator.getHighestBlockYInUnloadedChunk(x, z, findSolid, findLiquid, ignoreLiquid, ignoreSnow);
         }
 
-        return getHighestBlockYAt(worldGenLevel, x, worldGenLevel.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z), z, findSolid, findLiquid, ignoreLiquid, ignoreSnow, ignoreLeaves);
+        int levelHeight = worldGenLevel.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z);
+        return getHighestBlockYAt(worldGenLevel, x, levelHeight, z, findSolid, findLiquid, ignoreLiquid, ignoreSnow, ignoreLeaves);
     }
 
     @Override
