@@ -73,7 +73,6 @@ public class OTGFabricBiomeProvider extends BiomeSource implements ILayerSource,
 
     public void setSeed(long seed) {
         this.seed = seed;
-        final CachingLayerSampler sampler = BiomeLayers.create(seed, OTG.getEngine().getPresetLoader().getPresetGenerationData().get(presetFolderName), OTG.getEngine().getLogger());
-        layer = ThreadLocal.withInitial(() -> sampler);
+        layer = ThreadLocal.withInitial(() -> BiomeLayers.create(seed, OTG.getEngine().getPresetLoader().getPresetGenerationData().get(presetFolderName), OTG.getEngine().getLogger()));
     }
 }

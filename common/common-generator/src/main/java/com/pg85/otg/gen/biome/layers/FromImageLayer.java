@@ -3,6 +3,7 @@ package com.pg85.otg.gen.biome.layers;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import javax.imageio.ImageIO;
 
 import com.pg85.otg.constants.settings.ImageMode;
@@ -16,9 +17,10 @@ import com.pg85.otg.util.logging.LogLevel;
 
 public class FromImageLayer implements ParentedLayer
 {
+	private static final HashMap<File, BufferedImage> fromFile = new HashMap<>();
 	private final BiomeLayerData data;
 	private final ImageSettings imageSettings;
-	private int[] biomeMap;
+	private final int[] biomeMap;
 	private int mapHeight;
 	private int mapWidth;
 
@@ -28,97 +30,102 @@ public class FromImageLayer implements ParentedLayer
 		this.imageSettings = data.imageSettings;
 
 		// Read from file
-		try
-		{
-			final File image = new File(data.presetDir.toFile(), imageSettings.getImageFile());
-			if (!image.exists())
-			{
-				logger.log(LogLevel.FATAL, LogCategory.CONFIGS, String.format("FromImageLayer encountered a critical error: %s does not exist", image.getAbsolutePath()));
-				throw new RuntimeException("FromImageLayer encountered a critical error: File does not exist");
-			}
-			final BufferedImage map = ImageIO.read(image);
+        final File image = new File(data.presetDir.toFile(), imageSettings.getImageFile());
+        if (!image.exists())
+        {
+            logger.log(LogLevel.FATAL, LogCategory.CONFIGS, String.format("FromImageLayer encountered a critical error: %s does not exist", image.getAbsolutePath()));
+            throw new RuntimeException("FromImageLayer encountered a critical error: File does not exist");
+        }
 
-			this.mapWidth = map.getWidth(null);
-			this.mapHeight = map.getHeight(null);
-			int[] colorMap = new int[this.mapHeight * this.mapWidth];
+        synchronized(fromFile) {
+            if (!fromFile.containsKey(image)) {
+                try {
+                    final BufferedImage map = ImageIO.read(image);
+					fromFile.put(image, map);
+                } catch (IOException e) {
+					logger.log(LogLevel.FATAL, LogCategory.CONFIGS, String.format("FromImageLayer encountered a critical error: %s", e.getMessage()));
+					e.printStackTrace(System.err);
+					throw new RuntimeException("FromImageLayer encountered a critical error", e);
+                }
+            }
+        }
 
-			map.getRGB(0, 0, this.mapWidth, this.mapHeight, colorMap, 0, this.mapWidth);
+        final BufferedImage map = fromFile.get(image);
 
-			// Rotate RGBs if need
-			switch (imageSettings.getImageOrientation())
-			{
-				case North:
-					// Default behavior - nothing to rotate
-					break;
-				case South:
-					// Rotate picture 180 degrees
-					int[] colorMap180 = new int[colorMap.length];
-					for (int y = 0; y < this.mapHeight; y++)
-					{
-						for (int x = 0; x < this.mapWidth; x++)
-						{
-							colorMap180[(this.mapHeight - 1 - y) * this.mapWidth + this.mapWidth - 1 - x] = colorMap[y * this.mapWidth + x];
-						}
-					}
-					colorMap = colorMap180;
-					break;
-				case West:
-					// Rotate picture CW
-					int[] colorMapCW = new int[colorMap.length];
-					for (int y = 0; y < this.mapHeight; y++)
-					{
-						for (int x = 0; x < this.mapWidth; x++)
-						{
-							colorMapCW[x * this.mapHeight + this.mapHeight - 1 - y] = colorMap[y * this.mapWidth + x];
-						}
-					}
-					colorMap = colorMapCW;
-					this.mapWidth = map.getHeight(null);
-					this.mapHeight = map.getWidth(null);
-					break;
-				case East:
-					// Rotate picture CCW
-					int[] colorMapCCW = new int[colorMap.length];
-					for (int y = 0; y < this.mapHeight; y++)
-					{
-						for (int x = 0; x < this.mapWidth; x++)
-						{
-							colorMapCCW[(this.mapWidth - 1 - x) * this.mapHeight + y] = colorMap[y * this.mapWidth + x];
-						}
-					}
-					colorMap = colorMapCCW;
-					this.mapWidth = map.getHeight(null);
-					this.mapHeight = map.getWidth(null);
-					break;
-			}
+        this.mapWidth = map.getWidth(null);
+        this.mapHeight = map.getHeight(null);
+        int[] colorMap = new int[this.mapHeight * this.mapWidth];
 
-			this.biomeMap = new int[colorMap.length];
+        map.getRGB(0, 0, this.mapWidth, this.mapHeight, colorMap, 0, this.mapWidth);
 
-			for (int nColor = 0; nColor < colorMap.length; nColor++)
-			{
-				int color = colorMap[nColor] & 0x00FFFFFF;
+        // Rotate RGBs if need
+        switch (imageSettings.getImageOrientation())
+        {
+            case North:
+                // Default behavior - nothing to rotate
+                break;
+            case South:
+                // Rotate picture 180 degrees
+                int[] colorMap180 = new int[colorMap.length];
+                for (int y = 0; y < this.mapHeight; y++)
+                {
+                    for (int x = 0; x < this.mapWidth; x++)
+                    {
+                        colorMap180[(this.mapHeight - 1 - y) * this.mapWidth + this.mapWidth - 1 - x] = colorMap[y * this.mapWidth + x];
+                    }
+                }
+                colorMap = colorMap180;
+                break;
+            case West:
+                // Rotate picture CW
+                int[] colorMapCW = new int[colorMap.length];
+                for (int y = 0; y < this.mapHeight; y++)
+                {
+                    for (int x = 0; x < this.mapWidth; x++)
+                    {
+                        colorMapCW[x * this.mapHeight + this.mapHeight - 1 - y] = colorMap[y * this.mapWidth + x];
+                    }
+                }
+                colorMap = colorMapCW;
+                this.mapWidth = map.getHeight(null);
+                this.mapHeight = map.getWidth(null);
+                break;
+            case East:
+                // Rotate picture CCW
+                int[] colorMapCCW = new int[colorMap.length];
+                for (int y = 0; y < this.mapHeight; y++)
+                {
+                    for (int x = 0; x < this.mapWidth; x++)
+                    {
+                        colorMapCCW[(this.mapWidth - 1 - x) * this.mapHeight + y] = colorMap[y * this.mapWidth + x];
+                    }
+                }
+                colorMap = colorMapCCW;
+                this.mapWidth = map.getHeight(null);
+                this.mapHeight = map.getWidth(null);
+                break;
+        }
 
-				if (data.biomeColorMap.containsKey(color))
-				{
-					this.biomeMap[nColor] = data.biomeColorMap.get(color);
-				} else {
-					// ContinueNormal interprets a -1 as "Use the childLayer"
-					if (this.data.imageSettings.getImageMode() == ImageMode.ContinueNormal)
-					{
-						this.biomeMap[nColor] = -1;
-					} else {
-						this.biomeMap[nColor] = this.data.imageFillBiome;
-					}
-				}
-			}
-		}
-		catch (IOException ioexception)
-		{
-			logger.log(LogLevel.FATAL, LogCategory.CONFIGS, String.format("FromImageLayer encountered a critical error: %s", ioexception.getMessage()));
-			ioexception.printStackTrace(System.err);
-			throw new RuntimeException("FromImageLayer encountered a critical error", ioexception);
-		}
-	}
+        this.biomeMap = new int[colorMap.length];
+
+        for (int nColor = 0; nColor < colorMap.length; nColor++)
+        {
+            int color = colorMap[nColor] & 0x00FFFFFF;
+
+            if (data.biomeColorMap.containsKey(color))
+            {
+                this.biomeMap[nColor] = data.biomeColorMap.get(color);
+            } else {
+                // ContinueNormal interprets a -1 as "Use the childLayer"
+                if (this.data.imageSettings.getImageMode() == ImageMode.ContinueNormal)
+                {
+                    this.biomeMap[nColor] = -1;
+                } else {
+                    this.biomeMap[nColor] = this.data.imageFillBiome;
+                }
+            }
+        }
+    }
 
 	@Override
 	public int sample(LayerSampleContext<?> context, ILayerSampler parent, int x, int z)
@@ -167,7 +174,7 @@ public class FromImageLayer implements ParentedLayer
 				}
 				return this.biomeMap[Buffer_x + Buffer_z * this.mapWidth];
 			case ContinueNormal:
-				int childBiome = 0;
+				int childBiome;
 				Buffer_x = x - this.imageSettings.getImageXOffset();
 				Buffer_z = z - this.imageSettings.getImageZOffset();
 				// if X or Z is outside map bounds
