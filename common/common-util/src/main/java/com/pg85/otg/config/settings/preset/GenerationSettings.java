@@ -7,11 +7,10 @@ import com.pg85.otg.config.biome.BiomeGroupManager;
 import com.pg85.otg.config.biome.TemplateBiome;
 import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
-import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.config.settingType.Settings;
+import com.pg85.otg.config.settingtype.Setting;
+import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.constants.settings.BiomeMode;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -204,7 +203,7 @@ public class GenerationSettings extends ConfigSection {
 
 
 
-    public static GenerationSettings getBiomeSettings(PresetSettings presetConfig, SettingsMap reader, IConfigFunctionProvider biomeResourcesManager, List<String> biomes, IMaterialReader materialReader, Path settingsDir) {
+    public static GenerationSettings getBiomeSettings(PresetSettings presetConfig, SettingsMap reader, IConfigFunctionProvider biomeResourcesManager, List<String> biomes, Path settingsDir) {
         var generationSettingsBuilder = builder();
 
         generationSettingsBuilder.worldBiomes(biomes);

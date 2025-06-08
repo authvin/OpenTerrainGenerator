@@ -1,8 +1,8 @@
 package com.pg85.otg.config.settings.biome;
 
 import com.pg85.otg.config.io.SettingsMap;
-import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.config.settingType.Settings;
+import com.pg85.otg.config.settingtype.Setting;
+import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.config.settings.preset.VisualSettings;
 import com.pg85.otg.constants.settings.GrassColorModifier;
@@ -17,6 +17,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.text.MessageFormat;
+import java.util.Objects;
 import java.util.Optional;
 
 @Builder
@@ -231,7 +232,7 @@ public class BiomeVisualSettings extends ConfigSection {
         builder.particleProbability(reader.getSetting(PARTICLE_PROBABILITY));
         builder.biomeTemperature(reader.getSetting(BIOME_TEMPERATURE));
         builder.biomeWetness(reader.getSetting(BIOME_WETNESS));
-        if (builder.fogDensity == 0.5 && builder.fogColor == FOG_COLOR.getDefaultValue())
+        if (builder.fogDensity == 0.5 && Objects.equals(builder.fogColor, FOG_COLOR.getDefaultValue()))
         {
             builder.fogDensity = 0.0f;
         }

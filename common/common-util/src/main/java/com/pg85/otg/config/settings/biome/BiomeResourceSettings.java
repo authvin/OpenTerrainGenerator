@@ -1,9 +1,6 @@
 package com.pg85.otg.config.settings.biome;
 
 import com.pg85.otg.config.ConfigFunction;
-import com.pg85.otg.config.io.SettingsMap;
-import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.config.settingType.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.config.settings.preset.ResourceSettings;
 import com.pg85.otg.constants.Constants;
@@ -122,7 +119,7 @@ public class BiomeResourceSettings extends ConfigSection {
             "RedMushroom/BrownMushroom - will only grow when bonemeal is used.", ""
     };
 
-    public static BiomeResourceSettings getResourceSettings(SettingsMap reader, ResourceSettings parent, List<ConfigFunction<BiomeSettings>> resources) {
+    public static BiomeResourceSettings getResourceSettings(ResourceSettings parent, List<ConfigFunction<BiomeSettings>> resources) {
         BiomeResourceSettingsBuilder builder = BiomeResourceSettings.builder();
 
         builder.parent(parent);

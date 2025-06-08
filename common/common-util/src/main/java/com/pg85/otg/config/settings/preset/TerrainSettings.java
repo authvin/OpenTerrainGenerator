@@ -1,8 +1,8 @@
 package com.pg85.otg.config.settings.preset;
 
 import com.pg85.otg.config.io.SettingsMap;
-import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.config.settingType.Settings;
+import com.pg85.otg.config.settingtype.Setting;
+import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.constants.Constants;
 import lombok.Builder;

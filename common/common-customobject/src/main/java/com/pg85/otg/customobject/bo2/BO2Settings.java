@@ -1,7 +1,7 @@
 package com.pg85.otg.customobject.bo2;
 
-import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.config.settingType.Settings;
+import com.pg85.otg.config.settingtype.Setting;
+import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.util.materials.LocalMaterials;
 import com.pg85.otg.util.materials.MaterialSet;

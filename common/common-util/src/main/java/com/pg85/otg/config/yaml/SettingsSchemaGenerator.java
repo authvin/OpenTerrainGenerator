@@ -1,24 +1,15 @@
 package com.pg85.otg.config.yaml;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.*;
-import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonValueFormat;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.fasterxml.jackson.dataformat.yaml.YAMLGenerator;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchema;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
-import com.fasterxml.jackson.module.jsonSchema.factories.SchemaFactoryWrapper;
-import com.fasterxml.jackson.module.jsonSchema.factories.VisitorContext;
 import com.fasterxml.jackson.module.jsonSchema.types.ArraySchema;
-import com.fasterxml.jackson.module.jsonSchema.types.NumberSchema;
 import com.fasterxml.jackson.module.jsonSchema.types.ObjectSchema;
-import com.fasterxml.jackson.module.jsonSchema.types.StringSchema;
-import com.pg85.otg.config.settingType.*;
+import com.pg85.otg.config.settingtype.*;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.config.settings.biome.*;
 import com.pg85.otg.config.settings.preset.*;
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.util.Color;
 import com.pg85.otg.util.biome.*;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.MaterialSet;

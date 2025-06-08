@@ -1,15 +1,14 @@
 package com.pg85.otg.config.settings.biome;
 
 import com.pg85.otg.config.io.SettingsMap;
-import com.pg85.otg.config.settingType.MaterialSetting;
-import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.config.settingType.Settings;
+import com.pg85.otg.config.settingtype.MaterialSetting;
+import com.pg85.otg.config.settingtype.Setting;
+import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.config.settings.preset.BlockSettings;
 import com.pg85.otg.config.settings.preset.TerrainSettings;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.IBiome;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.ISurfaceGenerator;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
@@ -138,7 +137,7 @@ public class SurfaceSettings extends ConfigSection {
             "You can also use Iceberg to get iceberg generation like in vanilla frozen oceans. Iceberg accepts a normal SAGC string: \"Iceberg <SAGC>\", so you can use normal SAGC with it."
     );
 
-    public static SurfaceSettings getSurfaceSettings(SettingsMap settingsReader, IMaterialReader materialReader,
+    public static SurfaceSettings getSurfaceSettings(SettingsMap settingsReader,
                                                      BlockSettings presetBLocks, TerrainSettings presetTerrain) {
         SurfaceSettingsBuilder builder = SurfaceSettings.builder();
 

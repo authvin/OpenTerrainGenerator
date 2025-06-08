@@ -1,6 +1,6 @@
 package com.pg85.otg.customobject.config.io;
 
-import com.pg85.otg.config.settingType.Setting;
+import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.constants.settings.ConfigMode;
 import com.pg85.otg.customobject.bo4.BO4Config;
 import com.pg85.otg.customobject.bofunctions.BlockFunction;

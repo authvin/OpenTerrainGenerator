@@ -1,6 +1,6 @@
 package com.pg85.otg.config.settings;
 
-import com.pg85.otg.config.settingType.Setting;
+import com.pg85.otg.config.settingtype.Setting;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

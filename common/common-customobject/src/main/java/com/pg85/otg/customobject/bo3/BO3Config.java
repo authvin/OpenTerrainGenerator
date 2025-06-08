@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.config.settingType.Settings;
+import com.pg85.otg.config.settingtype.Setting;
+import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.constants.settings.ConfigMode;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.bo2.BO2;
@@ -20,7 +20,6 @@ import com.pg85.otg.customobject.bo3.bo3function.BO3WeightedBranchFunction;
 import com.pg85.otg.customobject.bo3.checks.BO3Check;
 import com.pg85.otg.customobject.bo3.checks.BlockCheck;
 import com.pg85.otg.customobject.bo3.checks.ModCheck;
-import com.pg85.otg.customobject.bo3.checks.ModCheckNot;
 import com.pg85.otg.customobject.bofunctions.BlockFunction;
 import com.pg85.otg.customobject.bofunctions.BranchFunction;
 import com.pg85.otg.customobject.config.CustomObjectConfigFile;

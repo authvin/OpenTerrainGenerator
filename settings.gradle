@@ -19,3 +19,6 @@ include(
         "platforms:fabric",
         //"platforms:paper",
 )
+include 'common:common-annotation'
+findProject(':common:common-annotation')?.name = 'common-annotation'
+

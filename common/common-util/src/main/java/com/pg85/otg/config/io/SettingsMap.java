@@ -2,7 +2,7 @@ package com.pg85.otg.config.io;
 
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.io.RawSettingValue.ValueType;
-import com.pg85.otg.config.settingType.Setting;
+import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.interfaces.IPluginConfig;
 

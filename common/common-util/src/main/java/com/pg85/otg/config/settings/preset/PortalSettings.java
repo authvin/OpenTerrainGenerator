@@ -1,9 +1,9 @@
 package com.pg85.otg.config.settings.preset;
 
 import com.pg85.otg.config.io.SettingsMap;
-import com.pg85.otg.config.settingType.MaterialListSetting;
-import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.config.settingType.Settings;
+import com.pg85.otg.config.settingtype.MaterialListSetting;
+import com.pg85.otg.config.settingtype.Setting;
+import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterials;

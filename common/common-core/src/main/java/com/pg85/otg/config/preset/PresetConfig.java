@@ -5,8 +5,8 @@ import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.biome.BiomeGroupFunction;
 import com.pg85.otg.config.biome.TemplateBiome;
 import com.pg85.otg.config.io.SettingsMap;
-import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.config.settingType.Settings;
+import com.pg85.otg.config.settingtype.Setting;
+import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.config.settings.preset.*;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.ILogger;
@@ -54,7 +54,7 @@ public class PresetConfig extends PresetSettings {
         resourceSettings = ResourceSettings.getResourceSettings(settingsReader);
         blockSettings = BlockSettings.getBlockSettings(settingsReader);
         generationSettings = GenerationSettings.getBiomeSettings(
-                this, settingsReader, OTG.getEngine().getBiomeResourceManager(), biomes, materialReader, settingsDir);
+                this, settingsReader, OTG.getEngine().getBiomeResourceManager(), biomes, settingsDir);
         terrainSettings = TerrainSettings.getTerrainSettings(settingsReader);
         imageSettings = ImageSettings.getImageSettings(settingsReader, biomes);
         structureSettings = StructureSettings.getStructureSettings(settingsReader);

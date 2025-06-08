@@ -1,6 +1,6 @@
 package com.pg85.otg.customobject.config.io;
 
-import com.pg85.otg.config.settingType.Setting;
+import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.interfaces.IMaterialReader;

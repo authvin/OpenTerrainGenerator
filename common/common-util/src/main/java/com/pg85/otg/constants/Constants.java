@@ -1,8 +1,7 @@
 package com.pg85.otg.constants;
 
-import com.pg85.otg.config.settingType.IntSetting;
-import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.config.settingType.Settings;
+import com.pg85.otg.config.settingtype.Setting;
+import com.pg85.otg.config.settingtype.Settings;
 
 import java.io.File;
 

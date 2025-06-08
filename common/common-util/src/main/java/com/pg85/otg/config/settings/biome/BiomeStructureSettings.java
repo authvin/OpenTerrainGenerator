@@ -1,8 +1,8 @@
 package com.pg85.otg.config.settings.biome;
 
 import com.pg85.otg.config.io.SettingsMap;
-import com.pg85.otg.config.settingType.Setting;
-import com.pg85.otg.config.settingType.Settings;
+import com.pg85.otg.config.settingtype.Setting;
+import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.config.settings.preset.StructureSettings;
 import com.pg85.otg.constants.settings.structure.*;
@@ -157,6 +157,10 @@ public class BiomeStructureSettings extends ConfigSection {
             t -> ((BiomeStructureSettings) t).isPillagerOutpostEnabled(),
             "Toggles pillager outposts spawning in this biome."
     );
+
+    // New structures from 1.16 to 1.20.1
+
+
 
 
     public static BiomeStructureSettings getBiomeStructureSettings(SettingsMap reader, StructureSettings parent) {
