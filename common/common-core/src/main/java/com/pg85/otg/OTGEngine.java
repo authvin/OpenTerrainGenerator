@@ -57,9 +57,10 @@ public abstract class OTGEngine
     private final Path globalObjectsFolder;
 	protected PluginConfig pluginConfig;
 
-	protected BiomeResourcesManager biomeResourcesManager;
-	@Getter
-    private CustomObjectResourcesManager customObjectResourcesManager;
+    // Create manager objects
+
+    @Getter
+    private final CustomObjectResourcesManager customObjectResourcesManager = new CustomObjectResourcesManager();
 	@Getter
     private CustomObjectManager customObjectManager;
 	
@@ -121,22 +122,12 @@ public abstract class OTGEngine
 
 		unpackDefaultPresetAndExamples(presetsDir);
 
-		// Create manager objects
-
-		this.customObjectResourcesManager = new CustomObjectResourcesManager();
-		this.customObjectManager = new CustomObjectManager(
+        this.customObjectManager = new CustomObjectManager(
 			getPluginConfig().getDeveloperModeEnabled(),
 			this.otgRootFolder, 
 			getPresetsDirectory(), 
 			this.customObjectResourcesManager
 		);
-
-		// Create BiomeResourcesManager, pass all config resources
-
-		HashMap<String, Class<? extends ConfigFunction<?>>> configFunctions = new HashMap<>();
-		configFunctions.putAll(PresetConfig.CONFIG_FUNCTIONS);
-		configFunctions.putAll(BiomeConfig.RESOURCE_QUEUE_RESOURCES);
-		this.biomeResourcesManager = new BiomeResourcesManager(configFunctions);
 
 		// Load presets
 
@@ -278,13 +269,6 @@ public abstract class OTGEngine
 	{
 		// Shutdown all loaders
 		this.customObjectManager.shutdown();
-	}
-
-	// Managers
-
-	public BiomeResourcesManager getBiomeResourceManager()
-	{
-		return this.biomeResourcesManager;
 	}
 
     // OTG Configs

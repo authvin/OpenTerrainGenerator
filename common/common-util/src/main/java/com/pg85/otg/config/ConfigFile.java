@@ -2,8 +2,6 @@ package com.pg85.otg.config;
 
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.io.SimpleSettingsMap;
-import com.pg85.otg.interfaces.ILogger;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.minecraft.BiomeRegistryNames;
 
 import java.nio.file.Path;
@@ -49,9 +47,10 @@ public interface ConfigFile
 
 	/**
 	 * rewrite configs in old formats to the modern format, so that they can be read.
+	 *
 	 * @param reader The settings reader.
 	 */
-	void renameOldSettings(SettingsMap reader, ILogger logger, IMaterialReader materialReader);
+	void renameOldSettings(SettingsMap reader);
 
 	static List<String> filterBiomes(List<String> biomes, List<String> customBiomes)
 	{

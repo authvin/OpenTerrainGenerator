@@ -203,7 +203,7 @@ public class GenerationSettings extends ConfigSection {
 
 
 
-    public static GenerationSettings getBiomeSettings(PresetSettings presetConfig, SettingsMap reader, IConfigFunctionProvider biomeResourcesManager, List<String> biomes, Path settingsDir) {
+    public static GenerationSettings getGenerationSettings(PresetSettings presetConfig, SettingsMap reader, IConfigFunctionProvider biomeResourcesManager, List<String> biomes, Path settingsDir) {
         var generationSettingsBuilder = builder();
 
         generationSettingsBuilder.worldBiomes(biomes);

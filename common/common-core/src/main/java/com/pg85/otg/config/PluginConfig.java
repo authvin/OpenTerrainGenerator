@@ -5,7 +5,6 @@ import com.pg85.otg.config.settings.preset.PresetInfo;
 import com.pg85.otg.config.standard.PluginConfigStandardValues;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.ILogger;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.OTGLog;
 
 import java.nio.file.Path;
@@ -32,7 +31,7 @@ public final class PluginConfig extends PluginConfigBase
 	}
 
 	@Override
-	public void renameOldSettings(SettingsMap reader, ILogger logger, IMaterialReader materialReader) { }
+	public void renameOldSettings(SettingsMap reader) { }
 
 	private void readConfigSettings(SettingsMap reader, ILogger logger)
 	{

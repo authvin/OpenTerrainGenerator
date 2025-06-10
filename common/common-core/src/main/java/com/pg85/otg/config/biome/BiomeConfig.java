@@ -3,7 +3,6 @@ package com.pg85.otg.config.biome;
 import java.nio.file.Path;
 import java.util.*;
 
-import com.pg85.otg.OTG;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
@@ -83,9 +82,8 @@ public class BiomeConfig extends BiomeSettings
 	{
 		super(settingsMap.getName());
 		this.path = settingsMap.getPath();
-		IMaterialReader materialReader = OTGMaterialReader.get();
-		parent = presetSettings;
-		renameOldSettings(settingsMap, OTG.getEngine().getLogger(), materialReader);
+        parent = presetSettings;
+		renameOldSettings(settingsMap);
 		identitySettings = IdentitySettings.buildIdentitySettings(settingsMap);
 		mobSettings = MobSettings.getMobSettings(settingsMap);
 		generationSettings = BiomeGenerationSettings.getPlacementSettings(settingsMap, presetSettings.getGenerationSettings());
@@ -95,20 +93,18 @@ public class BiomeConfig extends BiomeSettings
 
 		surfaceSettings = SurfaceSettings.getSurfaceSettings(
 				settingsMap,
-				materialReader,
 				presetSettings.getBlockSettings(),
 				presetSettings.getTerrainSettings()
 				);
 
 		resourceSettings = BiomeResourceSettings.getResourceSettings(
-				settingsMap,
 				presetSettings.getResourceSettings(),
 				new ArrayList<>(
 						settingsMap.getConfigFunctions(
 								this,
 								biomeResourcesManager,
-								presetSettings.getConfigName(),
-								OTG.getEngine().getPluginConfig())));
+								presetSettings.getConfigName()
+						)));
 	}
 
 
@@ -138,7 +134,7 @@ public class BiomeConfig extends BiomeSettings
 	}
 
 	@Override
-	public void renameOldSettings(SettingsMap settings, ILogger logger, IMaterialReader materialReader)
+	public void renameOldSettings(SettingsMap settings)
 	{
 		settings.renameOldSetting("DisableNotchHeightControl", BiomeTerrainSettings.DISABLE_BIOME_HEIGHT);
 		settings.renameOldSetting("BiomeDictId", IdentitySettings.BIOME_DICT_TAGS);

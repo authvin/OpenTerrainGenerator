@@ -5,5 +5,5 @@ import com.pg85.otg.config.ConfigFunction;
 
 public interface IConfigFunctionProvider
 {
-	public <T> ConfigFunction<T> getConfigFunction(String name, T holder, List<String> args);
+	<T> ConfigFunction<T> getConfigFunction(String name, T holder, List<String> args);
 }

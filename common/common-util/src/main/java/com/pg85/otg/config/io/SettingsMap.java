@@ -4,7 +4,6 @@ import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.io.RawSettingValue.ValueType;
 import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.config.settings.ConfigSection;
-import com.pg85.otg.interfaces.IPluginConfig;
 
 import java.nio.file.Path;
 import java.util.Collection;
@@ -44,7 +43,7 @@ public interface SettingsMap
 	 * @return The config functions.
 	 */
 	<T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager);
-	<T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager, String presetName, IPluginConfig conf);
+	<T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager, String presetName);
 
 	/**
 	 * Gets the name of this config file. For worlds, this is the world name,

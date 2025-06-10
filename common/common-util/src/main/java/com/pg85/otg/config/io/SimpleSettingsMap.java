@@ -8,7 +8,6 @@ import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.ILogger;
-import com.pg85.otg.interfaces.IPluginConfig;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.logging.LogCategory;
@@ -81,11 +80,11 @@ public final class SimpleSettingsMap implements SettingsMap
 	@Override
 	public <T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager)
 	{
-		return this.getConfigFunctions(holder, biomeResourcesManager, null, null);
+		return this.getConfigFunctions(holder, biomeResourcesManager, null);
 	}
 
 	@Override
-	public <T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager, String presetFolderName, IPluginConfig conf)
+	public <T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager, String presetFolderName)
 	{
 		ILogger logger = OTGLog.getLogger();
 		List<ConfigFunction<T>> result = new ArrayList<ConfigFunction<T>>(configFunctions.size());
@@ -104,7 +103,7 @@ public final class SimpleSettingsMap implements SettingsMap
 				continue;
 			}
 			result.add(function);
-			if (conf == null || presetFolderName == null) {
+			if (presetFolderName == null) {
 				if (logger.getLogCategoryEnabled(LogCategory.CONFIGS) && function instanceof ErroredFunction)
 				{
 					logger.log(

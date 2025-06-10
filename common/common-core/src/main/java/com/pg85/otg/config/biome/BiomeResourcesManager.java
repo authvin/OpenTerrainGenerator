@@ -10,27 +10,38 @@ import java.util.Map.Entry;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.ErroredFunction;
 import com.pg85.otg.config.io.IConfigFunctionProvider;
+import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.config.settings.preset.PresetSettings;
 
 public class BiomeResourcesManager implements IConfigFunctionProvider
 {
-	private final Map<String, Class<? extends ConfigFunction<?>>> configFunctions;
+	private static final Map<String, Class<? extends ConfigFunction<?>>> CONFIG_FUNCTIONS = new HashMap<>();
 
-	public BiomeResourcesManager(Map<String, Class<? extends ConfigFunction<?>>> configFunctions)
+	private static final BiomeResourcesManager INSTANCE = new BiomeResourcesManager();
+
+	public static BiomeResourcesManager get()
 	{
-		// Also store in this class
-		this.configFunctions = new HashMap<>();
+		return INSTANCE;
+	}
 
+	private static void ensureAllConfigFunctionsRegistered()
+	{
+		registerAllConfigFunctions(PresetConfig.CONFIG_FUNCTIONS);
+		registerAllConfigFunctions(BiomeConfig.RESOURCE_QUEUE_RESOURCES);
+	}
+
+	public static void registerAllConfigFunctions(Map<String, Class<? extends ConfigFunction<?>>> configFunctions)
+	{
 		for(Entry<String, Class<? extends ConfigFunction<?>>> resource : configFunctions.entrySet())
 		{
 			registerConfigFunction(resource.getKey(), resource.getValue());
 		}
 	}
 
-	private void registerConfigFunction(String name, Class<? extends ConfigFunction<?>> value)
+	public static void registerConfigFunction(String name, Class<? extends ConfigFunction<?>> value)
 	{
-		configFunctions.put(name.toLowerCase(), value);
+		CONFIG_FUNCTIONS.put(name.toLowerCase(), value);
 	}
 
 	/**
@@ -49,8 +60,12 @@ public class BiomeResourcesManager implements IConfigFunctionProvider
 	@SuppressWarnings("unchecked")
 	public <T> ConfigFunction<T> getConfigFunction(String name, T holder, List<String> args)
 	{
+		if (CONFIG_FUNCTIONS.isEmpty()) {
+			// Ensure all config functions are registered
+			ensureAllConfigFunctionsRegistered();
+		}
 		// Get the class of the config function
-		Class<? extends ConfigFunction<?>> clazz = configFunctions.get(name.toLowerCase());
+		Class<? extends ConfigFunction<?>> clazz = CONFIG_FUNCTIONS.get(name.toLowerCase());
 		if (clazz == null)
 		{
 			return new ErroredFunction<T>(name, args, "Resource type " + name + " not found");

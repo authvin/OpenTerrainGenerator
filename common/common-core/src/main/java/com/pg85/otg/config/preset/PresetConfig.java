@@ -1,17 +1,15 @@
 package com.pg85.otg.config.preset;
 
-import com.pg85.otg.OTG;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.biome.BiomeGroupFunction;
+import com.pg85.otg.config.biome.BiomeResourcesManager;
 import com.pg85.otg.config.biome.TemplateBiome;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.config.settings.preset.*;
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import lombok.Getter;
@@ -48,13 +46,13 @@ public class PresetConfig extends PresetSettings {
 
     public PresetConfig(Path settingsDir, SettingsMap settingsReader, ArrayList<String> biomes, IMaterialReader materialReader) {
         super(settingsReader.getName());
-        this.renameOldSettings(settingsReader, OTGLog.getLogger(), materialReader);
+        this.renameOldSettings(settingsReader);
         presetInfo = PresetInfo.buildPresetInfo(settingsReader);
         visualSettings = VisualSettings.builder().fogColor(settingsReader.getSetting(VisualSettings.PRESET_FOG_COLOR)).build();
         resourceSettings = ResourceSettings.getResourceSettings(settingsReader);
         blockSettings = BlockSettings.getBlockSettings(settingsReader);
-        generationSettings = GenerationSettings.getBiomeSettings(
-                this, settingsReader, OTG.getEngine().getBiomeResourceManager(), biomes, settingsDir);
+        generationSettings = GenerationSettings.getGenerationSettings(
+                this, settingsReader, BiomeResourcesManager.get(), biomes, settingsDir);
         terrainSettings = TerrainSettings.getTerrainSettings(settingsReader);
         imageSettings = ImageSettings.getImageSettings(settingsReader, biomes);
         structureSettings = StructureSettings.getStructureSettings(settingsReader);
@@ -73,7 +71,7 @@ public class PresetConfig extends PresetSettings {
     }
 
     @Override
-    public void renameOldSettings(SettingsMap reader, ILogger logger, IMaterialReader materialReader) {
+    public void renameOldSettings(SettingsMap reader) {
         // Put BiomeMode in compatibility mode when NormalBiomes is found and create default groups
         if (reader.hasSetting(NORMAL_BIOMES)) {
             int landSize = reader.getSetting(GenerationSettings.LAND_SIZE);

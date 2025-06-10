@@ -1,9 +1,6 @@
 package com.pg85.otg.config.settings.biome;
 
-import com.pg85.otg.config.annotation.Description;
-import com.pg85.otg.config.annotation.Config;
-import com.pg85.otg.config.annotation.EnumSetting;
-import com.pg85.otg.config.annotation.LongDescription;
+import com.pg85.otg.config.annotation.*;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.config.settings.biome.generated.BiomeTagSettings;
