@@ -28,17 +28,6 @@ public class ConfigAnnotationProcessor extends AbstractProcessor {
         return true;
     }
 
-    private enum SettingType {
-        BOOLEAN,
-        INT,
-        DOUBLE,
-        STRING,
-        ENUM,
-        COLOR,
-        FLOAT,
-        LONG
-    }
-
     private record SettingInfo(String fieldName, String name, String description, String className) {
         String getFieldGetter(boolean isBool) {
             return isBool ? "is" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1) + "()"
@@ -63,13 +52,24 @@ public class ConfigAnnotationProcessor extends AbstractProcessor {
 
         classDeclaration.append("public class ")
                 .append(className)
+                .append(" extends ConfigSection")
                 .append(" {\n\n");
+
+        classDeclaration.append("\t@Override\n")
+                .append("\tpublic String getSectionName() {\n")
+                .append("\t\treturn \"")
+                // Let's add spaces before capital letters after the first one
+                .append(className.replaceAll("([a-z])([A-Z])", "$1 $2"))
+                .append("\";\n")
+                .append("\t}\n\n");
 
         packageDeclaration.append("package ")
                 .append(qualifiedName, 0, qualifiedName.lastIndexOf('.'))
                 .append(".generated")
                 .append(";\n");
 
+        imports.append("import ")
+                .append("com.pg85.otg.config.settings.ConfigSection;\n");
         imports.append("import ")
                 .append("com.pg85.otg.config.settingtype.Settings;\n");
         imports.append("import ")
@@ -142,11 +142,14 @@ public class ConfigAnnotationProcessor extends AbstractProcessor {
     private static void handleDeclaredTypes(Element enclosed, DeclaredType declaredType, StringBuilder imports, StringBuilder fields, SettingInfo info) {
         Element type = declaredType.asElement();
 
+        if (!type.toString().startsWith("java.lang.")) {
+            imports.append("import ")
+                    .append(type)
+                    .append(";\n");
+        }
+
         switch (type.getKind()) {
             case ENUM -> {
-                imports.append("import ")
-                        .append(type)
-                        .append(";\n");
                 // EnumSetting
                 EnumSetting enumSetting = enclosed.getAnnotation(EnumSetting.class);
                 String fieldTypeName = String.valueOf(type.getSimpleName());
@@ -157,12 +160,6 @@ public class ConfigAnnotationProcessor extends AbstractProcessor {
                         fieldTypeName, info.fieldName.toUpperCase(), info.name, fieldTypeName, defaultEnumValue, info.className, info.getFieldGetter(), info.description));
             }
             case CLASS, RECORD, INTERFACE -> {
-
-                if (!type.toString().startsWith("java.lang.")) {
-                    imports.append("import ")
-                            .append(type)
-                            .append(";\n");
-                }
 
                 // Handle String, Color, Other custom settings
                 if (type.toString().equals("java.lang.String")) {

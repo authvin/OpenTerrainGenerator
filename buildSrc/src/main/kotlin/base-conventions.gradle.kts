@@ -9,11 +9,13 @@ configure<JavaPluginExtension> {
 }
 
 configure<BasePluginExtension> {
-    archivesName.set("OpenTerrainGenerator-${project.name}")
+    version = project.property("otg_version").toString()
+    group = project.property("otg_group").toString()
 }
 
 configure<PublishingExtension> {
     publications.create<MavenPublication>("maven") {
+        artifactId = "otg-${project.name}"
         from(components["java"])
     }
 }

@@ -2,6 +2,7 @@ plugins {
     id("parent-logic")
     id ("architectury-plugin") version "3.4-SNAPSHOT" apply false
     id ("dev.architectury.loom") version "1.7-SNAPSHOT" apply false
+    id ("maven-publish")
 }
 
 defaultTasks = arrayListOf("build", "publishToMavenLocal")
@@ -10,10 +11,13 @@ subprojects {
     apply(plugin = "base-conventions")
 }
 
+version = project.property("otg_version").toString()
+group = project.property("otg_group").toString()
+
 val universalJar = tasks.register<Jar>("universalJar") {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     destinationDirectory.set(layout.buildDirectory.dir("distributions"))
-    archiveFileName.set("OpenTerrainGenerator-Universal-" + project.property("otg_version").toString() + ".jar")
+    archiveFileName.set("otg-" + project.property("otg_version").toString() + ".jar")
 }
 
 tasks.build {
@@ -38,6 +42,14 @@ listOf(
 //                files.find { it.asFile.path.endsWith("META-INF/MANIFEST.MF") }!!
 //            }
 //            manifest.from(manifestFile)
+        }
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            artifact(universalJar)
         }
     }
 }

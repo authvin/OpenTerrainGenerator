@@ -10,6 +10,7 @@ pluginManagement {
 rootProject.name = "OpenTerrainGenerator"
 
 include(
+        'common:common-annotation',
         "common:common-util",
         "common:common-customobject",
         "common:common-generator",
@@ -19,6 +20,3 @@ include(
         "platforms:fabric",
         //"platforms:paper",
 )
-include 'common:common-annotation'
-findProject(':common:common-annotation')?.name = 'common-annotation'
-
