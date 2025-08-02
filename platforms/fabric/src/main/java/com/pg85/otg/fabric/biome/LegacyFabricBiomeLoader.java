@@ -314,8 +314,8 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
                                 biomeConfig.getVisualSettings().getBiomeTemperature(),
                                 biomeConfig.getGenerationSettings().getIsleInBiomes(),
                                 biomeConfig.getGenerationSettings().getBorderInBiomes(),
-                                biomeConfig.getGenerationSettings().getOnlyBorderNearBiomes(),
-                                biomeConfig.getGenerationSettings().getNotBorderNearBiomes()
+                                biomeConfig.getGenerationSettings().getOnlyBorderNear(),
+                                biomeConfig.getGenerationSettings().getNotBorderNear()
                         )
                 );
                 isleBiomesAtDepth.put(biomeConfig.getGenerationSettings().getBiomeSizeWhenIsle(), biomesAtDepth);
@@ -333,15 +333,15 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
                                 biomeConfig.getVisualSettings().getBiomeTemperature(),
                                 biomeConfig.getGenerationSettings().getIsleInBiomes(),
                                 biomeConfig.getGenerationSettings().getBorderInBiomes(),
-                                biomeConfig.getGenerationSettings().getOnlyBorderNearBiomes(),
-                                biomeConfig.getGenerationSettings().getNotBorderNearBiomes()
+                                biomeConfig.getGenerationSettings().getOnlyBorderNear(),
+                                biomeConfig.getGenerationSettings().getNotBorderNear()
                         )
                 );
                 borderBiomesAtDepth.put(biomeConfig.getGenerationSettings().getBiomeSizeWhenBorder(), biomesAtDepth);
             }
 
             // Index BiomeColor for FromImageMode and /otg map
-            biomeColorMap.put(biomeConfig.getGenerationSettings().getBiomeColor().getColor(), otgBiomeId);
+            biomeColorMap.put(biomeConfig.getGenerationSettings().getBiomeMapColor().getColor(), otgBiomeId);
 
             if(OTG.getEngine().getLogger().getLogCategoryEnabled(LogCategory.BIOME_REGISTRY))
             {
@@ -604,8 +604,8 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
                             config.getVisualSettings().getBiomeTemperature(),
                             config.getGenerationSettings().getIsleInBiomes(),
                             config.getGenerationSettings().getBorderInBiomes(),
-                            config.getGenerationSettings().getOnlyBorderNearBiomes(),
-                            config.getGenerationSettings().getNotBorderNearBiomes()
+                            config.getGenerationSettings().getOnlyBorderNear(),
+                            config.getGenerationSettings().getNotBorderNear()
                     );
                     biomes.add(newBiomeData);
 

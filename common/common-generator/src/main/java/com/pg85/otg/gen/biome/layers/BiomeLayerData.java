@@ -76,8 +76,8 @@ public class BiomeLayerData
 				oceanBiomeConfig.getVisualSettings().getBiomeTemperature(),
 				oceanBiomeConfig.getGenerationSettings().getIsleInBiomes(),
 				oceanBiomeConfig.getGenerationSettings().getBorderInBiomes(),
-				oceanBiomeConfig.getGenerationSettings().getOnlyBorderNearBiomes(),
-				oceanBiomeConfig.getGenerationSettings().getNotBorderNearBiomes()
+				oceanBiomeConfig.getGenerationSettings().getOnlyBorderNear(),
+				oceanBiomeConfig.getGenerationSettings().getNotBorderNear()
 			);
 		}
 

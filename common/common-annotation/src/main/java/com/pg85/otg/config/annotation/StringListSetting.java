@@ -11,6 +11,6 @@ import java.util.List;
 @Target(ElementType.FIELD)
 @Setting
 public @interface StringListSetting {
-    String[] DEFAULT_VALUE = new String[0];
-    String[] value();
+    String[] DEFAULT_VALUE = {};
+    String[] value() default {};
 }

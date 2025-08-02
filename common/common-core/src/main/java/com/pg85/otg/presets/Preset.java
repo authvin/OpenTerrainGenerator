@@ -61,7 +61,7 @@ public class Preset {
             OTGBiomeID biomeID = bc.getOTGBiomeID();
             biomeIDS.add(biomeID);
             biomeConfigs.put(biomeID, bc);
-            biomeColorMap.put(biomeID, bc.getGenerationSettings().getBiomeColor());
+            biomeColorMap.put(biomeID, bc.getGenerationSettings().getBiomeMapColor());
         });
 
         this.biomeTemplateList.forEach(bt -> {

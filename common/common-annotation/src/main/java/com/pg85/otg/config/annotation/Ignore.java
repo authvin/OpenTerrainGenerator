@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.FIELD, ElementType.TYPE})
-public @interface DependentValue {
+public @interface Ignore {
 }

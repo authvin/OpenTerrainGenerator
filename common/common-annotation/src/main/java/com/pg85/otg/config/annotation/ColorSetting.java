@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Setting
 public @interface ColorSetting {
-    String DEFAULT_VALUE = "#FFFFFF"; // Default color is white
+    String DEFAULT_VALUE = "0xFFFFFF"; // Default color is white
     String value() default DEFAULT_VALUE;
 }

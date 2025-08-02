@@ -8,10 +8,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * A ConfigSection represents a subset of settings in a ConfigFile.
+ * Allows for reuse of only some config sections between configs and templates.
+ */
 public abstract class ConfigSection {
 
     public abstract String getSectionName();
 
+    /**
+     * This function collects all Setting variables from a setting holder class
+     *
+     * @param clazz The class that contains the settings
+     * @return Map of setting name to setting
+     */
     public static Map<String, Setting<?>> getSettings(Class<? extends ConfigSection> clazz) {
         Map<String, Setting<?>> settingsMap = new HashMap<>();
         Field[] fields = clazz.getDeclaredFields();
@@ -30,14 +40,28 @@ public abstract class ConfigSection {
         return settingsMap;
     }
 
-    public Map<String, Setting<?>> getSettings() {
+    /**
+     * Wrapper for getSettings(Class) for internal use by the config sections to get their own settings
+     *
+     * @return Map of setting name to setting
+     */
+    protected Map<String, Setting<?>> getSettings() {
         return getSettings(this.getClass());
     }
 
+    /**
+     * Wrapper for getSettings() for use by the config system, in list format
+     * @return List of all settings defined in a config section
+     */
     public List<Setting<?>> getSettingsList() {
         return getSettings().values().stream().toList();
     }
 
+    /**
+     * Method to get a list of all settings which are not set to their default value.
+     * Intended for use with config sections like tags, where most values will be boolean and stay false.
+     * @return List of settings with altered value from the default
+     */
     public List<Setting<?>> getAlteredSettings() {
         return getSettings().values().stream()
                 .filter(setting -> setting.getGetter().apply(this) != setting.getDefaultValue())

@@ -10,6 +10,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Map;
 
 @Builder
 @Getter
@@ -201,8 +202,9 @@ public class BiomeTagConfig extends ConfigSection {
         }
     }
 
-    public List<Setting<?>> getAllSettings() {
-        return BiomeTagSettings.list;
+    @Override
+    public Map<String, Setting<?>> getSettings() {
+        return ConfigSection.getSettings(BiomeTagSettings.class);
     }
 
     public void writeConfig(SettingsMap writer) {

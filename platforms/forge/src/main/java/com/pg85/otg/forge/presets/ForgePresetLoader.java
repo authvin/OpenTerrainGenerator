@@ -332,7 +332,7 @@ public class ForgePresetLoader extends LocalPresetLoader
 						biomeConfig.getValue().getVisualSettings().getBiomeTemperature(),
 						biomeConfig.getValue().getGenerationSettings().getIsleInBiomes(),
 						biomeConfig.getValue().getGenerationSettings().getBorderInBiomes(),
-						biomeConfig.getValue().getGenerationSettings().getOnlyBorderNearBiomes(),
+						biomeConfig.getValue().getGenerationSettings().getOnlyBorderNear(),
 						biomeConfig.getValue().getGenerationSettings().getNotBorderNearBiomes()
 					)
 				);
@@ -351,7 +351,7 @@ public class ForgePresetLoader extends LocalPresetLoader
 						biomeConfig.getValue().getVisualSettings().getBiomeTemperature(),
 						biomeConfig.getValue().getGenerationSettings().getIsleInBiomes(),
 						biomeConfig.getValue().getGenerationSettings().getBorderInBiomes(),
-						biomeConfig.getValue().getGenerationSettings().getOnlyBorderNearBiomes(),
+						biomeConfig.getValue().getGenerationSettings().getOnlyBorderNear(),
 						biomeConfig.getValue().getGenerationSettings().getNotBorderNearBiomes()
 					)
 				);
@@ -1217,7 +1217,7 @@ public class ForgePresetLoader extends LocalPresetLoader
 						config.getVisualSettings().getBiomeTemperature(),
 						config.getGenerationSettings().getIsleInBiomes(),
 						config.getGenerationSettings().getBorderInBiomes(),
-						config.getGenerationSettings().getOnlyBorderNearBiomes(),
+						config.getGenerationSettings().getOnlyBorderNear(),
 						config.getGenerationSettings().getNotBorderNearBiomes()
 					);
 					biomes.add(newBiomeData);

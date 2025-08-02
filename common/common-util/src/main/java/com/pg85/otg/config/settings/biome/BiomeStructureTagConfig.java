@@ -129,12 +129,6 @@ public class BiomeStructureTagConfig extends ConfigSection {
         return builder.build();
     }
 
-    public List<Setting<?>> getAlteredSettings() {
-        return BiomeStructureTagSettings.list.stream()
-                .filter(setting -> setting.getGetter().apply(this) != setting.getDefaultValue())
-                .toList();
-    }
-
     public void writeConfig(SettingsMap writer) {
         writer.header2("Biome Structure Tag Settings");
 

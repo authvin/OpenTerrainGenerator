@@ -5,6 +5,9 @@ import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settings.ConfigSection;
+import com.pg85.otg.config.settings.biome.generated.BiomePlacementSettings;
+import com.pg85.otg.config.settings.biome.generated.BiomeStructureTagSettings;
+import com.pg85.otg.config.settings.biome.generated.BiomeTagSettings;
 import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.interfaces.ICustomStructureGen;
@@ -110,9 +113,9 @@ public abstract class BiomeSettings implements ConfigFile {
     {
         settings.renameOldSetting("DisableNotchHeightControl", BiomeTerrainSettings.DISABLE_BIOME_HEIGHT);
         settings.renameOldSetting("BiomeDictId", IdentitySettings.BIOME_DICT_TAGS);
-        settings.renameOldSetting("IsleInBiome", BiomePlacementConfig.ISLE_IN_BIOMES);
-        settings.renameOldSetting("BiomeIsBorder", BiomePlacementConfig.BORDER_IN_BIOMES);
-        settings.renameOldSetting("BiomeColor", BiomePlacementConfig.BIOME_MAP_COLOR);
+        settings.renameOldSetting("IsleInBiome", BiomePlacementSettings.ISLE_IN_BIOMES);
+        settings.renameOldSetting("BiomeIsBorder", BiomePlacementSettings.BORDER_IN_BIOMES);
+        settings.renameOldSetting("BiomeColor", BiomePlacementSettings.BIOME_MAP_COLOR);
     }
 
     protected void readDefaultSettings(SettingsMap settingsMap, PresetSettings presetSettings, IConfigFunctionProvider provider) {
@@ -164,6 +167,7 @@ public abstract class BiomeSettings implements ConfigFile {
             if (biomeTagConfig.isDisplayAllBiomeTags()) {
                 writeConfigSection(writer, biomeTagConfig);
             } else {
+                writer.putSetting(BiomeTagSettings.DISPLAY_ALL_BIOME_TAGS, biomeTagConfig);
                 writeAlteredConfigSection(writer, biomeTagConfig);
             }
         }
@@ -171,6 +175,7 @@ public abstract class BiomeSettings implements ConfigFile {
             if (biomeStructureTagConfig.isDisplayAllStructureTags()) {
                 writeConfigSection(writer, biomeStructureTagConfig);
             } else {
+                writer.putSetting(BiomeStructureTagSettings.DISPLAY_ALL_STRUCTURE_TAGS, biomeStructureTagConfig);
                 writeAlteredConfigSection(writer, biomeStructureTagConfig);
             }
         }

@@ -161,6 +161,12 @@ public class ConfigAnnotationProcessor extends AbstractProcessor {
             if (enclosed.getKind() != ElementKind.FIELD) {
                 continue;
             }
+            Ignore ignore = enclosed.getAnnotation(Ignore.class);
+            if (ignore != null) {
+                // This is a parent/dependent/etc value - don't make a setting for it
+                continue;
+            }
+
             TypeMirror fieldType = enclosed.asType();
 
             fields.append("\t");
@@ -237,7 +243,11 @@ public class ConfigAnnotationProcessor extends AbstractProcessor {
                     String[] defaultValue = stringListSetting != null ? stringListSetting.value() : StringListSetting.DEFAULT_VALUE;
                     // Setting<List<String>> stringListSetting(String name, String[] defaultValues, Function<ConfigSection, List<String>> getter, String ...description)
 
-                    String defaultValueString = String.join(",", defaultValue);
+                    String defaultValueString = String.join("\", \"", defaultValue);
+
+                    if (!defaultValueString.isEmpty()) {
+                        defaultValueString = "\""+defaultValueString+"\"";
+                    }
 
                     fields.append(String.format("public static final Setting<List<String>> %s = Settings.stringListSetting(\"%s\", new String[] {%s}, t -> ((%s) t).%s, \"%s\");%n",
                             info.getSettingName(), info.name, defaultValueString, info.className, info.getFieldGetter(), info.description));
