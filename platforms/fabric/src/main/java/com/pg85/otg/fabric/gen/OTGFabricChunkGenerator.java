@@ -39,7 +39,6 @@ import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.carver.CarvingContext;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.structure.*;
-import net.minecraft.world.level.levelgen.structure.pools.JigsawJunction;
 import net.minecraft.world.level.storage.LevelResource;
 import org.jetbrains.annotations.NotNull;
 
@@ -131,7 +130,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
 
         // Template biomes handle their own snow, OTG biomes use OTG snow.
         // TODO: Snow is handled per chunk, so this may cause some artifacts on biome borders.
-        if(!biome.getBiomeSettings().getIsTemplateForBiome()) {
+        if(!biome.getBiomeSettings().getIdentitySettings().isTemplateForBiome()) {
             this.chunkDecorator.doSnowAndIce(fabricWorldGenRegion, chunkBeingDecorated);
         }
 

@@ -211,7 +211,7 @@ public class SettingsSchemaGenerator {
         // Define your settings
         Map<String, Map<String, Setting<?>>> settings = new HashMap<>();
         settings.put("Identity Settings", ConfigSection.getSettings(IdentitySettings.class));
-        settings.put("Biome Generation Settings", ConfigSection.getSettings(BiomeGenerationSettings.class));
+        settings.put("Biome Generation Settings", ConfigSection.getSettings(BiomePlacementConfig.class));
         settings.put("Biome Terrain Settings", ConfigSection.getSettings(BiomeTerrainSettings.class));
         settings.put("Biome Visual Settings", ConfigSection.getSettings(BiomeVisualSettings.class));
         settings.put("Surface Settings", ConfigSection.getSettings(SurfaceSettings.class));

@@ -306,7 +306,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 		
 		int radius = Math.max(center.getTerrainSettings().getSmoothRadius(), center.getTerrainSettings().getCHCSmoothRadius());
 		int areaSize = radius * 2 + 1;
-		BiomeSettings biomes[] = this.cachedBiomeProvider.getNoiseBiomeConfigsForRegion(noiseX - radius, noiseZ - radius, areaSize);
+		BiomeSettings[] biomes = this.cachedBiomeProvider.getNoiseBiomeConfigsForRegion(noiseX - radius, noiseZ - radius, areaSize);
 		BiomeSettings biome;
 		BiomeTerrainSettings biomeTerrainSettings;
 		TerrainSettings terrainSettings = this.preset.getPresetConfig().getTerrainSettings();

@@ -140,14 +140,14 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
     private void registerBiomesForPreset(Preset preset, WritableRegistry<Biome> biomeRegistry)
     {
         if (!BIOME_DATA_INITIALIZED) {
-            // should always be initialized, but better safe than sorry. Would rather have a sensical error message than nonsensical
+            // Should always be initialized, but better safe than sorry. Would rather have a sensical error message than nonsensical
             throw new IllegalStateException("BiomeDataMixin not initialized");
         }
         HolderGetter<PlacedFeature> featureHolder = PLACED_FEATURE_HOLDER;
         HolderGetter<ConfiguredWorldCarver<?>> carverHolder = CONFIGURED_CARVER_HOLDER;
 
         // Index BiomeColors for FromImageMode and /otg map
-        HashMap<Integer, Integer> biomeColorMap = new HashMap<Integer, Integer>();
+        HashMap<Integer, Integer> biomeColorMap = new HashMap<>();
 
         // Start at 1, 0 is the fallback for the biome generator (the world's ocean biome).
         int currentId = 1;
@@ -176,10 +176,10 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
 
         for(BiomeConfig biomeConfig : biomeConfigs)
         {
-            if(!biomeConfig.getIsTemplateForBiome())
+            if(!biomeConfig.getIdentitySettings().isTemplateForBiome())
             {
                 // Normal OTG biome, not a template biome.
-                IBiomeResourceLocation otgLocation = new OTGBiomeResourceLocation(preset.getPresetFolder(), preset.getPresetRegistryName(), preset.getMajorVersion(), biomeConfig.getIdentitySettings().getBiomeName());
+                IBiomeResourceLocation otgLocation = new OTGBiomeResourceLocation(preset.getPresetFolder(), preset.getPresetRegistryName(), biomeConfig.getIdentitySettings().getBiomeName());
                 biomeConfig.setRegistryKey(otgLocation);
                 biomeConfigsByResourceLocation.put(otgLocation, biomeConfig);
                 biomeConfigsByName.put(biomeConfig.getIdentitySettings().getBiomeName(), biomeConfig);
@@ -188,7 +188,7 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
 
         MobInheritanceHandler.handleMobInheritance(biomeRegistry, biomeConfigs);
 
-        IBiome[] presetIdMapping = new IBiome[biomeConfigsByResourceLocation.entrySet().size()];
+        IBiome[] presetIdMapping = new IBiome[biomeConfigsByResourceLocation.size()];
         boolean hasOceanBiome = false;
         for(Entry<IBiomeResourceLocation, BiomeConfig> biomeConfigEntry : biomeConfigsByResourceLocation.entrySet())
         {
@@ -231,9 +231,8 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
             Biome biome;
             Holder.Reference<Biome> ref;
             // templates, and non-developer refresh, both just get the biome from the registry
-            if(biomeConfig.getIsTemplateForBiome()
-//                    || (refresh
-//                        && !OTG.getEngine().getPluginConfig().getDeveloperModeEnabled())
+            if(
+                biomeConfig.getIdentitySettings().isTemplateForBiome()
             ) {
                 biome = biomeRegistry.get(resourceLocation);
                 if (biome == null) {
@@ -265,13 +264,6 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
                 }
                 resourceKey = ResourceKey.create(Registries.BIOME, resourceLocation);
                 // For OTG biomes, add Fabric biome dictionary tags.
-                biomeConfig.getBiomeDictTags().forEach(biomeDictId -> {
-//                    if(biomeDictId != null && !biomeDictId.trim().isEmpty())
-//                    {
-//                        BiomeDictionary.addTypes(resourceKey, BiomeDictionary.Type.getType(biomeDictId.trim()));
-//                        // TODO: BiomeDictionary missing, needs replacing
-//                    }
-                });
 
                 biome = LegacyFabricBiomeLoader.createOTGBiome(preset.getPresetConfig(), biomeConfig, featureHolder, carverHolder);
 
@@ -606,7 +598,7 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
                     BiomeConfig config = biome.getValue();
                     // Make and add the generation data
                     BiomeData newBiomeData = new BiomeData(
-                            config.getOldOTGBiomeID(),
+                            config.getOTGBiomeID().id(),
                             config.getGenerationSettings().getBiomeRarity(),
                             config.getGenerationSettings().getBiomeSize(),
                             config.getVisualSettings().getBiomeTemperature(),

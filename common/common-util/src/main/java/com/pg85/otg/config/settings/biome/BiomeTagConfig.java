@@ -9,75 +9,89 @@ import com.pg85.otg.util.minecraft.WoodType;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Builder
 @Getter
 @Config
-@LongDescription({"Settings for biome tags, used by datagen tag generation.",
-        "Will be available at runtime, but can be inaccurate if not set correctly."})
+@LongDescription({
+        "Settings for biome tags, used by datagen tag generation.",
+        "Will be available at runtime, but can be inaccurate if not set correctly."
+})
 public class BiomeTagConfig extends ConfigSection {
+
+    @LongDescription({
+            "Set to true to display all biome tag settings for this biome",
+            "By default, only the settings that differ from the default values are displayed."
+    })
+    private final boolean displayAllBiomeTags;
 
     // world type
     @Description("Set to true if other mods should treat this as an overworld biome")
-    boolean overworld;
+    private final boolean overworld;
     @Description("Set to true if other mods should treat this as a nether biome")
-    boolean nether;
+    private final boolean nether;
     @Description("Set to true if other mods should treat this as an end biome")
-    boolean end;
+    private final boolean end;
 
     // biome properties
-    boolean aquatic;
-    boolean aquaticIcy;
-    boolean badlands;
-    boolean beach;
-    boolean birchForest;
-    boolean cave;
-    boolean cold;
-    boolean darkForest;
-    boolean dead;
-    boolean deepOcean;
-    boolean denseVegetation;
-    boolean desert;
-    boolean dry;
-    boolean floral;
-    boolean flowerForest;
-    boolean hill;
-    boolean hot;
-    boolean icy;
-    boolean jungle;
-    boolean lush;
-    boolean magical;
-    boolean mountain;
-    boolean peak;
-    boolean slope;
-    boolean netherForest;
-    boolean oldGrowth;
-    boolean outerEndIsland;
-    boolean plains;
-    boolean plateau;
-    boolean rare;
-    boolean river;
-    boolean sandy;
-    boolean savanna;
-    boolean shallowOcean;
-    boolean snowy;
-    boolean snowyPlains;
-    boolean sparseVegetation;
-    boolean spooky;
-    boolean stonyShores;
-    boolean swamp;
-    boolean taiga;
-    boolean temperate;
-    boolean underground;
-    boolean theVoid;
-    boolean wasteland;
-    boolean wet;
-    boolean windswept;
-    boolean noDefaultMonsters;
-    boolean hiddenFromLocatorSelection;
-    @EnumSetting("OAK")
+    private final boolean aquatic;
+    private final boolean aquaticIcy;
+    private final boolean badlands;
+    private final boolean beach;
+    private final boolean birchForest;
+    private final boolean cave;
+    private final boolean cold;
+    private final boolean coniferousTrees;
+    private final boolean darkForest;
+    private final boolean dead;
+    private final boolean deciduousTrees;
+    private final boolean deepOcean;
+    private final boolean denseVegetation;
+    private final boolean desert;
+    private final boolean dry;
+    private final boolean forest;
+    private final boolean floral;
+    private final boolean flowerForest;
+    private final boolean hill;
+    private final boolean hot;
+    private final boolean icy;
+    private final boolean jungle;
+    private final boolean jungleTrees;
+    private final boolean lush;
+    private final boolean magical;
+    private final boolean mountain;
+    private final boolean mushroom;
+    private final boolean peak;
+    private final boolean slope;
+    private final boolean netherForest;
+    private final boolean ocean;
+    private final boolean oldGrowth;
+    private final boolean outerEndIsland;
+    private final boolean plains;
+    private final boolean plateau;
+    private final boolean rare;
+    private final boolean river;
+    private final boolean sandy;
+    private final boolean savanna;
+    private final boolean savannaTrees;
+    private final boolean shallowOcean;
+    private final boolean snowy;
+    private final boolean snowyPlains;
+    private final boolean sparseVegetation;
+    private final boolean spooky;
+    private final boolean stonyShores;
+    private final boolean swamp;
+    private final boolean taiga;
+    private final boolean temperate;
+    private final boolean theVoid;
+    private final boolean underground;
+    private final boolean wasteland;
+    private final boolean wet;
+    private final boolean windswept;
+    private final boolean noDefaultMonsters;
+    private final boolean hiddenFromLocatorSelection;
+    @EnumSetting("NONE")
     WoodType primaryWoodType;
 
     @Override
@@ -85,122 +99,119 @@ public class BiomeTagConfig extends ConfigSection {
         return "Biome Tag Settings";
     }
 
-    public static BiomeTagConfig getBiomeTagConfig(SettingsMap reader) {
-        BiomeTagConfigBuilder builder = BiomeTagConfig.builder();
-        builder.aquatic(reader.getSetting(BiomeTagSettings.AQUATIC));
-        builder.aquaticIcy(reader.getSetting(BiomeTagSettings.AQUATICICY));
-        builder.badlands(reader.getSetting(BiomeTagSettings.BADLANDS));
-        builder.beach(reader.getSetting(BiomeTagSettings.BEACH));
-        builder.birchForest(reader.getSetting(BiomeTagSettings.BIRCHFOREST));
-        builder.cave(reader.getSetting(BiomeTagSettings.CAVE));
-        builder.cold(reader.getSetting(BiomeTagSettings.COLD));
-        builder.darkForest(reader.getSetting(BiomeTagSettings.DARKFOREST));
-        builder.dead(reader.getSetting(BiomeTagSettings.DEAD));
-        builder.deepOcean(reader.getSetting(BiomeTagSettings.DEEPOCEAN));
-        builder.denseVegetation(reader.getSetting(BiomeTagSettings.DENSEVEGETATION));
-        builder.desert(reader.getSetting(BiomeTagSettings.DESERT));
-        builder.dry(reader.getSetting(BiomeTagSettings.DRY));
-        builder.floral(reader.getSetting(BiomeTagSettings.FLORAL));
-        builder.flowerForest(reader.getSetting(BiomeTagSettings.FLOWERFOREST));
-        builder.hill(reader.getSetting(BiomeTagSettings.HILL));
-        builder.hot(reader.getSetting(BiomeTagSettings.HOT));
-        builder.icy(reader.getSetting(BiomeTagSettings.ICY));
-        builder.jungle(reader.getSetting(BiomeTagSettings.JUNGLE));
-        builder.lush(reader.getSetting(BiomeTagSettings.LUSH));
-        builder.magical(reader.getSetting(BiomeTagSettings.MAGICAL));
-        builder.mountain(reader.getSetting(BiomeTagSettings.MOUNTAIN));
-        builder.peak(reader.getSetting(BiomeTagSettings.PEAK));
-        builder.slope(reader.getSetting(BiomeTagSettings.SLOPE));
-        builder.netherForest(reader.getSetting(BiomeTagSettings.NETHERFOREST));
-        builder.oldGrowth(reader.getSetting(BiomeTagSettings.OLDGROWTH));
-        builder.outerEndIsland(reader.getSetting(BiomeTagSettings.OUTERENDISLAND));
-        builder.overworld(reader.getSetting(BiomeTagSettings.OVERWORLD));
-        builder.nether(reader.getSetting(BiomeTagSettings.NETHER));
-        builder.end(reader.getSetting(BiomeTagSettings.END));
-        builder.plains(reader.getSetting(BiomeTagSettings.PLAINS));
-        builder.plateau(reader.getSetting(BiomeTagSettings.PLATEAU));
-        builder.rare(reader.getSetting(BiomeTagSettings.RARE));
-        builder.river(reader.getSetting(BiomeTagSettings.RIVER));
-        builder.sandy(reader.getSetting(BiomeTagSettings.SANDY));
-        builder.savanna(reader.getSetting(BiomeTagSettings.SAVANNA));
-        builder.shallowOcean(reader.getSetting(BiomeTagSettings.SHALLOWOCEAN));
-        builder.snowy(reader.getSetting(BiomeTagSettings.SNOWY));
-        builder.snowyPlains(reader.getSetting(BiomeTagSettings.SNOWYPLAINS));
-        builder.sparseVegetation(reader.getSetting(BiomeTagSettings.SPARSEVEGETATION));
-        builder.spooky(reader.getSetting(BiomeTagSettings.SPOOKY));
-        builder.stonyShores(reader.getSetting(BiomeTagSettings.STONYSHORES));
-        builder.swamp(reader.getSetting(BiomeTagSettings.SWAMP));
-        builder.taiga(reader.getSetting(BiomeTagSettings.TAIGA));
-        builder.temperate(reader.getSetting(BiomeTagSettings.TEMPERATE));
-        builder.underground(reader.getSetting(BiomeTagSettings.UNDERGROUND));
-        builder.theVoid(reader.getSetting(BiomeTagSettings.THEVOID));
-        builder.wasteland(reader.getSetting(BiomeTagSettings.WASTELAND));
-        builder.wet(reader.getSetting(BiomeTagSettings.WET));
-        builder.windswept(reader.getSetting(BiomeTagSettings.WINDSWEPT));
-        builder.noDefaultMonsters(reader.getSetting(BiomeTagSettings.NODEFAULTMONSTERS));
-        builder.hiddenFromLocatorSelection(reader.getSetting(BiomeTagSettings.HIDDENFROMLOCATORSELECTION));
-        builder.primaryWoodType(reader.getSetting(BiomeTagSettings.PRIMARYWOODTYPE));
+    public static BiomeTagConfig getBiomeTagConfig(SettingsMap reader, IdentitySettings legacy) {
+        BiomeTagConfigBuilder builder = BiomeTagSettings.getBuilder(reader);
+
+        String category = legacy.getBiomeCategory();
+        if (category != null && !category.isEmpty()) {
+            handleCategory(category, builder);
+        }
+
+        List<String> dictTags = legacy.getBiomeDictTags();
+        if (dictTags != null && !dictTags.isEmpty()) {
+            for (String dictTag : dictTags) {
+                handleDictTag(dictTag, builder);
+            }
+
+            // Custom legacy behaviour for deciduous trees
+            if (!dictTags.contains("coniferous") && !dictTags.contains("jungle") && !dictTags.contains("savanna")) {
+                builder.deciduousTrees(true);
+            }
+        }
         return builder.build();
     }
 
-    public List<Setting<?>> getAlteredSettings() {
-        ArrayList <Setting<?>> list = new ArrayList<>();
-        list.add(BiomeTagSettings.OVERWORLD);
-        list.add(BiomeTagSettings.NETHER);
-        list.add(BiomeTagSettings.END);
-        list.add(BiomeTagSettings.AQUATIC);
-        list.add(BiomeTagSettings.AQUATICICY);
-        list.add(BiomeTagSettings.BADLANDS);
-        list.add(BiomeTagSettings.BEACH);
-        list.add(BiomeTagSettings.BIRCHFOREST);
-        list.add(BiomeTagSettings.CAVE);
-        list.add(BiomeTagSettings.COLD);
-        list.add(BiomeTagSettings.DARKFOREST);
-        list.add(BiomeTagSettings.DEAD);
-        list.add(BiomeTagSettings.DEEPOCEAN);
-        list.add(BiomeTagSettings.DENSEVEGETATION);
-        list.add(BiomeTagSettings.DESERT);
-        list.add(BiomeTagSettings.DRY);
-        list.add(BiomeTagSettings.FLORAL);
-        list.add(BiomeTagSettings.FLOWERFOREST);
-        list.add(BiomeTagSettings.HILL);
-        list.add(BiomeTagSettings.HOT);
-        list.add(BiomeTagSettings.ICY);
-        list.add(BiomeTagSettings.JUNGLE);
-        list.add(BiomeTagSettings.LUSH);
-        list.add(BiomeTagSettings.MAGICAL);
-        list.add(BiomeTagSettings.MOUNTAIN);
-        list.add(BiomeTagSettings.PEAK);
-        list.add(BiomeTagSettings.SLOPE);
-        list.add(BiomeTagSettings.NETHERFOREST);
-        list.add(BiomeTagSettings.OLDGROWTH);
-        list.add(BiomeTagSettings.OUTERENDISLAND);
-        list.add(BiomeTagSettings.PLAINS);
-        list.add(BiomeTagSettings.PLATEAU);
-        list.add(BiomeTagSettings.RARE);
-        list.add(BiomeTagSettings.RIVER);
-        list.add(BiomeTagSettings.SANDY);
-        list.add(BiomeTagSettings.SAVANNA);
-        list.add(BiomeTagSettings.SHALLOWOCEAN);
-        list.add(BiomeTagSettings.SNOWY);
-        list.add(BiomeTagSettings.SNOWYPLAINS);
-        list.add(BiomeTagSettings.SPARSEVEGETATION);
-        list.add(BiomeTagSettings.SPOOKY);
-        list.add(BiomeTagSettings.STONYSHORES);
-        list.add(BiomeTagSettings.SWAMP);
-        list.add(BiomeTagSettings.TAIGA);
-        list.add(BiomeTagSettings.TEMPERATE);
-        list.add(BiomeTagSettings.UNDERGROUND);
-        list.add(BiomeTagSettings.THEVOID);
-        list.add(BiomeTagSettings.WASTELAND);
-        list.add(BiomeTagSettings.WET);
-        list.add(BiomeTagSettings.WINDSWEPT);
-        list.add(BiomeTagSettings.NODEFAULTMONSTERS);
-        list.add(BiomeTagSettings.HIDDENFROMLOCATORSELECTION);
-        list.add(BiomeTagSettings.PRIMARYWOODTYPE);
+    private static void handleCategory(String category, BiomeTagConfigBuilder builder) {
+        switch (category.toLowerCase()) {
+            case "none" -> {}
+            case "taiga" -> builder.taiga(true);
+            case "extreme_hills" -> {
+                builder.hill(true);
+                builder.mountain(true);
+            }
+            case "jungle" -> builder.jungle(true);
+            case "mesa" -> builder.badlands(true);
+            case "plains" -> builder.plains(true);
+            case "savanna" -> builder.savanna(true);
+            case "icy" -> builder.icy(true);
+            case "the_end" -> builder.end(true);
+            case "beach" -> builder.beach(true);
+            case "forest" -> builder.forest(true);
+            case "ocean" -> builder.ocean(true);
+            case "desert" -> builder.desert(true);
+            case "river" -> builder.river(true);
+            case "swamp" -> builder.swamp(true);
+            case "mushroom" -> builder.mushroom(true);
+            case "nether" -> builder.nether(true);
+        }
+    }
 
-        return list.stream()
-                .filter(setting -> setting.getGetter().apply(this) != setting.getDefaultValue())
-                .toList();
+    private static void handleDictTag(String dictTag, BiomeTagConfigBuilder builder) {
+        switch (dictTag.toLowerCase()) {
+            // Temperature based
+            case "hot" -> builder.hot(true);
+            case "cold" -> builder.cold(true);
+
+            // Vegetation
+            case "sparse" -> builder.sparseVegetation(true);
+            case "dense" -> builder.denseVegetation(true);
+
+            // Wetness
+            case "wet" -> builder.wet(true);
+            case "dry" -> builder.dry(true);
+
+            // Tree type
+            case "savanna" -> builder.savannaTrees(true);
+            case "jungle" -> builder.jungleTrees(true);
+            case "coniferous" -> builder.coniferousTrees(true);
+
+            // Vibe
+            case "spooky" -> builder.spooky(true);
+            case "dead" -> builder.dead(true);
+            case "lush" -> builder.lush(true);
+            case "mushroom" -> builder.mushroom(true);
+            case "magical" -> builder.magical(true);
+            case "rare" -> builder.rare(true);
+            case "plateau" -> builder.plateau(true);
+            case "modified" -> {} // can't find a fitting tag
+
+
+            // Water tags
+            case "ocean" -> builder.ocean(true);
+            case "river" -> builder.river(true);
+            case "water" -> builder.aquatic(true);
+
+            // Generic biome types
+            case "mesa" -> builder.badlands(true);
+            case "forest" -> builder.forest(true);
+            case "plains" -> builder.plains(true);
+            case "mountain" -> builder.mountain(true);
+            case "hills" -> builder.hill(true);
+            case "swamp" -> builder.swamp(true);
+            case "sandy" -> builder.sandy(true);
+            case "snowy" -> builder.snowy(true);
+            case "wasteland" -> builder.wasteland(true);
+            case "beach" -> builder.beach(true);
+            case "void" -> builder.theVoid(true);
+
+            // Dimension tags
+            case "overworld" -> builder.overworld(true);
+            case "nether" -> builder.nether(true);
+            case "end" -> builder.end(true);
+        }
+    }
+
+    public List<Setting<?>> getAllSettings() {
+        return BiomeTagSettings.list;
+    }
+
+    public void writeConfig(SettingsMap writer) {
+        List<Setting<?>> alteredSettings = getAlteredSettings();
+        if (alteredSettings.isEmpty()) {
+            return; // No altered settings, nothing to write
+        }
+        for (Setting<?> setting : alteredSettings) {
+            writer.putSetting(setting, this);
+        }
     }
 }

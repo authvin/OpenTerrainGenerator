@@ -1,6 +1,7 @@
 package com.pg85.otg.config.settings.biome;
 
 import com.pg85.otg.config.io.SettingsMap;
+import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
@@ -9,12 +10,15 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
+import java.util.Locale;
 
 @Builder
 @Getter
 public class IdentitySettings extends ConfigSection {
     private final String biomeCategory;
     private final String biomeName;
+    private final String displayName;
+    private final String registryPath;
     private final boolean isTemplateForBiome;
     private final TemplateBiomeType templateBiomeType;
     private final List<String> biomeDictTags;
@@ -46,6 +50,7 @@ public class IdentitySettings extends ConfigSection {
             "If this is a template biome config for a nether biome, set this to Nether. NETHERRACK is used for base terrain generation.",
             "If this is a template biome config for an end biome, set this to End. END_STONE is used for base terrain generation."
     );
+
     public static final Setting<String> BIOME_CATEGORY = Settings.stringSetting(
             "BiomeCategory",
             "plains",
@@ -55,6 +60,7 @@ public class IdentitySettings extends ConfigSection {
             "none, taiga, extreme_hills, jungle, mesa, plains, savanna, icy, the_end, beach, forest, ocean, desert, river, swamp, mushroom, nether",
             "TemplateForBiome biomes inherit this from the targeted biomes."
     );
+
     public static final Setting<List<String>> BIOME_DICT_TAGS = Settings.stringListSetting(
             "BiomeDictTags",
             new String[]{""},
@@ -64,14 +70,31 @@ public class IdentitySettings extends ConfigSection {
             "TemplateForBiome biomes inherit these from the targeted biomes."
     );
 
-    public static IdentitySettings buildIdentitySettings(SettingsMap reader) {
-        IdentitySettingsBuilder builder = IdentitySettings.builder();
+    public static final Setting<String> DISPLAY_NAME = Settings.stringSetting(
+            "DisplayName",
+            "",
+            t -> ((IdentitySettings)t).getDisplayName(),
+            "Used for generating language files, which determines what will show up in f3 and similar info screens"
+    );
+
+    public static IdentitySettings buildIdentitySettings(SettingsMap reader, PresetSettings presetSettings) {
+        var builder = builder();
 
         builder.biomeCategory(reader.getSetting(BIOME_CATEGORY));
         builder.biomeName(reader.getName());
+        builder.displayName(reader.getSetting(DISPLAY_NAME));
         builder.isTemplateForBiome(reader.getSetting(IS_TEMPLATE_FOR_BIOME));
         builder.templateBiomeType(reader.getSetting(TEMPLATE_BIOME_TYPE));
         builder.biomeDictTags(reader.getSetting(BIOME_DICT_TAGS));
+
+        String namespace = presetSettings.getPresetInfo().getRegistryName();
+        String path = reader.getName()
+                .replaceAll("([a-z])([A-Z])", "$1_$2") // snake_case from CamelCase
+                .toLowerCase(Locale.ROOT) // All registry keys must be lower case
+                .replaceAll(" ", "_") // replace spaces with underscores
+                .replaceAll("[^a-z0-9_\\-/.]", ""); // Remove any illegal characters
+
+        builder.registryPath(String.format("%s:%s", namespace, path));
 
         return builder.build();
     }

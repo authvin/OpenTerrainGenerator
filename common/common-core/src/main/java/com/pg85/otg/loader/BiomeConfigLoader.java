@@ -1,11 +1,12 @@
 package com.pg85.otg.loader;
 
 import com.pg85.otg.config.biome.BiomeConfig;
+import com.pg85.otg.config.biome.BiomeTemplate;
 import com.pg85.otg.config.io.FileSettingsReader;
 import com.pg85.otg.config.io.FileSettingsWriter;
-import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.preset.PresetConfig;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.util.OTGLog;
@@ -34,22 +35,33 @@ public final class BiomeConfigLoader {
 		".biome.ini"
 	);
 
+	public static final Collection<String> BiomeTemplateExtensions = Arrays.asList(
+		".bct",
+		".bt"
+	);
+
+	public enum BiomeSettingType {
+		CONFIG,
+		TEMPLATE
+	};
+
 	private BiomeConfigLoader() { }
 
 	/**
 	 * Finds the biomes in the given directories.
 	 *
 	 * @param directory The directory to search for biomes in.
+	 * @param type The type of biome settings file to read
 	 * @return A map of biome name --> location on disk.
 	 */
-	public static Map<String, SettingsMap> readAllBiomeFiles(File directory)
+	public static Map<String, SettingsMap> readAllBiomeFiles(File directory, BiomeSettingType type)
 	{
-		Map<String, SettingsMap> biomeConfigsStore = new HashMap<>();
+		Map<String, SettingsMap> biomeSettingsStore = new HashMap<>();
 
 		// Account for the possibility that folder creation failed
 		if (directory.exists())
 		{
-			readBiomeFilesRecursive(biomeConfigsStore, directory);
+			readBiomeFilesRecursive(biomeSettingsStore, directory, type);
 		} else {
 			if(OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CONFIGS))
 			{
@@ -61,44 +73,48 @@ public final class BiomeConfigLoader {
 			}
 		}
 
-		return biomeConfigsStore;
+		return biomeSettingsStore;
 	}
 
 	/**
 	 * Loads the biomes from the given directory.
 	 * 
-	 * @param biomeConfigsStore Map to store all the found biome configs in.
+	 * @param biomeSettingsStore Map to store all the found biome configs in.
 	 * @param directory		 The directory to load from.
 	 */
-	private static void readBiomeFilesRecursive(Map<String, SettingsMap> biomeConfigsStore, File directory)
+	private static void readBiomeFilesRecursive(Map<String, SettingsMap> biomeSettingsStore, File directory, BiomeSettingType type)
 	{
 		for (File file : Objects.requireNonNull(directory.listFiles()))
 		{
 			// Search recursively
 			if (file.isDirectory())
 			{
-				readBiomeFilesRecursive(biomeConfigsStore, file);
+				readBiomeFilesRecursive(biomeSettingsStore, file, type);
 				continue;
 			}
-
-			// Extract name from filename
-			String biomeName = toBiomeName(file);
-			if (biomeName == null)
-			{
-				// Not a valid biome file
-				continue;
-			}
-
-			SettingsMap settings = readBiomeFile(file, biomeName);
-			biomeConfigsStore.put(biomeName, settings);
+			// Which type of biome settings are we reading?
+			switch (type) {
+				case CONFIG -> {
+					String biomeName = toBiomeName(file);
+					if (biomeName == null) {
+						continue;
+					}
+					File renamedFile = renameBiomeFile(file, biomeName);
+					SettingsMap settings = FileSettingsReader.read(biomeName, renamedFile);
+					biomeSettingsStore.put(biomeName, settings);
+				}
+                case TEMPLATE -> {
+					String templateName = toTemplateName(file);
+					if (templateName == null) {
+						continue;
+					}
+					SettingsMap settings = FileSettingsReader.read(templateName, file);
+					biomeSettingsStore.put(templateName, settings);
+                }
+            }
 		}
 	}
 
-	private static SettingsMap readBiomeFile(File file, String biomeName) {
-		// Load biomeconfig
-		File renamedFile = renameBiomeFile(file, biomeName);
-        return FileSettingsReader.read(biomeName, renamedFile);
-	}
 
 	/**
 	 * Tries to rename the config file so that it has the correct extension.
@@ -148,12 +164,28 @@ public final class BiomeConfigLoader {
 	 */
 	private static String toBiomeName(File file)
 	{
+		return checkExtension(file, BiomeConfigExtensions);
+	}
+
+	/**
+	 * Extracts the template name out of the file name
+	 *
+	 * @param file The file to extract the template name out of
+	 * @return The template name, or null if the file is not a biome template file
+	 */
+	private static String toTemplateName(File file)
+	{
+		return checkExtension(file, BiomeTemplateExtensions);
+	}
+
+	private static String checkExtension(File file, Collection<String> extensions)
+	{
 		String fileName = file.getName();
-		for (String extension : BiomeConfigExtensions)
+		for (String extension : extensions)
 		{
 			if (fileName.endsWith(extension))
 			{
-                return fileName.substring(0, fileName.lastIndexOf(extension));
+				return fileName.substring(0, fileName.lastIndexOf(extension));
 			}
 		}
 
@@ -182,17 +214,27 @@ public final class BiomeConfigLoader {
 		}
 	}
 
-	public static ArrayList<BiomeConfig> loadBiomeConfigs(Path presetDir, PresetConfig presetConfig, IConfigFunctionProvider biomeResourcesManager)
+	public static List<BiomeTemplate> loadBiomeTemplates(Path presetDir, PresetConfig presetConfig) {
+		List<BiomeSettings> list = loadBiomeSettings(presetDir, presetConfig, BiomeSettingType.TEMPLATE);
+		return list.stream().map(t -> (BiomeTemplate) t).toList();
+	}
+
+	public static List<BiomeConfig> loadBiomeConfigs(Path presetDir, PresetConfig presetConfig) {
+		List<BiomeSettings> list = loadBiomeSettings(presetDir, presetConfig, BiomeSettingType.CONFIG);
+		return list.stream().map(t -> (BiomeConfig) t).toList();
+	}
+
+	public static List<BiomeSettings> loadBiomeSettings(Path presetDir, PresetConfig presetConfig, BiomeSettingType type)
 	{
 		File biomesDirectory = getBiomeDirectory(presetDir);
 		// Load all files
-        Map<String, SettingsMap> biomeConfigStore = readAllBiomeFiles(biomesDirectory);
+        Map<String, SettingsMap> biomeConfigStore = readAllBiomeFiles(biomesDirectory, type);
 
 		// Read all settings
-		ArrayList<BiomeConfig> biomeConfigs = readAndWriteSettings(presetConfig, biomeConfigStore, biomeResourcesManager);
+		List<BiomeSettings> biomeSettings = readAndWriteSettings(presetConfig, biomeConfigStore, type);
 
 		// Update settings dynamically, these changes don't get written back to the file
-		processSettings(presetConfig, biomeConfigs);
+		processSettings(presetConfig, biomeSettings);
 
 		ILogger logger = OTGLog.getLogger();
 		if(logger.getLogCategoryEnabled(LogCategory.CONFIGS) && logger.canLogForPreset(presetDir.getFileName().toString()))
@@ -202,59 +244,77 @@ public final class BiomeConfigLoader {
 				LogCategory.CONFIGS,
 				MessageFormat.format(
 					"{0} biomes loaded for preset {1}",
-					biomeConfigs.size(),
+					biomeSettings.size(),
 					presetConfig.getConfigName()
 				)
 			);
 			logger.log(
 				LogLevel.INFO,
 				LogCategory.CONFIGS,
-				biomeConfigs.stream().map(
+				biomeSettings.stream().map(
 					item -> item.getIdentitySettings().getBiomeName()
 				).collect(
 					Collectors.joining(", ")
 				)
 			);
 		}
-		return biomeConfigs;
+		return biomeSettings;
 	}
 
-	private static ArrayList<BiomeConfig> readAndWriteSettings(PresetConfig presetConfig, Map<String, SettingsMap> biomeSettingsMaps, IConfigFunctionProvider biomeResourcesManager)
-	{
-		ArrayList<BiomeConfig> biomeConfigs = new ArrayList<BiomeConfig>();
 
-		for (SettingsMap settingsMap : biomeSettingsMaps.values())
+	private static ArrayList<BiomeSettings> readAndWriteSettings(
+			PresetConfig presetConfig,
+			Map<String, SettingsMap> biomeSettingStore,
+			BiomeSettingType type
+	) {
+		ArrayList<BiomeSettings> biomeSettingList = new ArrayList<>();
+
+		for (SettingsMap settingsMap : biomeSettingStore.values())
 		{
-			// Settings reading
-			BiomeConfig biomeConfig = new BiomeConfig(settingsMap, presetConfig, biomeResourcesManager);
-			biomeConfigs.add(biomeConfig);
+			SettingsMap updatedMap;
+			switch (type) {
+                case CONFIG -> {
+					BiomeConfig biomeConfig = new BiomeConfig(settingsMap, presetConfig);
+					biomeSettingList.add(biomeConfig);
+					updatedMap = biomeConfig.getSettingsAsMap();
+                }
+                case TEMPLATE -> {
+					BiomeTemplate biomeTemplate = new BiomeTemplate(settingsMap, presetConfig);
+					biomeSettingList.add(biomeTemplate);
+					updatedMap = biomeTemplate.getSettingsAsMap();
+                }
+                default -> {
+					OTGLog.warn("Could not read; unknown setting type: "+settingsMap.getName());
+                    continue;
+                }
+            }
 
 			// Settings writing
             Path writeFile = settingsMap.getPath();
-            FileSettingsWriter.writeToFile(biomeConfig.getSettingsAsMap(), writeFile.toFile(), presetConfig.getPresetInfo().getSettingsMode());
+            FileSettingsWriter.writeToFile(updatedMap, writeFile.toFile(), presetConfig.getPresetInfo().getSettingsMode());
         }
 
-		return biomeConfigs;
+		return biomeSettingList;
 	}
 
-	private static void processSettings(PresetConfig presetConfig, ArrayList<BiomeConfig> biomeConfigs)
+	private static void processSettings(PresetConfig presetConfig, List<BiomeSettings> biomeSettingMaps)
 	{
-		for(BiomeConfig biomeConfig : biomeConfigs)
+		for(BiomeSettings biomeSettings : biomeSettingMaps)
 		{
 			// Index ReplacedBlocks
 			if (!presetConfig.isBiomeConfigsHaveReplacement())
 			{
-				presetConfig.setBiomeConfigsHaveReplacement(biomeConfig.getSurfaceSettings().getReplacedBlocks().hasReplaceSettings());
+				presetConfig.setBiomeConfigsHaveReplacement(biomeSettings.getSurfaceSettings().getReplacedBlocks().hasReplaceSettings());
 			}
 
 			// Index maxSmoothRadius
-			if (presetConfig.getMaxSmoothRadius() < biomeConfig.getTerrainSettings().getSmoothRadius())
+			if (presetConfig.getMaxSmoothRadius() < biomeSettings.getTerrainSettings().getSmoothRadius())
 			{
-				presetConfig.setMaxSmoothRadius(biomeConfig.getTerrainSettings().getSmoothRadius());
+				presetConfig.setMaxSmoothRadius(biomeSettings.getTerrainSettings().getSmoothRadius());
 			}
-			if (presetConfig.getMaxSmoothRadius() < biomeConfig.getTerrainSettings().getCHCSmoothRadius())
+			if (presetConfig.getMaxSmoothRadius() < biomeSettings.getTerrainSettings().getCHCSmoothRadius())
 			{
-				presetConfig.setMaxSmoothRadius(biomeConfig.getTerrainSettings().getCHCSmoothRadius());
+				presetConfig.setMaxSmoothRadius(biomeSettings.getTerrainSettings().getCHCSmoothRadius());
 			}
 		}
 	}

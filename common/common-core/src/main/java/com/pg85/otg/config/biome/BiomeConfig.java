@@ -4,7 +4,6 @@ import java.nio.file.Path;
 import java.util.*;
 
 import com.pg85.otg.config.ConfigFunction;
-import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settings.biome.*;
 import com.pg85.otg.config.preset.PresetConfig;
@@ -15,19 +14,16 @@ import com.pg85.otg.customobject.resource.SaplingResource;
 import com.pg85.otg.customobject.resource.TreeResource;
 import com.pg85.otg.gen.resource.*;
 import com.pg85.otg.interfaces.*;
-import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.biome.OTGBiomeID;
-import com.pg85.otg.util.materials.LocalMaterialData;
-import com.pg85.otg.util.minecraft.SaplingType;
 import lombok.Getter;
 import lombok.Setter;
 
 /**
  * BiomeConfig (*.bc) classes
- * 
+ * <p>
  * BiomeSettings defines and implements anything needed for BiomeConfig. BiomeConfig
  * contains mainly io/serialisation/instantiation, or details specific to the file of origin.
- * 
+ * <p>
  * BiomeConfig should be used only in common-core and platform-specific layers,
  * when reading/writing settings on app start. BiomeSettings should be used
  * wherever settings are used in code.
@@ -72,139 +68,41 @@ public class BiomeConfig extends BiomeSettings
 		RESOURCE_QUEUE_RESOURCES.put("BasaltColumn", BasaltColumnResource.class);
 	}
 
-	private final Path path;
+	@Getter
+	private final Path configPath;
 	private final PresetConfig parent;
-	private OTGBiomeID otgBiomeID;
+	@Getter
+	private OTGBiomeID OTGBiomeID;
 	@Setter
 	private MobSettings mergedMobSettings = null;
 
-	public BiomeConfig(SettingsMap settingsMap, PresetConfig presetSettings, IConfigFunctionProvider biomeResourcesManager)
+	public BiomeConfig(SettingsMap settingsMap, PresetConfig presetSettings)
 	{
 		super(settingsMap.getName());
-		this.path = settingsMap.getPath();
+		this.configPath = settingsMap.getPath();
         parent = presetSettings;
 		renameOldSettings(settingsMap);
-		identitySettings = IdentitySettings.buildIdentitySettings(settingsMap);
-		mobSettings = MobSettings.getMobSettings(settingsMap);
-		generationSettings = BiomeGenerationSettings.getPlacementSettings(settingsMap, presetSettings.getGenerationSettings());
-		structureSettings = BiomeStructureSettings.getBiomeStructureSettings(settingsMap, presetSettings.getStructureSettings());
-		terrainSettings = BiomeTerrainSettings.getBiomeTerrainSettings(settingsMap, presetSettings.getTerrainSettings());
-		visualSettings = BiomeVisualSettings.getBiomeVisualSettings(settingsMap, presetSettings.getVisualSettings());
-
-		surfaceSettings = SurfaceSettings.getSurfaceSettings(
-				settingsMap,
-				presetSettings.getBlockSettings(),
-				presetSettings.getTerrainSettings()
-				);
-
-		resourceSettings = BiomeResourceSettings.getResourceSettings(
-				presetSettings.getResourceSettings(),
-				new ArrayList<>(
-						settingsMap.getConfigFunctions(
-								this,
-								biomeResourcesManager,
-								presetSettings.getConfigName()
-						)));
+		readDefaultSettings(settingsMap, presetSettings, BiomeResourcesManager.get());
 	}
 
-
-    @Override
 	public void setOTGBiomeId(int id) {
-		this.oldOTGBiomeID = id;
-		this.otgBiomeID = new OTGBiomeID(id, this.getRegistryKey(), this.getConfigName());
+		this.OTGBiomeID = new OTGBiomeID(id, this.getRegistryKey(), this.getConfigName());
 	}
 
-	@Override
-	public int getOldOTGBiomeID() {
-		return this.oldOTGBiomeID;
-	}
 	@Setter
     @Getter
     private IBiomeResourceLocation registryKey;
-	private int oldOTGBiomeID;
 
 	@Override
-	public Path getConfigPath() {
-		return path;
-	}
-
 	public void writeConfigSettings(SettingsMap writer) {
 		writer.putSetting(Constants.ConfigVersionSetting, Constants.ConfigVersion);
-		BiomeConfigWriter.writeConfigSettings(this, writer);
+		//BiomeConfigWriter.writeConfigSettings(this, writer);
+		super.writeConfigSettings(writer);
 	}
-
-	@Override
-	public void renameOldSettings(SettingsMap settings)
-	{
-		settings.renameOldSetting("DisableNotchHeightControl", BiomeTerrainSettings.DISABLE_BIOME_HEIGHT);
-		settings.renameOldSetting("BiomeDictId", IdentitySettings.BIOME_DICT_TAGS);
-		settings.renameOldSetting("IsleInBiome", BiomeGenerationSettings.ISLE_IN_BIOMES);
-		settings.renameOldSetting("BiomeIsBorder", BiomeGenerationSettings.BORDER_IN_BIOMES);
-		settings.renameOldSetting("BiomeColor", BiomeGenerationSettings.BIOME_MAP_COLOR);
-	}
-
-	@Override
-	public List<ConfigFunction<BiomeSettings>> getResourceQueue() {
-		return this.getResourceSettings().getResourceQueue();
-	}
-
-	@Override
-	public List<List<String>> getCustomStructureNames() {
-		List<List<String>> customStructureNamesByGen = new ArrayList<>();
-		for (ICustomStructureGen structureGens : this.getResourceSettings().getCustomStructures()) {
-			List<String> customStructureNames = Arrays.asList(structureGens.getObjectNames());
-			customStructureNamesByGen.add(customStructureNames);
-		}
-		return customStructureNamesByGen;
-	}
-
-	@Override
-	public void setStructureGen(ICustomStructureGen customStructureGen) {
-		this.structureGen = customStructureGen;
-	}
-
-	@Override
-	public boolean getIsTemplateForBiome() {
-		return this.getIdentitySettings().isTemplateForBiome();
-	}
-
-	@Override
-	public List<String> getBiomeDictTags() {
-		return this.getIdentitySettings().getBiomeDictTags();
-	}
-
-	@Override
-	public double getCHCData(int controlLayer) {
-		return this.getTerrainSettings().getCustomHeightControl()[controlLayer];
-	}
-
 
 	@Override
 	public boolean biomeConfigsHaveReplacement() {
 		return this.parent.isBiomeConfigsHaveReplacement();
-	}
-
-	@Override
-	public ISaplingSpawner getSaplingGen(SaplingType type) {
-		ISaplingSpawner gen = this.resourceSettings.getSaplingGrowers().get(type);
-		if (gen == null && type.growsTree()) {
-			gen = this.resourceSettings.getSaplingGrowers().get(SaplingType.All);
-		}
-		return gen;
-	}
-
-	public ISaplingSpawner getCustomSaplingGen(LocalMaterialData materialData, boolean wideTrunk) {
-		if (wideTrunk) {
-			ISaplingSpawner spawner = this.resourceSettings.getCustomBigSaplingGrowers().get(materialData);
-			if (spawner != null) {
-				return spawner;
-			}
-		}
-		return this.resourceSettings.getCustomSaplingGrowers().get(materialData);
-	}
-
-	public OTGBiomeID getOTGBiomeID() {
-		return this.otgBiomeID;
 	}
 
     public MobSettings getMergedMobSettings() {

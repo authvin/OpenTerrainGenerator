@@ -7,8 +7,12 @@ plugins {
 
 defaultTasks = arrayListOf("build", "publishToMavenLocal")
 
+val ignored = listOf("common", "platforms")
+
 subprojects {
-    apply(plugin = "base-conventions")
+    if (!ignored.contains(project.name)) {
+        apply(plugin = "base-conventions")
+    }
 }
 
 version = project.property("otg_version").toString()
@@ -17,7 +21,8 @@ group = project.property("otg_group").toString()
 val universalJar = tasks.register<Jar>("universalJar") {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     destinationDirectory.set(layout.buildDirectory.dir("distributions"))
-    archiveFileName.set("otg-" + project.property("otg_version").toString() + ".jar")
+    val otgBuild = project.property("otg_build").toString()
+    archiveFileName.set("otg-$version-$otgBuild.jar")
 }
 
 tasks.build {

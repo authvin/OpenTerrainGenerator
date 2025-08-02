@@ -10,6 +10,7 @@ import com.pg85.otg.util.OTGMaterialReader;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.List;
 
 public class PresetConfigLoader {
 
@@ -62,7 +63,10 @@ public class PresetConfigLoader {
         File presetConfigFile = getPresetConfigFile(presetDir);
         String presetFolderName = presetDir.toFile().getName();
 
-        return FileSettingsReader.read(presetFolderName, presetConfigFile);
+        if (presetConfigFile != null) {
+            return FileSettingsReader.read(presetFolderName, presetConfigFile);
+        }
+        throw new IllegalArgumentException("Preset config file not found in directory: " + presetDir);
     }
 
     public static File getPresetConfigFile(Path presetDir) {
@@ -70,7 +74,26 @@ public class PresetConfigLoader {
         if (presetConfigFile.exists()) {
             return presetConfigFile;
         }
-        return new File(presetDir.toString(), Constants.LEGACY_WORLD_CONFIG_FILE);
+        File worldConfigFile = new File(presetDir.toString(), Constants.LEGACY_WORLD_CONFIG_FILE);
+        if (worldConfigFile.exists()) {
+            return worldConfigFile;
+        }
+        return null;
     }
 
+    public static List<Path> findPresetDirectories(Path presetsDir) {
+        List<Path> presetDirectories = new ArrayList<>();
+        if (presetsDir.toFile().exists() && presetsDir.toFile().isDirectory()) {
+            var files = presetsDir.toFile().listFiles();
+            if (files == null) {
+                return presetDirectories; // Return empty list if no files found
+            }
+            for (File file : files) {
+                if (file.isDirectory() && getPresetConfigFile(file.toPath()) != null) {
+                    presetDirectories.add(file.toPath());
+                }
+            }
+        }
+        return presetDirectories;
+    }
 }

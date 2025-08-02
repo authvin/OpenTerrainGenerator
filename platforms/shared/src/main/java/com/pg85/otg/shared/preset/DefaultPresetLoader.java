@@ -1,4 +1,4 @@
-package com.pg85.otg.fabric.presets;
+package com.pg85.otg.shared.preset;
 
 import com.pg85.otg.gen.biome.layers.BiomeLayerData;
 import com.pg85.otg.interfaces.IBiome;
@@ -7,8 +7,8 @@ import com.pg85.otg.presets.LocalPresetLoader;
 import java.nio.file.Path;
 import java.util.Map;
 
-public class FabricPresetLoader extends LocalPresetLoader {
-    public FabricPresetLoader(Path otgRootFolder) {
+public class DefaultPresetLoader extends LocalPresetLoader {
+    public DefaultPresetLoader(Path otgRootFolder) {
         super(otgRootFolder);
     }
 

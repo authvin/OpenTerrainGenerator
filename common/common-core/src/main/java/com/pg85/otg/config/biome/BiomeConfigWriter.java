@@ -35,22 +35,11 @@ public class BiomeConfigWriter {
             );
         }
 
-        if (!isTemplateBiome) {
-            writer.putSetting(IdentitySettings.BIOME_DICT_TAGS, biomeConfig.getIdentitySettings().getBiomeDictTags(),
-                    "Forge Biome Dictionary tags used by other mods to identify a biome and",
-                    "place modded blocks, items and mobs in it.", "Example: HOT, DRY, SANDY, OVERWORLD",
-                    "TemplateForBiome biomes inherit these from the targeted biomes.");
-
-            writer.putSetting(IdentitySettings.BIOME_CATEGORY, biomeConfig.getIdentitySettings().getBiomeCategory(),
-                    "Set a category for this biome, used by vanilla for... something",
-                    "Accepts one of the following values:",
-                    "none, taiga, extreme_hills, jungle, mesa, plains, savanna, icy, the_end, beach, forest, ocean, desert, river, swamp, mushroom, nether",
-                    "TemplateForBiome biomes inherit this from the targeted biomes.");
-        }
+        writer.putSetting(IdentitySettings.DISPLAY_NAME, biomeConfig.getIdentitySettings());
 
         writer.header1("Biome placement");
 
-        writer.putSetting(BiomeGenerationSettings.BIOME_SIZE, biomeConfig.getGenerationSettings().getBiomeSize(),
+        writer.putSetting(BiomePlacementConfig.BIOME_SIZE, biomeConfig.getGenerationSettings().getBiomeSize(),
                 "Biome size from 0 to GenerationDepth. Defines in which biome layer this biome will be generated (see GenerationDepth).",
                 "Higher numbers result in a smaller biome, lower numbers a larger biome.",
                 "How this setting is used depends on the value of BiomeMode in the PresetConfig.",
@@ -58,61 +47,61 @@ public class BiomeConfigWriter {
                 "- normal biomes, ice biomes, isle biomes and border biomes when BiomeMode is set to NoGroups",
                 "- biomes spawned as part of a BiomeGroup when BiomeMode is set to Normal.",
                 "  For biomes spawned as isles, borders or rivers other settings are available.",
-                "  Isle biomes:	" + BiomeGenerationSettings.BIOME_SIZE_WHEN_ISLE + " (see below)",
-                "  Border biomes: " + BiomeGenerationSettings.BIOME_SIZE_WHEN_BORDER + " (see below)",
+                "  Isle biomes:	" + BiomePlacementConfig.BIOME_SIZE_WHEN_ISLE + " (see below)",
+                "  Border biomes: " + BiomePlacementConfig.BIOME_SIZE_WHEN_BORDER + " (see below)",
                 "  River biomes:  " + GenerationSettings.RIVER_SIZE + " (see PresetConfig)");
 
-        writer.putSetting(BiomeGenerationSettings.BIOME_RARITY, biomeConfig.getGenerationSettings().getBiomeRarity(),
+        writer.putSetting(BiomePlacementConfig.BIOME_RARITY, biomeConfig.getGenerationSettings().getBiomeRarity(),
                 "Biome rarity from 100 to 1. If this is normal or ice biome - chance to spawn this biome, then others.",
                 "Example for normal biome :",
                 "  100 rarity mean 1/6 chance than other ( with 6 default normal biomes).",
                 "  50 rarity mean 1/11 chance than other",
-                "For isle biomes see the " + BiomeGenerationSettings.BIOME_RARITY_WHEN_ISLE + " setting below.",
+                "For isle biomes see the " + BiomePlacementConfig.BIOME_RARITY_WHEN_ISLE + " setting below.",
                 "Doesn`t work on Ocean and River (frozen versions too) biomes when not added as normal biome.");
 
-        writer.putSetting(BiomeGenerationSettings.BIOME_MAP_COLOR, biomeConfig.getGenerationSettings().getBiomeColor(),
+        writer.putSetting(BiomePlacementConfig.BIOME_MAP_COLOR, biomeConfig.getGenerationSettings().getBiomeColor(),
                 "The hexadecimal color value of this biome. Used in the output of the /otg map command,",
                 "and used in the input of BiomeMode: FromImage.");
 
         writer.header2("Isle biomes", "To spawn a biome as an isle, first add it to the",
                 GenerationSettings.ISLE_BIOMES + " list in the PresetConfig.", "");
 
-        writer.putSetting(BiomeGenerationSettings.ISLE_IN_BIOMES, biomeConfig.getGenerationSettings().getIsleInBiomes(),
+        writer.putSetting(BiomePlacementConfig.ISLE_IN_BIOMES, biomeConfig.getGenerationSettings().getIsleInBiomes(),
                 "List of biomes in which this biome will spawn as an isle.",
                 "For example, Mushroom Isles spawn inside the Ocean biome.");
 
-        writer.putSetting(BiomeGenerationSettings.BIOME_SIZE_WHEN_ISLE, biomeConfig.getGenerationSettings().getBiomeSizeWhenIsle(),
+        writer.putSetting(BiomePlacementConfig.BIOME_SIZE_WHEN_ISLE, biomeConfig.getGenerationSettings().getBiomeSizeWhenIsle(),
                 "Size of this biome when spawned as an isle biome in BiomeMode: Normal.",
                 "Valid values range from 0 to GenerationDepth.",
                 "Larger numbers give *smaller* islands. The biome must be smaller than the biome it's going",
-                "to spawn in, so the " + BiomeGenerationSettings.BIOME_SIZE_WHEN_ISLE + " number must be larger than the "
-                        + BiomeGenerationSettings.BIOME_SIZE + " of the other biome.");
+                "to spawn in, so the " + BiomePlacementConfig.BIOME_SIZE_WHEN_ISLE + " number must be larger than the "
+                        + BiomePlacementConfig.BIOME_SIZE + " of the other biome.");
 
-        writer.putSetting(BiomeGenerationSettings.BIOME_RARITY_WHEN_ISLE, biomeConfig.getGenerationSettings().getBiomeRarityWhenIsle(),
+        writer.putSetting(BiomePlacementConfig.BIOME_RARITY_WHEN_ISLE, biomeConfig.getGenerationSettings().getBiomeRarityWhenIsle(),
                 "Rarity of this biome when spawned as an isle biome in BiomeMode: Normal.");
 
         writer.smallTitle("Border biomes", "To spawn a biome as a border, first add it to the",
                 GenerationSettings.BORDER_BIOMES + " list in the PresetConfig.", "");
 
-        writer.putSetting(BiomeGenerationSettings.BORDER_IN_BIOMES, biomeConfig.getGenerationSettings().getBorderInBiomes(),
+        writer.putSetting(BiomePlacementConfig.BORDER_IN_BIOMES, biomeConfig.getGenerationSettings().getBorderInBiomes(),
                 "List of biomes this biome can be a border of.",
                 "For example, the Beach biome is a border on the Ocean biome, so",
                 "it can spawn anywhere on the border of an ocean.");
 
-        writer.putSetting(BiomeGenerationSettings.ONLY_BORDER_NEAR, biomeConfig.getGenerationSettings().getOnlyBorderNearBiomes(),
+        writer.putSetting(BiomePlacementConfig.ONLY_BORDER_NEAR, biomeConfig.getGenerationSettings().getOnlyBorderNearBiomes(),
                 "Whitelist of neighouring biomes that allow this border biome to spawn.");
 
-        writer.putSetting(BiomeGenerationSettings.NOT_BORDER_NEAR, biomeConfig.getGenerationSettings().getNotBorderNearBiomes(),
+        writer.putSetting(BiomePlacementConfig.NOT_BORDER_NEAR, biomeConfig.getGenerationSettings().getNotBorderNearBiomes(),
                 "Blacklist of neighbouring biomes that do not allow this border biome to spawn.",
                 "For example, the Beach biome will never spawn next to an Extreme Hills biome.",
                 "Only used when OnlyBorderNear is empty / not used.");
 
-        writer.putSetting(BiomeGenerationSettings.BIOME_SIZE_WHEN_BORDER, biomeConfig.getGenerationSettings().getBiomeSizeWhenBorder(),
+        writer.putSetting(BiomePlacementConfig.BIOME_SIZE_WHEN_BORDER, biomeConfig.getGenerationSettings().getBiomeSizeWhenBorder(),
                 "Size of this biome when spawned as a border biome in BiomeMode: Normal.",
                 "Valid values range from 0 to GenerationDepth.",
                 "Larger numbers give *smaller* borders. The biome must be smaller than the biome it's going",
-                "to spawn in, so the " + BiomeGenerationSettings.BIOME_SIZE_WHEN_BORDER + " number must be larger than the "
-                        + BiomeGenerationSettings.BIOME_SIZE + " of the other biome.");
+                "to spawn in, so the " + BiomePlacementConfig.BIOME_SIZE_WHEN_BORDER + " number must be larger than the "
+                        + BiomePlacementConfig.BIOME_SIZE + " of the other biome.");
 
         writer.header1("Terrain height and volatility");
 
@@ -165,7 +154,7 @@ public class BiomeConfigWriter {
 
         writer.header1("Rivers");
 
-        writer.putSetting(BiomeGenerationSettings.RIVER_BIOME, biomeConfig.getGenerationSettings().getRiverBiome(), "The biome used as the river biome.");
+        writer.putSetting(BiomePlacementConfig.RIVER_BIOME, biomeConfig.getGenerationSettings().getRiverBiome(), "The biome used as the river biome.");
 
         writer.header1("Blocks");
 
@@ -433,75 +422,75 @@ public class BiomeConfigWriter {
                     "toggle in the PresetConfig, be sure to enable it to allow biomes to", "spawn structures.",
                     "* Fossils and Dungeons count as resources, not structures.");
 
-            writer.putSetting(BiomeStructureSettings.STRONGHOLDS_ENABLED, biomeConfig.getStructureSettings().isStrongholdsEnabled(),
-                    "Toggles strongholds spawning in this biome.");
+//            writer.putSetting(BiomeStructureSettings.STRONGHOLDS_ENABLED, biomeConfig.getStructureSettings().isStrongholdsEnabled(),
+//                    "Toggles strongholds spawning in this biome.");
+//
+//            writer.putSetting(BiomeStructureSettings.WOODLAND_MANSIONS_ENABLED, biomeConfig.getStructureSettings().isWoodlandMansionsEnabled(),
+//                    "Toggles woodland mansions spawning in this biome.");
+//
+//            writer.putSetting(BiomeStructureSettings.OCEAN_MONUMENTS_ENABLED, biomeConfig.getStructureSettings().isOceanMonumentsEnabled(),
+//                    "Toggles ocean monuments spawning in this biome.");
+//
+//            writer.putSetting(BiomeStructureSettings.NETHER_FORTRESSES_ENABLED, biomeConfig.getStructureSettings().isNetherFortressesEnabled(),
+//                    "Toggles nether fortresses spawning in this biome.");
 
-            writer.putSetting(BiomeStructureSettings.WOODLAND_MANSIONS_ENABLED, biomeConfig.getStructureSettings().isWoodlandMansionsEnabled(),
-                    "Toggles woodland mansions spawning in this biome.");
-
-            writer.putSetting(BiomeStructureSettings.OCEAN_MONUMENTS_ENABLED, biomeConfig.getStructureSettings().isOceanMonumentsEnabled(),
-                    "Toggles ocean monuments spawning in this biome.");
-
-            writer.putSetting(BiomeStructureSettings.NETHER_FORTRESSES_ENABLED, biomeConfig.getStructureSettings().isNetherFortressesEnabled(),
-                    "Toggles nether fortresses spawning in this biome.");
-
-            writer.putSetting(BiomeStructureSettings.VILLAGE_TYPE, biomeConfig.getStructureSettings().getVillageType(),
-                    "The type of villages in this biome. Can be wood, sandstone, taiga, savanna, snowy or disabled.");
+//            writer.putSetting(BiomeStructureSettings.VILLAGE_TYPE, biomeConfig.getStructureSettings().getVillageType(),
+//                    "The type of villages in this biome. Can be wood, sandstone, taiga, savanna, snowy or disabled.");
 
             writer.putSetting(BiomeStructureSettings.VILLAGE_SIZE, biomeConfig.getStructureSettings().getVillageSize(),
                     "The size of villages in this biome, 6 by default.",
                     "*TODO: Test different values and document usage.");
 
-            writer.putSetting(BiomeStructureSettings.MINESHAFT_TYPE, biomeConfig.getStructureSettings().getMineshaftType(),
-                    "The type of mineshafts in this biome. Can be normal, mesa or disabled.");
+//            writer.putSetting(BiomeStructureSettings.MINESHAFT_TYPE, biomeConfig.getStructureSettings().getMineshaftType(),
+//                    "The type of mineshafts in this biome. Can be normal, mesa or disabled.");
 
             writer.putSetting(BiomeStructureSettings.MINESHAFT_PROBABILITY, biomeConfig.getStructureSettings().getMineshaftProbability(),
                     "Probability of mineshafts spawning, 0.004 by default.",
                     "*TODO: Test different values and document usage.");
 
-            writer.putSetting(BiomeStructureSettings.RARE_BUILDING_TYPE, biomeConfig.getStructureSettings().getRareBuildingType(),
-                    "The type of the aboveground rare building in this biome.",
-                    "Can be desertPyramid, jungleTemple, swampHut, igloo or disabled.");
-
-            writer.putSetting(BiomeStructureSettings.BURIED_TREASURE_ENABLED, biomeConfig.getStructureSettings().isBuriedTreasureEnabled(),
-                    "Toggles buried treasure spawning in this biome.");
+//            writer.putSetting(BiomeStructureSettings.RARE_BUILDING_TYPE, biomeConfig.getStructureSettings().getRareBuildingType(),
+//                    "The type of the aboveground rare building in this biome.",
+//                    "Can be desertPyramid, jungleTemple, swampHut, igloo or disabled.");
+//
+//            writer.putSetting(BiomeStructureSettings.BURIED_TREASURE_ENABLED, biomeConfig.getStructureSettings().isBuriedTreasureEnabled(),
+//                    "Toggles buried treasure spawning in this biome.");
 
             writer.putSetting(BiomeStructureSettings.BURIED_TREASURE_PROBABILITY, biomeConfig.getStructureSettings().getBuriedTreasureProbability(),
                     "Probability of buried treasure spawning, 0.01 by default.",
                     "*TODO: Test different values and document usage.");
 
-            writer.putSetting(BiomeStructureSettings.SHIP_WRECK_ENABLED, biomeConfig.getStructureSettings().isShipWreckEnabled(),
-                    "Toggles shipwrecks spawning in this biome.");
-
-            writer.putSetting(BiomeStructureSettings.SHIP_WRECK_BEACHED_ENABLED, biomeConfig.getStructureSettings().isShipWreckBeachedEnabled(),
-                    "Toggles beached shipwrecks spawning in this biome.");
-
-            writer.putSetting(BiomeStructureSettings.PILLAGER_OUTPOST_ENABLED, biomeConfig.getStructureSettings().isPillagerOutpostEnabled(),
-                    "Toggles pillager outposts spawning in this biome.");
+//            writer.putSetting(BiomeStructureSettings.SHIP_WRECK_ENABLED, biomeConfig.getStructureSettings().isShipWreckEnabled(),
+//                    "Toggles shipwrecks spawning in this biome.");
+//
+//            writer.putSetting(BiomeStructureSettings.SHIP_WRECK_BEACHED_ENABLED, biomeConfig.getStructureSettings().isShipWreckBeachedEnabled(),
+//                    "Toggles beached shipwrecks spawning in this biome.");
+//
+//            writer.putSetting(BiomeStructureSettings.PILLAGER_OUTPOST_ENABLED, biomeConfig.getStructureSettings().isPillagerOutpostEnabled(),
+//                    "Toggles pillager outposts spawning in this biome.");
 
             writer.putSetting(BiomeStructureSettings.PILLAGER_OUTPOST_SIZE, biomeConfig.getStructureSettings().getPillagerOutpostSize(),
                     "The size of pillager outposts in this biome, 7 by default.",
                     "*TODO: Test different values and document usage.");
 
-            writer.putSetting(BiomeStructureSettings.BASTION_REMNANT_ENABLED, biomeConfig.getStructureSettings().isBastionRemnantEnabled(),
-                    "Toggles bastion remnants spawning in this biome.");
+//            writer.putSetting(BiomeStructureSettings.BASTION_REMNANT_ENABLED, biomeConfig.getStructureSettings().isBastionRemnantEnabled(),
+//                    "Toggles bastion remnants spawning in this biome.");
 
             writer.putSetting(BiomeStructureSettings.BASTION_REMNANT_SIZE, biomeConfig.getStructureSettings().getBastionRemnantSize(),
                     "The size of bastion remnants in this biome, 6 by default.",
                     "*TODO: Test different values and document usage.");
 
-            writer.putSetting(BiomeStructureSettings.NETHER_FOSSIL_ENABLED, biomeConfig.getStructureSettings().isNetherFossilEnabled(),
-                    "Toggles nether fossils spawning in this biome.", "Caution: Nether fossils spawn at all heights.");
-
-            writer.putSetting(BiomeStructureSettings.END_CITY_ENABLED, biomeConfig.getStructureSettings().isEndCityEnabled(),
-                    "Toggles end cities spawning in this biome.");
-
-            writer.putSetting(BiomeStructureSettings.RUINED_PORTAL_TYPE, biomeConfig.getStructureSettings().getRuinedPortalType(),
-                    "The type of ruined portals in this biome.",
-                    "Can be normal, desert, jungle, swamp, mountain, ocean, nether or disabled.");
-
-            writer.putSetting(BiomeStructureSettings.OCEAN_RUINS_TYPE, biomeConfig.getStructureSettings().getOceanRuinsType(),
-                    "The type of ocean ruins in this biome.", "Can be cold, warm or disabled.");
+//            writer.putSetting(BiomeStructureSettings.NETHER_FOSSIL_ENABLED, biomeConfig.getStructureSettings().isNetherFossilEnabled(),
+//                    "Toggles nether fossils spawning in this biome.", "Caution: Nether fossils spawn at all heights.");
+//
+//            writer.putSetting(BiomeStructureSettings.END_CITY_ENABLED, biomeConfig.getStructureSettings().isEndCityEnabled(),
+//                    "Toggles end cities spawning in this biome.");
+//
+//            writer.putSetting(BiomeStructureSettings.RUINED_PORTAL_TYPE, biomeConfig.getStructureSettings().getRuinedPortalType(),
+//                    "The type of ruined portals in this biome.",
+//                    "Can be normal, desert, jungle, swamp, mountain, ocean, nether or disabled.");
+//
+//            writer.putSetting(BiomeStructureSettings.OCEAN_RUINS_TYPE, biomeConfig.getStructureSettings().getOceanRuinsType(),
+//                    "The type of ocean ruins in this biome.", "Can be cold, warm or disabled.");
 
             writer.putSetting(BiomeStructureSettings.OCEAN_RUINS_LARGE_PROBABILITY, biomeConfig.getStructureSettings().getOceanRuinsLargeProbability(),
                     "Probability of large ocean ruins spawning, 0.3 by default.",
@@ -576,6 +565,10 @@ public class BiomeConfigWriter {
                     "will override inherited mob settings for the same mob in the same mob category.",
                     "Use this setting to inherit mob spawn lists from other biomes.",
                     "Accepts both OTG and non-OTG (vanilla or other mods') biomes. See also: BiomeDictTags.");
+
+            biomeConfig.getBiomeTagConfig().writeConfig(writer);
+
+            biomeConfig.getBiomeStructureTagConfig().writeConfig(writer);
         }
     }
 }

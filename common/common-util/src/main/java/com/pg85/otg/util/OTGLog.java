@@ -65,10 +65,10 @@ public final class OTGLog {
     // like when generating YAML schema from settings
     private static class BasicLogger implements ILogger
     {
-        private LogLevel level;
+        private LogLevel level = LogLevel.INFO;
         private boolean logCustomObjects;
         private boolean logStructurePlotting;
-        private boolean logConfigs;
+        private boolean logConfigs = true;
         private boolean logPerformance;
         private boolean logBiomeRegistry;
         private boolean logDecoration;

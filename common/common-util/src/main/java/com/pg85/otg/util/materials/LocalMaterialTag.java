@@ -26,7 +26,7 @@ public abstract class LocalMaterialTag extends LocalMaterialBase
 	@Override
 	public boolean matches(LocalMaterialData material)
 	{
-		return material.isBlockTag(this);
+		return material != null && material.isBlockTag(this);
 	}
 
 	@Override

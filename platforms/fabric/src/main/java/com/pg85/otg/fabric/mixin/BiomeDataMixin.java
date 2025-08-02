@@ -1,5 +1,6 @@
 package com.pg85.otg.fabric.mixin;
 
+import com.pg85.otg.fabric.biome.FabricBiomeLoader;
 import com.pg85.otg.fabric.biome.LegacyFabricBiomeLoader;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstapContext;
@@ -19,5 +20,9 @@ public class BiomeDataMixin {
         LegacyFabricBiomeLoader.PLACED_FEATURE_HOLDER = arg.lookup(Registries.PLACED_FEATURE);
         LegacyFabricBiomeLoader.CONFIGURED_CARVER_HOLDER = arg.lookup(Registries.CONFIGURED_CARVER);
         LegacyFabricBiomeLoader.BIOME_DATA_INITIALIZED = true;
+
+        FabricBiomeLoader.PLACED_FEATURE_HOLDER = arg.lookup(Registries.PLACED_FEATURE);
+        FabricBiomeLoader.CONFIGURED_CARVER_HOLDER = arg.lookup(Registries.CONFIGURED_CARVER);
+        FabricBiomeLoader.BIOME_DATA_INITIALIZED = true;
     }
 }

@@ -7,6 +7,7 @@ import java.util.*;
 
 import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.config.biome.BiomeResourcesManager;
+import com.pg85.otg.config.biome.BiomeTemplate;
 import com.pg85.otg.loader.BiomeConfigLoader;
 import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.constants.Constants;
@@ -33,7 +34,11 @@ public abstract class LocalPresetLoader
 
 	public LocalPresetLoader(Path otgRootFolder)
 	{
-		this.presetsDir = Paths.get(otgRootFolder.toString(), File.separator + Constants.PRESETS_FOLDER).toFile();
+		this.presetsDir = getPresetsDir(otgRootFolder).toFile();
+	}
+
+	private static Path getPresetsDir(Path otgRootFolder) {
+		return Paths.get(otgRootFolder.toString(), File.separator + Constants.PRESETS_FOLDER);
 	}
 
 	public IMaterialReader getMaterialReader()
@@ -121,10 +126,29 @@ public abstract class LocalPresetLoader
 	public static Preset loadPreset(Path presetDir)
 	{
 		PresetConfig presetConfig = PresetConfigLoader.loadPresetConfig(presetDir);
+		List<BiomeTemplate> biomeTemplates = BiomeConfigLoader.loadBiomeTemplates(presetDir, presetConfig);
+		List<BiomeConfig> biomeConfigs = BiomeConfigLoader.loadBiomeConfigs(presetDir, presetConfig);
 
-		ArrayList<BiomeConfig> biomeConfigs = BiomeConfigLoader.loadBiomeConfigs(presetDir, presetConfig, BiomeResourcesManager.get());
+		return new Preset(presetDir, presetConfig, biomeConfigs, biomeTemplates);
+	}
 
-		return new Preset(presetDir, presetConfig.getPresetInfo().getRegistryName(), presetConfig, biomeConfigs);
+	public static List<Preset> loadPresetsFromDisk(Path otgRootFolder)
+	{
+		Path presetsDir = getPresetsDir(otgRootFolder);
+		if (!presetsDir.toFile().exists()) {
+			OTGLog.getLogger().log(
+				LogLevel.INFO,
+				LogCategory.CONFIGS,
+				"No presets found in " + presetsDir
+			);
+			return Collections.emptyList();
+		}
+		List<Path> presetDirectories = PresetConfigLoader.findPresetDirectories(presetsDir);
+		List<Preset> presets = new ArrayList<>();
+		for (Path presetDir : presetDirectories) {
+            presets.add(loadPreset(presetDir));
+        }
+		return presets;
 	}
 
 	public abstract IBiome[] getGlobalIdMapping(String presetFolderName);

@@ -12,5 +12,6 @@ public enum WoodType {
     OAK,
     //PALE_OAK, Only from 1.21.2
     SPRUCE,
-    WARPED
+    WARPED,
+    NONE; // None of the above / avoid interacting with wood type tag
 }

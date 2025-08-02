@@ -1,6 +1,10 @@
 package com.pg85.otg.config.settings.biome;
 
 import com.pg85.otg.config.ConfigFile;
+import com.pg85.otg.config.annotation.Config;
+import com.pg85.otg.config.annotation.DependentValue;
+import com.pg85.otg.config.annotation.Description;
+import com.pg85.otg.config.annotation.StringSetting;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.config.settingtype.Settings;
@@ -18,17 +22,25 @@ import java.util.List;
 
 @Builder
 @Getter
-public class BiomeGenerationSettings extends ConfigSection {
+@Config
+public class BiomePlacementConfig extends ConfigSection {
+    @DependentValue
     private final GenerationSettings parent;
+    @DependentValue
+    private final boolean isleBiome;
+    @DependentValue
+    private final boolean borderBiome;
+    
+    
     private final int biomeSize;
     private final int biomeRarity;
     private final Color biomeColor;
+    @StringSetting("River")
+    @Description("The biome to use for rivers")
     private final String riverBiome;
-    private final boolean isleBiome;
     private final List<String> isleInBiomes;
     private final int biomeSizeWhenIsle;
     private final int biomeRarityWhenIsle;
-    private final boolean borderBiome;
     private final List<String> borderInBiomes;
     private final List<String> onlyBorderNearBiomes;
     private final List<String> notBorderNearBiomes;
@@ -36,17 +48,13 @@ public class BiomeGenerationSettings extends ConfigSection {
 
     @Override
     public String getSectionName() {
-        return "Biome Generation Settings";
+        return "Biome Placement Settings";
     }
 
-    public static final Setting<String> RIVER_BIOME = Settings.stringSetting(
-            "RiverBiome", "River",
-            t -> ((BiomeGenerationSettings)t).getRiverBiome(),
-            "The biome to use for rivers."
-    );
+
     public static final Setting<Integer> BIOME_SIZE = Settings.intSetting(
             "BiomeSize", 4,0,20,
-            t -> ((BiomeGenerationSettings)t).getBiomeSize(),
+            t -> ((BiomePlacementConfig)t).getBiomeSize(),
             "Biome size from 0 to GenerationDepth. Defines in which biome layer this biome will be generated (see GenerationDepth).",
             "Higher numbers result in a smaller biome, lower numbers a larger biome.",
             "How this setting is used depends on the value of BiomeMode in the PresetConfig.",
@@ -54,53 +62,53 @@ public class BiomeGenerationSettings extends ConfigSection {
             "- normal biomes, ice biomes, isle biomes and border biomes when BiomeMode is set to NoGroups",
             "- biomes spawned as part of a BiomeGroup when BiomeMode is set to Normal.",
             "  For biomes spawned as isles, borders or rivers other settings are available.",
-            "  Isle biomes:	" + BiomeGenerationSettings.BIOME_SIZE_WHEN_ISLE + " (see below)",
-            "  Border biomes: " + BiomeGenerationSettings.BIOME_SIZE_WHEN_BORDER + " (see below)",
+            "  Isle biomes:	" + BiomePlacementConfig.BIOME_SIZE_WHEN_ISLE + " (see below)",
+            "  Border biomes: " + BiomePlacementConfig.BIOME_SIZE_WHEN_BORDER + " (see below)",
             "  River biomes:  " + GenerationSettings.RIVER_SIZE + " (see PresetConfig)"
     );
     public static final Setting<Integer> BIOME_SIZE_WHEN_ISLE = Settings.intSetting(
             "BiomeSizeWhenIsle", 6, 0, 20,
-            t -> ((BiomeGenerationSettings)t).getBiomeSizeWhenIsle(),
+            t -> ((BiomePlacementConfig)t).getBiomeSizeWhenIsle(),
             "Size of this biome when spawned as an isle biome in BiomeMode: Normal.",
             "Valid values range from 0 to GenerationDepth.",
             "Larger numbers give *smaller* islands. The biome must be smaller than the biome it's going",
-            "to spawn in, so the " + BiomeGenerationSettings.BIOME_SIZE_WHEN_ISLE + " number must be larger than the "
-                    + BiomeGenerationSettings.BIOME_SIZE + " of the other biome."
+            "to spawn in, so the " + BiomePlacementConfig.BIOME_SIZE_WHEN_ISLE + " number must be larger than the "
+                    + BiomePlacementConfig.BIOME_SIZE + " of the other biome."
     );
     public static final Setting<Integer> BIOME_SIZE_WHEN_BORDER = Settings.intSetting(
             "BiomeSizeWhenBorder", 8, 0, 20,
-            t -> ((BiomeGenerationSettings)t).getBiomeSizeWhenBorder(),
+            t -> ((BiomePlacementConfig)t).getBiomeSizeWhenBorder(),
             "Size of this biome when spawned as a border biome in BiomeMode: Normal.",
             "Valid values range from 0 to GenerationDepth.",
             "Larger numbers give *smaller* borders. The biome must be smaller than the biome it's going",
-            "to spawn in, so the " + BiomeGenerationSettings.BIOME_SIZE_WHEN_BORDER + " number must be larger than the "
-                    + BiomeGenerationSettings.BIOME_SIZE + " of the other biome."
+            "to spawn in, so the " + BiomePlacementConfig.BIOME_SIZE_WHEN_BORDER + " number must be larger than the "
+                    + BiomePlacementConfig.BIOME_SIZE + " of the other biome."
     );
     public static final Setting<Integer> BIOME_RARITY = Settings.intSetting(
             "BiomeRarity", 100, 0, Integer.MAX_VALUE,
-            t -> ((BiomeGenerationSettings)t).getBiomeRarity(),
+            t -> ((BiomePlacementConfig)t).getBiomeRarity(),
             "Biome rarity from 100 to 1. If this is normal or ice biome - chance to spawn this biome, then others.",
             "Example for normal biome :",
             "  100 rarity mean 1/6 chance than other ( with 6 default normal biomes).",
             "  50 rarity mean 1/11 chance than other",
-            "For isle biomes see the " + BiomeGenerationSettings.BIOME_RARITY_WHEN_ISLE + " setting below.",
+            "For isle biomes see the " + BiomePlacementConfig.BIOME_RARITY_WHEN_ISLE + " setting below.",
             "Doesn`t work on Ocean and River (frozen versions too) biomes when not added as normal biome."
     );
     public static final Setting<Integer> BIOME_RARITY_WHEN_ISLE = Settings.intSetting(
             "BiomeRarityWhenIsle", 97, 0, Integer.MAX_VALUE,
-            t -> ((BiomeGenerationSettings)t).getBiomeRarityWhenIsle(),
+            t -> ((BiomePlacementConfig)t).getBiomeRarityWhenIsle(),
             "Rarity of this biome when spawned as an isle biome in BiomeMode: Normal."
     );
     public static final Setting<Color> BIOME_MAP_COLOR = Settings.colorSetting(
             "BiomeMapColor", "0xFFFFFF",
-            t -> ((BiomeGenerationSettings)t).getBiomeColor(),
+            t -> ((BiomePlacementConfig)t).getBiomeColor(),
             "The hexadecimal color value of this biome. Used in the output of the /otg map command,",
             "and used in the input of BiomeMode: FromImage."
     );
 
     public static final Setting<List<String>> ISLE_IN_BIOMES = Settings.stringListSetting(
             "IsleInBiomes", new String[]{"Ocean"},
-            t -> ((BiomeGenerationSettings)t).getIsleInBiomes(),
+            t -> ((BiomePlacementConfig)t).getIsleInBiomes(),
             "List of biomes in which this biome will spawn as an isle.",
             "For example, Mushroom Isles spawn inside the Ocean biome.",
             "To spawn a biome as an isle, first add it to the",
@@ -108,7 +116,7 @@ public class BiomeGenerationSettings extends ConfigSection {
     );
     public static final Setting<List<String>> BORDER_IN_BIOMES = Settings.stringListSetting(
             "BorderInBiomes", new String[]{},
-            t -> ((BiomeGenerationSettings)t).getBorderInBiomes(),
+            t -> ((BiomePlacementConfig)t).getBorderInBiomes(),
             "List of biomes this biome can be a border of.",
             "For example, the Beach biome is a border on the Ocean biome, so",
             "it can spawn anywhere on the border of an ocean.",
@@ -117,25 +125,25 @@ public class BiomeGenerationSettings extends ConfigSection {
     );
     public static final Setting<List<String>> ONLY_BORDER_NEAR = Settings.stringListSetting(
             "OnlyBorderNear", new String[]{},
-            t -> ((BiomeGenerationSettings)t).getOnlyBorderNearBiomes(),
+            t -> ((BiomePlacementConfig)t).getOnlyBorderNearBiomes(),
             "Whitelist of neighouring biomes that allow this border biome to spawn."
     );
     public static final Setting<List<String>> NOT_BORDER_NEAR = Settings.stringListSetting(
             "NotBorderNear", new String[]{},
-            t -> ((BiomeGenerationSettings)t).getNotBorderNearBiomes(),
+            t -> ((BiomePlacementConfig)t).getNotBorderNearBiomes(),
             "Blacklist of neighbouring biomes that do not allow this border biome to spawn.",
             "For example, the Beach biome will never spawn next to an Extreme Hills biome.",
             "Only used when OnlyBorderNear is empty / not used."
     );
 
-    public static BiomeGenerationSettings getPlacementSettings(SettingsMap reader, GenerationSettings parent) {
-        BiomeGenerationSettingsBuilder builder = BiomeGenerationSettings.builder();
+    public static BiomePlacementConfig getGenerationSettings(SettingsMap reader, GenerationSettings parent) {
+        BiomePlacementConfigBuilder builder = BiomePlacementConfig.builder();
 
         builder.parent(parent);
         builder.biomeSize(reader.getSetting(BIOME_SIZE));
         builder.biomeRarity(reader.getSetting(BIOME_RARITY));
         builder.biomeColor(reader.getSetting(BIOME_MAP_COLOR));
-        builder.riverBiome(reader.getSetting(RIVER_BIOME));
+        //builder.riverBiome(reader.getSetting(RIVER_BIOME));
         builder.isleInBiomes(reader.getSetting(ISLE_IN_BIOMES));
         builder.isleBiome(!builder.isleInBiomes.isEmpty());
         builder.biomeSizeWhenIsle(reader.getSetting(BIOME_SIZE_WHEN_ISLE));
@@ -151,8 +159,8 @@ public class BiomeGenerationSettings extends ConfigSection {
         return builder.fixSettings().build();
     }
 
-    public static class BiomeGenerationSettingsBuilder {
-        public BiomeGenerationSettingsBuilder fixSettings() {
+    public static class BiomePlacementConfigBuilder {
+        public BiomePlacementConfigBuilder fixSettings() {
             checkBiomeSize();
             checkBiomeSizeWhenIsle();
             checkBiomeSizeWhenBorder();

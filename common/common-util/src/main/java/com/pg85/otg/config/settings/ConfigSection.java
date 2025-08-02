@@ -5,6 +5,7 @@ import com.pg85.otg.config.settingtype.Setting;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public abstract class ConfigSection {
@@ -33,6 +34,14 @@ public abstract class ConfigSection {
         return getSettings(this.getClass());
     }
 
+    public List<Setting<?>> getSettingsList() {
+        return getSettings().values().stream().toList();
+    }
 
+    public List<Setting<?>> getAlteredSettings() {
+        return getSettings().values().stream()
+                .filter(setting -> setting.getGetter().apply(this) != setting.getDefaultValue())
+                .toList();
+    }
 
 }
