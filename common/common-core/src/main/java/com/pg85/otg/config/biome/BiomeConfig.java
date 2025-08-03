@@ -1,6 +1,5 @@
 package com.pg85.otg.config.biome;
 
-import java.nio.file.Path;
 import java.util.*;
 
 import com.pg85.otg.config.ConfigFunction;
@@ -68,8 +67,6 @@ public class BiomeConfig extends BiomeSettings
 		RESOURCE_QUEUE_RESOURCES.put("BasaltColumn", BasaltColumnResource.class);
 	}
 
-	@Getter
-	private final Path configPath;
 	private final PresetConfig parent;
 	@Getter
 	private OTGBiomeID OTGBiomeID;
@@ -78,11 +75,8 @@ public class BiomeConfig extends BiomeSettings
 
 	public BiomeConfig(SettingsMap settingsMap, PresetConfig presetSettings)
 	{
-		super(settingsMap.getName());
-		this.configPath = settingsMap.getPath();
-        parent = presetSettings;
-		renameOldSettings(settingsMap);
-		readDefaultSettings(settingsMap, presetSettings, BiomeResourcesManager.get());
+		super(settingsMap, presetSettings, BiomeResourcesManager.get());
+		parent = presetSettings;
 	}
 
 	public void setOTGBiomeId(int id) {

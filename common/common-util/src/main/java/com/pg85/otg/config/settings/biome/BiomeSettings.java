@@ -7,7 +7,6 @@ import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.config.settings.biome.generated.BiomePlacementSettings;
 import com.pg85.otg.config.settings.biome.generated.BiomeStructureTagSettings;
-import com.pg85.otg.config.settings.biome.generated.BiomeTagSettings;
 import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.interfaces.ICustomStructureGen;
@@ -17,22 +16,22 @@ import com.pg85.otg.util.minecraft.SaplingType;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 /**
- * BiomeConfig (*.bc) classes
- * <p>
- * IBiomeConfig defines anything that's used/exposed between projects.
- * BiomeConfigBase implements anything needed for IBiomeConfig.
- * BiomeConfig contains only fields/methods used for io/serialisation/instantiation.
- * <p>
- * BiomeConfig should be used only in common-core and platform-specific layers, when reading/writing settings on app start.
- * IBiomeConfig should be used wherever settings are used in code.
+ * BiomeSettings - represents any BiomeConfig-style config file
+ * Settings are stored in, written from and read to ConfigSections.
+ * Must be instantiated either as a BiomeConfig, with all config sections present
+ * or as a BiomeTemplate, with any sections present.
  */
 @Getter
 public abstract class BiomeSettings implements ConfigFile {
+    @Getter
+    protected final Path configPath;
+    protected TemplateConfig templateConfig = null;
     protected IdentitySettings identitySettings = null;
     protected MobSettings mobSettings = null;
     protected BiomePlacementConfig generationSettings = null;
@@ -42,7 +41,7 @@ public abstract class BiomeSettings implements ConfigFile {
     protected SurfaceSettings surfaceSettings = null;
     protected BiomeResourceSettings resourceSettings = null;
 
-    protected BiomeTagConfig biomeTagConfig = null;
+    protected BiomeTagSettings biomeTagSettings = null;
     protected BiomeStructureTagConfig biomeStructureTagConfig = null;
 
     private final String configName;
@@ -50,8 +49,11 @@ public abstract class BiomeSettings implements ConfigFile {
     @Setter
     protected ICustomStructureGen structureGen;
 
-    protected BiomeSettings(String configName) {
-        this.configName = configName;
+    protected BiomeSettings(SettingsMap reader, PresetSettings presetSettings, IConfigFunctionProvider provider) {
+        this.configName = reader.getName();
+        this.configPath = reader.getPath();
+        renameOldSettings(reader);
+        readDefaultSettings(reader, presetSettings, provider);
     }
 
     @Override
@@ -112,13 +114,16 @@ public abstract class BiomeSettings implements ConfigFile {
     public void renameOldSettings(SettingsMap settings)
     {
         settings.renameOldSetting("DisableNotchHeightControl", BiomeTerrainSettings.DISABLE_BIOME_HEIGHT);
-        settings.renameOldSetting("BiomeDictId", IdentitySettings.BIOME_DICT_TAGS);
+        settings.renameOldSetting("BiomeDictId", BiomeTagSettings.BIOME_TAGS);
+        settings.renameOldSetting("BiomeDictTags", BiomeTagSettings.BIOME_TAGS);
+        settings.renameOldSetting("TemplateBiomeType", BiomeTagSettings.BIOME_TYPE);
         settings.renameOldSetting("IsleInBiome", BiomePlacementSettings.ISLE_IN_BIOMES);
         settings.renameOldSetting("BiomeIsBorder", BiomePlacementSettings.BORDER_IN_BIOMES);
         settings.renameOldSetting("BiomeColor", BiomePlacementSettings.BIOME_MAP_COLOR);
     }
 
     protected void readDefaultSettings(SettingsMap settingsMap, PresetSettings presetSettings, IConfigFunctionProvider provider) {
+        templateConfig = TemplateConfig.buildTemplateSettings(settingsMap);
         identitySettings = IdentitySettings.buildIdentitySettings(settingsMap, presetSettings);
         mobSettings = MobSettings.getMobSettings(settingsMap);
         generationSettings = BiomePlacementConfig.getGenerationSettings(settingsMap, presetSettings.getGenerationSettings());
@@ -126,7 +131,7 @@ public abstract class BiomeSettings implements ConfigFile {
         terrainSettings = BiomeTerrainSettings.getBiomeTerrainSettings(settingsMap, presetSettings.getTerrainSettings());
         visualSettings = BiomeVisualSettings.getBiomeVisualSettings(settingsMap, presetSettings.getVisualSettings());
 
-        biomeTagConfig = BiomeTagConfig.getBiomeTagConfig(settingsMap, identitySettings);
+        biomeTagSettings = BiomeTagSettings.getBiomeTagConfig(settingsMap, identitySettings);
         biomeStructureTagConfig = BiomeStructureTagConfig.getBiomeStructureTagConfig(settingsMap, structureSettings);
 
         surfaceSettings = SurfaceSettings.getSurfaceSettings(
@@ -163,13 +168,8 @@ public abstract class BiomeSettings implements ConfigFile {
             writeConfigSection(writer, structureSettings);
         if (mobSettings != null)
             writeConfigSection(writer, mobSettings);
-        if (biomeTagConfig != null) {
-            if (biomeTagConfig.isDisplayAllBiomeTags()) {
-                writeConfigSection(writer, biomeTagConfig);
-            } else {
-                writer.putSetting(BiomeTagSettings.DISPLAY_ALL_BIOME_TAGS, biomeTagConfig);
-                writeAlteredConfigSection(writer, biomeTagConfig);
-            }
+        if (biomeTagSettings != null) {
+            writeConfigSection(writer, biomeTagSettings);
         }
         if (biomeStructureTagConfig != null) {
             if (biomeStructureTagConfig.isDisplayAllStructureTags()) {
@@ -182,7 +182,8 @@ public abstract class BiomeSettings implements ConfigFile {
     }
 
     public void writeConfigSection(SettingsMap writer, ConfigSection section) {
-        writer.header1(section.getSectionName());
+        writer.header1(section.getSectionName(), section.getSectionComment());
+
 
         for (Setting<?> setting : section.getSettingsList()) {
             writer.putSetting(setting, section);
@@ -190,7 +191,7 @@ public abstract class BiomeSettings implements ConfigFile {
     }
 
     public void writeAlteredConfigSection(SettingsMap writer, ConfigSection section) {
-        writer.header2(section.getSectionName());
+        writer.header2(section.getSectionName(), section.getSectionComment());
 
         for (Setting<?> setting : section.getAlteredSettings()) {
             writer.putSetting(setting, section);

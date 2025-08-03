@@ -12,28 +12,10 @@ import java.nio.file.Path;
 
 public class BiomeTemplate extends BiomeSettings {
 
-    private final TemplateConfig templateConfig;
-
     public BiomeTemplate(SettingsMap reader, PresetSettings parent) {
-        super(reader.getName());
+        super(reader, parent, BiomeResourcesManager.get());
         this.configPath = reader.getPath();
         this.parent = parent;
-        renameOldSettings(reader);
-        templateConfig = TemplateConfig.buildTemplateSettings(reader);
-        switch (templateConfig.getTemplateType()) {
-            case FULL -> {
-                readDefaultSettings(reader, parent, BiomeResourcesManager.get());
-            }
-            case VISUAL -> {
-                visualSettings = BiomeVisualSettings.getBiomeVisualSettings(reader, parent.getVisualSettings());
-            }
-            case TERRAIN -> {
-                terrainSettings = BiomeTerrainSettings.getBiomeTerrainSettings(reader, parent.getTerrainSettings());
-            }
-            case GENERATION -> {
-                generationSettings = BiomePlacementConfig.getGenerationSettings(reader, parent.getGenerationSettings());
-            }
-        }
     }
 
     @Getter
@@ -54,6 +36,6 @@ public class BiomeTemplate extends BiomeSettings {
     @Override
     public void writeConfigSettings(SettingsMap writer) {
         writer.putSetting(Constants.ConfigVersionSetting, Constants.ConfigVersion);
-        writeConfigSection(writer, templateConfig);
+        super.writeConfigSettings(writer);
     }
 }

@@ -17,7 +17,7 @@ public class BiomeConfigWriter {
 
         writer.header1("Biome Identity");
 
-        writer.putSetting(IdentitySettings.IS_TEMPLATE_FOR_BIOME, biomeConfig.getIdentitySettings().isTemplateForBiome(),
+        writer.putSetting(OutdatedSettings.IS_TEMPLATE_FOR_BIOME, biomeConfig.getIdentitySettings().isTemplateForBiome(),
                 "Set this to true if this biome config is used with non-OTG biomes, configured in the PresetConfig via TemplateBiome()",
                 "OTG generates the terrain for the biome as configured in this file and spawns resources, but also allows the biome to spawn ",
                 "its own resources and mobs and apply its settings. Because of this, the following OTG settings cannot be used:",
@@ -27,14 +27,6 @@ public class BiomeConfigWriter {
                 " - Terrain settings.",
                 " - Resources. Non-OTG biome resources are currently spawned after all OTG resources in the resourcequeue.",
                 " - OTG settings not mentioned above that are handled by OTG and don't rely on MC logic.");
-
-        if (isTemplateBiome) {
-            writer.putSetting(IdentitySettings.TEMPLATE_BIOME_TYPE, biomeConfig.getIdentitySettings().getTemplateBiomeType(),
-                    "If this is a template biome config for an overworld biome, set this to Overworld. STONE is used for base terrain generation.",
-                    "If this is a template biome config for a nether biome, set this to Nether. NETHERRACK is used for base terrain generation.",
-                    "If this is a template biome config for an end biome, set this to End. END_STONE is used for base terrain generation."
-            );
-        }
 
         writer.putSetting(IdentitySettings.DISPLAY_NAME, biomeConfig.getIdentitySettings());
 
@@ -567,7 +559,7 @@ public class BiomeConfigWriter {
                     "Use this setting to inherit mob spawn lists from other biomes.",
                     "Accepts both OTG and non-OTG (vanilla or other mods') biomes. See also: BiomeDictTags.");
 
-            biomeConfig.getBiomeTagConfig().writeConfig(writer);
+            biomeConfig.getBiomeTagSettings().writeConfig(writer);
 
             biomeConfig.getBiomeStructureTagConfig().writeConfig(writer);
         }

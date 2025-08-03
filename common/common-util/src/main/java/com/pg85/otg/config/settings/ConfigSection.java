@@ -1,5 +1,6 @@
 package com.pg85.otg.config.settings;
 
+import com.pg85.otg.config.ConfigFile;
 import com.pg85.otg.config.settingtype.Setting;
 
 import java.lang.reflect.Field;
@@ -15,6 +16,10 @@ import java.util.Map;
 public abstract class ConfigSection {
 
     public abstract String getSectionName();
+
+    public String[] getSectionComment() {
+        return new String[]{};
+    }
 
     /**
      * This function collects all Setting variables from a setting holder class

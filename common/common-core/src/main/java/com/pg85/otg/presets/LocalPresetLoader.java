@@ -8,6 +8,7 @@ import java.util.*;
 import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.config.biome.BiomeResourcesManager;
 import com.pg85.otg.config.biome.BiomeTemplate;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.loader.BiomeConfigLoader;
 import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.constants.Constants;
@@ -127,7 +128,12 @@ public abstract class LocalPresetLoader
 	{
 		PresetConfig presetConfig = PresetConfigLoader.loadPresetConfig(presetDir);
 		List<BiomeTemplate> biomeTemplates = BiomeConfigLoader.loadBiomeTemplates(presetDir, presetConfig);
-		List<BiomeConfig> biomeConfigs = BiomeConfigLoader.loadBiomeConfigs(presetDir, presetConfig);
+		List<BiomeSettings> biomeSettings = BiomeConfigLoader.loadBiomeConfigs(presetDir, presetConfig);
+		List<BiomeConfig> biomeConfigs = new ArrayList<>();
+		biomeSettings.forEach(bs -> {
+			if (bs instanceof BiomeTemplate bt) biomeTemplates.add(bt);
+			if (bs instanceof BiomeConfig bc) biomeConfigs.add(bc);
+		});
 
 		return new Preset(presetDir, presetConfig, biomeConfigs, biomeTemplates);
 	}

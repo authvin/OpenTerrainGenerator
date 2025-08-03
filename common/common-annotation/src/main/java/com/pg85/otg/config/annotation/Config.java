@@ -8,4 +8,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
 public @interface Config {
+    boolean value() default true; // Indicates if all fields should be treated as settings
 }

@@ -45,13 +45,21 @@ public class SurfaceSettings extends ConfigSection {
     private final LocalMaterialData snowBlock;
     private final LocalMaterialData cooledLavaBlock;
 
-    public static final Setting<Integer> WATER_LEVEL_MAX = TerrainSettings.WATER_LEVEL_MAX;
-    public static final Setting<Integer> WATER_LEVEL_MIN = TerrainSettings.WATER_LEVEL_MIN;
-
     @Override
     public String getSectionName() {
         return "Biome Surface Settings";
     }
+
+    public static final Setting<Integer> WATER_LEVEL_MAX = Settings.intSetting(
+            "WaterLevelMax", 63, Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1,
+            t -> ((SurfaceSettings) t).getWaterLevelMax(),
+            "Set water level. Every empty block under this level down to min will be fill water or another block from WaterBlock."
+    );
+    public static final Setting<Integer> WATER_LEVEL_MIN = Settings.intSetting(
+            "WaterLevelMin", 0, Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1,
+            t -> ((SurfaceSettings) t).getWaterLevelMin(),
+            "Set water level. Every empty block over this level up to max will be fill water or another block from WaterBlock."
+    );
 
     public static final Setting<Boolean> USE_WORLD_WATER_LEVEL = Settings.booleanSetting(
             "UseWorldWaterLevel", true,
@@ -88,9 +96,22 @@ public class SurfaceSettings extends ConfigSection {
             t -> ((SurfaceSettings)t).getRedSandStoneBlock(),
             "The block used for the red sandstone"
     );
-    public static final Setting<LocalMaterialData> COOLED_LAVA_BLOCK = BlockSettings.COOLED_LAVA_BLOCK;
-    public static final Setting<LocalMaterialData> WATER_BLOCK = BlockSettings.WATER_BLOCK;
-    public static final Setting<LocalMaterialData> ICE_BLOCK = BlockSettings.ICE_BLOCK;
+    public static final Setting<LocalMaterialData> WATER_BLOCK = new MaterialSetting(
+            "WaterBlock", LocalMaterials.WATER_NAME,
+            t -> ((SurfaceSettings) t).getWaterBlock(),
+            "Block used as water in WaterLevel."
+    );
+    public static final Setting<LocalMaterialData> ICE_BLOCK = new MaterialSetting(
+            "IceBlock", LocalMaterials.ICE_NAME,
+            t -> ((SurfaceSettings) t).getIceBlock(),
+            "Block used as water in WaterLevel."
+    );
+    public static final Setting<LocalMaterialData> COOLED_LAVA_BLOCK = new MaterialSetting(
+            "CooledLavaBlock", LocalMaterials.LAVA_NAME,
+            t -> ((SurfaceSettings) t).getCooledLavaBlock(),
+            "Block used as cooled or frozen lava.",
+            "Set this to OBSIDIAN for \"frozen\" lava lakes in cold biomes"
+    );
     public static final Setting<LocalMaterialData> PACKED_ICE_BLOCK = new MaterialSetting(
             "PackedIceBlock", LocalMaterials.PACKED_ICE_NAME,
             t -> ((SurfaceSettings)t).getPackedIceBlock(),
@@ -138,12 +159,12 @@ public class SurfaceSettings extends ConfigSection {
     );
 
     public static SurfaceSettings getSurfaceSettings(SettingsMap settingsReader,
-                                                     BlockSettings presetBLocks, TerrainSettings presetTerrain) {
+                                                     BlockSettings presetBlocks, TerrainSettings presetTerrain) {
         SurfaceSettingsBuilder builder = SurfaceSettings.builder();
 
         builder.surfaceGenerator(settingsReader.getSetting(SURFACE_GENERATOR));
         builder.replacedBlocks(settingsReader.getSetting(REPLACED_BLOCKS));
-        builder.blockSettings(presetBLocks);
+        builder.blockSettings(presetBlocks);
         builder.useWorldWaterLevel(settingsReader.getSetting(USE_WORLD_WATER_LEVEL));
         builder.configWaterLevelMax(settingsReader.getSetting(WATER_LEVEL_MAX));
         builder.configWaterLevelMin(settingsReader.getSetting(WATER_LEVEL_MIN));

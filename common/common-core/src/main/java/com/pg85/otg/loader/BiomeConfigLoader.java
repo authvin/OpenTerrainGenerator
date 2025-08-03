@@ -7,6 +7,7 @@ import com.pg85.otg.config.io.FileSettingsWriter;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
+import com.pg85.otg.config.settings.biome.OutdatedSettings;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.util.OTGLog;
@@ -219,9 +220,11 @@ public final class BiomeConfigLoader {
 		return list.stream().map(t -> (BiomeTemplate) t).toList();
 	}
 
-	public static List<BiomeConfig> loadBiomeConfigs(Path presetDir, PresetConfig presetConfig) {
-		List<BiomeSettings> list = loadBiomeSettings(presetDir, presetConfig, BiomeSettingType.CONFIG);
-		return list.stream().map(t -> (BiomeConfig) t).toList();
+	/**
+	 * Loads the biome configs from the given preset directory. May return biome templates if legacy TemplateForBiome setting is set.
+	 */
+	public static List<BiomeSettings> loadBiomeConfigs(Path presetDir, PresetConfig presetConfig) {
+		return loadBiomeSettings(presetDir, presetConfig, BiomeSettingType.CONFIG);
 	}
 
 	public static List<BiomeSettings> loadBiomeSettings(Path presetDir, PresetConfig presetConfig, BiomeSettingType type)
@@ -274,9 +277,14 @@ public final class BiomeConfigLoader {
 			SettingsMap updatedMap;
 			switch (type) {
                 case CONFIG -> {
-					BiomeConfig biomeConfig = new BiomeConfig(settingsMap, presetConfig);
-					biomeSettingList.add(biomeConfig);
-					updatedMap = biomeConfig.getSettingsAsMap();
+					BiomeSettings biomeSettings;
+					if (settingsMap.hasSetting(OutdatedSettings.IS_TEMPLATE_FOR_BIOME) && settingsMap.getSetting(OutdatedSettings.IS_TEMPLATE_FOR_BIOME)) {
+						biomeSettings = new BiomeTemplate(settingsMap, presetConfig);
+					} else {
+						biomeSettings = new BiomeConfig(settingsMap, presetConfig);
+					}
+					biomeSettingList.add(biomeSettings);
+					updatedMap = biomeSettings.getSettingsAsMap();
                 }
                 case TEMPLATE -> {
 					BiomeTemplate biomeTemplate = new BiomeTemplate(settingsMap, presetConfig);
