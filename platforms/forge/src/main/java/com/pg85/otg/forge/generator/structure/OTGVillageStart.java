@@ -8,6 +8,7 @@ import com.pg85.otg.configuration.biome.BiomeConfig.VillageType;
 import com.pg85.otg.logging.LogMarker;
 import com.pg85.otg.forge.ForgeEngine;
 
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.StructureStart;
@@ -31,6 +32,8 @@ public class OTGVillageStart extends StructureStart
     // TODO: Extra large villages aren't working?
     OTGVillageStart(World world, Random random, int chunkX, int chunkZ, int size)
     {
+        super(chunkX, chunkZ);
+
         List<PieceWeight> villagePieces = StructureVillagePieces.getStructureVillageWeightedPieceList(random, size);
 
         int startX = (chunkX << 4) + 2;
@@ -128,5 +131,19 @@ public class OTGVillageStart extends StructureStart
     public boolean isSizeableStructure()
     {
         return this.hasMoreThanTwoComponents;
+    }
+
+    @Override
+    public void writeToNBT(NBTTagCompound tagCompound)
+    {
+        super.writeToNBT(tagCompound);
+        tagCompound.setBoolean("Valid", this.hasMoreThanTwoComponents);
+    }
+
+    @Override
+    public void readFromNBT(NBTTagCompound tagCompound)
+    {
+        super.readFromNBT(tagCompound);
+        this.hasMoreThanTwoComponents = tagCompound.getBoolean("Valid");
     }
 }
