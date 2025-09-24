@@ -13,21 +13,20 @@ import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.config.settings.preset.PresetSettings;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 
 public class BiomeResourcesManager implements IConfigFunctionProvider
 {
 	private static final Map<String, Class<? extends ConfigFunction<?>>> CONFIG_FUNCTIONS = new HashMap<>();
 
-	private static final BiomeResourcesManager INSTANCE = new BiomeResourcesManager();
+    private final OTGWorldInfo worldInfo;
 
-	public static BiomeResourcesManager get()
-	{
-		return INSTANCE;
-	}
+    public BiomeResourcesManager(OTGWorldInfo worldInfo) {
+        this.worldInfo = worldInfo;
+    }
 
 	private static void ensureAllConfigFunctionsRegistered()
 	{
-		registerAllConfigFunctions(PresetConfig.CONFIG_FUNCTIONS);
 		registerAllConfigFunctions(BiomeConfig.RESOURCE_QUEUE_RESOURCES);
 	}
 
@@ -58,6 +57,7 @@ public class BiomeResourcesManager implements IConfigFunctionProvider
 	 */
 	// It's checked with clazz.getConstructor(holder.getClass(), ...))
 	@SuppressWarnings("unchecked")
+	@Override
 	public <T> ConfigFunction<T> getConfigFunction(String name, T holder, List<String> args)
 	{
 		if (CONFIG_FUNCTIONS.isEmpty()) {
@@ -76,7 +76,7 @@ public class BiomeResourcesManager implements IConfigFunctionProvider
 		{
 			Constructor<? extends ConfigFunction<?>> constructor = getConstructor(holder, clazz);
             assert constructor != null;
-            return (ConfigFunction<T>) constructor.newInstance(holder, args);
+            return (ConfigFunction<T>) constructor.newInstance(holder, args, this.worldInfo);
 		}
 		catch (NoSuchMethodException e1)
 		{
@@ -99,12 +99,10 @@ public class BiomeResourcesManager implements IConfigFunctionProvider
 		if(holder instanceof BiomeSettings)
 		{
 			// Every BiomeConfig resource should have a constructor that conforms to this method signature
-			constructor = clazz.getConstructor(BiomeSettings.class, List.class);
+			constructor = clazz.getConstructor(BiomeSettings.class, List.class, OTGWorldInfo.class);
 		}
-		else if(holder instanceof PresetSettings)
-		{
-			// Every PresetConfig resource should have a constructor that conforms to this method signature
-			constructor = clazz.getConstructor(PresetSettings.class, List.class);
+		else {
+			throw new NoSuchMethodException("No valid constructor found for " + clazz.getName() + " with holder " + holder.getClass().getName());
 		}
 		return constructor;
 	}

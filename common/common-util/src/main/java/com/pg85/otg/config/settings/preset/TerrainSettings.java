@@ -41,19 +41,19 @@ public class TerrainSettings extends ConfigSection {
             "Values must be between 5 and 8 (inclusive), and may not be lower that WorldHeightScaleBits."
     );
     public static final Setting<Integer> WATER_LEVEL_MAX = Settings.intSetting(
-            "WaterLevelMax", 63, Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1,
+            "WaterLevelMax", 63, Constants.WORLD_START_MIN_Y, Constants.WORLD_END_MAX_Y,
             t -> ((TerrainSettings) t).getWaterLevelMax(),
             "Set water level. Every empty block under this level down to min will be fill water or another block from WaterBlock."
     );
     public static final Setting<Integer> WATER_LEVEL_MIN = Settings.intSetting(
-            "WaterLevelMin", 0, Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1,
+            "WaterLevelMin", 0, Constants.WORLD_START_MIN_Y, Constants.WORLD_END_MAX_Y,
             t -> ((TerrainSettings) t).getWaterLevelMin(),
             "Set water level. Every empty block over this level up to max will be fill water or another block from WaterBlock."
     );
     public static final Setting<Integer> CARVER_LAVA_BLOCK_HEIGHT = Settings.intSetting(
-            "CarverLavaBlockHeight", 10, 0, 255,
+            "CarverLavaBlockHeight", 10, Constants.WORLD_START_MIN_Y, Constants.WORLD_END_MAX_Y,
             t -> ((TerrainSettings) t).getCarverLavaBlockHeight(),
-            "All air blocks are replaced to CarverLavaBlock from Y0 up to CarverLavaBlockHeight.",
+            "All air blocks are replaced to CarverLavaBlock from world bottom up to CarverLavaBlockHeight.",
             "For example, vanilla replaces air in caves with lava up to Y10.",
             "Defaults to: 10"
     );

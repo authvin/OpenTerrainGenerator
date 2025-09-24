@@ -30,6 +30,7 @@ import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.bo3.Rotation;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterials;
 import com.pg85.otg.util.materials.MaterialSet;
@@ -85,7 +86,9 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 	
 	// Used to safely spawn this object from a grown sapling
 	@Override
-	public boolean spawnFromSapling(IWorldGenRegion worldGenRegion, Random random, Rotation rotation, int x, int y, int z)
+	public boolean spawnFromSapling(IWorldGenRegion worldGenRegion,
+									OTGWorldInfo otgWorldInfo,
+									Random random, Rotation rotation, int x, int y, int z)
 	{
 		ObjectCoordinate[] data = this.data[rotation.getRotationId()];
 		ArrayList<ObjectCoordinate> blocksToSpawn = new ArrayList<>();
@@ -183,7 +186,9 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 	}
 
 	@Override
-	public boolean spawnForced(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random, Rotation rotation, int x, int y, int z, boolean allowReplaceBlocks)
+	public boolean spawnForced(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
+							   OTGWorldInfo otgWorldInfo,
+							   Random random, Rotation rotation, int x, int y, int z, boolean allowReplaceBlocks)
 	{
 		ObjectCoordinate[] data = this.data[rotation.getRotationId()];
 
@@ -356,7 +361,9 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 	}
 
 	@Override
-	public boolean spawnAsTree(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random, int x, int z, int minY, int maxY)
+	public boolean spawnAsTree(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
+							   OTGWorldInfo otgWorldInfo,
+							   Random random, int x, int z, int minY, int maxY)
 	{
 		return spawn(worldGenRegion, random, x, z, minY == -1 ? this.spawnElevationMin : minY, maxY == -1 ? this.spawnElevationMax : maxY);
 	} 
@@ -439,7 +446,9 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 
 	// Called during decoration.
 	@Override
-	public boolean process(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random rand)
+	public boolean process(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
+						   OTGWorldInfo otgWorldInfo,
+						   Random rand)
 	{
 		if (this.branch)
 		{

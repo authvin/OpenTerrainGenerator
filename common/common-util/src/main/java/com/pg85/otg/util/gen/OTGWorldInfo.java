@@ -1,7 +1,5 @@
 package com.pg85.otg.util.gen;
 
-import lombok.Getter;
-
 import java.util.Random;
 
 /**
@@ -11,10 +9,20 @@ import java.util.Random;
  *             This gives a combined height of 382 blocks, not including Y 320
  * @param maxY maxY here is *inclusive*, meaning 255 in old MC, 319 in new MC
  */
-public record OTGWorldInfo(int minY, int maxY, long seed) {
+public record OTGWorldInfo(int minY, int maxY) {
 
-    public int getHeight() {
+    /**
+     * @return The inclusive height of the world
+     */
+    public int getInclusiveHeight() {
         return maxY - minY;
+    }
+
+    /**
+     * @return The full height of the world, which is inclusive height + 1
+     */
+    public int getHeight() {
+        return getInclusiveHeight() + 1;
     }
 
     public int getXAboveMin(int offset) {
@@ -36,6 +44,6 @@ public record OTGWorldInfo(int minY, int maxY, long seed) {
 
     @Override
     public String toString() {
-        return "minY: " + minY + ", maxY: " + maxY + ", seed: " + seed;
+        return "minY: " + minY + ", maxY: " + maxY;
     }
 }

@@ -5,6 +5,7 @@ import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.gen.resource.util.CoralHelper;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.materials.LocalMaterialData;
 
 import java.util.List;
@@ -12,9 +13,9 @@ import java.util.Random;
 
 public class CoralMushroomResource extends FrequencyResourceBase
 {
-	public CoralMushroomResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
+	public CoralMushroomResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		this.frequency = readInt(args.get(0), 1, 500);
 		this.rarity = readRarity(args.get(1));
 	}

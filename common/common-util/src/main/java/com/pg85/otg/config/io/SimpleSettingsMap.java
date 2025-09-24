@@ -84,7 +84,7 @@ public final class SimpleSettingsMap implements SettingsMap
 	}
 
 	@Override
-	public <T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider biomeResourcesManager, String presetFolderName)
+	public <T> List<ConfigFunction<T>> getConfigFunctions(T holder, IConfigFunctionProvider configFunctionProvider, String presetFolderName)
 	{
 		ILogger logger = OTGLog.getLogger();
 		List<ConfigFunction<T>> result = new ArrayList<ConfigFunction<T>>(configFunctions.size());
@@ -95,7 +95,7 @@ public final class SimpleSettingsMap implements SettingsMap
 			String functionName = configFunctionString.substring(0, bracketIndex);
 			String parameters = configFunctionString.substring(bracketIndex + 1, configFunctionString.length() - 1);
 			List<String> args = Arrays.asList(StringHelper.readCommaSeperatedString(parameters));
-			ConfigFunction<T> function = biomeResourcesManager.getConfigFunction(functionName, holder, args);
+			ConfigFunction<T> function = configFunctionProvider.getConfigFunction(functionName, holder, args);
 			if (function == null)
 			{
 				// Function is in wrong config file,

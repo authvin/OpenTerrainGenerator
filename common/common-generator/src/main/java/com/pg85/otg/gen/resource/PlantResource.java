@@ -6,6 +6,7 @@ import com.pg85.otg.gen.resource.util.BerryBush;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.OTGMaterialReader;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.MaterialSet;
@@ -23,9 +24,9 @@ public class PlantResource extends FrequencyResourceBase
 	private final MaterialSet sourceBlocks;
 	private SparseOption sparseOption = null;
 
-	public PlantResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
+	public PlantResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		assureSize(6, args);
 
 		this.plant = PlantType.getPlant(args.get(0), OTGMaterialReader.get());

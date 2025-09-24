@@ -13,7 +13,7 @@ import java.nio.file.Path;
 public class BiomeTemplate extends BiomeSettings {
 
     public BiomeTemplate(SettingsMap reader, PresetSettings parent) {
-        super(reader, parent, BiomeResourcesManager.get());
+        super(reader, parent, new BiomeResourcesManager(parent.getWorldInfo()));
         this.configPath = reader.getPath();
         this.parent = parent;
     }

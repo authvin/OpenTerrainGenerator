@@ -6,6 +6,7 @@ import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.OTGMaterialReader;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.MaterialSet;
 import com.pg85.otg.util.minecraft.PlantType;
@@ -27,9 +28,9 @@ public class GrassResource  extends BiomeResourceBase implements IBasicResource
 	private PlantType plant;
 	private final MaterialSet sourceBlocks;
 
-	public GrassResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
+	public GrassResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		assureSize(5, args);
 
 		// The syntax for the first two arguments used to be blockId,blockData

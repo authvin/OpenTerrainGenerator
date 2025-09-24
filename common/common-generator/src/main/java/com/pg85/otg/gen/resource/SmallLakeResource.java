@@ -5,6 +5,8 @@ import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.OTGMaterialReader;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterials;
@@ -21,11 +23,11 @@ public class SmallLakeResource extends FrequencyResourceBase
 	private final int maxAltitude;
 	private final int minAltitude;
 
-	public SmallLakeResource(BiomeSettings biomeConfig, List<String> args, IMaterialReader materialReader) throws InvalidConfigException
+	public SmallLakeResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		assureSize(5, args);
-		this.material = materialReader.readMaterial(args.get(0));
+		this.material = OTGMaterialReader.get().readMaterial(args.get(0));
 		this.frequency = readInt(args.get(1), 1, 100);
 		this.rarity = readRarity(args.get(2));
 		this.minAltitude = readInt(args.get(3), Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1);

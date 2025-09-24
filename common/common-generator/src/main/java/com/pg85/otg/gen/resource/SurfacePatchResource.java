@@ -3,18 +3,21 @@ package com.pg85.otg.gen.resource;
 import com.pg85.otg.config.biome.BiomeResourceBase;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
+import com.pg85.otg.gen.noise.OctaveSimplexNoiseSampler;
 import com.pg85.otg.gen.noise.legacy.NoiseGeneratorSurfacePatchOctaves;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.MaterialSet;
 import com.pg85.otg.util.minecraft.PlantType;
 
 import java.util.List;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 /**
  * Generates patches based on noise.
@@ -31,13 +34,13 @@ public class SurfacePatchResource  extends BiomeResourceBase implements IBasicRe
 	/**
 	 * To get nice patches, we need our own noise generator here
 	 */
-	private final NoiseGeneratorSurfacePatchOctaves noiseGen;
+	private final OctaveSimplexNoiseSampler noiseGen;
 	private final Random random;
 	private final MaterialSet sourceBlocks;
 
-	public SurfacePatchResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
+	public SurfacePatchResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		assureSize(4, args);
 		IMaterialReader materialReader = OTGMaterialReader.get();
 		this.material = materialReader.readMaterial(args.get(0));
@@ -68,7 +71,7 @@ public class SurfacePatchResource  extends BiomeResourceBase implements IBasicRe
 		this.maxAltitude = readInt(args.get(3), this.minAltitude, Constants.WORLD_HEIGHT - 1);
 		this.sourceBlocks = readMaterials(args, 4);
 		this.random = new Random(2345L);
-		this.noiseGen = new NoiseGeneratorSurfacePatchOctaves(this.random, 1);
+		this.noiseGen = new OctaveSimplexNoiseSampler(this.random, IntStream.rangeClosed(0, 0));
 	}
 
 	@Override

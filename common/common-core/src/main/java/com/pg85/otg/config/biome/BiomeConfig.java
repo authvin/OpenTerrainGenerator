@@ -75,7 +75,7 @@ public class BiomeConfig extends BiomeSettings
 
 	public BiomeConfig(SettingsMap settingsMap, PresetConfig presetSettings)
 	{
-		super(settingsMap, presetSettings, BiomeResourcesManager.get());
+		super(settingsMap, presetSettings, new BiomeResourcesManager(presetSettings.getWorldInfo()));
 		parent = presetSettings;
 	}
 

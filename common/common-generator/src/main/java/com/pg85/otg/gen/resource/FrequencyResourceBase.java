@@ -7,6 +7,7 @@ import com.pg85.otg.config.biome.BiomeResourceBase;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 
 // Frequency resources uses frequency and rarity settings to spawn in each chunk being decorated.
 // Within the 2x2 chunk decoration area, a 16x16 area in the center (8 blocks margin on each side)
@@ -18,9 +19,9 @@ public abstract class FrequencyResourceBase extends BiomeResourceBase implements
 	protected int frequency;
 	protected double rarity;
 	
-	public FrequencyResourceBase(BiomeSettings biomeConfig, List<String> args)
+	public FrequencyResourceBase(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo)
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 	}
 
 	@Override

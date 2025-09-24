@@ -6,6 +6,7 @@ import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.OTGMaterialReader;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -22,9 +23,9 @@ public class IceSpikeResource extends FrequencyResourceBase
 	private final MaterialSet sourceBlocks;
 	private IceSpikeType type;
 
-	public IceSpikeResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
+	public IceSpikeResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		assureSize(2, args);
 
 		this.material = OTGMaterialReader.get().readMaterial(args.get(0));

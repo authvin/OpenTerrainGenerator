@@ -4,6 +4,7 @@ import com.pg85.otg.OTG;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.ErroredFunction;
 import com.pg85.otg.config.biome.BiomeConfig;
+import com.pg85.otg.constants.Constants;
 import com.pg85.otg.constants.settings.structure.CustomStructureType;
 import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.CustomObjectManager;
@@ -17,7 +18,6 @@ import com.pg85.otg.gen.resource.IBasicResource;
 import com.pg85.otg.gen.surface.FrozenSurfaceHelper;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IChunkDecorator;
-import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
@@ -286,14 +286,14 @@ public class OTGChunkDecorator implements IChunkDecorator
 				y += ((BO3)customObject).getConfig().getSpawnHeightOffset();
 				// This may spawn the structure across chunk borders.
 				((BO3)customObject).spawnForced(
-					structureCache,
-					worldGenRegion,
-					this.rand,
-					Rotation.NORTH,
+                        structureCache,
+                        worldGenRegion,
+                        Constants.DEFAULT_WORLD_INFO, this.rand,
+                        Rotation.NORTH,
 					targetChunk.getBlockX() + 16 + ((BO3)customObject).getXOffset(Rotation.NORTH),
-					y,
+                        y,
 					targetChunk.getBlockZ() + 16 + ((BO3)customObject).getZOffset(Rotation.NORTH),
-					true
+                        true
 				);
 			}
 		}

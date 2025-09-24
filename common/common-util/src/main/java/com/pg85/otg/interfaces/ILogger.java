@@ -3,6 +3,17 @@ package com.pg85.otg.interfaces;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 
+/**
+ * The logger supports different log levels and categories. The log levels are
+ * (in order of increasing severity): INFO, WARN, ERROR, FATAL. The log
+ * categories are used to group related log messages together, for example
+ * MAIN, CONFIGS, PERFORMANCE, etc.
+ * <p>
+ * The logger also supports formatting messages with parameters, similar to
+ * String.format(). This allows for more flexible and readable log messages.
+ * The format string uses %s as parameter placeholders, and will use tostring()
+ * on the provided objects to convert them to strings.
+ */
 public interface ILogger
 {
 	void init(LogLevel level, boolean logCustomObjects, boolean logStructurePlotting, boolean logConfigs, boolean logPerformance, boolean logBiomeRegistry, boolean logDecoration, boolean logMobs, String logPresets);

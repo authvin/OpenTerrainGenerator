@@ -5,15 +5,16 @@ import java.util.List;
 import com.pg85.otg.config.biome.BiomeResourceBase;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 
 public class RegistryResource  extends BiomeResourceBase
 {
 	private final String registryKey;
 	private final String decorationStage;
 
-	public RegistryResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
+	public RegistryResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		assureSize(1, args);
 
 		this.registryKey = args.get(0);

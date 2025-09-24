@@ -6,6 +6,7 @@ import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.OTGMaterialReader;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -29,9 +30,9 @@ public class OreResource extends BiomeResourceBase implements IBasicResource
 	private final boolean useExtendedParams;	
 	private final int maxSpawn;	
 
-	public OreResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
+	public OreResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		assureSize(7, args);
 
 		this.material = OTGMaterialReader.get().readMaterial(args.get(0));

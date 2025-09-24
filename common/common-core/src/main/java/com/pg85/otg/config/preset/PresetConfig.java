@@ -44,22 +44,22 @@ public class PresetConfig extends PresetSettings {
     protected boolean biomeConfigsHaveReplacement = false;
     protected int maxSmoothRadius = 2;
 
-    public PresetConfig(Path settingsDir, SettingsMap settingsReader, ArrayList<String> biomes, IMaterialReader materialReader) {
+    public PresetConfig(Path settingsDir, SettingsMap settingsReader, ArrayList<String> biomes) {
         super(settingsReader.getName());
         this.renameOldSettings(settingsReader);
         presetInfo = PresetInfo.buildPresetInfo(settingsReader);
         visualSettings = VisualSettings.builder().fogColor(settingsReader.getSetting(VisualSettings.PRESET_FOG_COLOR)).build();
-        resourceSettings = ResourceSettings.getResourceSettings(settingsReader);
         blockSettings = BlockSettings.getBlockSettings(settingsReader);
+        dimensionSettings = DimensionSettings.getDimensionSettings(settingsReader);
         generationSettings = GenerationSettings.getGenerationSettings(
-                this, settingsReader, BiomeResourcesManager.get(), biomes, settingsDir);
+                this, settingsReader, PresetResourcesManager.get(), biomes, settingsDir);
+        resourceSettings = ResourceSettings.getResourceSettings(settingsReader);
         terrainSettings = TerrainSettings.getTerrainSettings(settingsReader);
         imageSettings = ImageSettings.getImageSettings(settingsReader, biomes);
         structureSettings = StructureSettings.getStructureSettings(settingsReader);
-        carverSettings = CarverSettings.getCarverSettings(settingsReader);
+        carverSettings = CarverSettings.getCarverSettings(settingsReader, terrainSettings);
         spawnSettings = SpawnSettings.getSpawnSettings(settingsReader);
         portalSettings = PortalSettings.getPortalSettings(settingsReader);
-        dimensionSettings = DimensionSettings.getDimensionSettings(settingsReader);
         gameRuleSettings = GameRuleSettings.getGameRuleSettings(settingsReader);
     }
 

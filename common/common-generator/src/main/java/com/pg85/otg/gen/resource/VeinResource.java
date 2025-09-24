@@ -7,6 +7,7 @@ import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.gen.DecorationArea;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.MaterialSet;
@@ -27,9 +28,9 @@ public class VeinResource extends BiomeResourceBase implements IBasicResource
 	private final int minSizeInBlocks;		
 	private final double veinRarity;
 
-	public VeinResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
+	public VeinResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		assureSize(9, args);
 
 		this.material = OTGMaterialReader.get().readMaterial(args.get(0));

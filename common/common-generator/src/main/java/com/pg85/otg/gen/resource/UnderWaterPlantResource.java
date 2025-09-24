@@ -5,6 +5,7 @@ import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.OTGMaterialReader;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterials;
@@ -21,9 +22,9 @@ public class UnderWaterPlantResource extends FrequencyResourceBase
 	private final PlantType plant;
 	private final MaterialSet sourceBlocks;
 
-	public UnderWaterPlantResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
+	public UnderWaterPlantResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		assureSize(6, args);
 
 		this.plant = PlantType.getPlant(args.get(0), OTGMaterialReader.get());

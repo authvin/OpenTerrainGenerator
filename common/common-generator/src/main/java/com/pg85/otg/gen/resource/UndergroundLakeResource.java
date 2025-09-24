@@ -4,6 +4,7 @@ import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -19,9 +20,9 @@ public class UndergroundLakeResource extends FrequencyResourceBase
 	private final int minAltitude;
 	private final int minSize;
 
-	public UndergroundLakeResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
+	public UndergroundLakeResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		assureSize(6, args);
 		this.minSize = readInt(args.get(0), 1, 25);
 		this.maxSize = readInt(args.get(1), this.minSize, 60);

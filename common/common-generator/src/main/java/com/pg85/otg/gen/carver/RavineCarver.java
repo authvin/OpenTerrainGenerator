@@ -8,14 +8,15 @@ import com.pg85.otg.interfaces.ICachedBiomeProvider;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
 import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.util.gen.ChunkBuffer;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.helpers.RandomHelper;
 
 public class RavineCarver extends Carver
 {
-	public RavineCarver(int heightLimit, PresetSettings presetConfig)
+	public RavineCarver(PresetSettings presetConfig)
 	{
-		super(heightLimit, presetConfig);
+		super(presetConfig);
 	}
 
 	@Override
@@ -27,7 +28,9 @@ public class RavineCarver extends Carver
 	}
 
 	@Override
-	public boolean carve(ISurfaceGeneratorNoiseProvider noiseProvider, ChunkBuffer chunk, Random random, int chunkX, int chunkZ, int mainChunkX, int mainChunkZ, BitSet bitSet, ICachedBiomeProvider cachedBiomeProvider)
+	public boolean carve(ISurfaceGeneratorNoiseProvider noiseProvider, ChunkBuffer chunk, Random random, int chunkX, int chunkZ, int mainChunkX, int mainChunkZ, BitSet bitSet, ICachedBiomeProvider cachedBiomeProvider,
+						 OTGWorldInfo otgWorldInfo
+	)
 	{
 		double x = chunkX * Constants.CHUNK_SIZE + random.nextInt(Constants.CHUNK_SIZE);
 		double z = chunkZ * Constants.CHUNK_SIZE + random.nextInt(Constants.CHUNK_SIZE);			
@@ -98,7 +101,9 @@ public class RavineCarver extends Carver
 				{
 					return;
 				}
-				this.carveRegion(noiseProvider, heightToHorizontalStretchFactor, chunk, seed, mainChunkX, mainChunkZ, x, y, z, currentYaw, currentPitch, carvingMask, cachedBiomeProvider);
+				this.carveRegion(noiseProvider, heightToHorizontalStretchFactor, chunk, seed, mainChunkX, mainChunkZ, x, y, z, currentYaw, currentPitch, carvingMask, cachedBiomeProvider,
+                                 Constants.DEFAULT_WORLD_INFO
+                );
 			}
 		}
 	}

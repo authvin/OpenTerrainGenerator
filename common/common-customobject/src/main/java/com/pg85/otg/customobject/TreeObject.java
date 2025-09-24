@@ -7,6 +7,7 @@ import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.bo3.Rotation;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.minecraft.TreeType;
 
 import java.nio.file.Path;
@@ -20,101 +21,142 @@ import java.util.Random;
  * to accept {@link SpawnableObject}s instead of {@link CustomObject}s, so that
  * all the extra methods are no longer needed.
  */
-class TreeObject implements CustomObject
-{
-	private final TreeType type;
-	private final int minHeight = Constants.WORLD_DEPTH;
-	private final int maxHeight = Constants.WORLD_HEIGHT - 1;
+class TreeObject implements CustomObject {
+    private final TreeType type;
 
-	TreeObject(TreeType type)
-	{
-		this.type = type;
-	}
+    TreeObject(TreeType type) {
+        this.type = type;
+    }
 
-	@Override
-	public boolean onEnable(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
-	{
-		return true;
-	}
+    @Override
+    public boolean onEnable(
+            String presetFolderName,
+            Path otgRootFolder,
+            CustomObjectManager customObjectManager,
+            IMaterialReader materialReader,
+            CustomObjectResourcesManager manager,
+            IModLoadedChecker modLoadedChecker
+    ) {
+        return true;
+    }
 
-	@Override
-	public String getName()
-	{
-		return type.name();
-	}
+    @Override
+    public String getName() {
+        return type.name();
+    }
 
-	@Override
-	public boolean canSpawnAsTree()
-	{
-		return true;
-	}
-	
-	// Called during decoration.
-	@Override
-	public boolean process(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random)
-	{
-		// A tree has no frequency or rarity, so spawn it once in the chunk
-		// Make sure we stay within decoration bounds.
-		int x = worldGenRegion.getDecorationArea().getChunkBeingDecoratedMinX() + random.nextInt(Constants.CHUNK_SIZE);
-		int z = worldGenRegion.getDecorationArea().getChunkBeingDecoratedMinZ() + random.nextInt(Constants.CHUNK_SIZE);
-		int y = worldGenRegion.getHighestBlockAboveYAt(x, z);
-		if (y < minHeight || y > maxHeight)
-		{
-			return false;
-		}	
-		return spawnForced(structureCache, worldGenRegion, random, Rotation.NORTH, x, y, z, false);
-	}
-	
-	@Override
-	public boolean spawnFromSapling(IWorldGenRegion worldGenRegion, Random random, Rotation rotation, int x, int y, int z)
-	{
-		return worldGenRegion.placeTree(type, random, x, y, z);
-	}
+    @Override
+    public boolean canSpawnAsTree() {
+        return true;
+    }
 
-	@Override
-	public boolean spawnForced(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random, Rotation rotation, int x, int y, int z, boolean allowReplaceBlocks)
-	{
-		return worldGenRegion.placeTree(type, random, x, y, z);
-	}
-	
-	@Override
-	public boolean spawnAsTree(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random, int x, int z, int minY, int maxY)
-	{
-		int y = worldGenRegion.getHighestBlockAboveYAt(x, z);
-		Rotation rotation = Rotation.getRandomRotation(random);
+    // Called during decoration.
+    @Override
+    public boolean process(
+            CustomStructureCache structureCache,
+            IWorldGenRegion worldGenRegion,
+            OTGWorldInfo otgWorldInfo,
+            Random random
+    ) {
+        // A tree has no frequency or rarity, so spawn it once in the chunk
+        // Make sure we stay within decoration bounds.
+        int x = worldGenRegion.getDecorationArea().getChunkBeingDecoratedMinX()
+                + random.nextInt(Constants.CHUNK_SIZE);
+        int z = worldGenRegion.getDecorationArea().getChunkBeingDecoratedMinZ()
+                + random.nextInt(Constants.CHUNK_SIZE);
+        int y = worldGenRegion.getHighestBlockAboveYAt(x, z);
+        if (y < otgWorldInfo.minY() || y > otgWorldInfo.maxY()) {
+            return false;
+        }
+        return spawnForced(
+                structureCache,
+                worldGenRegion,
+                Constants.DEFAULT_WORLD_INFO, random,
+                Rotation.NORTH,
+                x,
+                y,
+                z,
+                false
+        );
+    }
 
-		if(!(minY == -1 && maxY == -1))
-		{
-			if (y < minY || y > maxY)
-			{
-				return false;
-			}
-		}
-		
-		if (y < minHeight || y > maxHeight)
-		{
-			return false;
-		}
+    @Override
+    public boolean spawnFromSapling(
+            IWorldGenRegion worldGenRegion,
+            OTGWorldInfo otgWorldInfo,
+            Random random,
+            Rotation rotation,
+            int x,
+            int y,
+            int z
+    ) {
+        return worldGenRegion.placeTree(type, random, x, y, z);
+    }
 
-		return spawnForced(structureCache, worldGenRegion, random, rotation, x, y, z, true);
-	}
-	
-	@Override
-	public boolean canRotateRandomly()
-	{
-		// Trees cannot be rotated
-		return false;
-	}
+    @Override
+    public boolean spawnForced(
+            CustomStructureCache structureCache,
+            IWorldGenRegion worldGenRegion,
+            OTGWorldInfo otgWorldInfo,
+            Random random,
+            Rotation rotation,
+            int x,
+            int y,
+            int z,
+            boolean allowReplaceBlocks
+    ) {
+        return worldGenRegion.placeTree(type, random, x, y, z);
+    }
 
-	@Override
-	public boolean loadChecks(IModLoadedChecker modLoadedChecker)
-	{
-		return true;
-	}
+    @Override
+    public boolean spawnAsTree(
+            CustomStructureCache structureCache,
+            IWorldGenRegion worldGenRegion,
+            OTGWorldInfo otgWorldInfo,
+            Random random,
+            int x,
+            int z,
+            int minY,
+            int maxY
+    ) {
+        int y = worldGenRegion.getHighestBlockAboveYAt(x, z);
+        Rotation rotation = Rotation.getRandomRotation(random);
 
-	@Override
-	public boolean doReplaceBlocks()
-	{
-		return false;
-	}
+        if (!(minY == -1 && maxY == -1)) {
+            if (y < minY || y > maxY) {
+                return false;
+            }
+        }
+
+        if (y < otgWorldInfo.minY() || y > otgWorldInfo.maxY()) {
+            return false;
+        }
+
+        return spawnForced(
+                structureCache,
+                worldGenRegion,
+                Constants.DEFAULT_WORLD_INFO, random,
+                rotation,
+                x,
+                y,
+                z,
+                true
+        );
+    }
+
+    @Override
+    public boolean canRotateRandomly() {
+        // Trees cannot be rotated
+        return false;
+    }
+
+    @Override
+    public boolean loadChecks(IModLoadedChecker modLoadedChecker) {
+        return true;
+    }
+
+    @Override
+    public boolean doReplaceBlocks() {
+        return false;
+    }
 }

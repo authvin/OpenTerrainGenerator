@@ -4,6 +4,7 @@ import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.RandomHelper;
 
 import java.util.List;
@@ -14,9 +15,9 @@ public class DungeonResource extends FrequencyResourceBase
 	private final int maxAltitude;
 	private final int minAltitude;
 
-	public DungeonResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
+	public DungeonResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		assureSize(3, args);
 
 		this.frequency = 1;

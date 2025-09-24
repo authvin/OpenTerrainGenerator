@@ -80,7 +80,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
     private CustomStructureCache structureCache = null;
     private Long seed = 0L;
     private ServerLevel serverLevel = null;
-    private OTGWorldInfo otgWorldInfo;
+    private final OTGWorldInfo otgWorldInfo;
 
     public OTGFabricChunkGenerator(
             OTGFabricBiomeProvider biomeSource, Holder<NoiseGeneratorSettings> settings, Registry<Biome> biomeHolderGetter
@@ -88,16 +88,21 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
         super(biomeSource);
         this.settings = settings;
         this.biomeSource = biomeSource;
+        int minY = settings.value().noiseSettings().minY();
+        int maxY = settings.value().noiseSettings().height() + minY - 1;
+        this.otgWorldInfo = new OTGWorldInfo(minY, maxY);
         this.internalGenerator = new OTGChunkGenerator(
                 OTG.getEngine().getPresetLoader().getPresetByFolderName(biomeSource.getPresetFolderName()),
                 biomeSource,
-                OTG.getEngine().getPresetLoader().getGlobalIdMapping(biomeSource.getPresetFolderName())
+                OTG.getEngine().getPresetLoader().getGlobalIdMapping(biomeSource.getPresetFolderName()),
+                otgWorldInfo
         );
-        preset = OTG.getEngine().getPresetLoader().getPresetByFolderName(biomeSource.getPresetFolderName());
+        this.preset = OTG.getEngine().getPresetLoader().getPresetByFolderName(biomeSource.getPresetFolderName());
         this.biomeRegistry = biomeHolderGetter;
-        horribleDelegateForCarvers = new NoiseBasedChunkGenerator(biomeSource, settings);
+        this.horribleDelegateForCarvers = new NoiseBasedChunkGenerator(biomeSource, settings);
         this.chunkDecorator = new OTGChunkDecorator();
         this.shadowChunkGenerator = new ShadowChunkGenerator(OTG.getEngine().getPluginConfig().getMaxWorkerThreads());
+        this.globalFluidPicker = createFluidPicker(settings.value());
     }
 
     public void setSeed(Long seed) {
@@ -106,10 +111,6 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
                 this.seed = seed;
                 biomeSource.setSeed(seed);
                 internalGenerator.setSeed(seed);
-                int minY = settings.value().noiseSettings().minY();
-                int maxY = settings.value().noiseSettings().height() + minY - 1;
-                otgWorldInfo = new OTGWorldInfo(minY, maxY, seed);
-                globalFluidPicker = createFluidPicker(settings.value());
             }
         }
     }

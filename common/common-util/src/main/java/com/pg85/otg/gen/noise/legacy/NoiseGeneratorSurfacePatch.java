@@ -1,5 +1,7 @@
 package com.pg85.otg.gen.noise.legacy;
 
+import com.pg85.otg.constants.Constants;
+
 import java.util.Random;
 
 @Deprecated
@@ -12,18 +14,18 @@ class NoiseGeneratorSurfacePatch
 
 	NoiseGeneratorSurfacePatch(Random random)
 	{
-		for (int i = 0; i < 256; this.permutationTable[i] = i++)
+		for (int i = 0; i < Constants.OTHER_256; this.permutationTable[i] = i++)
 		{
 			;
 		}
 
-		for (int i = 0; i < 256; ++i)
+		for (int i = 0; i < Constants.OTHER_256; ++i)
 		{
-			int j = random.nextInt(256 - i) + i;
+			int j = random.nextInt(Constants.OTHER_256 - i) + i;
 			int k = this.permutationTable[i];
 			this.permutationTable[i] = this.permutationTable[j];
 			this.permutationTable[j] = k;
-			this.permutationTable[(i + 256)] = this.permutationTable[i];
+			this.permutationTable[(i + Constants.OTHER_256)] = this.permutationTable[i];
 		}
 	}
 

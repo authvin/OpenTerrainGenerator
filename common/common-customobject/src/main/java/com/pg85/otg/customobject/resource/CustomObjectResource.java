@@ -1,6 +1,7 @@
 package com.pg85.otg.customobject.resource;
 
 import com.pg85.otg.config.biome.BiomeResourceBase;
+import com.pg85.otg.constants.Constants;
 import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
@@ -9,6 +10,7 @@ import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.StringHelper;
 
 import java.nio.file.Path;
@@ -21,8 +23,8 @@ public class CustomObjectResource extends BiomeResourceBase implements ICustomOb
 	private final List<CustomObject> objects;
 	private final List<String> objectNames;
 
-	public CustomObjectResource(BiomeSettings biomeConfig, List<String> args) {
-		super(biomeConfig, args);
+	public CustomObjectResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) {
+		super(biomeConfig, args, otgWorldInfo);
 		if (args.isEmpty() || (args.size() == 1 && args.get(0).trim().isEmpty()))
 		{
 			// Backwards compatibility
@@ -41,7 +43,9 @@ public class CustomObjectResource extends BiomeResourceBase implements ICustomOb
 		{
 			if(object != null) // if null then BO2/BO3 file could not be found
 			{
-				object.process(structureCache, worldGenRegion, random);
+				object.process(structureCache, worldGenRegion,
+							   Constants.DEFAULT_WORLD_INFO,
+							   random);
 			}
 		}
 	}	

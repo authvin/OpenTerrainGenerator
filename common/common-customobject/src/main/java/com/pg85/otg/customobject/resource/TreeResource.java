@@ -12,6 +12,7 @@ import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.OTGLog;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 
@@ -32,9 +33,9 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 	private final boolean useExtendedParams;	
 	private final int maxSpawn;
 
-	public TreeResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
+	public TreeResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		assureSize(3, args);
 
 		this.frequency = readInt(args.get(0), 1, 100);
@@ -85,7 +86,9 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 					
 					tree = this.treeObjects[treeNumber];
 					// Min/Max == -1 means use bo2/bo3 internal min/max height, otherwise use the optional min/max height defined with Tree()
-					if(tree != null && tree.spawnAsTree(structureCache, worldGenRegion, random, x, z, this.treeObjectMinChances[treeNumber], this.treeObjectMaxChances[treeNumber]))
+					if(tree != null && tree.spawnAsTree(structureCache, worldGenRegion,
+														Constants.DEFAULT_WORLD_INFO,
+														random, x, z, this.treeObjectMinChances[treeNumber], this.treeObjectMaxChances[treeNumber]))
 					{
 						// Success!
 						spawned++;

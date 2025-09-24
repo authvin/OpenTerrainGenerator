@@ -13,6 +13,7 @@ import com.pg85.otg.interfaces.ICustomStructureGen;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IStructuredCustomObject;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -24,9 +25,9 @@ public class CustomStructureResource extends BiomeResourceBase implements ICusto
 	private final List<Double> objectChances;
 	public final List<String> objectNames;
 
-	public CustomStructureResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
+	public CustomStructureResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		this.objectNames = new ArrayList<>();
 		this.objectChances = new ArrayList<>();
 		for (int i = 0; i < args.size() - 1; i += 2)

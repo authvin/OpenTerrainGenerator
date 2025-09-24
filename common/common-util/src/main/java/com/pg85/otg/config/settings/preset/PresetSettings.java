@@ -1,6 +1,7 @@
 package com.pg85.otg.config.settings.preset;
 
 import com.pg85.otg.config.ConfigFile;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import lombok.Getter;
 
 /**
@@ -36,6 +37,7 @@ public abstract class PresetSettings implements ConfigFile {
 	protected ResourceSettings resourceSettings;
 	protected BlockSettings blockSettings;
 	private final String configName;
+	private OTGWorldInfo otgWorldInfo = null;
 
     protected PresetSettings(String configName) {
         this.configName = configName;
@@ -44,6 +46,20 @@ public abstract class PresetSettings implements ConfigFile {
 	@Override
 	public String getConfigName() {
 		return configName;
+	}
+
+	public OTGWorldInfo getWorldInfo() {
+		if (otgWorldInfo == null) {
+            switch (dimensionSettings.getDimensionType()) {
+                case NETHER, END -> otgWorldInfo = new OTGWorldInfo(0, 127);
+                case OVERWORLD -> otgWorldInfo = new OTGWorldInfo(-64, 319);
+                default -> {
+					int maxY = dimensionSettings.getMinY() + dimensionSettings.getHeight() - 1;
+					return otgWorldInfo = new OTGWorldInfo(dimensionSettings.getMinY(), maxY);
+				}
+            }
+		}
+		return otgWorldInfo;
 	}
 }
 

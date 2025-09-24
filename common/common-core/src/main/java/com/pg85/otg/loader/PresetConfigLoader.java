@@ -54,8 +54,7 @@ public class PresetConfigLoader {
         return new PresetConfig(
                 presetDir,
                 presetConfigSettings,
-                getAllBiomeNamesInFolderRecursive(biomesDirectory),
-                OTGMaterialReader.get()
+                getAllBiomeNamesInFolderRecursive(biomesDirectory)
         );
     }
 

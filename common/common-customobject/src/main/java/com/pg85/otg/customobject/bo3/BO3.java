@@ -34,6 +34,7 @@ import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.gen.DecorationArea;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -130,7 +131,9 @@ public class BO3 implements StructuredCustomObject
 
 	// Used to safely spawn this object from a grown sapling
 	@Override
-	public boolean spawnFromSapling(IWorldGenRegion worldGenRegion, Random random, Rotation rotation, int x, int y, int z)
+	public boolean spawnFromSapling(IWorldGenRegion worldGenRegion,
+									OTGWorldInfo otgWorldInfo,
+									Random random, Rotation rotation, int x, int y, int z)
 	{
 		BO3BlockFunction[] blocks = this.settings.getBlocks(rotation.getRotationId());
 
@@ -207,7 +210,9 @@ public class BO3 implements StructuredCustomObject
 	// Force spawns a BO3 object. Used by /otg spawn and bo3AtSpawn.
 	// This method ignores the maxPercentageOutsideBlock setting
 	@Override
-	public boolean spawnForced(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random, Rotation rotation, int x, int y, int z, boolean allowReplaceBlocks)
+	public boolean spawnForced(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
+							   OTGWorldInfo otgWorldInfo,
+							   Random random, Rotation rotation, int x, int y, int z, boolean allowReplaceBlocks)
 	{
 		BO3BlockFunction[] blocks = this.settings.getBlocks(rotation.getRotationId());
 		ObjectExtrusionHelper oeh = new ObjectExtrusionHelper(this.settings.extrudeMode, this.settings.extrudeThroughBlocks);
@@ -243,7 +248,9 @@ public class BO3 implements StructuredCustomObject
 	// This method is only used to spawn CustomObject.
 	// Called during decoration.
 	@Override
-	public boolean process(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random)
+	public boolean process(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
+						   OTGWorldInfo otgWorldInfo,
+						   Random random)
 	{
 		boolean atLeastOneObjectHasSpawned = false;
 
@@ -274,7 +281,9 @@ public class BO3 implements StructuredCustomObject
 
 	// Used for trees during decoration
 	@Override
-	public boolean spawnAsTree(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random, int x, int z, int minY, int maxY)
+	public boolean spawnAsTree(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
+							   OTGWorldInfo otgWorldInfo,
+							   Random random, int x, int z, int minY, int maxY)
 	{
 		// A bit ugly, but avoids having to create and implement another spawnAsTree method.
 		if(minY == -1)

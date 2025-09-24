@@ -8,6 +8,7 @@ import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.gen.resource.util.PositionHelper;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.MaterialSet;
 
@@ -22,10 +23,10 @@ public class BasaltColumnResource extends FrequencyResourceBase
 	private LocalMaterialData material;
 	private final MaterialSet sourceBlocks;
 
-	public BasaltColumnResource(BiomeSettings biomeConfig, List<String> args)
+	public BasaltColumnResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo)
 			throws InvalidConfigException
 	{
-		super(biomeConfig, args);
+		super(biomeConfig, args, otgWorldInfo);
 		assureSize(8, args);
 
 		this.material = readMaterial(args.get(0));
