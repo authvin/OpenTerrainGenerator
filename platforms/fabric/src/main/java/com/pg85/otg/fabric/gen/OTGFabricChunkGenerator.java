@@ -39,6 +39,7 @@ import net.minecraft.world.level.levelgen.blending.Blender;
 import net.minecraft.world.level.levelgen.carver.CarvingContext;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.structure.*;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.storage.LevelResource;
 import org.jetbrains.annotations.NotNull;
 
@@ -51,6 +52,14 @@ import java.util.function.Predicate;
 
 @Getter
 public class OTGFabricChunkGenerator extends ChunkGenerator {
+    @Override
+    public ChunkGeneratorStructureState createState(HolderLookup<StructureSet> structureSetLookup, RandomState randomState, long seed) {
+        if (this.seed == 0L) {
+            this.setSeed(BiomeManager.obfuscateSeed(seed));
+        }
+        return super.createState(structureSetLookup, randomState, seed);
+    }
+
     public static final Codec<OTGFabricChunkGenerator> CODEC =
             RecordCodecBuilder.create(instance ->
                     instance.group(
@@ -69,7 +78,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
     private Aquifer.FluidPicker globalFluidPicker = null;
     private final OTGChunkDecorator chunkDecorator;
     private CustomStructureCache structureCache = null;
-    private Long seed = null;
+    private Long seed = 0L;
     private ServerLevel serverLevel = null;
     private OTGWorldInfo otgWorldInfo;
 
@@ -93,7 +102,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
 
     public void setSeed(Long seed) {
         synchronized (this) {
-            if (this.seed == null) {
+            if (this.seed == 0L) {
                 this.seed = seed;
                 biomeSource.setSeed(seed);
                 internalGenerator.setSeed(seed);
@@ -104,6 +113,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
             }
         }
     }
+
     public void setServerLevel(ServerLevel serverLevel) {
         synchronized (this) {
             if (this.serverLevel == null) {
@@ -166,10 +176,22 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
     }
 
     @Override
-    public void createReferences(WorldGenLevel worldGenRegion, StructureManager structureManager, ChunkAccess chunkAccess) {
-        if (this.seed == null) {
-            this.setSeed(worldGenRegion.getSeed());
-        }
+    public void createStructures(
+            RegistryAccess registryAccess,
+            ChunkGeneratorStructureState chunkGeneratorStructureState,
+            StructureManager structureManager,
+            ChunkAccess chunkAccess,
+            StructureTemplateManager structureTemplateManager
+    ) {
+        super.createStructures(registryAccess, chunkGeneratorStructureState, structureManager, chunkAccess, structureTemplateManager);
+    }
+
+    @Override
+    public void createReferences(
+            WorldGenLevel worldGenRegion,
+            StructureManager structureManager,
+            ChunkAccess chunkAccess
+    ) {
         if (this.serverLevel == null) {
             this.setServerLevel(worldGenRegion.getLevel());
         }
@@ -389,7 +411,10 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
 
     @Override
     public void addDebugScreenInfo(List<String> list, RandomState randomState, BlockPos blockPos) {
-
+        IBiome biome = this.internalGenerator.getCachedBiomeProvider().getNoiseBiome(blockPos.getX(), blockPos.getZ());
+        list.add("Preset: " + this.preset.getFolderName());
+        list.add("Biome: " + biome.getBiomeSettings().getIdentitySettings().getDisplayName());
+        list.add("OTG Debug { "+otgWorldInfo.toString()+" }");
     }
 
     private int sampleHeightmap(int x, int z, @Nullable BlockState[] blockStates, @Nullable Predicate<BlockState> predicate)

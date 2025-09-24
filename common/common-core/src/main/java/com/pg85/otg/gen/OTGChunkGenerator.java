@@ -83,10 +83,10 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 	private long seed;
 	private final CachedBiomeProvider cachedBiomeProvider;
 
-	private final int noiseSizeX = 4;
+	private static final int NOISE_SIZE_X = 4;
 	@Getter
     private final int noiseSizeY;
-	private final int noiseSizeZ = 4;
+	private static final int NOISE_SIZE_Z = 4;
 
 	private final ThreadLocal<NoiseCache> noiseCache;
 	private NoiseGeneratorPerlinMesaBlocks biomeBlocksNoiseGen;
@@ -303,13 +303,14 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 		double maxAverageHeight = 0;
 		double[] chc = new double[this.noiseSizeY + 1];
 		float weight = 0;
-		
+
 		int radius = Math.max(center.getTerrainSettings().getSmoothRadius(), center.getTerrainSettings().getCHCSmoothRadius());
 		int areaSize = radius * 2 + 1;
 		BiomeSettings[] biomes = this.cachedBiomeProvider.getNoiseBiomeConfigsForRegion(noiseX - radius, noiseZ - radius, areaSize);
 		BiomeSettings biome;
 		BiomeTerrainSettings biomeTerrainSettings;
 		TerrainSettings terrainSettings = this.preset.getPresetConfig().getTerrainSettings();
+		int worldHeightCap = terrainSettings.getWorldHeightCap();
 		float heightAt;
 		float weightAt;
 		int cacheX;
@@ -392,7 +393,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 
 		// Factor in y sections
 		height = usedYSections * (2.0f + height + extraHeight) / 4.0f;
-		
+
 		double falloff;
 		double horizontalScale;
 		double verticalScale;
@@ -400,7 +401,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 		for (int y = 0; y <= this.noiseSizeY; ++y)
 		{
 			// Calculate falloff
-			falloff = (height - y) * 12.0D * 128.0D / this.preset.getPresetConfig().getTerrainSettings().getWorldHeightCap() / volatility;
+			falloff = (height - y) * 12.0D * 128.0D / worldHeightCap / volatility;
 			if (falloff > 0.0)
 			{
 				falloff *= 4.0;
@@ -457,17 +458,17 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 		}
 
 		// TODO: this double[][][] is probably really bad for performance
-		double[][][] noiseData = new double[2][this.noiseSizeZ + 1][this.noiseSizeY + 1];
+		double[][][] noiseData = new double[2][this.NOISE_SIZE_Z + 1][this.noiseSizeY + 1];
 		// Max smoothing radius is 32, so area covered is 32+5+32=69 (noise/biome coords, so *4)
 	
 		// Initialize noise data on the x0 column.
-		for (int noiseZ = 0; noiseZ < this.noiseSizeZ + 1; ++noiseZ)
+		for (int noiseZ = 0; noiseZ < this.NOISE_SIZE_Z + 1; ++noiseZ)
 		{
 			noiseData[0][noiseZ] = new double[this.noiseSizeY + 1];
 			this.getNoiseColumn(
 				noiseData[0][noiseZ], 
-				chunkCoord.getChunkX() * this.noiseSizeX, 
-				chunkCoord.getChunkZ() * this.noiseSizeZ + noiseZ 
+				chunkCoord.getChunkX() * this.NOISE_SIZE_X,
+				chunkCoord.getChunkZ() * this.NOISE_SIZE_Z + noiseZ
 			);
 			noiseData[1][noiseZ] = new double[this.noiseSizeY + 1];
 		}
@@ -504,20 +505,20 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider
 		int structureZ;
 		JigsawStructureData structure;
 		double[][] xColumn;
-		for (int noiseX = 0; noiseX < this.noiseSizeX; ++noiseX)
+		for (int noiseX = 0; noiseX < this.NOISE_SIZE_X; ++noiseX)
 		{
 			// Initialize noise data on the x1 column
-			for (noiseZ = 0; noiseZ < this.noiseSizeZ + 1; ++noiseZ)
+			for (noiseZ = 0; noiseZ < this.NOISE_SIZE_Z + 1; ++noiseZ)
 			{
 				this.getNoiseColumn(
 					noiseData[1][noiseZ], 
-					chunkCoord.getChunkX() * this.noiseSizeX + noiseX + 1, 
-					chunkCoord.getChunkZ() * this.noiseSizeZ + noiseZ 
+					chunkCoord.getChunkX() * this.NOISE_SIZE_X + noiseX + 1,
+					chunkCoord.getChunkZ() * this.NOISE_SIZE_Z + noiseZ
 				);
 			}
 
 			// [0, 4] -> z noise chunks
-			for (noiseZ = 0; noiseZ < this.noiseSizeZ; ++noiseZ)
+			for (noiseZ = 0; noiseZ < this.NOISE_SIZE_Z; ++noiseZ)
 			{
 				// [0, 32] -> y noise chunks
 				for (int noiseY = this.noiseSizeY - 1; noiseY >= 0; --noiseY)

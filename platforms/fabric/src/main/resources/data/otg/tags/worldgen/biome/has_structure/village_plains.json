@@ -1,9 +1,0 @@
-{
-  "replace": false,
-  "values": [
-    {
-      "id": "otg:default.plains",
-      "required": false
-    }
-  ]
-}

@@ -16,6 +16,7 @@ import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterials;
 import com.pg85.otg.util.minecraft.TreeType;
 import com.pg85.otg.util.nbt.NamedBinaryTag;
+import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.CaveFeatures;
@@ -456,12 +457,12 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
                 try {
                     var inputStream = new DataInputStream(new ByteArrayInputStream(entityData.getMetaData().getBytes()));
                     nbtTagCompound = NbtIo.read(inputStream);
-                } catch (IOException e) {
+                } catch (IOException | ReportedException e) {
                     if(OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
                     {
                         OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not parse nbt for Entity() " + entityData.makeString() + ", file: " + entityData.getNameTagOrNBTFileName());
                     }
-                    return;
+                    throw new RuntimeException("Could not parse nbt for Entity() " + entityData.makeString() + ", file: " + entityData.getNameTagOrNBTFileName(), e);
                 }
                 // Specify which type of entity to spawn
                 nbtTagCompound.putString("id", entityData.getResourceLocation());

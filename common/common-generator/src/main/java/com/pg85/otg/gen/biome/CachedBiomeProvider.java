@@ -13,6 +13,8 @@ import com.pg85.otg.interfaces.ILayerSource;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.FifoMap;
 import com.pg85.otg.util.helpers.MathHelper;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * A cache used throughout an entire session, so that base
@@ -24,6 +26,8 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 	static int cacheHits = 0;
 	static int smallCacheHits = 0;
 
+    @Setter
+    @Getter
     private long seed;
 	private final ILayerSource biomeProvider;
 	private final IBiome[] biomesById;
@@ -309,15 +313,7 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 		return this.biomesById[this.biomeProvider.getSampler().sample(noiseX, noiseZ)];
 	}
 
-	public void setSeed(long seed) {
-		this.seed = seed;
-	}
-
-	public long getSeed() {
-		return seed;
-	}
-
-	/**
+    /**
 	 * Interpolates the given biome from biome coords (pos >> 2) to real coords.
 	 * This is required as a vanilla change in 1.15 changed biomes from being stored in real resolution, changing them to be
 	 * stored in a 4x4x4 cubes instead, allowing for 3d biomes at the cost of resolution. This class interpolates and provides

@@ -6,15 +6,15 @@ import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.constants.settings.ConfigMode;
+import com.pg85.otg.util.biome.OTGBiomeResourceLocation;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.Locale;
 
 @Builder
 @Getter
 public class PresetInfo extends ConfigSection {
     private final ConfigMode settingsMode;
+    private final String displayName;
     private final String registryName;
     private final int majorVersion;
     private final int minorVersion;
@@ -39,6 +39,12 @@ public class PresetInfo extends ConfigSection {
             "RegistryName", "",
             t -> ((PresetInfo) t).getRegistryName(),
             "The shortened name for the preset, used in biome resource locations and similar"
+    );
+    public static final Setting<String> DISPLAY_NAME = Settings.stringSetting(
+            "DisplayName", "",
+            t -> ((PresetInfo) t).getDisplayName(),
+            "The display name for this preset, used in the world creation screen and similar. ",
+            "Defaults to the preset folder name if left blank"
     );
     public static final Setting<String> DESCRIPTION = Settings.stringSetting(
             "Description", "No description given",
@@ -67,6 +73,7 @@ public class PresetInfo extends ConfigSection {
     public static PresetInfo buildPresetInfo(SettingsMap reader) {
         PresetInfoBuilder presetInfoBuilder = builder();
 
+        presetInfoBuilder.displayName(reader.getSetting(DISPLAY_NAME));
         presetInfoBuilder.settingsMode(reader.getSetting(SETTINGS_MODE));
         presetInfoBuilder.author(reader.getSetting(AUTHOR));
         presetInfoBuilder.description(reader.getSetting(DESCRIPTION));
@@ -83,10 +90,10 @@ public class PresetInfo extends ConfigSection {
             if (this.registryName.isBlank() || this.registryName.equalsIgnoreCase("default")) {
                 this.registryName = presetFolderName;
             }
-            this.registryName = this.registryName
-                    .toLowerCase(Locale.ROOT)
-                    .replaceAll(" ", "_")
-                    .replaceAll("[^a-z0-9_\\-/.]", "");
+            if (this.displayName.isBlank()) {
+                this.displayName = presetFolderName;
+            }
+            this.registryName = OTGBiomeResourceLocation.stringToPath(this.registryName);
             return this;
         }
     }

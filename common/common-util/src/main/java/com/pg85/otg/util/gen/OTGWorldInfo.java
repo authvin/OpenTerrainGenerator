@@ -33,4 +33,9 @@ public record OTGWorldInfo(int minY, int maxY, long seed) {
     public int getXBelowMax(int bound, Random random) {
         return maxY - random.nextInt(bound);
     }
+
+    @Override
+    public String toString() {
+        return "minY: " + minY + ", maxY: " + maxY + ", seed: " + seed;
+    }
 }

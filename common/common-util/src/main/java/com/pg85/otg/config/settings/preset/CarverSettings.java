@@ -135,7 +135,7 @@ public class CarverSettings extends ConfigSection {
     );
 
 
-    public static CarverSettings getCarverSettings(SettingsMap reader) {
+    public static CarverSettings getCarverSettings(SettingsMap reader, TerrainSettings terrainSettings) {
         var carverSettingsBuilder = builder();
 
         carverSettingsBuilder.cavesEnabled(reader.getSetting(CAVES_ENABLED));

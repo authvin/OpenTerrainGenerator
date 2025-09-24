@@ -1,13 +1,9 @@
 package com.pg85.otg;
 
-import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.PluginConfig;
-import com.pg85.otg.config.biome.BiomeConfig;
-import com.pg85.otg.config.biome.BiomeResourcesManager;
 import com.pg85.otg.config.io.FileSettingsReader;
 import com.pg85.otg.config.io.FileSettingsWriter;
 import com.pg85.otg.config.settings.preset.PresetInfo;
-import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
@@ -25,7 +21,6 @@ import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 

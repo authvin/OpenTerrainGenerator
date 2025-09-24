@@ -23,6 +23,8 @@ public class PresetWriter {
 
         writer.header2("Preset Identity");
 
+        writer.putSetting(PresetInfo.DISPLAY_NAME, presetConfig.getPresetInfo());
+
         writer.putSetting(PresetInfo.AUTHOR, presetConfig.getPresetInfo().getAuthor(),
                 "The author of this preset"
         );

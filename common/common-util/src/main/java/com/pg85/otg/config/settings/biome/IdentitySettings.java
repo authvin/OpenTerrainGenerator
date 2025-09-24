@@ -5,12 +5,9 @@ import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
-import com.pg85.otg.constants.settings.BiomeType;
+import com.pg85.otg.util.biome.OTGBiomeResourceLocation;
 import lombok.Builder;
 import lombok.Getter;
-
-import java.util.List;
-import java.util.Locale;
 
 @Builder
 @Getter
@@ -29,7 +26,8 @@ public class IdentitySettings extends ConfigSection {
             "DisplayName",
             "",
             t -> ((IdentitySettings)t).getDisplayName(),
-            "Used for generating language files, which determines what will show up in f3 and similar info screens"
+            "Used for generating language files, which determines what will show up in f3 and similar info screens.",
+            "Defaults to the biome name if left blank."
     );
 
     public static IdentitySettings buildIdentitySettings(SettingsMap reader, PresetSettings presetSettings) {
@@ -37,18 +35,19 @@ public class IdentitySettings extends ConfigSection {
 
         builder.biomeName(reader.getName());
         builder.displayName(reader.getSetting(DISPLAY_NAME));
+        if (builder.displayName.isBlank()) {
+            builder.displayName(OTGBiomeResourceLocation.addSpaceToCamelCase(builder.biomeName));
+        }
+
         builder.isTemplateForBiome(reader.getSetting(OutdatedSettings.IS_TEMPLATE_FOR_BIOME));
 
 
         String namespace = presetSettings.getPresetInfo().getRegistryName();
-        String path = reader.getName()
-                .replaceAll("([a-z])([A-Z])", "$1_$2") // snake_case from CamelCase
-                .toLowerCase(Locale.ROOT) // All registry keys must be lower case
-                .replaceAll(" ", "_") // replace spaces with underscores
-                .replaceAll("[^a-z0-9_\\-/.]", ""); // Remove any illegal characters
+        String path = OTGBiomeResourceLocation.stringToPath(reader.getName()); // Remove any illegal characters
 
         builder.registryPath(String.format("%s:%s", namespace, path));
 
         return builder.build();
     }
+
 }

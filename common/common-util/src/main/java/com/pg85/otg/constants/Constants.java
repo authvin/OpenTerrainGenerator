@@ -49,7 +49,11 @@ public class Constants
 	 * world is capped at. 0 in Minecraft.
 	 */
 	public static final int WORLD_DEPTH = 0;
-	
+
+	public static final int WORLD_START_MIN_Y = -2032; // Minimum possible Y value the world can start at
+	public static final int WORLD_END_MAX_Y = 2031; // Maximum possible Y value the world can end at
+	public static final int WORLD_MAX_HEIGHT = WORLD_END_MAX_Y - WORLD_START_MIN_Y + 1; // Maximum possible height of the world, based on min and max Y values - 4064
+
 	/**
 	 * The world height that the engine supports. Not the actual height the
 	 * world is capped at. 256 in Minecraft.

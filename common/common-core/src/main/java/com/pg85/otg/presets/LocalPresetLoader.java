@@ -127,10 +127,11 @@ public abstract class LocalPresetLoader
 	public static Preset loadPreset(Path presetDir)
 	{
 		PresetConfig presetConfig = PresetConfigLoader.loadPresetConfig(presetDir);
-		List<BiomeTemplate> biomeTemplates = BiomeConfigLoader.loadBiomeTemplates(presetDir, presetConfig);
-		List<BiomeSettings> biomeSettings = BiomeConfigLoader.loadBiomeConfigs(presetDir, presetConfig);
+		List<BiomeTemplate> biomeTemplatesImmutable = BiomeConfigLoader.loadBiomeTemplates(presetDir, presetConfig);
+		List<BiomeSettings> biomeSettingsImmutable = BiomeConfigLoader.loadBiomeConfigs(presetDir, presetConfig);
+		List<BiomeTemplate> biomeTemplates = new ArrayList<>(biomeTemplatesImmutable);
 		List<BiomeConfig> biomeConfigs = new ArrayList<>();
-		biomeSettings.forEach(bs -> {
+		biomeSettingsImmutable.forEach(bs -> {
 			if (bs instanceof BiomeTemplate bt) biomeTemplates.add(bt);
 			if (bs instanceof BiomeConfig bc) biomeConfigs.add(bc);
 		});
@@ -160,6 +161,5 @@ public abstract class LocalPresetLoader
 	public abstract IBiome[] getGlobalIdMapping(String presetFolderName);
 
 	public abstract Map<String, BiomeLayerData> getPresetGenerationData();
-
 
 }

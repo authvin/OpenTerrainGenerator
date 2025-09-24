@@ -246,20 +246,23 @@ public final class BiomeConfigLoader {
 				LogLevel.INFO,
 				LogCategory.CONFIGS,
 				MessageFormat.format(
-					"{0} biomes loaded for preset {1}",
+					"{0} {1} loaded for preset {2}",
 					biomeSettings.size(),
+					type == BiomeSettingType.CONFIG ? "biome configs" : "biome templates",
 					presetConfig.getConfigName()
 				)
 			);
-			logger.log(
-				LogLevel.INFO,
-				LogCategory.CONFIGS,
-				biomeSettings.stream().map(
-					item -> item.getIdentitySettings().getBiomeName()
-				).collect(
-					Collectors.joining(", ")
-				)
-			);
+			if (!biomeSettings.isEmpty()) {
+				logger.log(
+						LogLevel.INFO,
+						LogCategory.CONFIGS,
+						biomeSettings.stream().map(
+								item -> item.getIdentitySettings().getBiomeName()
+						).collect(
+								Collectors.joining(", ")
+						)
+				);
+			}
 		}
 		return biomeSettings;
 	}
