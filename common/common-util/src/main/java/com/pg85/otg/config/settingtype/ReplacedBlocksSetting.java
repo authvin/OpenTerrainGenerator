@@ -1,9 +1,7 @@
 package com.pg85.otg.config.settingtype;
 
 import com.pg85.otg.config.settings.ConfigSection;
-import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 
 import java.util.function.Function;
@@ -23,7 +21,7 @@ public class ReplacedBlocksSetting extends Setting<ReplaceBlockMatrix>
 	@Override
 	public ReplaceBlockMatrix getDefaultValue()
 	{
-		return ReplaceBlockMatrix.createEmptyMatrix(Constants.WORLD_HEIGHT, OTGMaterialReader.get());
+		return ReplaceBlockMatrix.createEmptyMatrix();
 	}
 
 	@Override

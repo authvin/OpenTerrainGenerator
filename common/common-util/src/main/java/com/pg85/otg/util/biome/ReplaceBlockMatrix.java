@@ -3,7 +3,6 @@ package com.pg85.otg.util.biome;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
@@ -11,6 +10,7 @@ import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterialTag;
+import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import lombok.Getter;
 
 import java.util.ArrayList;
@@ -36,8 +36,8 @@ public class ReplaceBlockMatrix
 	private final int maxHeight = Constants.WORLD_END_MAX_Y;
 	private final int minHeight = Constants.WORLD_START_MIN_Y;
 
-	private final ReplaceBlockEntry[] targetsAtHeights = new ReplaceBlockEntry[256];
-	
+	Int2ObjectAVLTreeMap<List<ReplacedBlocksInstruction>> targetsAtHeights = new Int2ObjectAVLTreeMap<>();
+
 	public boolean replacesCooledLava = false;
 	public boolean replacesIce = false;
 	public boolean replacesPackedIce = false;
@@ -100,16 +100,16 @@ public class ReplaceBlockMatrix
 				{
 					continue;
 				}
-				ReplaceBlockEntry targetsAtHeight = this.targetsAtHeights[y];
+				List<ReplacedBlocksInstruction> targetsAtHeight = this.targetsAtHeights.get(y);
 				if(targetsAtHeight == null)
 				{
-					targetsAtHeight = new ReplaceBlockEntry();
-					this.targetsAtHeights[y] = targetsAtHeight;
+					targetsAtHeight = new ArrayList<>();
+					this.targetsAtHeights.put(y, targetsAtHeight);
 				}
 				
 				// Users can chain replacedblocks to replace replacedblocks, instead of actually replacing the 
 				// same block to different materials multiple times, we'll calculate the end result in advance.
-				for(ReplacedBlocksInstruction existing : targetsAtHeight.targets)
+				for(ReplacedBlocksInstruction existing : targetsAtHeight)
 				{
 					// If this instruction replaces the output of a previously added
 					// instruction, override the output of the previous instruction.
@@ -132,7 +132,7 @@ public class ReplaceBlockMatrix
 						OTGLog.getLogger().log(LogLevel.ERROR, LogCategory.CONFIGS, "Unknown type of material: " + instruction.from.toString());
 					}
 				}
-				targetsAtHeight.targets.add(instruction.copyInstruction());
+				targetsAtHeight.add(instruction.copyInstruction());
 			}
 		}
 		
@@ -203,13 +203,10 @@ public class ReplaceBlockMatrix
 	
 	public LocalMaterialData replaceBlock(int y, LocalMaterialData material)
 	{
-		// TODO: simple fix for y being out of bounds, needs a proper fix to figure out why it's happening
-		y = Math.max(Math.min(y, 255), 0);
-
-		ReplaceBlockEntry targetsAtHeight = targetsAtHeights[y];
+		List<ReplacedBlocksInstruction> targetsAtHeight = targetsAtHeights.get(y);
 		if(targetsAtHeight != null)
 		{
-			for(ReplacedBlocksInstruction instruction : targetsAtHeight.targets)
+			for(ReplacedBlocksInstruction instruction : targetsAtHeight)
 			{			
 				if(instruction.from.matches(material))
 				{
@@ -271,11 +268,10 @@ public class ReplaceBlockMatrix
 
 	/**
 	 * Creates an empty matrix.
-	 * 
-	 * @param maxHeight Max height for the replace setting, inclusive.
+	 *
 	 * @return The empty matrix.
 	 */
-	public static ReplaceBlockMatrix createEmptyMatrix(int maxHeight, IMaterialReader materialReader)
+	public static ReplaceBlockMatrix createEmptyMatrix()
 	{
 		try {
 			return new ReplaceBlockMatrix(NO_REPLACE);
