@@ -34,7 +34,6 @@ import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.gen.DecorationArea;
-import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -132,7 +131,6 @@ public class BO3 implements StructuredCustomObject
 	// Used to safely spawn this object from a grown sapling
 	@Override
 	public boolean spawnFromSapling(IWorldGenRegion worldGenRegion,
-									OTGWorldInfo otgWorldInfo,
 									Random random, Rotation rotation, int x, int y, int z)
 	{
 		BO3BlockFunction[] blocks = this.settings.getBlocks(rotation.getRotationId());
@@ -210,8 +208,7 @@ public class BO3 implements StructuredCustomObject
 	// Force spawns a BO3 object. Used by /otg spawn and bo3AtSpawn.
 	// This method ignores the maxPercentageOutsideBlock setting
 	@Override
-	public boolean spawnForced(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
-							   OTGWorldInfo otgWorldInfo,
+	public boolean spawnForced(CustomStructureCache structureCache, IWorldGenRegion world,
 							   Random random, Rotation rotation, int x, int y, int z, boolean allowReplaceBlocks)
 	{
 		BO3BlockFunction[] blocks = this.settings.getBlocks(rotation.getRotationId());
@@ -228,19 +225,19 @@ public class BO3 implements StructuredCustomObject
 				if(lastX != x + block.x || lastZ != z + block.z)
 				{
 					// TODO: Calculate area required and fetch biome data for whole chunks instead of per column.
-					replaceBlocks = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x + block.x, z + block.z, true).getSurfaceSettings().getReplacedBlocks();
+					replaceBlocks = world.getCachedBiomeProvider().getBiomeConfig(x + block.x, z + block.z, true).getSurfaceSettings().getReplacedBlocks();
 					lastX = x + block.x;
 					lastZ = z + block.z;
 				}
-				block.spawn(worldGenRegion, random, x + block.x, y + block.y, z + block.z, replaceBlocks);
+				block.spawn(world, random, x + block.x, y + block.y, z + block.z, replaceBlocks);
 			} else {
-				block.spawn(worldGenRegion, random, x + block.x, y + block.y, z + block.z);
+				block.spawn(world, random, x + block.x, y + block.y, z + block.z);
 			}
 			oeh.addBlock(block);
 			chunks.add(ChunkCoordinate.fromBlockCoords(x + block.x, z + block.z));
 		}
-		oeh.extrude(worldGenRegion, random, x, y, z, doReplaceBlocks(), true);
-		handleBO3Functions(null, structureCache, worldGenRegion, random, rotation, x, y, z, chunks);
+		oeh.extrude(world, random, x, y, z, doReplaceBlocks(), true);
+		handleBO3Functions(null, structureCache, world, random, rotation, x, y, z, chunks);
 
 		return true;
 	}
@@ -248,15 +245,14 @@ public class BO3 implements StructuredCustomObject
 	// This method is only used to spawn CustomObject.
 	// Called during decoration.
 	@Override
-	public boolean process(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
-						   OTGWorldInfo otgWorldInfo,
+	public boolean process(CustomStructureCache structureCache, IWorldGenRegion world,
 						   Random random)
 	{
 		boolean atLeastOneObjectHasSpawned = false;
 
 		// TODO: Remove this offset for 1.16?
-		int chunkMiddleX = worldGenRegion.getDecorationArea().getChunkBeingDecoratedMinX();
-		int chunkMiddleZ = worldGenRegion.getDecorationArea().getChunkBeingDecoratedMinZ();
+		int chunkMiddleX = world.getDecorationArea().getChunkBeingDecoratedMinX();
+		int chunkMiddleZ = world.getDecorationArea().getChunkBeingDecoratedMinZ();
 		int spawned = 0;
 		for (int i = 0; i < this.settings.frequency; i++)
 		{
@@ -264,7 +260,7 @@ public class BO3 implements StructuredCustomObject
 			{
 				int x = chunkMiddleX + random.nextInt(Constants.CHUNK_SIZE);
 				int z = chunkMiddleZ + random.nextInt(Constants.CHUNK_SIZE);
-				if (spawn(structureCache, worldGenRegion, random, x, z, this.settings.minHeight, this.settings.maxHeight))
+				if (spawn(structureCache, world, random, x, z, this.settings.minHeight, this.settings.maxHeight))
 				{
 					spawned++;
 					atLeastOneObjectHasSpawned = true;
@@ -281,8 +277,7 @@ public class BO3 implements StructuredCustomObject
 
 	// Used for trees during decoration
 	@Override
-	public boolean spawnAsTree(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
-							   OTGWorldInfo otgWorldInfo,
+	public boolean spawnAsTree(CustomStructureCache structureCache, IWorldGenRegion world,
 							   Random random, int x, int z, int minY, int maxY)
 	{
 		// A bit ugly, but avoids having to create and implement another spawnAsTree method.
@@ -294,7 +289,7 @@ public class BO3 implements StructuredCustomObject
 		{
 			maxY = this.getConfig().maxHeight;
 		}
-		return spawn(structureCache, worldGenRegion, random, x, z, minY, maxY);
+		return spawn(structureCache, world, random, x, z, minY, maxY);
 	}
 
 	// Used for customobject and trees during decoration

@@ -42,6 +42,15 @@ public record OTGWorldInfo(int minY, int maxY) {
         return maxY - random.nextInt(bound);
     }
 
+    /**
+     * @return The index used to specify an empty chunk, or index not found
+     */
+    public int getEmptyChunkIndex() {
+        // Old implementation used "-1" to specify empty chunk, or index not found
+        // Let's use one below min Y for the same here
+        return minY - 1;
+    }
+
     @Override
     public String toString() {
         return "minY: " + minY + ", maxY: " + maxY;

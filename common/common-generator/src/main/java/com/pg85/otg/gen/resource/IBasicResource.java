@@ -1,8 +1,9 @@
 package com.pg85.otg.gen.resource;
 
-import java.util.Random;
-
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.gen.OTGWorldInfo;
+
+import java.util.Random;
 
 // Biome resources are spawned during decoration, for each chunk being decorated, resources can
 // spawn blocks with a 2x2 chunk area (TODO: Will need to move to 3x3 for 1.16). For each resource,
@@ -16,11 +17,16 @@ import com.pg85.otg.interfaces.IWorldGenRegion;
 // the common-customobject project.
 public interface IBasicResource
 {
-	default void processForChunkDecoration(IWorldGenRegion worldGenregion, Random random)
-	{
-		// TODO: Fire Forge resource decoration events, when they're available.
-		spawnForChunkDecoration(worldGenregion, random);
-	}
+    default void processForChunkDecoration(IWorldGenRegion worldGenregion, Random random)
+    {
+        // TODO: Fire Forge resource decoration events, when they're available.
+        spawnForChunkDecoration(worldGenregion, random);
+    }
 
-	void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random);
+    void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random);
+
+    default boolean isOutsideBounds(int y, OTGWorldInfo otgWorldInfo)
+    {
+        return y < otgWorldInfo.minY() || y > otgWorldInfo.maxY();
+    }
 }

@@ -11,6 +11,7 @@ import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterialTag;
+import lombok.Getter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +20,12 @@ import java.util.List;
 
 public class ReplaceBlockMatrix
 {
-	@JsonProperty
+    /**
+     *  Gets an immutable list of all ReplacedBlocks instructions.
+     *  Note that the returned list is immutable, see setInstructions
+     */
+    @Getter
+    @JsonProperty
 	private List<ReplacedBlocksInstruction> instructions;
 
 	public boolean initialised = false;
@@ -27,7 +33,8 @@ public class ReplaceBlockMatrix
 	private static final String NO_REPLACE = "None";
 
 	// All ReplacedBlocksInstructions must have maxHeight smaller than or equal to this.
-	private final int maxHeight = Constants.WORLD_HEIGHT;
+	private final int maxHeight = Constants.WORLD_END_MAX_Y;
+	private final int minHeight = Constants.WORLD_START_MIN_Y;
 
 	private final ReplaceBlockEntry[] targetsAtHeights = new ReplaceBlockEntry[256];
 	
@@ -68,7 +75,7 @@ public class ReplaceBlockMatrix
 			if (start != -1 && end != -1)
 			{
 				String keyWithoutBraces = key.substring(start + 1, end);
-				instructions.add(new ReplacedBlocksInstruction(keyWithoutBraces, maxHeight, OTGMaterialReader.get()));
+				instructions.add(new ReplacedBlocksInstruction(keyWithoutBraces, OTGMaterialReader.get()));
 			} else {
 				throw new InvalidConfigException("One of the parts is missing braces around it.");
 			}
@@ -85,11 +92,11 @@ public class ReplaceBlockMatrix
 		{
 			for(int y = instruction.minHeight; y <= instruction.maxHeight; y++)
 			{
-				if(y > Constants.WORLD_HEIGHT - 1)
+				if(y > this.maxHeight)
 				{
 					break;
 				}
-				if(y < Constants.WORLD_DEPTH)
+				if(y < this.minHeight)
 				{
 					continue;
 				}
@@ -221,21 +228,10 @@ public class ReplaceBlockMatrix
 	 */
 	public boolean hasReplaceSettings()
 	{
-		return this.instructions != null && this.instructions.size() > 0;
+		return this.instructions != null && !this.instructions.isEmpty();
 	}
 
-	/**
-	 * Gets an immutable list of all ReplacedBlocks instructions.
-	 * 
-	 * @return The ReplacedBlocks instructions.
-	 */
-	public List<ReplacedBlocksInstruction> getInstructions()
-	{
-		// Note that the returned list is immutable, see setInstructions
-		return instructions;
-	}
-
-	/**
+    /**
 	 * Sets the ReplacedBlocks instructions. This method will update the
 	 * {@link #compiledInstructions} array.
 	 * 
@@ -243,7 +239,7 @@ public class ReplaceBlockMatrix
 	 */
 	public void setInstructions(Collection<ReplacedBlocksInstruction> instructions)
 	{
-		this.instructions = Collections.unmodifiableList(new ArrayList<ReplacedBlocksInstruction>(instructions));
+		this.instructions = List.copyOf(instructions);
 	}
 
 	public String toString()
@@ -260,7 +256,7 @@ public class ReplaceBlockMatrix
 			builder.append('(');
 			builder.append(instruction.from);
 			builder.append(',').append(instruction.to);
-			if (instruction.getMinHeight() != 0 || instruction.getMaxHeight() != this.maxHeight)
+			if (instruction.getMinHeight() != this.minHeight || instruction.getMaxHeight() != this.maxHeight)
 			{
 				// Add custom height setting
 				builder.append(',').append(instruction.getMinHeight());

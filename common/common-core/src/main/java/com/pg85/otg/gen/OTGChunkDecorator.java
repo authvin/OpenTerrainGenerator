@@ -4,7 +4,6 @@ import com.pg85.otg.OTG;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.ErroredFunction;
 import com.pg85.otg.config.biome.BiomeConfig;
-import com.pg85.otg.constants.Constants;
 import com.pg85.otg.constants.settings.structure.CustomStructureType;
 import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.CustomObjectManager;
@@ -288,7 +287,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 				((BO3)customObject).spawnForced(
                         structureCache,
                         worldGenRegion,
-                        Constants.DEFAULT_WORLD_INFO, this.rand,
+                        this.rand,
                         Rotation.NORTH,
 					targetChunk.getBlockX() + 16 + ((BO3)customObject).getXOffset(Rotation.NORTH),
                         y,

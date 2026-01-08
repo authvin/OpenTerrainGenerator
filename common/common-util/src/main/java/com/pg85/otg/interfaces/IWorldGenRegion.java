@@ -6,7 +6,9 @@ import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.OTGLog;
+import com.pg85.otg.util.Vec3;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
+import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.nbt.NamedBinaryTag;
 import com.pg85.otg.util.gen.DecorationArea;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -19,6 +21,7 @@ public interface IWorldGenRegion extends ISurfaceGeneratorNoiseProvider
 	}
 	IPluginConfig getPluginConfig();
 	PresetSettings getPresetConfig();
+	OTGWorldInfo getWorldInfo();
 	String getPresetFolderName();
 	long getSeed();
 
@@ -34,9 +37,12 @@ public interface IWorldGenRegion extends ISurfaceGeneratorNoiseProvider
 	BiomeSettings getBiomeConfigForDecoration(int worldX, int worldZ);
 	boolean placeTree(TreeType type, Random rand, int x, int y, int z);
 	LocalMaterialData getMaterial(int x, int y, int z);
+	LocalMaterialData getMaterial(int x, int y, int z, Vec3 vec);
 	LocalMaterialData getMaterialDirect(int x, int y, int z);
 	int getBlockAboveLiquidHeight(int x, int z);
 	int getBlockAboveSolidHeight(int x, int z);
+	int getHighestSolidBlockAt(int x, int z);
+	int getHighestYAt(int x, int z);
 	int getHighestBlockAboveYAt(int x, int z);
 	int getHighestBlockYAt(int x, int z, boolean findSolid, boolean findLiquid, boolean ignoreLiquid, boolean ignoreSnow, boolean ignoreLeaves);
 	int getHeightMapHeight(int x, int z);

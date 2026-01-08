@@ -1,13 +1,12 @@
 package com.pg85.otg.gen.resource;
 
+import com.pg85.otg.config.biome.BiomeResourceBase;
+import com.pg85.otg.config.settings.biome.BiomeSettings;
+import com.pg85.otg.constants.Constants;
+import com.pg85.otg.interfaces.IWorldGenRegion;
+
 import java.util.List;
 import java.util.Random;
-
-import com.pg85.otg.config.biome.BiomeResourceBase;
-import com.pg85.otg.constants.Constants;
-import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.IWorldGenRegion;
-import com.pg85.otg.util.gen.OTGWorldInfo;
 
 // Frequency resources uses frequency and rarity settings to spawn in each chunk being decorated.
 // Within the 2x2 chunk decoration area, a 16x16 area in the center (8 blocks margin on each side)
@@ -16,31 +15,29 @@ import com.pg85.otg.util.gen.OTGWorldInfo;
 // TODO: Will need to move over to 3x3 decoration area for 1.16.
 public abstract class FrequencyResourceBase extends BiomeResourceBase implements IBasicResource
 {
-	protected int frequency;
-	protected double rarity;
-	
-	public FrequencyResourceBase(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo)
-	{
-		super(biomeConfig, args, otgWorldInfo);
-	}
+    protected int frequency;
+    protected double rarity;
 
-	@Override
-	public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random)
-	{
-		int blockX = worldGenRegion.getDecorationArea().getChunkBeingDecoratedMinX();
-		int blockZ = worldGenRegion.getDecorationArea().getChunkBeingDecoratedMinZ();
+    public FrequencyResourceBase(BiomeSettings biomeConfig, List<String> args)
+    {
+        super(biomeConfig, args);
+    }
 
-		for (int t = 0; t < this.frequency; t++)
-		{
-			if (random.nextDouble() * 100.0 > this.rarity)
-			{
-				continue;
-			}
-			int x = blockX + random.nextInt(Constants.CHUNK_SIZE);
-			int z = blockZ + random.nextInt(Constants.CHUNK_SIZE);
-			spawn(worldGenRegion, random, x, z);
-		}
-	}
+    @Override
+    public void spawnForChunkDecoration(IWorldGenRegion worldGenRegion, Random random)
+    {
+        int blockX = worldGenRegion.getDecorationArea().getChunkBeingDecoratedMinX();
+        int blockZ = worldGenRegion.getDecorationArea().getChunkBeingDecoratedMinZ();
 
-	public abstract void spawn(IWorldGenRegion world, Random random, int x, int z);
+        for (int t = 0; t < this.frequency; t++) {
+            if (random.nextDouble() * 100.0 > this.rarity) {
+                continue;
+            }
+            int x = blockX + random.nextInt(Constants.CHUNK_SIZE);
+            int z = blockZ + random.nextInt(Constants.CHUNK_SIZE);
+            spawn(worldGenRegion, random, x, z);
+        }
+    }
+
+    public abstract void spawn(IWorldGenRegion world, Random random, int x, int z);
 }

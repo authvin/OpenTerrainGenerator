@@ -76,7 +76,7 @@ public class BiomeResourcesManager implements IConfigFunctionProvider
 		{
 			Constructor<? extends ConfigFunction<?>> constructor = getConstructor(holder, clazz);
             assert constructor != null;
-            return (ConfigFunction<T>) constructor.newInstance(holder, args, this.worldInfo);
+            return (ConfigFunction<T>) constructor.newInstance(holder, args);
 		}
 		catch (NoSuchMethodException e1)
 		{

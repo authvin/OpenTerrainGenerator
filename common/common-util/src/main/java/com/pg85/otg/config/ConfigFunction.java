@@ -1,5 +1,6 @@
 package com.pg85.otg.config;
 
+import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
@@ -130,5 +131,15 @@ public abstract class ConfigFunction<T>
 	protected final double readRarity(String string) throws InvalidConfigException
 	{
 		return StringHelper.readDouble(string, 0.000001, 100);
+	}
+
+	protected final int readElevation(String string) throws InvalidConfigException
+	{
+		return StringHelper.readInt(string, Constants.WORLD_START_MIN_Y, Constants.WORLD_END_MAX_Y);
+	}
+
+	protected final int readFrequency(String string) throws InvalidConfigException
+	{
+		return StringHelper.readInt(string, 1, 100);
 	}
 }

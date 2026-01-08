@@ -65,6 +65,8 @@ public class BiomeConfig extends BiomeSettings
 		RESOURCE_QUEUE_RESOURCES.put("CoralClaw", CoralClawResource.class);
 		RESOURCE_QUEUE_RESOURCES.put("Iceberg", IcebergResource.class);
 		RESOURCE_QUEUE_RESOURCES.put("BasaltColumn", BasaltColumnResource.class);
+		RESOURCE_QUEUE_RESOURCES.put("Group", VegetationGroupResource.class);
+		RESOURCE_QUEUE_RESOURCES.put("Scatter", VegetationScatterResource.class);
 	}
 
 	private final PresetConfig parent;

@@ -30,7 +30,6 @@ import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.bo3.Rotation;
-import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterials;
 import com.pg85.otg.util.materials.MaterialSet;
@@ -87,7 +86,6 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 	// Used to safely spawn this object from a grown sapling
 	@Override
 	public boolean spawnFromSapling(IWorldGenRegion worldGenRegion,
-									OTGWorldInfo otgWorldInfo,
 									Random random, Rotation rotation, int x, int y, int z)
 	{
 		ObjectCoordinate[] data = this.data[rotation.getRotationId()];
@@ -186,8 +184,7 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 	}
 
 	@Override
-	public boolean spawnForced(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
-							   OTGWorldInfo otgWorldInfo,
+	public boolean spawnForced(CustomStructureCache structureCache, IWorldGenRegion world,
 							   Random random, Rotation rotation, int x, int y, int z, boolean allowReplaceBlocks)
 	{
 		ObjectCoordinate[] data = this.data[rotation.getRotationId()];
@@ -203,29 +200,29 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 				if(lastX != x + point.x || lastZ != z + point.z)
 				{
 					// TODO: Calculate area required and fetch biome data for whole chunks instead of per column.
-					replaceBlocks = worldGenRegion.getCachedBiomeProvider().getBiomeConfig(x + point.x, z + point.z, true).getSurfaceSettings().getReplacedBlocks();
+					replaceBlocks = world.getCachedBiomeProvider().getBiomeConfig(x + point.x, z + point.z, true).getSurfaceSettings().getReplacedBlocks();
 					lastX = x + point.x;
 					lastZ = z + point.z;
 				}
 			}
-			if ((worldMaterial = worldGenRegion.getMaterial(x + point.x, y + point.y, z + point.z)) != null)
+			if ((worldMaterial = world.getMaterial(x + point.x, y + point.y, z + point.z)) != null)
 			{
 				if(worldMaterial.isAir())
 				{
 					if(this.doReplaceBlocks)
 					{
-						setBlock(worldGenRegion, x + point.x, y + point.y, z + point.z, point.material, replaceBlocks);
+						setBlock(world, x + point.x, y + point.y, z + point.z, point.material, replaceBlocks);
 					} else {
-						setBlock(worldGenRegion, x + point.x, y + point.y, z + point.z, point.material);
+						setBlock(world, x + point.x, y + point.y, z + point.z, point.material);
 					}
 				}
 				else if (this.dig)
 				{
 					if(allowReplaceBlocks && this.doReplaceBlocks)
 					{
-						setBlock(worldGenRegion, x + point.x, y + point.y, z + point.z, point.material, replaceBlocks);
+						setBlock(world, x + point.x, y + point.y, z + point.z, point.material, replaceBlocks);
 					} else {
-						setBlock(worldGenRegion, x + point.x, y + point.y, z + point.z, point.material);
+						setBlock(world, x + point.x, y + point.y, z + point.z, point.material);
 					}
 				}
 			}
@@ -361,11 +358,10 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 	}
 
 	@Override
-	public boolean spawnAsTree(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
-							   OTGWorldInfo otgWorldInfo,
+	public boolean spawnAsTree(CustomStructureCache structureCache, IWorldGenRegion world,
 							   Random random, int x, int z, int minY, int maxY)
 	{
-		return spawn(worldGenRegion, random, x, z, minY == -1 ? this.spawnElevationMin : minY, maxY == -1 ? this.spawnElevationMax : maxY);
+		return spawn(world, random, x, z, minY == -1 ? this.spawnElevationMin : minY, maxY == -1 ? this.spawnElevationMax : maxY);
 	} 
 	
 	private boolean spawn(IWorldGenRegion worldGenRegion, Random random, int x, int z, int minY, int maxY)
@@ -446,8 +442,7 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 
 	// Called during decoration.
 	@Override
-	public boolean process(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
-						   OTGWorldInfo otgWorldInfo,
+	public boolean process(CustomStructureCache structureCache, IWorldGenRegion world,
 						   Random rand)
 	{
 		if (this.branch)
@@ -464,11 +459,11 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 		{
 			ObjectRarity -= 100;
 
-			x = worldGenRegion.getDecorationArea().getChunkBeingDecorated().getBlockX() + rand.nextInt(Constants.CHUNK_SIZE);
-			z = worldGenRegion.getDecorationArea().getChunkBeingDecorated().getBlockZ() + rand.nextInt(Constants.CHUNK_SIZE);
+			x = world.getDecorationArea().getChunkBeingDecorated().getBlockX() + rand.nextInt(Constants.CHUNK_SIZE);
+			z = world.getDecorationArea().getChunkBeingDecorated().getBlockZ() + rand.nextInt(Constants.CHUNK_SIZE);
 
 			// TODO: Are BO2/BO3 trees ever spawned via this method? If so, then don't replace blocks.
-			objectSpawned = spawn(worldGenRegion, rand, x, z, this.spawnElevationMin, this.spawnElevationMax);
+			objectSpawned = spawn(world, rand, x, z, this.spawnElevationMin, this.spawnElevationMax);
 		}
 
 		return objectSpawned;

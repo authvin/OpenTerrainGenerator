@@ -7,7 +7,6 @@ import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.bo3.Rotation;
-import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.minecraft.TreeType;
 
 import java.nio.file.Path;
@@ -54,24 +53,23 @@ class TreeObject implements CustomObject {
     @Override
     public boolean process(
             CustomStructureCache structureCache,
-            IWorldGenRegion worldGenRegion,
-            OTGWorldInfo otgWorldInfo,
+            IWorldGenRegion world,
             Random random
     ) {
         // A tree has no frequency or rarity, so spawn it once in the chunk
         // Make sure we stay within decoration bounds.
-        int x = worldGenRegion.getDecorationArea().getChunkBeingDecoratedMinX()
+        int x = world.getDecorationArea().getChunkBeingDecoratedMinX()
                 + random.nextInt(Constants.CHUNK_SIZE);
-        int z = worldGenRegion.getDecorationArea().getChunkBeingDecoratedMinZ()
+        int z = world.getDecorationArea().getChunkBeingDecoratedMinZ()
                 + random.nextInt(Constants.CHUNK_SIZE);
-        int y = worldGenRegion.getHighestBlockAboveYAt(x, z);
-        if (y < otgWorldInfo.minY() || y > otgWorldInfo.maxY()) {
+        int y = world.getHighestBlockAboveYAt(x, z);
+        if (y < world.getWorldInfo().minY() || y > world.getWorldInfo().maxY()) {
             return false;
         }
         return spawnForced(
                 structureCache,
-                worldGenRegion,
-                Constants.DEFAULT_WORLD_INFO, random,
+                world,
+                random,
                 Rotation.NORTH,
                 x,
                 y,
@@ -83,7 +81,6 @@ class TreeObject implements CustomObject {
     @Override
     public boolean spawnFromSapling(
             IWorldGenRegion worldGenRegion,
-            OTGWorldInfo otgWorldInfo,
             Random random,
             Rotation rotation,
             int x,
@@ -96,8 +93,7 @@ class TreeObject implements CustomObject {
     @Override
     public boolean spawnForced(
             CustomStructureCache structureCache,
-            IWorldGenRegion worldGenRegion,
-            OTGWorldInfo otgWorldInfo,
+            IWorldGenRegion world,
             Random random,
             Rotation rotation,
             int x,
@@ -105,21 +101,20 @@ class TreeObject implements CustomObject {
             int z,
             boolean allowReplaceBlocks
     ) {
-        return worldGenRegion.placeTree(type, random, x, y, z);
+        return world.placeTree(type, random, x, y, z);
     }
 
     @Override
     public boolean spawnAsTree(
             CustomStructureCache structureCache,
-            IWorldGenRegion worldGenRegion,
-            OTGWorldInfo otgWorldInfo,
+            IWorldGenRegion world,
             Random random,
             int x,
             int z,
             int minY,
             int maxY
     ) {
-        int y = worldGenRegion.getHighestBlockAboveYAt(x, z);
+        int y = world.getHighestBlockAboveYAt(x, z);
         Rotation rotation = Rotation.getRandomRotation(random);
 
         if (!(minY == -1 && maxY == -1)) {
@@ -128,14 +123,14 @@ class TreeObject implements CustomObject {
             }
         }
 
-        if (y < otgWorldInfo.minY() || y > otgWorldInfo.maxY()) {
+        if (y < world.getWorldInfo().minY() || y > world.getWorldInfo().maxY()) {
             return false;
         }
 
         return spawnForced(
                 structureCache,
-                worldGenRegion,
-                Constants.DEFAULT_WORLD_INFO, random,
+                world,
+                random,
                 rotation,
                 x,
                 y,

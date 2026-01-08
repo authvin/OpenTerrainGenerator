@@ -4,9 +4,13 @@ import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.fabric.materials.FabricMaterialData;
 import com.pg85.otg.fabric.util.FabricNBTHelper;
-import com.pg85.otg.interfaces.*;
+import com.pg85.otg.interfaces.IBiome;
+import com.pg85.otg.interfaces.ICachedBiomeProvider;
+import com.pg85.otg.interfaces.IEntityFunction;
+import com.pg85.otg.interfaces.IPluginConfig;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.OTGLog;
+import com.pg85.otg.util.Vec3;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.gen.LocalWorldGenRegion;
 import com.pg85.otg.util.gen.OTGWorldInfo;
@@ -54,16 +58,36 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
     private final OTGWorldInfo otgWorldInfo;
     private final WorldGenLevel worldGenLevel;
     private final OTGFabricChunkGenerator chunkGenerator;
-    private final int MIN_RETURN_VALUE;
+    private final int EMPTY;
 
 
-    protected FabricWorldGenRegion(String presetFolderName, IPluginConfig pluginConfig, PresetConfig presetConfig, OTGWorldInfo otgWorldInfo, WorldGenLevel worldGenLevel, ChunkAccess chunkAccess, OTGFabricChunkGenerator chunkGenerator) {
-        super(presetFolderName, pluginConfig, presetConfig, chunkAccess.getPos().x, chunkAccess.getPos().z, chunkGenerator.getInternalGenerator().getCachedBiomeProvider());
+    protected FabricWorldGenRegion(
+        String presetFolderName,
+        IPluginConfig pluginConfig,
+        PresetConfig presetConfig,
+        OTGWorldInfo otgWorldInfo,
+        WorldGenLevel worldGenLevel,
+        ChunkAccess chunkAccess,
+        OTGFabricChunkGenerator chunkGenerator
+    ) {
+        super(
+            presetFolderName,
+            pluginConfig,
+            presetConfig,
+            chunkAccess.getPos().x,
+            chunkAccess.getPos().z,
+            chunkGenerator.getInternalGenerator().getCachedBiomeProvider()
+        );
         this.presetConfig = presetConfig;
         this.otgWorldInfo = otgWorldInfo;
         this.worldGenLevel = worldGenLevel;
         this.chunkGenerator = chunkGenerator;
-        this.MIN_RETURN_VALUE = otgWorldInfo.minY() - 1;
+        this.EMPTY = otgWorldInfo.getEmptyChunkIndex();
+    }
+
+    @Override
+    public OTGWorldInfo getWorldInfo() {
+        return this.otgWorldInfo;
     }
 
     @Override
@@ -73,9 +97,11 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
 
     @Override
     public ChunkCoordinate getSpawnChunk() {
-        if(this.getPresetConfig().getSpawnSettings().isSpawnPointSet())
-        {
-            return ChunkCoordinate.fromBlockCoords(this.getPresetConfig().getSpawnSettings().getSpawnPointX(), this.getPresetConfig().getSpawnSettings().getSpawnPointZ());
+        if (this.getPresetConfig().getSpawnSettings().isSpawnPointSet()) {
+            return ChunkCoordinate.fromBlockCoords(
+                this.getPresetConfig().getSpawnSettings().getSpawnPointX(),
+                this.getPresetConfig().getSpawnSettings().getSpawnPointZ()
+            );
         } else {
             BlockPos spawnPos = this.worldGenLevel.getLevel().getSharedSpawnPos();
             return ChunkCoordinate.fromBlockCoords(spawnPos.getX(), spawnPos.getZ());
@@ -92,7 +118,9 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
         // TOOD: Don't use this.decorationArea == null for worldgenregions
         // doing things outside of population, split up worldgenregion
         // into separate classes, one for decoration, one for non-decoration.
-        return this.decorationBiomeCache != null ? this.decorationBiomeCache.getBiome(x, z) : this.getCachedBiomeProvider().getBiome(x, z);
+        return this.decorationBiomeCache != null ?
+            this.decorationBiomeCache.getBiome(x, z) :
+            this.getCachedBiomeProvider().getBiome(x, z);
     }
 
     @Override
@@ -100,7 +128,9 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
         // TOOD: Don't use this.decorationArea == null for worldgenregions
         // doing things outside of population, split up worldgenregion
         // into separate classes, one for decoration, one for non-decoration.
-        return this.decorationBiomeCache != null ? this.decorationBiomeCache.getBiomeConfig(worldX, worldZ) : this.getCachedBiomeProvider().getBiomeConfig(worldX, worldZ);
+        return this.decorationBiomeCache != null ?
+            this.decorationBiomeCache.getBiomeConfig(worldX, worldZ) :
+            this.getCachedBiomeProvider().getBiomeConfig(worldX, worldZ);
     }
 
     @Override
@@ -146,16 +176,25 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
                 case CrimsonFungi -> tree = featureRegistry.getOptional(TreeFeatures.CRIMSON_FUNGUS_PLANTED);
                 case WarpedFungi -> tree = featureRegistry.getOptional(TreeFeatures.WARPED_FUNGUS_PLANTED);
                 case ChorusPlant -> tree = featureRegistry.getOptional(EndFeatures.CHORUS_PLANT);
-                default -> throw new RuntimeException("Failed to handle tree of type " + type.toString());
+                case Mangrove -> tree = featureRegistry.getOptional(TreeFeatures.MANGROVE);
+                case TallMangrove -> tree = featureRegistry.getOptional(TreeFeatures.TALL_MANGROVE);
+                case Cherry -> tree = featureRegistry.getOptional(TreeFeatures.CHERRY);
+                default -> throw new RuntimeException("Failed to handle tree of type " + type);
             }
             return tree.map(
-                    configuredFeature -> configuredFeature.place(worldGenLevel, chunkGenerator, worldGenLevel.getRandom(), pos))
-                    .orElse(false);
-        } catch(NullPointerException | IndexOutOfBoundsException ex) {
-            if(OTGLog.getLogCategoryEnabled(LogCategory.DECORATION))
-            {
-                OTGLog.log(LogLevel.ERROR, LogCategory.DECORATION, 
-                        String.format("Treegen caused an error: %s", (Object[])ex.getStackTrace()));
+                           configuredFeature -> configuredFeature.place(
+                               worldGenLevel,
+                               chunkGenerator,
+                               worldGenLevel.getRandom(),
+                               pos
+                           ))
+                       .orElse(false);
+        } catch (NullPointerException | IndexOutOfBoundsException ex) {
+            if (OTGLog.getLogCategoryEnabled(LogCategory.DECORATION)) {
+                OTGLog.log(
+                    LogLevel.ERROR, LogCategory.DECORATION,
+                    String.format("Treegen caused an error: %s", (Object[]) ex.getStackTrace())
+                );
             }
             // Return true to prevent further attempts.
             return true;
@@ -164,12 +203,16 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
 
     @Override
     public LocalMaterialData getMaterial(int x, int y, int z) {
-        if (isOutsideBounds(x, y, z))
-        {
+        if (isOutsideBounds(x, y, z)) {
             return null;
         }
 
         return getMaterialDirect(x, y, z);
+    }
+
+    @Override
+    public LocalMaterialData getMaterial(int x, int y, int z, Vec3 vec) {
+        return getMaterial(x + vec.dx(), y + vec.dy(), z + vec.dz());
     }
 
     private boolean isOutsideBounds(int x, int y, int z) {
@@ -192,113 +235,144 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
     @Override
     public int getBlockAboveLiquidHeight(int x, int z) {
         int highestY = getHighestBlockYAt(x, z, false, true, false, false, false);
-        if(highestY > MIN_RETURN_VALUE)
-        {
+        if (highestY > EMPTY) {
             return highestY + 1;
         } else {
-            return MIN_RETURN_VALUE;
+            return EMPTY;
         }
+    }
+
+    @Override
+    public int getHighestSolidBlockAt(int x, int z) {
+        return getHighestBlockYAt(x, z, true, false, true, false, false);
+    }
+
+    @Override
+    public int getHighestYAt(int x, int z) {
+        return getHighestBlockYAt(x, z, true, true, false, false, false);
     }
 
     @Override
     public int getBlockAboveSolidHeight(int x, int z) {
         int highestY = getHighestBlockYAt(x, z, true, false, true, true, false);
-        if(highestY > MIN_RETURN_VALUE)
-        {
+        if (highestY > EMPTY) {
             return highestY + 1;
         } else {
-            return MIN_RETURN_VALUE;
+            return EMPTY;
         }
     }
 
     @Override
     public int getHighestBlockAboveYAt(int x, int z) {
         int highestY = getHighestBlockYAt(x, z, true, true, false, false, false);
-        if(highestY > MIN_RETURN_VALUE)
-        {
+        if (highestY > EMPTY) {
             return highestY + 1;
         } else {
-            return MIN_RETURN_VALUE;
+            return EMPTY;
         }
     }
 
     @Override
-    public int getHighestBlockYAt(int x, int z, boolean findSolid, boolean findLiquid, boolean ignoreLiquid, boolean ignoreSnow, boolean ignoreLeaves) {
-        if (isOutsideDecorationArea(x, z))
-        {
-            return MIN_RETURN_VALUE;
+    public int getHighestBlockYAt(
+        int x,
+        int z,
+        boolean findSolid,
+        boolean findLiquid,
+        boolean ignoreLiquid,
+        boolean ignoreSnow,
+        boolean ignoreLeaves
+    ) {
+        if (isOutsideDecorationArea(x, z)) {
+            return EMPTY;
         }
 
         int heightMapY = worldGenLevel.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z);
 
-        return getHighestBlockYAt(worldGenLevel, x, heightMapY, z, findSolid, findLiquid, ignoreLiquid, ignoreSnow, ignoreLeaves);
+        return getHighestBlockYAt(
+            worldGenLevel,
+            x,
+            heightMapY,
+            z,
+            findSolid,
+            findLiquid,
+            ignoreLiquid,
+            ignoreSnow,
+            ignoreLeaves
+        );
     }
 
-    protected int getHighestBlockYAt(WorldGenLevel worldGenLevel, int internalX, int heightMapY, int internalZ, boolean findSolid, boolean findLiquid, boolean ignoreLiquid, boolean ignoreSnow, boolean ignoreLeaves) {
+    protected int getHighestBlockYAt(
+        WorldGenLevel worldGenLevel,
+        int internalX,
+        int heightMapY,
+        int internalZ,
+        boolean findSolid,
+        boolean findLiquid,
+        boolean ignoreLiquid,
+        boolean ignoreSnow,
+        boolean ignoreLeaves
+    ) {
         LocalMaterialData material;
         boolean isSolid;
         boolean isLiquid;
         BlockState blockState;
         Block block;
 
-        for(int i = heightMapY; i >= 0; i--) {
+        for (int i = heightMapY; i >= 0; i--) {
             blockState = worldGenLevel.getBlockState(new BlockPos(internalX, i, internalZ));
             block = blockState.getBlock();
             material = FabricMaterialData.ofBlockState(blockState);
             isLiquid = material.isLiquid();
             isSolid =
+                (
                     (
+                        material.isSolid() &&
+                        (
+                            !ignoreLeaves ||
                             (
-                                    material.isSolid() &&
-                                            (
-                                                    !ignoreLeaves ||
-                                                            (
-                                                                    block != Blocks.ACACIA_LOG &&
-                                                                            block != Blocks.BIRCH_LOG &&
-                                                                            block != Blocks.DARK_OAK_LOG &&
-                                                                            block != Blocks.JUNGLE_LOG &&
-                                                                            block != Blocks.OAK_LOG &&
-                                                                            block != Blocks.SPRUCE_LOG &&
-                                                                            block != Blocks.STRIPPED_ACACIA_LOG &&
-                                                                            block != Blocks.STRIPPED_BIRCH_LOG &&
-                                                                            block != Blocks.STRIPPED_DARK_OAK_LOG &&
-                                                                            block != Blocks.STRIPPED_JUNGLE_LOG &&
-                                                                            block != Blocks.STRIPPED_OAK_LOG &&
-                                                                            block != Blocks.STRIPPED_SPRUCE_LOG
-                                                            )
-                                            )
+                                block != Blocks.ACACIA_LOG &&
+                                block != Blocks.BIRCH_LOG &&
+                                block != Blocks.DARK_OAK_LOG &&
+                                block != Blocks.JUNGLE_LOG &&
+                                block != Blocks.OAK_LOG &&
+                                block != Blocks.SPRUCE_LOG &&
+                                block != Blocks.STRIPPED_ACACIA_LOG &&
+                                block != Blocks.STRIPPED_BIRCH_LOG &&
+                                block != Blocks.STRIPPED_DARK_OAK_LOG &&
+                                block != Blocks.STRIPPED_JUNGLE_LOG &&
+                                block != Blocks.STRIPPED_OAK_LOG &&
+                                block != Blocks.STRIPPED_SPRUCE_LOG
                             )
-                                    ||
-                                    (
-                                            !ignoreLeaves &&
-                                                    (
-                                                            block == Blocks.ACACIA_LEAVES ||
-                                                                    block == Blocks.BIRCH_LEAVES ||
-                                                                    block == Blocks.DARK_OAK_LEAVES ||
-                                                                    block == Blocks.JUNGLE_LEAVES ||
-                                                                    block == Blocks.OAK_LEAVES ||
-                                                                    block == Blocks.SPRUCE_LEAVES
-                                                    )
-                                    ) || (
-                                    !ignoreSnow &&
-                                            block == Blocks.SNOW
-                            )
-                    );
-            if(!(ignoreLiquid && isLiquid))
-            {
-                if((findSolid && isSolid) || (findLiquid && isLiquid))
-                {
+                        )
+                    )
+                    ||
+                    (
+                        !ignoreLeaves &&
+                        (
+                            block == Blocks.ACACIA_LEAVES ||
+                            block == Blocks.BIRCH_LEAVES ||
+                            block == Blocks.DARK_OAK_LEAVES ||
+                            block == Blocks.JUNGLE_LEAVES ||
+                            block == Blocks.OAK_LEAVES ||
+                            block == Blocks.SPRUCE_LEAVES
+                        )
+                    ) || (
+                        !ignoreSnow &&
+                        block == Blocks.SNOW
+                    )
+                );
+            if (!(ignoreLiquid && isLiquid)) {
+                if ((findSolid && isSolid) || (findLiquid && isLiquid)) {
                     return i;
                 }
-                if((findSolid && isLiquid) || (findLiquid && isSolid))
-                {
-                    return MIN_RETURN_VALUE;
+                if ((findSolid && isLiquid) || (findLiquid && isSolid)) {
+                    return EMPTY;
                 }
             }
         }
 
         // Can happen if this is a worldGenLevel filled with air
-        return MIN_RETURN_VALUE;
+        return EMPTY;
     }
 
     @Override
@@ -308,8 +382,7 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
 
     @Override
     public int getLightLevel(int x, int y, int z) {
-        if(isOutsideBounds(x, y, z))
-        {
+        if (isOutsideBounds(x, y, z)) {
             return -1;
         }
 
@@ -317,8 +390,7 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
         int chunkZ = z >> 4;
 
         // Check if the chunk has been lit, otherwise cancel.
-        if(worldGenLevel.getChunk(chunkX, chunkZ).getStatus().isOrAfter(ChunkStatus.LIGHT))
-        {
+        if (worldGenLevel.getChunk(chunkX, chunkZ).getStatus().isOrAfter(ChunkStatus.LIGHT)) {
             // Get the light level of the block state? Different from old behaviour
             // TODO: Check that this does not break in 1.20
             return this.worldGenLevel.getLightEmission(new BlockPos(x, y, z));
@@ -331,11 +403,14 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
     @Override
     public void setBlockDirect(int x, int y, int z, LocalMaterialData material) {
         BiomeSettings biomeConfig = this.getCachedBiomeProvider().getBiomeConfig(x, z, true);
-        if(biomeConfig.getSurfaceSettings().getReplacedBlocks() != null)
-        {
-            material = material.parseWithBiomeAndHeight(biomeConfig.biomeConfigsHaveReplacement(), biomeConfig.getSurfaceSettings().getReplacedBlocks(), y);
+        if (biomeConfig.getSurfaceSettings().getReplacedBlocks() != null) {
+            material = material.parseWithBiomeAndHeight(
+                biomeConfig.biomeConfigsHaveReplacement(),
+                biomeConfig.getSurfaceSettings().getReplacedBlocks(),
+                y
+            );
         }
-        this.worldGenLevel.setBlock(new BlockPos(x, y, z), ((FabricMaterialData)material).getState(), 18);
+        this.worldGenLevel.setBlock(new BlockPos(x, y, z), ((FabricMaterialData) material).getState(), 18);
     }
 
     @Override
@@ -354,27 +429,33 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
     }
 
     @Override
-    public void setBlock(int x, int y, int z, LocalMaterialData material, NamedBinaryTag nbt, ReplaceBlockMatrix replaceBlocksMatrix) {
-        if (isOutsideWorldHeight(y))
-        {
+    public void setBlock(
+        int x,
+        int y,
+        int z,
+        LocalMaterialData material,
+        NamedBinaryTag nbt,
+        ReplaceBlockMatrix replaceBlocksMatrix
+    ) {
+        if (isOutsideWorldHeight(y)) {
             return;
         }
-        if(replaceBlocksMatrix != null)
-        {
-            material = material.parseWithBiomeAndHeight(this.presetConfig.isBiomeConfigsHaveReplacement(), replaceBlocksMatrix, y);
+        if (replaceBlocksMatrix != null) {
+            material = material.parseWithBiomeAndHeight(
+                this.presetConfig.isBiomeConfigsHaveReplacement(),
+                replaceBlocksMatrix,
+                y
+            );
         }
         BlockPos pos = new BlockPos(x, y, z);
         // Notify world: (2 | 16) == update client, don't update observers
         // Assuming false here means don't update observers
-        this.worldGenLevel.setBlock(pos, ((FabricMaterialData)material).getState(), 18);
+        this.worldGenLevel.setBlock(pos, ((FabricMaterialData) material).getState(), 18);
 
-        if (material.isLiquid())
-        {
+        if (material.isLiquid()) {
             // TODO: Do fluid ticks
             //this.chunkAccess.getFluidTicks().schedule(pos, ((FabricMaterialData)material).getState().getFluidState().getType(), 0);
-        }
-        else if (material.isMaterial(LocalMaterials.COMMAND_BLOCK))
-        {
+        } else if (material.isMaterial(LocalMaterials.COMMAND_BLOCK)) {
             // TODO: Tick command blocks
             //this.worldGenLevel.getBlockTicks().scheduleTick(pos, ((FabricMaterialData) material).internalBlock().getBlock(), 0);
         }
@@ -384,28 +465,25 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
         }
     }
 
-    private void attachTag(int x, int y, int z, NamedBinaryTag Tag, BlockState state)
-    {
+    private void attachTag(int x, int y, int z, NamedBinaryTag Tag, BlockState state) {
         CompoundTag nms = FabricNBTHelper.getNMSFromNBTTagCompound(Tag);
         nms.put("x", IntTag.valueOf(x));
         nms.put("y", IntTag.valueOf(y));
         nms.put("z", IntTag.valueOf(z));
 
         BlockEntity tileEntity = this.worldGenLevel.getBlockEntity(new BlockPos(x, y, z));
-        if (tileEntity != null)
-        {
+        if (tileEntity != null) {
             tileEntity.load(nms);
         } else {
-            if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
-            {
+            if (OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS)) {
                 OTGLog.log(
-                        LogLevel.ERROR,
-                        LogCategory.CUSTOM_OBJECTS,
-                        MessageFormat.format(
-                                "Skipping tile entity with id {0}, cannot be placed at {1},{2},{3}",
-                                nms.getString("id"),
-                                x, y, z
-                        )
+                    LogLevel.ERROR,
+                    LogCategory.CUSTOM_OBJECTS,
+                    MessageFormat.format(
+                        "Skipping tile entity with id {0}, cannot be placed at {1},{2},{3}",
+                        nms.getString("id"),
+                        x, y, z
+                    )
                 );
             }
         }
@@ -417,11 +495,13 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
 
     @Override
     public void spawnEntity(IEntityFunction entityData) {
-        if (entityData.getY() < otgWorldInfo.minY() || entityData.getY() > otgWorldInfo.maxY())
-        {
-            if(OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
-            {
-                OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Failed to spawn mob for Entity() " + entityData.makeString() + ", y position out of bounds");
+        if (entityData.getY() < otgWorldInfo.minY() || entityData.getY() > otgWorldInfo.maxY()) {
+            if (OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS)) {
+                OTGLog.log(
+                    LogLevel.ERROR,
+                    LogCategory.CUSTOM_OBJECTS,
+                    "Failed to spawn mob for Entity() " + entityData.makeString() + ", y position out of bounds"
+                );
             }
             return;
         }
@@ -430,161 +510,224 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
         Entity entity = null;
         Optional<EntityType<?>> type1 = EntityType.byString(entityData.getResourceLocation());
         EntityType<?> type2;
-        if(type1.isPresent())
-        {
+        if (type1.isPresent()) {
             type2 = type1.get();
         } else {
-            if(OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
-            {
-                OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not parse mob for Entity() " + entityData.makeString() + ", mob type could not be found.");
+            if (OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS)) {
+                OTGLog.log(
+                    LogLevel.ERROR,
+                    LogCategory.CUSTOM_OBJECTS,
+                    "Could not parse mob for Entity() "
+                    + entityData.makeString()
+                    + ", mob type could not be found."
+                );
             }
             return;
         }
 
         // Check for any .txt or .nbt file containing nbt data for the entity
         CompoundTag nbtTagCompound = null;
-        if(
-                entityData.getNameTagOrNBTFileName() != null &&
-                        (
-                                entityData.getNameTagOrNBTFileName().toLowerCase().trim().endsWith(".txt")
-                                        || entityData.getNameTagOrNBTFileName().toLowerCase().trim().endsWith(".nbt")
-                        )
-        )
-        {
+        if (
+            entityData.getNameTagOrNBTFileName() != null &&
+            (
+                entityData.getNameTagOrNBTFileName().toLowerCase().trim().endsWith(".txt")
+                || entityData.getNameTagOrNBTFileName().toLowerCase().trim().endsWith(".nbt")
+            )
+        ) {
             nbtTagCompound = new CompoundTag();
-            if (entityData.getNameTagOrNBTFileName().toLowerCase().trim().endsWith(".txt"))
-            {
+            if (entityData.getNameTagOrNBTFileName().toLowerCase().trim().endsWith(".txt")) {
                 try {
-                    var inputStream = new DataInputStream(new ByteArrayInputStream(entityData.getMetaData().getBytes()));
+                    var inputStream =
+                        new DataInputStream(new ByteArrayInputStream(entityData.getMetaData().getBytes()));
                     nbtTagCompound = NbtIo.read(inputStream);
                 } catch (IOException | ReportedException e) {
-                    if(OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
-                    {
-                        OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not parse nbt for Entity() " + entityData.makeString() + ", file: " + entityData.getNameTagOrNBTFileName());
+                    if (OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS)) {
+                        OTGLog.log(
+                            LogLevel.ERROR,
+                            LogCategory.CUSTOM_OBJECTS,
+                            "Could not parse nbt for Entity() "
+                            + entityData.makeString()
+                            + ", file: "
+                            + entityData.getNameTagOrNBTFileName()
+                        );
                     }
-                    throw new RuntimeException("Could not parse nbt for Entity() " + entityData.makeString() + ", file: " + entityData.getNameTagOrNBTFileName(), e);
+                    throw new RuntimeException(
+                        "Could not parse nbt for Entity() "
+                        + entityData.makeString()
+                        + ", file: "
+                        + entityData.getNameTagOrNBTFileName(), e
+                    );
                 }
                 // Specify which type of entity to spawn
                 nbtTagCompound.putString("id", entityData.getResourceLocation());
-            }
-            else if (entityData.getNBTTag() != null)
-            {
+            } else if (entityData.getNBTTag() != null) {
                 nbtTagCompound = FabricNBTHelper.getNMSFromNBTTagCompound(entityData.getNBTTag());
             }
         }
 
-        if(nbtTagCompound == null)
-        {
+        if (nbtTagCompound == null) {
             // Create entity without nbt data
             try {
                 entity = type2.create(worldGenLevel.getLevel());
             } catch (Exception exception) {
-                if(OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
-                {
-                    OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not create entity for Entity() " + entityData.makeString() + ", exception: " + exception.getMessage());
+                if (OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS)) {
+                    OTGLog.log(
+                        LogLevel.ERROR,
+                        LogCategory.CUSTOM_OBJECTS,
+                        "Could not create entity for Entity() "
+                        + entityData.makeString()
+                        + ", exception: "
+                        + exception.getMessage()
+                    );
                 }
                 return;
             }
-            if (entity == null)
-            {
-                if(OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
-                {
-                    OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not create entity for Entity() " + entityData.makeString() + ", MC returned null.");
+            if (entity == null) {
+                if (OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS)) {
+                    OTGLog.log(
+                        LogLevel.ERROR,
+                        LogCategory.CUSTOM_OBJECTS,
+                        "Could not create entity for Entity() " + entityData.makeString() + ", MC returned null."
+                    );
                 }
                 return;
             } else {
-                entity.moveTo(entityData.getX(), entityData.getY(), entityData.getZ(), this.worldGenLevel.getRandom().nextFloat() * 360.0F, 0.0F);
+                entity.moveTo(
+                    entityData.getX(),
+                    entityData.getY(),
+                    entityData.getZ(),
+                    this.worldGenLevel.getRandom().nextFloat() * 360.0F,
+                    0.0F
+                );
             }
         } else {
             // Create entity with nbt data
-            try
-            {
-                entity = EntityType.loadEntityRecursive(nbtTagCompound, this.worldGenLevel.getLevel(), (entity1) ->
-                {
-                    entity1.moveTo(entityData.getX(), entityData.getY(), entityData.getZ(), this.worldGenLevel.getRandom().nextFloat() * 360.0F, 0.0F);
-                    return entity1;
-                });
-            } catch(Exception ignored) { }
-            if (entity == null)
-            {
-                if(OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
-                {
-                    OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not create entity for Entity() " + entityData.makeString() + ", MC returned null.");
+            try {
+                entity = EntityType.loadEntityRecursive(
+                    nbtTagCompound, this.worldGenLevel.getLevel(), (entity1) ->
+                    {
+                        entity1.moveTo(
+                            entityData.getX(),
+                            entityData.getY(),
+                            entityData.getZ(),
+                            this.worldGenLevel.getRandom().nextFloat() * 360.0F,
+                            0.0F
+                        );
+                        return entity1;
+                    }
+                );
+            } catch (Exception ignored) {
+            }
+            if (entity == null) {
+                if (OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS)) {
+                    OTGLog.log(
+                        LogLevel.ERROR,
+                        LogCategory.CUSTOM_OBJECTS,
+                        "Could not create entity for Entity() " + entityData.makeString() + ", MC returned null."
+                    );
                 }
                 return;
             }
         }
         // Create and spawn entities according to group size
-        for (int r = 0; r < entityData.getGroupSize(); r++)
-        {
-            if(r != 0)
-            {
-                if(nbtTagCompound == null)
-                {
+        for (int r = 0; r < entityData.getGroupSize(); r++) {
+            if (r != 0) {
+                if (nbtTagCompound == null) {
                     // Create entity without nbt data
                     try {
                         entity = type2.create(this.worldGenLevel.getLevel());
                     } catch (Exception exception) {
                         return;
                     }
-                    if (entity == null)
-                    {
+                    if (entity == null) {
                         return;
                     } else {
-                        entity.moveTo(entityData.getX(), entityData.getY(), entityData.getZ(), this.worldGenLevel.getRandom().nextFloat() * 360.0F, 0.0F);
+                        entity.moveTo(
+                            entityData.getX(),
+                            entityData.getY(),
+                            entityData.getZ(),
+                            this.worldGenLevel.getRandom().nextFloat() * 360.0F,
+                            0.0F
+                        );
                     }
                 } else {
                     // Create entity with nbt data
-                    entity = EntityType.loadEntityRecursive(nbtTagCompound, this.worldGenLevel.getLevel(), (entity1) -> {
-                        entity1.moveTo(entityData.getX(), entityData.getY(), entityData.getZ(), this.worldGenLevel.getRandom().nextFloat() * 360.0F, 0.0F);
-                        return entity1;
-                    });
+                    entity = EntityType.loadEntityRecursive(
+                        nbtTagCompound, this.worldGenLevel.getLevel(), (entity1) -> {
+                            entity1.moveTo(
+                                entityData.getX(),
+                                entityData.getY(),
+                                entityData.getZ(),
+                                this.worldGenLevel.getRandom().nextFloat() * 360.0F,
+                                0.0F
+                            );
+                            return entity1;
+                        }
+                    );
                 }
-                if (entity == null)
-                {
+                if (entity == null) {
                     return;
                 }
             }
 
             // TODO: Non-mob entities, aren't those handled via Block(nbt), chests, armor stands etc?
-            if (entity instanceof Monster monster)
-            {
+            if (entity instanceof Monster monster) {
                 // If the block is a solid block or entity is a fish out of water, cancel
-                LocalMaterialData block = FabricMaterialData.ofBlockState(this.worldGenLevel.getBlockState(new BlockPos((int) entityData.getX(), entityData.getY(), (int) entityData.getZ())));
+                LocalMaterialData block = FabricMaterialData.ofBlockState(this.worldGenLevel.getBlockState(new BlockPos(
+                    (int) entityData.getX(),
+                    entityData.getY(),
+                    (int) entityData.getZ()
+                )));
                 if (
-                        block.isSolid() ||
-                                (
-                                        (
-                                                monster.getMobType() == MobType.WATER
-                                                        || monster instanceof Guardian
-                                        )
-                                                && !block.isLiquid()
-                                )
-                )
-                {
-                    if(OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
-                    {
-                        OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Could not spawn entity at " + entityData.getX() + " " + entityData.getY() + " " + entityData.getZ() + " for Entity() " + entityData.makeString() + ", a solid block was found or a water mob tried to spawn outside of water.");
+                    block.isSolid() ||
+                    (
+                        (
+                            monster.getMobType() == MobType.WATER
+                            || monster instanceof Guardian
+                        )
+                        && !block.isLiquid()
+                    )
+                ) {
+                    if (OTGLog.getLogger().getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS)) {
+                        OTGLog.log(
+                            LogLevel.ERROR,
+                            LogCategory.CUSTOM_OBJECTS,
+                            "Could not spawn entity at "
+                            + entityData.getX()
+                            + " "
+                            + entityData.getY()
+                            + " "
+                            + entityData.getZ()
+                            + " for Entity() "
+                            + entityData.makeString()
+                            + ", a solid block was found or a water mob tried to spawn outside of water."
+                        );
                     }
                     continue;
                 }
 
                 // Attach nametag if one was provided via Entity()
                 String nameTag = entityData.getNameTagOrNBTFileName();
-                if (nameTag != null && !nameTag.toLowerCase().trim().endsWith(".txt") && !nameTag.toLowerCase().trim().endsWith(".nbt"))
-                {
+                if (nameTag != null && !nameTag.toLowerCase().trim().endsWith(".txt") && !nameTag.toLowerCase()
+                                                                                                 .trim()
+                                                                                                 .endsWith(".nbt")) {
                     entity.setCustomName(Component.literal(nameTag));
                 }
                 // Make sure Entity() mobs don't de-spawn, regardless of nbt data
                 monster.setPersistenceRequired();
 
-                SpawnGroupData spawnGroupData = 
-                        monster.finalizeSpawn(
-                                this.worldGenLevel, 
-                                this.worldGenLevel.getCurrentDifficultyAt(new BlockPos((int) entityData.getX(), entityData.getY(), (int) entityData.getZ())), 
-                                MobSpawnType.CHUNK_GENERATION, 
-                                null, // TODO: Missing functionality in EntityFunction 
-                                nbtTagCompound);
+                SpawnGroupData spawnGroupData =
+                    monster.finalizeSpawn(
+                        this.worldGenLevel,
+                        this.worldGenLevel.getCurrentDifficultyAt(new BlockPos(
+                            (int) entityData.getX(),
+                            entityData.getY(),
+                            (int) entityData.getZ()
+                        )),
+                        MobSpawnType.CHUNK_GENERATION,
+                        null, // TODO: Missing functionality in EntityFunction
+                        nbtTagCompound
+                    );
                 this.worldGenLevel.addFreshEntity(monster);
             }
         }
@@ -593,11 +736,12 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
     @Override
     public void placeDungeon(Random random, int x, int y, int z) {
         Feature.MONSTER_ROOM.place(
-                FeatureConfiguration.NONE, 
-                worldGenLevel, 
-                chunkGenerator, 
-                worldGenLevel.getRandom(), 
-                new BlockPos(x, y, z));
+            FeatureConfiguration.NONE,
+            worldGenLevel,
+            chunkGenerator,
+            worldGenLevel.getRandom(),
+            new BlockPos(x, y, z)
+        );
     }
 
     @Override
@@ -606,10 +750,10 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
         if (r.isPresent()) {
             var feature = r.get().getOptional(CaveFeatures.FOSSIL_COAL);
             feature.ifPresent(configuredFeature -> configuredFeature.place(
-                    worldGenLevel,
-                    chunkGenerator,
-                    worldGenLevel.getRandom(),
-                    new BlockPos(x, y, z)
+                worldGenLevel,
+                chunkGenerator,
+                worldGenLevel.getRandom(),
+                new BlockPos(x, y, z)
             ));
         }
     }
@@ -621,8 +765,7 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
 
     @Override
     public LocalMaterialData getMaterialWithoutLoading(int x, int y, int z) {
-        if (isOutsideWorldHeight(y))
-        {
+        if (isOutsideWorldHeight(y)) {
             return null;
         }
         ChunkPos pos = ChunkPos.minFromRegion(x, z);
@@ -630,8 +773,8 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
 
         if (this.decorationArea.isInAreaBeingDecorated(x, z)) {
             chunk = this.worldGenLevel.hasChunk(pos.x, pos.z)
-                    ? this.worldGenLevel.getChunk(pos.x, pos.z, ChunkStatus.CARVERS, false)
-                    : null;
+                ? this.worldGenLevel.getChunk(pos.x, pos.z, ChunkStatus.CARVERS, false)
+                : null;
         }
 
         if (chunk == null) {
@@ -641,7 +784,15 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
     }
 
     @Override
-    public int getHighestBlockYAtWithoutLoading(int x, int z, boolean findSolid, boolean findLiquid, boolean ignoreLiquid, boolean ignoreSnow, boolean ignoreLeaves) {
+    public int getHighestBlockYAtWithoutLoading(
+        int x,
+        int z,
+        boolean findSolid,
+        boolean findLiquid,
+        boolean ignoreLiquid,
+        boolean ignoreSnow,
+        boolean ignoreLeaves
+    ) {
 
         ChunkPos pos = ChunkPos.minFromRegion(x, z);
         ChunkAccess chunk = null;
@@ -649,15 +800,32 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
 
         if (this.decorationArea.isInAreaBeingDecorated(x, z)) {
             chunk = this.worldGenLevel.hasChunk(pos.x, pos.z)
-                    ? this.worldGenLevel.getChunk(pos.x, pos.z, ChunkStatus.CARVERS, false)
-                    : null;
+                ? this.worldGenLevel.getChunk(pos.x, pos.z, ChunkStatus.CARVERS, false)
+                : null;
         }
         if (chunk == null || !chunk.getStatus().isOrAfter(ChunkStatus.CARVERS)) {
-            return this.chunkGenerator.getHighestBlockYInUnloadedChunk(x, z, findSolid, findLiquid, ignoreLiquid, ignoreSnow);
+            return this.chunkGenerator.getHighestBlockYInUnloadedChunk(
+                x,
+                z,
+                findSolid,
+                findLiquid,
+                ignoreLiquid,
+                ignoreSnow
+            );
         }
 
         int levelHeight = worldGenLevel.getHeight(Heightmap.Types.WORLD_SURFACE_WG, x, z);
-        return getHighestBlockYAt(worldGenLevel, x, levelHeight, z, findSolid, findLiquid, ignoreLiquid, ignoreSnow, ignoreLeaves);
+        return getHighestBlockYAt(
+            worldGenLevel,
+            x,
+            levelHeight,
+            z,
+            findSolid,
+            findLiquid,
+            ignoreLiquid,
+            ignoreSnow,
+            ignoreLeaves
+        );
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.pg85.otg.util.biome;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.pg85.otg.constants.Constants;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
@@ -24,10 +25,9 @@ public class ReplacedBlocksInstruction {
      * Parses the given instruction string.
      *
      * @param instruction The instruction string.
-     * @param maxAllowedY Maximum allowed y height for the replace setting, inclusive.
      * @throws InvalidConfigException If the instruction is formatted incorrectly.
      */
-    ReplacedBlocksInstruction(String instruction, int maxAllowedY, IMaterialReader materialReader) throws InvalidConfigException {
+    ReplacedBlocksInstruction(String instruction, IMaterialReader materialReader) throws InvalidConfigException {
         String[] values = instruction.split(",(?![^\\(\\[]*[\\]\\)])"); // Splits on any comma not inside brackets
         if (values.length == 5) {
             // Replace in TC 2.3 style found
@@ -47,11 +47,11 @@ public class ReplacedBlocksInstruction {
         this.to = materialReader.readMaterial(values[1]);
 
         if (values.length == 4) {
-            this.minHeight = StringHelper.readInt(values[2], 0, maxAllowedY);
-            this.maxHeight = StringHelper.readInt(values[3], this.minHeight, maxAllowedY);
+            this.minHeight = StringHelper.readInt(values[2], Constants.WORLD_START_MIN_Y, Constants.WORLD_END_MAX_Y);
+            this.maxHeight = StringHelper.readInt(values[3], this.minHeight, Constants.WORLD_END_MAX_Y);
         } else {
-            this.minHeight = 0;
-            this.maxHeight = maxAllowedY;
+            this.minHeight = Constants.WORLD_START_MIN_Y;
+            this.maxHeight = Constants.WORLD_END_MAX_Y;
         }
     }
 

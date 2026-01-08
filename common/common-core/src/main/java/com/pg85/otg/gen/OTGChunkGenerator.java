@@ -32,7 +32,7 @@ import java.util.stream.IntStream;
 /**
  * Generates the base terrain, sets stone/ground/surface blocks and does SurfaceAndGroundControl, generates caves and canyons.
  */
-@SuppressWarnings("deprecation")
+//@SuppressWarnings("deprecation")
 public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
     // "It's a number that made the worldgen look good!" - Dinnerbone 2020
     private static final double WORLD_GEN_CONSTANT = 684.412;

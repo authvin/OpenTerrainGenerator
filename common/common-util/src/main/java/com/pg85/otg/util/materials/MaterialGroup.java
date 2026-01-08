@@ -10,8 +10,9 @@ public enum MaterialGroup {
     ALL_MATERIALS("All"), // ALL Materials
     SOLID_MATERIALS("Solid"), // Solid Materials
     NON_SOLID_MATERIALS("NonSolid"), // Non-Solid Materials
-    LIQUIDS("Liquid"),
-    NONE("None"); // Liquid Materials
+    LIQUIDS("Liquid"), // Liquid Materials
+    AIR("Air"), // Just Air
+    NONE("None");
 
     private final String keyword;
 
@@ -27,12 +28,16 @@ public enum MaterialGroup {
         return null;
     }
 
-    boolean contains(LocalMaterialData material) {
+    public boolean contains(LocalMaterialData material) {
+        if (material == null || material.isEmpty()) {
+            return false;
+        }
         return switch (this) {
             case ALL_MATERIALS -> true;
             case SOLID_MATERIALS -> material.isSolid();
             case NON_SOLID_MATERIALS -> !material.isSolid();
             case LIQUIDS -> material.isLiquid();
+            case AIR -> material.isAir();
             case NONE -> false;
         };
     }

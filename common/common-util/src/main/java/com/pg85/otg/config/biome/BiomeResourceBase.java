@@ -10,7 +10,9 @@ import com.pg85.otg.util.gen.OTGWorldInfo;
 /** Represents a BiomeConfig ResourceQueue resource. */
 public abstract class BiomeResourceBase extends ConfigFunction<BiomeSettings>
 {
-	static BiomeResourceBase createResource (
+    protected final BiomeSettings biomeSettings;
+
+    static BiomeResourceBase createResource (
 			BiomeSettings config,
 			Class<? extends BiomeResourceBase> clazz,
 			OTGWorldInfo otgWorldInfo,
@@ -33,5 +35,7 @@ public abstract class BiomeResourceBase extends ConfigFunction<BiomeSettings>
 
 	// We're using reflection to match constructors for resources, so resource classes must implement this 
 	// constructor or createResource / com.pg85.otg.config.biome.BiomeResourcesManager.getConfigFunction() will fail. 
-	public BiomeResourceBase(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo worldInfo) { }
+	public BiomeResourceBase(BiomeSettings biomeSettings, List<String> args) {
+        this.biomeSettings = biomeSettings;
+    }
 }

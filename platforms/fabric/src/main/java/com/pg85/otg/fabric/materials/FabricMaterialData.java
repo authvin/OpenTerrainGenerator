@@ -147,7 +147,11 @@ public class FabricMaterialData extends LocalMaterialData {
 
     @Override
     public boolean isMaterial(LocalMaterialData material) {
-        return this.isBlank && material.isBlank() || this.state == ((FabricMaterialData) material).state;
+        if (material == null) {
+            return false;
+        }
+        return this.isBlank && material.isBlank() ||
+               this.state == ((FabricMaterialData) material).state;
     }
 
     @Override

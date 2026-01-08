@@ -1,10 +1,8 @@
 package com.pg85.otg.gen.resource;
 
-import com.pg85.otg.constants.Constants;
-import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
+import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.IWorldGenRegion;
-import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.RandomHelper;
 
 import java.util.List;
@@ -12,30 +10,30 @@ import java.util.Random;
 
 public class DungeonResource extends FrequencyResourceBase
 {
-	private final int maxAltitude;
-	private final int minAltitude;
+    private final int maxAltitude;
+    private final int minAltitude;
 
-	public DungeonResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
-	{
-		super(biomeConfig, args, otgWorldInfo);
-		assureSize(3, args);
+    public DungeonResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
+    {
+        super(biomeConfig, args);
+        assureSize(3, args);
 
-		this.frequency = 1;
-		this.rarity = readDouble(args.get(0), 1, Integer.MAX_VALUE);
-		this.minAltitude = readInt(args.get(1), Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1);
-		this.maxAltitude = readInt(args.get(2), minAltitude, Constants.WORLD_HEIGHT - 1);
-	}
+        this.frequency = 1;
+        this.rarity = readRarity(args.get(0));
+        this.minAltitude = readElevation(args.get(1));
+        this.maxAltitude = readElevation(args.get(2));
+    }
 
-	@Override
-	public String toString()
-	{
-		return "Dungeon(" + this.rarity + "," + this.minAltitude + "," + this.maxAltitude + ")";
-	}
+    @Override
+    public String toString()
+    {
+        return "Dungeon(" + this.rarity + "," + this.minAltitude + "," + this.maxAltitude + ")";
+    }
 
-	@Override
-	public void spawn(IWorldGenRegion world, Random random, int x, int z)
-	{
-		int y = RandomHelper.numberInRange(random, this.minAltitude, this.maxAltitude);
-		world.placeDungeon(random, x, y, z);
-	}	
+    @Override
+    public void spawn(IWorldGenRegion world, Random random, int x, int z)
+    {
+        int y = RandomHelper.numberInRange(random, this.minAltitude, this.maxAltitude);
+        world.placeDungeon(random, x, y, z);
+    }
 }

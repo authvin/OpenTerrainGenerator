@@ -1,6 +1,5 @@
 package com.pg85.otg.customobject.resource;
 
-import com.pg85.otg.constants.Constants;
 import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
@@ -167,7 +166,6 @@ public class SaplingResource extends ISaplingSpawner
 				}
 
 				if (tree.spawnFromSapling(worldGenRegion,
-                                          Constants.DEFAULT_WORLD_INFO,
                                           random, rotation, spawnX, y, spawnZ))
 				{
 					// Success!

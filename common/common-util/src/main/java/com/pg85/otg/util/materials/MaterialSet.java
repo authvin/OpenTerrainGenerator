@@ -29,7 +29,20 @@ public class MaterialSet
 	private MaterialGroup group = MaterialGroup.NONE;
 	private boolean intSetUpToDate = true;
 
-	/**
+    public static MaterialSet of(LocalMaterialBase ...materials) {
+		MaterialSet set = new MaterialSet();
+		for (LocalMaterialBase base : materials) {
+			if (base instanceof LocalMaterialData data) {
+				set.addMaterial(data);
+			} else if (base instanceof LocalMaterialTag tag) {
+				set.addTag(tag);
+			}
+		}
+
+		return set;
+	}
+
+    /**
 	 * Adds the given material to the list.
 	 *
 	 * <p>If the material is "All", all

@@ -29,7 +29,10 @@ public enum TreeType
 	HugeTaiga1,
 	HugeTaiga2,
 	TallBirch,
-	Tree;
+	Tree,
+	Mangrove,
+	TallMangrove,
+	Cherry;
 
 	private final String name;
 

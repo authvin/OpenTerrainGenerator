@@ -69,7 +69,13 @@ public class CustomObjectManager implements ICustomObjectManager
 			new Thread(() -> {
                 globalCustomObjects.indexGlobalObjectsFolder(otgRootFolder);
 
-                for(File file : otgPresetsFolder.toFile().listFiles())
+				File[] presetFolder = otgPresetsFolder.toFile().listFiles();
+				if (presetFolder == null) {
+					OTGLog.fatal(LogCategory.MAIN, "Failed to index custom object presets folder.");
+					return;
+				}
+
+                for(File file : presetFolder)
                 {
                     if(file.isDirectory())
                     {

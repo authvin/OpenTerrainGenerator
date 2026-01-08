@@ -25,9 +25,9 @@ public class CustomStructureResource extends BiomeResourceBase implements ICusto
 	private final List<Double> objectChances;
 	public final List<String> objectNames;
 
-	public CustomStructureResource(BiomeSettings biomeConfig, List<String> args, OTGWorldInfo otgWorldInfo) throws InvalidConfigException
+	public CustomStructureResource(BiomeSettings biomeConfig, List<String> args) throws InvalidConfigException
 	{
-		super(biomeConfig, args, otgWorldInfo);
+		super(biomeConfig, args);
 		this.objectNames = new ArrayList<>();
 		this.objectChances = new ArrayList<>();
 		for (int i = 0; i < args.size() - 1; i += 2)
@@ -72,11 +72,20 @@ public class CustomStructureResource extends BiomeResourceBase implements ICusto
 		List<IStructuredCustomObject> objects = new ArrayList<>();
 		if(!this.objectNames.isEmpty())
 		{
-			CustomObject object;
             for (String objectName : this.objectNames) {
                 // TODO: Refactor this so we don't have to cast CustomObjectManager/CustomObjectResourcesManager :(
                 // TODO: Remove any dependency on common-customobjects, interfaces only?
-                object = ((CustomObjectManager) customObjectManager).getGlobalObjects().getObjectByName(objectName, presetFolderName, otgRootFolder, (CustomObjectManager) customObjectManager, materialReader, (CustomObjectResourcesManager) manager, modLoadedChecker);
+                CustomObject object = ((CustomObjectManager) customObjectManager)
+					 .getGlobalObjects()
+					 .getObjectByName(
+						 objectName,
+						 presetFolderName,
+						 otgRootFolder,
+						 (CustomObjectManager) customObjectManager,
+						 materialReader,
+						 (CustomObjectResourcesManager) manager,
+						 modLoadedChecker
+					 );
                 objects.add((StructuredCustomObject) object);
             }
 		}

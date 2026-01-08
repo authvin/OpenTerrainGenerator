@@ -26,7 +26,6 @@ import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
-import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.nbt.NamedBinaryTag;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.logging.LogCategory;
@@ -134,7 +133,6 @@ public class BO4 implements StructuredCustomObject
 	
 	@Override
 	public boolean spawnFromSapling(IWorldGenRegion worldGenRegion,
-									OTGWorldInfo otgWorldInfo,
 									Random random, Rotation rotation, int x, int y, int z)
 	{
 		return false;
@@ -142,25 +140,22 @@ public class BO4 implements StructuredCustomObject
 			
 	// BO4 CustomStructures cannot be force-spawned, only plotted in unloaded chunks and then spawned when the chunk is decorated.
 	@Override
-	public boolean spawnForced(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
-							   OTGWorldInfo otgWorldInfo,
+	public boolean spawnForced(CustomStructureCache structureCache, IWorldGenRegion world,
 							   Random random, Rotation rotation, int x, int y, int z, boolean allowReplaceBlocks)
 	{
 		return false;
 	}
 	
 	@Override
-	public boolean spawnAsTree(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
-							   OTGWorldInfo otgWorldInfo,
+	public boolean spawnAsTree(CustomStructureCache structureCache, IWorldGenRegion world,
 							   Random random, int x, int z, int minY, int maxY)
 	{
 		return false;
 	}
 
 	@Override
-	public boolean process(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion,
-						   OTGWorldInfo otgWorldInfo,
-						   Random random)
+	public boolean process(CustomStructureCache structureCache, IWorldGenRegion world,
+                           Random random)
 	{
 		return false;
 	}

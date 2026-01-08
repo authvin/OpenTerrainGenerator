@@ -7,7 +7,6 @@ import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.bo3.Rotation;
-import com.pg85.otg.util.gen.OTGWorldInfo;
 
 import java.nio.file.Path;
 import java.util.Random;
@@ -66,15 +65,13 @@ public interface CustomObject extends SpawnableObject, ICustomObject {
 	 * should return false.
 	 *
 	 * @param world
-	 * @param otgWorldInfo
 	 * @param x
 	 * @param z
 	 * @return Whether the attempt was successful.
 	 */
     boolean spawnAsTree(
 			CustomStructureCache structureCache,
-			IWorldGenRegion worldGenRegion,
-			OTGWorldInfo otgWorldInfo,
+			IWorldGenRegion world,
 			Random random,
 			int x,
 			int z,
@@ -86,22 +83,19 @@ public interface CustomObject extends SpawnableObject, ICustomObject {
 	 * Spawns the object one or more times in a chunk. The object can search a good y position by
 	 * itself.
 	 *
-	 * @param world        The world to spawn in.
-	 * @param chunkCoord   The chunk to spawn the objects in.
-	 * @param otgWorldInfo
-	 * @param random       Random number generator based on the world seed.
+	 * @param chunkCoord The chunk to spawn the objects in.
+	 * @param world      The world to spawn in.
+	 * @param random     Random number generator based on the world seed.
 	 * @return Whether at least one object spawned successfully.
 	 */
     boolean process(
 			CustomStructureCache structureCache,
-			IWorldGenRegion worldGenRegion,
-			OTGWorldInfo otgWorldInfo,
+			IWorldGenRegion world,
 			Random random
     );
 
     boolean spawnFromSapling(
 			IWorldGenRegion worldGenRegion,
-			OTGWorldInfo otgWorldInfo,
 			Random random,
 			Rotation rotation,
 			int x,

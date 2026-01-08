@@ -2,10 +2,11 @@ package com.pg85.otg.gen.surface;
 
 import java.util.Arrays;
 import java.util.Random;
+import java.util.stream.IntStream;
 
 import com.pg85.otg.config.settings.biome.SurfaceSettings;
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.gen.noise.legacy.NoiseGeneratorPerlinMesaBlocks;
+import com.pg85.otg.gen.noise.OctaveSimplexNoiseSampler;
 import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
@@ -21,20 +22,20 @@ public class MesaSurfaceGenerator implements ISurfaceGenerator
 {
 	private LocalMaterialData[] clayBands;
 	private long worldSeed;
-	private boolean hasForest;
-	private boolean brycePillars;
-	private NoiseGeneratorPerlinMesaBlocks pillarNoise;
-	private NoiseGeneratorPerlinMesaBlocks pillarRoofNoise;
-	private NoiseGeneratorPerlinMesaBlocks clayBandsOffsetNoise;
+	private final boolean hasForest;
+	private final boolean brycePillars;
+	private OctaveSimplexNoiseSampler pillarNoise;
+	private OctaveSimplexNoiseSampler pillarRoofNoise;
+	private OctaveSimplexNoiseSampler clayBandsOffsetNoise;
 	
-	private LocalMaterialData hardClay = LocalMaterials.TERRACOTTA;
-	private LocalMaterialData orangeClay = LocalMaterials.ORANGE_TERRACOTTA;
-	private LocalMaterialData yellowClay = LocalMaterials.YELLOW_TERRACOTTA;
-	private LocalMaterialData brownClay = LocalMaterials.BROWN_TERRACOTTA;
-	private LocalMaterialData redClay = LocalMaterials.RED_TERRACOTTA;
-	private LocalMaterialData whiteClay = LocalMaterials.WHITE_TERRACOTTA;
-	private LocalMaterialData silverClay = LocalMaterials.SILVER_TERRACOTTA;
-	private LocalMaterialData redSand = LocalMaterials.RED_SAND;
+	private final LocalMaterialData hardClay = LocalMaterials.TERRACOTTA;
+	private final LocalMaterialData orangeClay = LocalMaterials.ORANGE_TERRACOTTA;
+	private final LocalMaterialData yellowClay = LocalMaterials.YELLOW_TERRACOTTA;
+	private final LocalMaterialData brownClay = LocalMaterials.BROWN_TERRACOTTA;
+	private final LocalMaterialData redClay = LocalMaterials.RED_TERRACOTTA;
+	private final LocalMaterialData whiteClay = LocalMaterials.WHITE_TERRACOTTA;
+	private final LocalMaterialData silverClay = LocalMaterials.SILVER_TERRACOTTA;
+	private final LocalMaterialData redSand = LocalMaterials.RED_SAND;
 	
 	private boolean initialized;
 	private boolean hardClayIsReplaced;
@@ -101,7 +102,8 @@ public class MesaSurfaceGenerator implements ISurfaceGenerator
 		int noise = this.lastNoise;
 		if(this.lastX != xInWorld || this.lastZ != zInWorld)
 		{
-			noise = (int) Math.round(this.clayBandsOffsetNoise.getValue((double) xInWorld / 512.0D, (double) zInWorld / 512.0D) * 2.0D);
+			// Use OctaveSimplexNoiseSampler for offset noise
+			noise = (int) Math.round(this.clayBandsOffsetNoise.sample((double) xInWorld / 512.0D, (double) zInWorld / 512.0D, false) * 2.0D);
 			this.lastX = xInWorld;
 			this.lastZ = zInWorld;
 			this.lastNoise = noise;
@@ -163,7 +165,8 @@ public class MesaSurfaceGenerator implements ISurfaceGenerator
 		Arrays.fill(this.clayBands, this.hardClay);
 		Random random = new Random(seed);
 
-		this.clayBandsOffsetNoise = new NoiseGeneratorPerlinMesaBlocks(random, 1);
+		// Replace legacy noise with OctaveSimplexNoiseSampler
+		this.clayBandsOffsetNoise = new OctaveSimplexNoiseSampler(random, IntStream.of(0));
 
 		for (int l1 = 0; l1 < 64; ++l1)
 		{
@@ -258,8 +261,8 @@ public class MesaSurfaceGenerator implements ISurfaceGenerator
 		if (this.pillarNoise == null || this.pillarRoofNoise == null || !this.clayBandsGenerated)
 		{
 			Random random = new Random(this.worldSeed);
-			this.pillarNoise = new NoiseGeneratorPerlinMesaBlocks(random, 4);
-			this.pillarRoofNoise = new NoiseGeneratorPerlinMesaBlocks(random, 1);
+			this.pillarNoise = new OctaveSimplexNoiseSampler(random, IntStream.of(0, 1, 2, 3));
+			this.pillarRoofNoise = new OctaveSimplexNoiseSampler(random, IntStream.of(0));
 		}
 		
 		this.clayBandsGenerated = true;
@@ -275,12 +278,13 @@ public class MesaSurfaceGenerator implements ISurfaceGenerator
 		{
 			int localX = (xInWorld & -16) + (zInWorld & 15);
 			int localZ = (zInWorld & -16) + (xInWorld & 15);
-			double bryceNoiseValue = Math.min(Math.abs(noise), this.pillarNoise.getValue((double) localX * 0.25D, (double) localZ * 0.25D));
+			// Use OctaveSimplexNoiseSampler for bryce pillar noise
+			double bryceNoiseValue = Math.min(Math.abs(noise), this.pillarNoise.sample((double) localX * 0.25D, (double) localZ * 0.25D, false));
 
 			if (bryceNoiseValue > 0.0D)
 			{
 				double maxHeightScale = 0.001953125D;
-				double maxHeightNoise = Math.abs(this.pillarRoofNoise.getValue((double) localX * maxHeightScale, (double) localZ * maxHeightScale));
+				double maxHeightNoise = Math.abs(this.pillarRoofNoise.sample((double) localX * maxHeightScale, (double) localZ * maxHeightScale, false));
 				bryceHeight = bryceNoiseValue * bryceNoiseValue * 2.5D;
 				double maxHeight = Math.ceil(maxHeightNoise * 50.0D) + 14.0D;
 
@@ -334,8 +338,10 @@ public class MesaSurfaceGenerator implements ISurfaceGenerator
 			{
 				worldMaterial = chunkBuffer.getBlock(x, y, z);
 			}
-
-			if (y < (int) bryceHeight && worldMaterial.isAir())
+			if (worldMaterial == null) {
+				continue;
+			}
+			if (y < (int) bryceHeight  && worldMaterial.isAir())
 			{
 				chunkBuffer.setBlock(x, y, z, getBand(surfaceSettings.getReplacedBlocks(), x, y, z));
 			}
