@@ -7,6 +7,7 @@ import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.config.settings.preset.TerrainSettings;
 import com.pg85.otg.constants.Constants;
+import it.unimi.dsi.fastutil.ints.Int2DoubleAVLTreeMap;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -25,7 +26,7 @@ public class BiomeTerrainSettings extends ConfigSection {
     private final double volatilityWeight1;
     private final double volatilityWeight2;
     private final boolean disableBiomeHeight;
-    private final double[] customHeightControl;
+    private final Int2DoubleAVLTreeMap customHeightControl;
     @Override
     public String getSectionName() {
         return "Biome Terrain Settings";
@@ -102,7 +103,7 @@ public class BiomeTerrainSettings extends ConfigSection {
     );
     public static final Setting<double[]> CUSTOM_HEIGHT_CONTROL = new DoubleArraySetting(
             "CustomHeightControl",
-            t -> ((BiomeTerrainSettings) t).getCustomHeightControl(),
+            t -> getEntries(((BiomeTerrainSettings) t).getCustomHeightControl()),
             "List of custom height factors, 17 double entries, each controls about 7",
             "blocks height, starting at the bottom of the world. Positive entry - larger chance of spawn blocks, negative - smaller",
             "Values which affect your configuration may be found only experimentally. Values may be very big, like ~3000.0 depends from height",
@@ -111,6 +112,15 @@ public class BiomeTerrainSettings extends ConfigSection {
             "Makes empty layer above bedrock layer. "
     );
 
+
+
+    public static double[] getEntries(Int2DoubleAVLTreeMap map) {
+        double[] arr = new double[map.size()];
+        for (int i = 0; i < arr.length; i++) {
+            arr[i] = map.get(i);
+        }
+        return arr;
+    }
 
     public static BiomeTerrainSettings getBiomeTerrainSettings(SettingsMap reader, TerrainSettings parent) {
         BiomeTerrainSettingsBuilder builder = BiomeTerrainSettings.builder();
@@ -136,19 +146,24 @@ public class BiomeTerrainSettings extends ConfigSection {
         }
 
         builder.disableBiomeHeight(reader.getSetting(DISABLE_BIOME_HEIGHT));
-        builder.customHeightControl(builder.readHeightSettings(reader));
+        builder.customHeightControl(builder.readHeightSettings(reader, parent));
 
         return builder.fixSettings().build();
     }
 
     public static class BiomeTerrainSettingsBuilder {
-        protected double[] readHeightSettings(SettingsMap settings)
+        protected Int2DoubleAVLTreeMap readHeightSettings(SettingsMap settings, TerrainSettings parent)
         {
-            double[] heightMatrix = new double[this.parent.getWorldHeightCap() / Constants.PIECE_Y_SIZE + 1];
+            Int2DoubleAVLTreeMap heightMatrix = new Int2DoubleAVLTreeMap();
             double[] keys = settings.getSetting(CUSTOM_HEIGHT_CONTROL);
-            for (int i = 0; i < heightMatrix.length && i < keys.length; i++)
+
+            int chcStart = parent.getChcStart();
+            // TODO: will OTGChunkGenerator fetch negative Y values here? I suspect not...
+            int offset = chcStart / Constants.PIECE_Y_SIZE;
+
+            for (int i = 0; i < heightMatrix.size() && i < keys.length; i++)
             {
-                heightMatrix[i] = keys[i];
+                heightMatrix.put(i + offset, keys[i]);
             }
             return heightMatrix;
         }

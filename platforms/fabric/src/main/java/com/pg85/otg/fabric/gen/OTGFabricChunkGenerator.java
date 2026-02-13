@@ -136,7 +136,8 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
         // World save folder name may not be identical to level name, fetch it.
         Path worldSaveFolder = worldGenLevel.getLevel().getServer().getWorldPath(LevelResource.PLAYER_DATA_DIR).getParent();
 
-        this.chunkDecorator.decorate(chunkBeingDecorated, fabricWorldGenRegion, biome.getBiomeSettings(), getStructureCache(worldSaveFolder));
+        this.chunkDecorator.decorate(chunkBeingDecorated, fabricWorldGenRegion, biome.getBiomeSettings(),
+                                      getStructureCache(worldSaveFolder));
         super.applyBiomeDecoration(worldGenLevel, chunkAccess, structureManager);
 
         // Template biomes handle their own snow, OTG biomes use OTG snow.

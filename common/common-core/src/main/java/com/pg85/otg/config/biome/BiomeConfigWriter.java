@@ -137,7 +137,8 @@ public class BiomeConfigWriter {
         writer.putSetting(BiomeTerrainSettings.DISABLE_BIOME_HEIGHT, biomeConfig.getTerrainSettings().isDisableBiomeHeight(),
                 "Disable all noises except Volatility1 and Volatility2. Also disable default block chance from height.");
 
-        writer.putSetting(BiomeTerrainSettings.CUSTOM_HEIGHT_CONTROL, biomeConfig.getTerrainSettings().getCustomHeightControl(),
+        writer.putSetting(BiomeTerrainSettings.CUSTOM_HEIGHT_CONTROL,
+                          BiomeTerrainSettings.getEntries(biomeConfig.getTerrainSettings().getCustomHeightControl()),
                 "List of custom height factors, 17 double entries, each controls about 7",
                 "blocks height, starting at the bottom of the world. Positive entry - larger chance of spawn blocks, negative - smaller",
                 "Values which affect your configuration may be found only experimentally. Values may be very big, like ~3000.0 depends from height",

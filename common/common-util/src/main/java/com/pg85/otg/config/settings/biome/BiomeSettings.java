@@ -73,7 +73,7 @@ public abstract class BiomeSettings implements ConfigFile {
 
     // Height / volatility
     public double getCHCData(int controlLayer) {
-        return this.getTerrainSettings().getCustomHeightControl()[controlLayer];
+        return this.getTerrainSettings().getCustomHeightControl().get(controlLayer);
     }
 
     // OTG Custom structures (BO's)

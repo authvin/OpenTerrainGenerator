@@ -70,7 +70,6 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
     private OctavePerlinNoiseSampler depthNoise;
 
     private final Preset preset;
-    private final OTGWorldInfo otgWorldInfo;
     private long seed;
     private final CachedBiomeProvider cachedBiomeProvider;
 
@@ -99,7 +98,6 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
             OTGWorldInfo otgWorldInfo
     ) {
         this.preset = preset;
-        this.otgWorldInfo = otgWorldInfo;
         this.cachedBiomeProvider = new CachedBiomeProvider(biomeProvider, biomesById);
 
         this.noiseSizeY = otgWorldInfo.getHeight() / Constants.PIECE_Y_SIZE;
@@ -278,14 +276,14 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
             if (noiseHeight < -1.0D) {
                 noiseHeight = -1.0D;
             }
-            noiseHeight /= maxAverageDepth;
+            noiseHeight -= maxAverageDepth;
             noiseHeight /= 1.4D;
             noiseHeight /= 2.0D;
         } else {
             if (noiseHeight > 1.0D) {
                 noiseHeight = 1.0D;
             }
-            noiseHeight *= maxAverageHeight;
+            noiseHeight += maxAverageHeight;
             noiseHeight /= 8.0D;
         }
 
@@ -300,7 +298,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
     private void generateNoiseColumn(double[] noiseColumn, int noiseX, int noiseZ) {
         BiomeSettings center = this.cachedBiomeProvider.getNoiseBiomeConfig(noiseX, noiseZ, true);
 
-        final int usedYSections = otgWorldInfo.getHeight() / 8 + 1;
+        final int usedYSections = preset.getPresetConfig().getTerrainSettings().getWorldHeightScale() / Constants.PIECE_Y_SIZE + 1;
         float height = 0; // depth
         float volatility = 0; // scale
         double volatility1 = 0;
@@ -325,7 +323,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
         BiomeSettings biome;
         BiomeTerrainSettings biomeTerrainSettings;
         TerrainSettings terrainSettings = this.preset.getPresetConfig().getTerrainSettings();
-        int worldHeightCap = otgWorldInfo.getHeight();
+        int worldHeightCap = terrainSettings.getWorldHeightCap();
         float heightAt;
         float weightAt;
         int cacheX;
@@ -465,7 +463,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
 
         // Fill waterLevel array, used when placing stone/ground/surface blocks.
         // This 256 is a combined x/z size, not y.
-        int[] waterLevel = new int[Constants.OTHER_256];
+        int[] waterLevel = new int[Constants.CHUNK_SIZE * Constants.CHUNK_SIZE];
 
         int blockX = chunkCoord.getBlockX();
         int blockZ = chunkCoord.getBlockZ();
@@ -606,7 +604,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
                                             biomeConfig.getSurfaceSettings().getStoneBlockReplaced(realY)
                                     );
                                     buffer.setHighestBlockForColumn(pieceX + noiseX * 4, noiseZ * 4 + pieceZ, realY);
-                                } else if (realY < waterLevel[localX * 16 + localZ]
+                                } else if (realY < waterLevel[localX * Constants.CHUNK_SIZE + localZ]
                                            && realY > biomeConfig.getSurfaceSettings().getWaterLevelMin()) {
                                     buffer.setBlock(
                                             localX,

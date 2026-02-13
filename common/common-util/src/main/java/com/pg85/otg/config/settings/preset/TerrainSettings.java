@@ -1,6 +1,7 @@
 package com.pg85.otg.config.settings.preset;
 
 import com.pg85.otg.config.io.SettingsMap;
+import com.pg85.otg.config.settingtype.IntSetting;
 import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
@@ -19,6 +20,7 @@ public class TerrainSettings extends ConfigSection {
     private final int waterLevelMax;
     private final int waterLevelMin;
     private final int carverLavaBlockHeight;
+    private final int chcStart;
 
     public static final Setting<Boolean> BETTER_SNOW_FALL = Settings.booleanSetting(
             "BetterSnowFall", false,
@@ -39,6 +41,17 @@ public class TerrainSettings extends ConfigSection {
             t -> ((TerrainSettings) t).getWorldHeightCap(),
             "The height cap of the world. A cap of 7 will make sure that there is no terrain above 128 (y=2^7). Near this cap less and less terrain generates with no terrain above this cap.",
             "Values must be between 5 and 8 (inclusive), and may not be lower that WorldHeightScaleBits."
+    );
+
+    public static final Setting<Integer> WORLD_HEIGHT_SCALE = Settings.intSetting(
+        "WorldHeightScale", 128, 16, 2032,
+        t -> ((TerrainSettings) t).getWorldHeightScale(),
+        "Surface Height in the world"
+    );
+    public static final Setting<Integer> WORLD_HEIGHT_CAP = Settings.intSetting(
+        "WorldHeightCap", 256, 16, 2032,
+        t -> ((TerrainSettings) t).getWorldHeightCap(),
+        "The height cap of the world"
     );
     public static final Setting<Integer> WATER_LEVEL_MAX = Settings.intSetting(
             "WaterLevelMax", 63, Constants.WORLD_START_MIN_Y, Constants.WORLD_END_MAX_Y,
@@ -71,17 +84,34 @@ public class TerrainSettings extends ConfigSection {
             "Values less than 0 will make terrain volatility more 'spiky' but lessen the likelihood of overhangs and floating terrain."
     );
 
+    public static final Setting<Integer> CHC_START = new IntSetting(
+        "CHCStart", 0, Constants.WORLD_START_MIN_Y, Constants.WORLD_END_MAX_Y - 15,
+        t -> ((TerrainSettings) t).getChcStart(),
+        "Start Y for custom height control array. Default is 0. Must be divisible by 8."
+    );
+
     public static TerrainSettings getTerrainSettings(SettingsMap reader) {
         var builder = builder();
 
         builder.fractureHorizontal(reader.getSetting(FRACTURE_HORIZONTAL));
         builder.fractureVertical(reader.getSetting(FRACTURE_VERTICAL));
-        builder.worldHeightCap(1 << reader.getSetting(WORLD_HEIGHT_CAP_BITS));
+        if (reader.hasSetting(WORLD_HEIGHT_CAP_BITS)) {
+            builder.worldHeightCap(1 << reader.getSetting(WORLD_HEIGHT_CAP_BITS));
+        } else {
+            builder.worldHeightCap(reader.getSetting(WORLD_HEIGHT_CAP));
+        }
+        if (reader.hasSetting(WORLD_HEIGHT_SCALE_BITS)) {
+             builder.worldHeightCap(1 << reader.getSetting(WORLD_HEIGHT_SCALE_BITS));
+        } else {
+            builder.worldHeightScale(reader.getSetting(WORLD_HEIGHT_SCALE));
+        }
         builder.worldHeightScale(1 << reader.getSetting(WORLD_HEIGHT_SCALE_BITS));
         builder.betterSnowFall(reader.getSetting(BETTER_SNOW_FALL));
         builder.waterLevelMax(reader.getSetting(WATER_LEVEL_MAX));
         builder.waterLevelMin(reader.getSetting(WATER_LEVEL_MIN));
         builder.carverLavaBlockHeight(reader.getSetting(CARVER_LAVA_BLOCK_HEIGHT));
+        builder.chcStart(reader.getSetting(CHC_START));
+
 
         int configVersion = reader.getVersion();
         if (configVersion < 2) {
