@@ -174,7 +174,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 		
 		long startTimeAll = System.currentTimeMillis();
 		// Resource sequence
-		for (ConfigFunction<BiomeSettings> res : ((BiomeConfig)biomeConfig).getResourceQueue())
+		for (ConfigFunction<BiomeSettings> res : biomeConfig.getResourceQueue())
 		{
 			long startTime = System.currentTimeMillis();
 			if (res instanceof ICustomObjectResource)

@@ -3,6 +3,7 @@ package com.pg85.otg.gen.resource;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.Pair;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.helpers.RandomHelper;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -26,8 +27,10 @@ public class UndergroundLakeResource extends FrequencyResourceBase
         this.maxSize = readInt(args.get(1), this.minSize, 60);
         this.frequency = readInt(args.get(2), 1, 100);
         this.rarity = readRarity(args.get(3));
-        this.minAltitude = readElevation(args.get(4));
-        this.maxAltitude = readElevation(args.get(5));
+        Pair<Integer, Integer> elevations = readElevations(args.get(4), args.get(5));
+
+        this.minAltitude = elevations.getFirst();
+        this.maxAltitude = elevations.getSecond();
     }
 
     @Override

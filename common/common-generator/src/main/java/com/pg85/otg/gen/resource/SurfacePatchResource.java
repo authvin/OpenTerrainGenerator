@@ -8,6 +8,7 @@ import com.pg85.otg.gen.noise.OctaveSimplexNoiseSampler;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.OTGMaterialReader;
+import com.pg85.otg.util.Pair;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.MaterialSet;
@@ -44,8 +45,10 @@ public class SurfacePatchResource extends BiomeResourceBase implements IBasicRes
         // PlantType has a fallback to just accept any block as plant, so this can be any block, not just plants
         this.decorationAboveReplacementPlant = PlantType.getPlant(args.get(1), materialReader);
 
-        this.minAltitude = readElevation(args.get(2));
-        this.maxAltitude = readElevation(args.get(3));
+        Pair<Integer, Integer> elevations = readElevations(args.get(2), args.get(3));
+
+        this.minAltitude = elevations.getFirst();
+        this.maxAltitude = elevations.getSecond();
         this.sourceBlocks = readMaterials(args, 4);
         // TODO: Find good values for octaves, or expose to config
         this.noiseGen = new OctaveSimplexNoiseSampler(new Random(2345L), IntStream.of(-1, 1));

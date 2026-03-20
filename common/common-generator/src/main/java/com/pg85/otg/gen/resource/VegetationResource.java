@@ -6,6 +6,7 @@ import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.OTGMaterialReader;
+import com.pg85.otg.util.Pair;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 import com.pg85.otg.util.materials.MaterialGroup;
@@ -41,8 +42,10 @@ public abstract class VegetationResource extends BiomeResourceBase implements IB
         environment = MaterialGroup.valueOf(args.get(3));
         frequency = readInt(args.get(4), 1, 500);
         rarity = readRarity(args.get(5));
-        minAltitude = readElevation(args.get(6));
-        maxAltitude = readElevation(args.get(7));
+        Pair<Integer, Integer> elevations = readElevations(args.get(6), args.get(7));
+
+        this.minAltitude = elevations.getFirst();
+        this.maxAltitude = elevations.getSecond();
         sourceBlocks = readMaterials(args, sourceBlockIndex);
     }
 

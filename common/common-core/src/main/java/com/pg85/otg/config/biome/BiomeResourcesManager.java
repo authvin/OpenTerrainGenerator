@@ -99,7 +99,7 @@ public class BiomeResourcesManager implements IConfigFunctionProvider
 		if(holder instanceof BiomeSettings)
 		{
 			// Every BiomeConfig resource should have a constructor that conforms to this method signature
-			constructor = clazz.getConstructor(BiomeSettings.class, List.class, OTGWorldInfo.class);
+			constructor = clazz.getConstructor(BiomeSettings.class, List.class);
 		}
 		else {
 			throw new NoSuchMethodException("No valid constructor found for " + clazz.getName() + " with holder " + holder.getClass().getName());
