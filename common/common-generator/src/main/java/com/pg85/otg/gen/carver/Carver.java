@@ -2,6 +2,7 @@ package com.pg85.otg.gen.carver;
 
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.config.settings.biome.SurfaceSettings;
+import com.pg85.otg.config.settings.preset.CarverSettings;
 import com.pg85.otg.config.settings.preset.PresetSettings;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.ICachedBiomeProvider;
@@ -19,9 +20,11 @@ import java.util.Random;
 
 public abstract class Carver {
     protected final PresetSettings presetConfig;
+    protected final CarverSettings carverSettings;
 
     public Carver(PresetSettings presetConfig) {
         this.presetConfig = presetConfig;
+        this.carverSettings = presetConfig.getCarverSettings();
     }
 
     public int getBranchFactor() {
@@ -115,12 +118,12 @@ public abstract class Carver {
                     foundSurface = new MutableBoolean(false);
                     for (int currentY = maxY; currentY > minY; --currentY) {
                         scaledY = ((double) currentY - 0.5D - localY) / pitch;
+                        double ravineY = cache == null ? 0.0D : cache[currentY - otgWorldInfo.minY() -1];// Zero-indexed, could use cleanup
                         if (!this.isPositionExcluded(
-                                cache,
                                 scaledX,
                                 scaledY,
                                 scaledZ,
-                                currentY
+                                ravineY
                         )) {
                             carved |= this.carveAtPoint(
                                     noiseProvider,
@@ -297,10 +300,9 @@ public abstract class Carver {
     public abstract boolean isStartChunk(Random random, int chunkX, int chunkZ);
 
     protected abstract boolean isPositionExcluded(
-            float[] cache,
             double scaledRelativeX,
             double scaledRelativeY,
             double scaledRelativeZ,
-            int y
+            double y
     );
 }

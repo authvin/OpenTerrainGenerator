@@ -33,10 +33,9 @@ public class Preset {
 
     private final List<BiomeTemplate> biomeTemplateList;
 
-    private HashMap<OTGBiomeID, BiomeConfig> biomeConfigs = new HashMap<>();
+    private HashMap<String, BiomeConfig> biomeConfigs = new HashMap<>();
     private HashMap<String, BiomeTemplate> biomeTemplates = new HashMap<>();
 
-    private HashSet<OTGBiomeID> biomeIDS = new HashSet<>();
     @Getter
     private int majorVersion;
     @Getter
@@ -44,7 +43,7 @@ public class Preset {
     @Getter
     private String description;
     @Getter
-    private HashMap<OTGBiomeID, Color> biomeColorMap = new HashMap<>();
+    private final HashMap<OTGBiomeID, Color> biomeColorMap = new HashMap<>();
 
     public Preset(Path presetFolder, PresetConfig presetConfig, List<BiomeConfig> biomeConfigList, List<BiomeTemplate> biomeTemplateList) {
         this.presetFolder = presetFolder;
@@ -57,15 +56,22 @@ public class Preset {
         this.biomeTemplateList = biomeTemplateList;
         this.biomeConfigList = biomeConfigList;
 
-        this.biomeConfigList.forEach(bc -> {
-            OTGBiomeID biomeID = bc.getOTGBiomeID();
-            biomeIDS.add(biomeID);
-            biomeConfigs.put(biomeID, bc);
-            biomeColorMap.put(biomeID, bc.getGenerationSettings().getBiomeMapColor());
-        });
+        this.biomeConfigList.forEach(bc -> biomeConfigs.put(bc.getConfigName(), bc));
 
-        this.biomeTemplateList.forEach(bt -> {
-            biomeTemplates.put(bt.getConfigName(), bt);
+        this.biomeTemplateList.forEach(bt -> biomeTemplates.put(bt.getConfigName(), bt));
+    }
+
+    /**
+     * Rebuilds OTGBiomeID-indexed structures. Must be called after platform biome
+     * registration has assigned IDs to all BiomeConfigs via setOTGBiomeId().
+     */
+    public void updateBiomeIds() {
+        this.biomeColorMap.clear();
+        this.biomeConfigs.values().forEach(bc -> {
+            OTGBiomeID biomeID = bc.getOTGBiomeID();
+            if (biomeID != null) {
+                biomeColorMap.put(biomeID, bc.getGenerationSettings().getBiomeMapColor());
+            }
         });
     }
 
@@ -73,15 +79,13 @@ public class Preset {
         this.presetConfig = preset.presetConfig;
         this.biomeConfigs = preset.biomeConfigs;
         this.biomeTemplates = preset.biomeTemplates;
-        this.biomeIDS = preset.biomeIDS;
         this.author = preset.author;
         this.description = preset.description;
         this.majorVersion = preset.majorVersion;
     }
 
     public BiomeSettings getBiomeConfig(String biomeName) {
-        OTGBiomeID biomeID = getBiomeID(biomeName);
-        return this.biomeConfigs.get(biomeID);
+        return this.biomeConfigs.get(biomeName);
     }
 
     public BiomeTemplate getBiomeTemplate(String templateName) {
@@ -89,17 +93,14 @@ public class Preset {
     }
 
     public OTGBiomeID getBiomeID(String biomeName) {
-        for (OTGBiomeID biomeID : this.biomeIDS) {
-            if (biomeID.biomeName().equals(biomeName)) {
-                return biomeID;
-            }
-        }
-        return null;
+        BiomeConfig bc = this.biomeConfigs.get(biomeName);
+        return bc != null ? bc.getOTGBiomeID() : null;
     }
 
     public OTGBiomeID getBiomeID(int biomeId) {
-        for (OTGBiomeID biomeID : this.biomeIDS) {
-            if (biomeID.id() == biomeId) {
+        for (BiomeConfig bc : this.biomeConfigs.values()) {
+            OTGBiomeID biomeID = bc.getOTGBiomeID();
+            if (biomeID != null && biomeID.id() == biomeId) {
                 return biomeID;
             }
         }
@@ -107,8 +108,9 @@ public class Preset {
     }
 
     public OTGBiomeID getBiomeIDByRegistryName(String registryName) {
-        for (OTGBiomeID biomeID : this.biomeIDS) {
-            if (biomeID.registryName().toResourceLocationString().equals(registryName)) {
+        for (BiomeConfig bc : this.biomeConfigs.values()) {
+            OTGBiomeID biomeID = bc.getOTGBiomeID();
+            if (biomeID != null && biomeID.registryName().toResourceLocationString().equals(registryName)) {
                 return biomeID;
             }
         }
@@ -124,7 +126,7 @@ public class Preset {
     }
 
     public ArrayList<String> getAllBiomeNames() {
-        return new ArrayList<>(this.biomeConfigs.keySet().stream().map(OTGBiomeID::biomeName).toList());
+        return new ArrayList<>(this.biomeConfigs.keySet());
     }
 
     @Override

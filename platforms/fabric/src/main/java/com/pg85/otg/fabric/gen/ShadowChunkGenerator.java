@@ -72,14 +72,12 @@ public class ShadowChunkGenerator {
     private final Worker[] threads;
     private boolean threadsInitialized = false;
     private final LinkedList<ChunkCoordinate> chunksToLoad = new LinkedList<ChunkCoordinate>();
-    private final int maxQueueSize = 512;
+    private static final int maxQueueSize = 512;
     private final ChunkCoordinate[] chunksBeingLoaded;
-    private final int waitTimeInMS = 25;
-    private final int idleTimeInMS = 50;
-    @SuppressWarnings("unused")
-    private int cacheHits = 0;
-    @SuppressWarnings("unused")
-    private int cacheMisses = 0;
+    private static final int waitTimeInMS = 25;
+    private static final int idleTimeInMS = 50;
+    private volatile int cacheHits = 0;
+    private volatile int cacheMisses = 0;
 
     public ShadowChunkGenerator(int maxConcurrentThreads) {
         this.maxConcurrent = maxConcurrentThreads;
@@ -124,34 +122,31 @@ public class ShadowChunkGenerator {
                 this.threadsInitialized = true;
             }
             synchronized (this.workerLock) {
-                if (this.chunksToLoad.isEmpty()) {
-                    //OTG.log(LogMarker.INFO, "Fetching chunks for async chunkgen");
-                    for (ChunkAccess wgrChunk : ((WorldGenRegionAccessor) worldGenRegion).getCache()) {
-                        ChunkCoordinate wgrChunkCoord = ChunkCoordinate.fromChunkCoords(wgrChunk.getPos().x,
-                                                                                        wgrChunk.getPos().z
-                        );
-                        if (wgrChunk != chunk && !wgrChunk.getStatus().isOrAfter(ChunkStatus.NOISE)) {
-                            if (!this.unloadedChunksCache.containsKey(wgrChunkCoord)) {
-                                boolean bFound = false;
-                                for (int i = 0; i < this.chunksBeingLoaded.length; i++) {
-                                    if (this.chunksBeingLoaded[i] == wgrChunkCoord) {
-                                        bFound = true;
-                                        break;
-                                    }
+                //OTG.log(LogMarker.INFO, "Fetching chunks for async chunkgen");
+                for (ChunkAccess wgrChunk : ((WorldGenRegionAccessor) worldGenRegion).getCache()) {
+                    ChunkCoordinate wgrChunkCoord = ChunkCoordinate.fromChunkCoords(wgrChunk.getPos().x,
+                                                                                    wgrChunk.getPos().z
+                    );
+                    if (wgrChunk != chunk && !wgrChunk.getStatus().isOrAfter(ChunkStatus.NOISE)) {
+                        if (!this.unloadedChunksCache.containsKey(wgrChunkCoord) && !this.chunksToLoad.contains(wgrChunkCoord)) {
+                            boolean bFound = false;
+                            for (int i = 0; i < this.chunksBeingLoaded.length; i++) {
+                                if (wgrChunkCoord.equals(this.chunksBeingLoaded[i])) {
+                                    bFound = true;
+                                    break;
                                 }
-                                if (!bFound) {
-                                    // TODO: Queue order shouldn't really matter bc
-                                    // of the way maxQueueSize is enforced here.
-                                    // Might affect cache hits/misses and waits tho, test?
-                                    this.chunksToLoad.addFirst(wgrChunkCoord);
-                                    if (this.chunksToLoad.size() == this.maxQueueSize) {
-                                        break;
-                                    }
+                            }
+                            if (!bFound) {
+                                // TODO: Queue order shouldn't really matter bc
+                                // of the way maxQueueSize is enforced here.
+                                // Might affect cache hits/misses and waits tho, test?
+                                this.chunksToLoad.addFirst(wgrChunkCoord);
+                                if (this.chunksToLoad.size() == maxQueueSize) {
+                                    break;
                                 }
                             }
                         }
                     }
-                    ;
                 }
             }
         }
@@ -183,6 +178,11 @@ public class ShadowChunkGenerator {
         // BO4's/shadowgen avoid villages, so this method should never be called to fetch unloaded chunks that contain villages,
         // so we can skip noisegen affecting structures here.
 
+        // Fill biomes before noise, matching MC's BIOMES -> NOISE phase order.
+        // Climate.Sampler is a record and cannot be trivially instantiated, but OTGFabricBiomeProvider
+        // ignores the sampler argument entirely, so null is safe here.
+        chunk.fillBiomesFromNoise(otgChunkGenerator.getBiomeSource(), null);
+
         ObjectList<JigsawStructureData> structures = new ObjectArrayList<>(10);
         Random random = otgChunkGenerator.getRandomFromChunkCoord(chunkCoordinate);
         otgChunkGenerator.getInternalGenerator().populateNoise(otgWorldInfo, buffer, buffer.getChunkCoordinate(), structures, random);
@@ -209,7 +209,7 @@ public class ShadowChunkGenerator {
                 } else {
                     boolean bFound = false;
                     for (int i = 0; i < this.chunksBeingLoaded.length; i++) {
-                        if (this.chunksBeingLoaded[i] == chunkCoord) {
+                        if (chunkCoord.equals(this.chunksBeingLoaded[i])) {
                             bFound = true;
                             break;
                         }
@@ -365,24 +365,19 @@ public class ShadowChunkGenerator {
                     radius = 4;
                 }
 
-                for (int searchRadius = radiusInChunks; searchRadius > 0; searchRadius--) {
-                    if (searchRadius == radius) {
-                        if (hasStructureStart(structure, manager, chunkpos, noiseAffectingOnly)) {
-                            chunksHandled.put(chunkToHandle, searchRadius);
-                            if (searchRadius >= distanceFromQuery) {
-                                if (noiseAffectingOnly) {
-                                    synchronized (this.hasVanillaNoiseStructureChunkCache) {
-                                        this.hasVanillaNoiseStructureChunkCache.putAll(chunksHandled);
-                                    }
-                                } else {
-                                    synchronized (this.hasVanillaStructureChunkCache) {
-                                        this.hasVanillaStructureChunkCache.putAll(chunksHandled);
-                                    }
-                                }
-                                return true;
+                if (hasStructureStart(structure, manager, chunkpos, noiseAffectingOnly)) {
+                    chunksHandled.put(chunkToHandle, radius);
+                    if (radius >= distanceFromQuery) {
+                        if (noiseAffectingOnly) {
+                            synchronized (this.hasVanillaNoiseStructureChunkCache) {
+                                this.hasVanillaNoiseStructureChunkCache.putAll(chunksHandled);
+                            }
+                        } else {
+                            synchronized (this.hasVanillaStructureChunkCache) {
+                                this.hasVanillaStructureChunkCache.putAll(chunksHandled);
                             }
                         }
-                        break;
+                        return true;
                     }
                 }
             }
@@ -454,7 +449,9 @@ public class ShadowChunkGenerator {
             case START_PRESENT -> true;
             case START_NOT_PRESENT -> false;
             case CHUNK_LOAD_NEEDED -> {
-                OTGLog.info("Uncertain structure status, trying anyway");
+                // Chunk data isn't loaded yet (common during pregeneration). Proceed with shadow
+                // gen rather than blocking BO4 lookahead — the occasional minor terrain mismatch
+                // near a vanilla noise-affecting structure is the acceptable tradeoff.
                 yield false;
             }
         };
@@ -462,7 +459,17 @@ public class ShadowChunkGenerator {
 
     public void fillWorldGenChunkFromShadowChunk(ChunkAccess chunk, ChunkAccess cachedChunk) {
         ChunkCoordinate chunkCoord = ChunkCoordinate.fromChunkCoords(chunk.getPos().x, chunk.getPos().z);
+        LevelChunkSection[] sectionsBeforeCopy = chunk.getSections();
+        String biomeBefore = (sectionsBeforeCopy.length > 0 && sectionsBeforeCopy[0] != null)
+            ? sectionsBeforeCopy[0].getBiomes().get(0, 0, 0).unwrapKey().map(k -> k.location().toString()).orElse("UNREGISTERED")
+            : "NO_SECTIONS";
         System.arraycopy(cachedChunk.getSections(), 0, chunk.getSections(), 0, chunk.getSections().length);
+        LevelChunkSection[] sectionsAfterCopy = chunk.getSections();
+        String biomeAfter = (sectionsAfterCopy.length > 0 && sectionsAfterCopy[0] != null)
+            ? sectionsAfterCopy[0].getBiomes().get(0, 0, 0).unwrapKey().map(k -> k.location().toString()).orElse("UNREGISTERED")
+            : "NO_SECTIONS";
+        OTGLog.info("[BiomeDebug] fillWorldGenChunkFromShadowChunk %d,%d section[0] biome: %s -> %s",
+            chunkCoord.getChunkX(), chunkCoord.getChunkZ(), biomeBefore, biomeAfter);
         for (Map.Entry<Heightmap.Types, Heightmap> entry : cachedChunk.getHeightmaps()) {
             Heightmap.Types type = entry.getKey();
             Heightmap heightmap = entry.getValue();
@@ -504,10 +511,6 @@ public class ShadowChunkGenerator {
         BlockPos2D blockPos = new BlockPos2D(x, z);
         ChunkCoordinate chunkCoord = ChunkCoordinate.fromBlockCoords(x, z);
 
-        // Get internal coordinates for block in chunk
-        byte blockX = (byte) (x &= 0xF);
-        byte blockZ = (byte) (z &= 0xF);
-
         LocalMaterialData[] cachedColumn = this.unloadedBlockColumnsCache.get(blockPos);
 
         if (cachedColumn != null) {
@@ -525,19 +528,19 @@ public class ShadowChunkGenerator {
             }
         }
 
-        cachedColumn = new LocalMaterialData[256];
+        // Get internal coordinates for block in chunk
+        byte blockX = (byte) (x & 0xF);
+        byte blockZ = (byte) (z & 0xF);
 
-        LocalMaterialData[] blocksInColumn = new LocalMaterialData[256];
+        LocalMaterialData[] blocksInColumn = new LocalMaterialData[otgWorldInfo.getHeight()];
         BlockState blockInChunk;
-        for (short y = 0; y < 256; y++) {
+
+        for (short y = 0; y < otgWorldInfo.getHeight(); y++) {
             blockInChunk = chunk.getBlockState(new BlockPos(blockX, y, blockZ));
-            if (blockInChunk != null) {
-                blocksInColumn[y] = FabricMaterialData.ofBlockState(blockInChunk);
-            } else {
-                break;
-            }
+            blocksInColumn[y] = FabricMaterialData.ofBlockState(blockInChunk);
         }
-        this.unloadedBlockColumnsCache.put(blockPos, cachedColumn);
+
+        this.unloadedBlockColumnsCache.put(blockPos, blocksInColumn);
 
         return blocksInColumn;
     }
@@ -566,7 +569,7 @@ public class ShadowChunkGenerator {
         boolean isLiquid;
         boolean isSolid;
 
-        for (int y = 255; y >= 0; y--) {
+        for (int y = otgWorldInfo.maxY(); y >= otgWorldInfo.minY(); y--) {
             material = (FabricMaterialData) blockColumn[y];
             isLiquid = material.isLiquid();
             isSolid = material.isSolid() || (!ignoreSnow && material.isMaterial(LocalMaterials.SNOW));

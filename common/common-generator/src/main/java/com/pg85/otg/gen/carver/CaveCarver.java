@@ -35,8 +35,8 @@ public class CaveCarver extends Carver {
                 random.nextInt(random.nextInt(random.nextInt(this.getMaxCaveCount())
                                               + 1) + 1);
 
-        if (this.presetConfig.getCarverSettings().isEvenCaveDistribution()) {
-            caveCount = this.presetConfig.getCarverSettings().getCaveFrequency();
+        if (this.carverSettings.isEvenCaveDistribution()) {
+            caveCount = this.carverSettings.getCaveFrequency();
         }
 
         for (int cave = 0; cave < caveCount; ++cave) {
@@ -47,9 +47,9 @@ public class CaveCarver extends Carver {
                        + random.nextInt(Constants.CHUNK_SIZE);
             // Vanilla Behavior: Defaults to 1.
             int tunnelCount =
-                    this.presetConfig.getCarverSettings().getCaveSystemFrequency();
+                    this.carverSettings.getCaveSystemFrequency();
 
-            if (random.nextInt(100) < this.presetConfig.getCarverSettings()
+            if (random.nextInt(100) < this.carverSettings
                                                        .getIndividualCaveRarity()) {
                 float size = 1.0F + random.nextFloat() * 6.0F;
                 this.carveCave(
@@ -71,20 +71,15 @@ public class CaveCarver extends Carver {
                 // tunnelCount += random.nextInt(4);
                 tunnelCount += RandomHelper.numberInRange(
                         random,
-                        this.presetConfig.getCarverSettings()
-                                         .getCaveSystemPocketMinSize(),
-                        this.presetConfig.getCarverSettings()
-                                         .getCaveSystemPocketMaxSize()
+                        this.carverSettings.getCaveSystemPocketMinSize(),
+                        this.carverSettings.getCaveSystemPocketMaxSize()
                 );
             } else if (random.nextInt(100)
-                       <= this.presetConfig.getCarverSettings()
-                                           .getCaveSystemPocketChance() - 1) {
+                       <= this.carverSettings.getCaveSystemPocketChance() - 1) {
                 tunnelCount += RandomHelper.numberInRange(
                         random,
-                        this.presetConfig.getCarverSettings()
-                                         .getCaveSystemPocketMinSize(),
-                        this.presetConfig.getCarverSettings()
-                                         .getCaveSystemPocketMaxSize()
+                        this.carverSettings.getCaveSystemPocketMinSize(),
+                        this.carverSettings.getCaveSystemPocketMaxSize()
                 );
             }
 
@@ -109,7 +104,8 @@ public class CaveCarver extends Carver {
                         branchCount,
                         this.getTunnelSystemHeightWidthRatio(),
                         carvingMask,
-                        cachedBiomeProvider
+                        cachedBiomeProvider,
+                        otgWorldInfo
                 );
             }
         }
@@ -119,18 +115,18 @@ public class CaveCarver extends Carver {
 
     @Override
     public boolean isStartChunk(Random random, int chunkX, int chunkZ) {
-        if (this.presetConfig.getCarverSettings().getCaveFrequency() <= 0) {
+        if (this.carverSettings.getCaveFrequency() <= 0) {
             return false;
         }
 
         // Vanilla uses 0.0-1.0, we use 0-100.
-        return random.nextInt(100) < this.presetConfig.getCarverSettings()
+        return random.nextInt(100) < this.carverSettings
                                                       .getCaveRarity();
     }
 
     protected int getMaxCaveCount() {
         // Vanilla Behavior: Defaults to 15.
-        return this.presetConfig.getCarverSettings().getCaveFrequency();
+        return this.carverSettings.getCaveFrequency();
     }
 
     protected float getTunnelSystemWidth(Random random) {
@@ -149,19 +145,20 @@ public class CaveCarver extends Carver {
     protected int getCaveY(Random random) {
         // Vanilla Behavior: Random value from 8 to 120, biased downwards.
         // return random.nextInt(random.nextInt(120) + 8);
-        if (this.presetConfig.getCarverSettings().isEvenCaveDistribution()) {
+        if (this.carverSettings.isEvenCaveDistribution()) {
             return RandomHelper.numberInRange(
                     random,
-                    this.presetConfig.getCarverSettings().getCaveMinAltitude(),
-                    this.presetConfig.getCarverSettings().getCaveMaxAltitude()
+                    this.carverSettings.getCaveMinAltitude(),
+                    this.carverSettings.getCaveMaxAltitude()
             );
         } else {
-            return random.nextInt(random.nextInt(this.presetConfig.getCarverSettings()
-                                                                  .getCaveMaxAltitude()
-                                                 - this.presetConfig.getCarverSettings()
-                                                                    .getCaveMinAltitude()
-                                                 + 1) + 1)
-                   + this.presetConfig.getCarverSettings().getCaveMinAltitude();
+            return random.nextInt(
+                    random.nextInt(
+                            this.carverSettings.getCaveMaxAltitude()
+                                    - this.carverSettings.getCaveMinAltitude()
+                                    + 1
+                    ) + 1
+            ) + this.carverSettings.getCaveMinAltitude();
         }
     }
 
@@ -217,7 +214,8 @@ public class CaveCarver extends Carver {
             int branchCount,
             double yawPitchRatio,
             BitSet carvingMask,
-            ICachedBiomeProvider cachedBiomeProvider
+            ICachedBiomeProvider cachedBiomeProvider,
+            OTGWorldInfo otgWorldInfo
     ) {
         Random random = new Random(seed);
         int nextBranchIndex = random.nextInt(branchCount / 2) + branchCount / 4;
@@ -270,7 +268,8 @@ public class CaveCarver extends Carver {
                         branchCount,
                         1.0D,
                         carvingMask,
-                        cachedBiomeProvider
+                        cachedBiomeProvider,
+                        otgWorldInfo
                 );
                 this.carveTunnels(
                         noiseProvider,
@@ -288,7 +287,8 @@ public class CaveCarver extends Carver {
                         branchCount,
                         1.0D,
                         carvingMask,
-                        cachedBiomeProvider
+                        cachedBiomeProvider,
+                        otgWorldInfo
                 );
                 return;
             }
@@ -320,7 +320,7 @@ public class CaveCarver extends Carver {
                         currentPitch,
                         carvingMask,
                         cachedBiomeProvider,
-                        Constants.DEFAULT_WORLD_INFO
+                        otgWorldInfo
                 );
             }
         }
@@ -328,11 +328,10 @@ public class CaveCarver extends Carver {
 
     @Override
     protected boolean isPositionExcluded(
-            float[] cache,
             double scaledRelativeX,
             double scaledRelativeY,
             double scaledRelativeZ,
-            int y
+            double y
     ) {
         return scaledRelativeY <= -0.7D
                || scaledRelativeX * scaledRelativeX

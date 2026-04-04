@@ -24,12 +24,13 @@ public class RavineCarver extends Carver
 	{
 		return			
 			// Vanilla uses 0.0-1.0, we use 0-100.
-			(random.nextInt(100) < this.presetConfig.getCarverSettings().getRavineRarity());
+			(random.nextInt(100) < this.carverSettings.getRavineRarity());
 	}
 
 	@Override
-	public boolean carve(ISurfaceGeneratorNoiseProvider noiseProvider, ChunkBuffer chunk, Random random, int chunkX, int chunkZ, int mainChunkX, int mainChunkZ, BitSet bitSet, ICachedBiomeProvider cachedBiomeProvider,
-						 OTGWorldInfo otgWorldInfo
+	public boolean carve(
+            ISurfaceGeneratorNoiseProvider noiseProvider, ChunkBuffer chunk, Random random, int chunkX, int chunkZ, 
+            int mainChunkX, int mainChunkZ, BitSet bitSet, ICachedBiomeProvider cachedBiomeProvider, OTGWorldInfo otgWorldInfo
 	)
 	{
 		double x = chunkX * Constants.CHUNK_SIZE + random.nextInt(Constants.CHUNK_SIZE);
@@ -37,7 +38,7 @@ public class RavineCarver extends Carver
 
 		// Vanilla behavior: Bias ravines downwards, with a min of 20.
 		// double y = random.nextInt(random.nextInt(40) + 8) + 20;
-		double y = RandomHelper.numberInRange(random, this.presetConfig.getCarverSettings().getRavineMinAltitude(), this.presetConfig.getCarverSettings().getRavineMaxAltitude());
+		double y = RandomHelper.numberInRange(random, this.carverSettings.getRavineMinAltitude(), this.carverSettings.getRavineMaxAltitude());
 
 		//float yaw = random.nextFloat() * 6.2831855F;
 		float yaw = random.nextFloat() * ((float)Math.PI * 2F);
@@ -47,21 +48,27 @@ public class RavineCarver extends Carver
 		// Vanilla behavior: Subtract 0% - 25% of the branching factor. Default Branching factor is 112.
 		// int branchingFactor = (this.getBranchFactor() * 2 - 1) * 16;		
 		// int branchCount = branchingFactor - random.nextInt(branchingFactor / 4);
-		int branchCount = RandomHelper.numberInRange(random, this.presetConfig.getCarverSettings().getRavineMinLength(), this.presetConfig.getCarverSettings().getRavineMaxLength());
+		int branchCount = RandomHelper.numberInRange(random, this.carverSettings.getRavineMinLength(), this.carverSettings.getRavineMaxLength());
 		branchCount = branchCount - random.nextInt(branchCount / 4);		
-		double yawPitchRatio = presetConfig.getCarverSettings().getRavineDepth();
+		double yawPitchRatio = carverSettings.getRavineDepth();
 
-		this.carveRavine(noiseProvider, chunk, random.nextLong(), mainChunkX, mainChunkZ, x, y, z, width, yaw, pitch, 0, branchCount, yawPitchRatio, bitSet, cachedBiomeProvider);
+		this.carveRavine(
+                noiseProvider, chunk, random.nextLong(), mainChunkX, mainChunkZ, x, y, z, width, yaw, pitch,
+                branchCount, yawPitchRatio, bitSet, cachedBiomeProvider, otgWorldInfo
+        );
 		return true;
 	}
 
-	private void carveRavine(ISurfaceGeneratorNoiseProvider noiseProvider, ChunkBuffer chunk, long seed, int mainChunkX, int mainChunkZ, double x, double y, double z, float width, float yaw, float pitch, int branchStartIndex, int branchCount, double yawPitchRatio, BitSet carvingMask, ICachedBiomeProvider cachedBiomeProvider)
-	{
+	private void carveRavine(
+            ISurfaceGeneratorNoiseProvider noiseProvider, ChunkBuffer chunk, long seed, int mainChunkX, int mainChunkZ,
+            double x, double y, double z, float width, float yaw, float pitch, int branchCount,
+            double yawPitchRatio, BitSet carvingMask, ICachedBiomeProvider cachedBiomeProvider, OTGWorldInfo otgWorldInfo
+    ) {
 		Random random = new Random(seed);
 		float stretchFactor = 1.0F;
 
 		float[] heightToHorizontalStretchFactor = new float[1024];
-		for (int y1 = 0; y1 < Constants.WORLD_HEIGHT; ++y1)
+		for (int y1 = 0; y1 < otgWorldInfo.getHeight(); ++y1)
 		{
 			if (y1 == 0 || random.nextInt(3) == 0)
 			{
@@ -76,7 +83,7 @@ public class RavineCarver extends Carver
 		double currentPitch;
 		float deltaXZ;
 		float deltaY;
-		for (int branchIndex = branchStartIndex; branchIndex < branchCount; ++branchIndex)
+		for (int branchIndex = 0; branchIndex < branchCount; ++branchIndex)
 		{		
 			//currentYaw = 1.5D + (double)(MathHelper.sin((float)branchIndex * (float)Math.PI / (float)branchCount) * width);
 			currentYaw = 1.5D + (double) (MathHelper.sin((float) branchIndex * 3.1415927F / (float) branchCount) * width);			
@@ -101,16 +108,17 @@ public class RavineCarver extends Carver
 				{
 					return;
 				}
-				this.carveRegion(noiseProvider, heightToHorizontalStretchFactor, chunk, seed, mainChunkX, mainChunkZ, x, y, z, currentYaw, currentPitch, carvingMask, cachedBiomeProvider,
-                                 Constants.DEFAULT_WORLD_INFO
+				this.carveRegion(
+                        noiseProvider, heightToHorizontalStretchFactor, chunk, seed, mainChunkX, mainChunkZ, x, y, z,
+                        currentYaw, currentPitch, carvingMask, cachedBiomeProvider, otgWorldInfo
                 );
 			}
 		}
 	}
 
 	@Override
-	protected boolean isPositionExcluded(float[] cache, double scaledRelativeX, double scaledRelativeY, double scaledRelativeZ, int y)
+	protected boolean isPositionExcluded(double scaledRelativeX, double scaledRelativeY, double scaledRelativeZ, double y)
 	{
-		return (scaledRelativeX * scaledRelativeX + scaledRelativeZ * scaledRelativeZ) * (double) cache[y - 1] + scaledRelativeY * scaledRelativeY / 6.0D >= 1.0D;
+		return (scaledRelativeX * scaledRelativeX + scaledRelativeZ * scaledRelativeZ) * y + scaledRelativeY * scaledRelativeY / 6.0D >= 1.0D;
 	}
 }

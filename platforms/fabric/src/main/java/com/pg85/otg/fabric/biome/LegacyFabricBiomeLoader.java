@@ -359,6 +359,7 @@ public class LegacyFabricBiomeLoader extends LocalPresetLoader {
 
         this.globalIdMapping.put(preset.getFolderName(), presetIdMapping);
 
+        preset.updateBiomeIds();
 
         Set<Integer> biomeDepths = new HashSet<>();
         Map<Integer, List<BiomeGroup>> groupDepths = new HashMap<>();
