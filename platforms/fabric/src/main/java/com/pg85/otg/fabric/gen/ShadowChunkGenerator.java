@@ -130,8 +130,8 @@ public class ShadowChunkGenerator {
                     if (wgrChunk != chunk && !wgrChunk.getStatus().isOrAfter(ChunkStatus.NOISE)) {
                         if (!this.unloadedChunksCache.containsKey(wgrChunkCoord) && !this.chunksToLoad.contains(wgrChunkCoord)) {
                             boolean bFound = false;
-                            for (int i = 0; i < this.chunksBeingLoaded.length; i++) {
-                                if (wgrChunkCoord.equals(this.chunksBeingLoaded[i])) {
+                            for (ChunkCoordinate chunkCoordinate : this.chunksBeingLoaded) {
+                                if (wgrChunkCoord.equals(chunkCoordinate)) {
                                     bFound = true;
                                     break;
                                 }
@@ -208,8 +208,8 @@ public class ShadowChunkGenerator {
                     return null;
                 } else {
                     boolean bFound = false;
-                    for (int i = 0; i < this.chunksBeingLoaded.length; i++) {
-                        if (chunkCoord.equals(this.chunksBeingLoaded[i])) {
+                    for (ChunkCoordinate chunkCoordinate : this.chunksBeingLoaded) {
+                        if (chunkCoord.equals(chunkCoordinate)) {
                             bFound = true;
                             break;
                         }
@@ -230,7 +230,7 @@ public class ShadowChunkGenerator {
             try {
                 //OTG.log(LogMarker.INFO, "Waiting for chunk");
                 // TODO: If a worker thread is stuck or crashed, this may wait indefinitely.
-                Thread.sleep(this.waitTimeInMS);
+                Thread.sleep(waitTimeInMS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -254,9 +254,9 @@ public class ShadowChunkGenerator {
     }
 
     public void setChunkGenerated(ChunkCoordinate chunkCoord) {
-        this.cacheMisses++;
         //OTG.log(LogMarker.INFO, "Cache miss " + + this.cacheMisses);
         synchronized (workerLock) {
+            this.cacheMisses++;
             // Zero index, so MaxConcurrent means worldgen thread, not a worker thread.
             this.chunksBeingLoaded[this.maxConcurrent] = null;
             this.chunksToLoad.remove(chunkCoord);
@@ -459,26 +459,18 @@ public class ShadowChunkGenerator {
 
     public void fillWorldGenChunkFromShadowChunk(ChunkAccess chunk, ChunkAccess cachedChunk) {
         ChunkCoordinate chunkCoord = ChunkCoordinate.fromChunkCoords(chunk.getPos().x, chunk.getPos().z);
-        LevelChunkSection[] sectionsBeforeCopy = chunk.getSections();
-        String biomeBefore = (sectionsBeforeCopy.length > 0 && sectionsBeforeCopy[0] != null)
-            ? sectionsBeforeCopy[0].getBiomes().get(0, 0, 0).unwrapKey().map(k -> k.location().toString()).orElse("UNREGISTERED")
-            : "NO_SECTIONS";
+
         System.arraycopy(cachedChunk.getSections(), 0, chunk.getSections(), 0, chunk.getSections().length);
-        LevelChunkSection[] sectionsAfterCopy = chunk.getSections();
-        String biomeAfter = (sectionsAfterCopy.length > 0 && sectionsAfterCopy[0] != null)
-            ? sectionsAfterCopy[0].getBiomes().get(0, 0, 0).unwrapKey().map(k -> k.location().toString()).orElse("UNREGISTERED")
-            : "NO_SECTIONS";
-        OTGLog.info("[BiomeDebug] fillWorldGenChunkFromShadowChunk %d,%d section[0] biome: %s -> %s",
-            chunkCoord.getChunkX(), chunkCoord.getChunkZ(), biomeBefore, biomeAfter);
+
         for (Map.Entry<Heightmap.Types, Heightmap> entry : cachedChunk.getHeightmaps()) {
             Heightmap.Types type = entry.getKey();
             Heightmap heightmap = entry.getValue();
             chunk.setHeightmap(type, heightmap.getRawData());
         }
-        this.cacheHits++;
         //OTG.log(LogMarker.INFO, "Cache hit " + this.cacheHits);
         synchronized(this.workerLock)
         {
+            this.cacheHits++;
             this.unloadedChunksCache.remove(chunkCoord);
         }
     }
