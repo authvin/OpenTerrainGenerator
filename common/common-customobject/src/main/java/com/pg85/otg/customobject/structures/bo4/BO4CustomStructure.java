@@ -363,37 +363,35 @@ public class BO4CustomStructure extends CustomStructure
 				}
 			}
 
-			if(
-				config.spawnHeight == SpawnHeightEnum.highestBlock || 
-				config.spawnHeight == SpawnHeightEnum.highestSolidBlock
-			)
+            if (config.spawnHeight == SpawnHeightEnum.randomY)
 			{
-				if(config.spawnAtWaterLevel)
-				{
-					startY = (short) (worldGenRegion.getCachedBiomeProvider().getBiomeConfig(centerX, centerZ).getSurfaceSettings().getWaterLevelMax());
-				} else {
-					int highestBlock = worldGenRegion.getHighestBlockYAtWithoutLoading(centerX, centerZ, true, !config.spawnUnderWater, config.spawnUnderWater, true, true);
-					if(highestBlock < 0)
-					{
-						if(config.heightOffset > 0) // Allow floating structures that use highestblock + heightoffset
-						{
-                        } else {
-							return false;
-						}
-					} else {
-						startY  = (short) (highestBlock + 1);
-					}
-				}
-			} else {
-				if(config.maxHeight != config.minHeight)
-				{
-					startY = (short) (config.minHeight + new Random().nextInt(config.maxHeight - config.minHeight));
-				} else {
-					startY = (short) config.minHeight;
-				}
-			}
+                if(config.maxHeight != config.minHeight)
+                {
+                    startY = (short) (config.minHeight + new Random().nextInt(config.maxHeight - config.minHeight));
+                } else {
+                    startY = (short) config.minHeight;
+                }
+            } else {
+                if(config.spawnAtWaterLevel)
+                {
+                    startY = (short) (worldGenRegion.getCachedBiomeProvider().getBiomeConfig(centerX, centerZ).getSurfaceSettings().getWaterLevelMax());
+                } else {
+                    int highestBlock = worldGenRegion.getHighestBlockYAtWithoutLoading(centerX, centerZ, true, !config.spawnUnderWater, config.spawnUnderWater, true, true);
+                    if(highestBlock < 0)
+                    {
+                        if(config.heightOffset > 0) // Allow floating structures that use highestblock + heightoffset
+                        {
+                            highestBlock = config.heightOffset; //TODO: Does nothing currently?
+						} else {
+                            return false;
+                        }
+                    } else {
+                        startY  = (short) (highestBlock + 1);
+                    }
+                }
+            }
 
-			if(!ignoreSpawnSettings && (startY < config.minHeight || startY > config.maxHeight))
+            if(!ignoreSpawnSettings && (startY < config.minHeight || startY > config.maxHeight))
 			{
 				return false;
 			}

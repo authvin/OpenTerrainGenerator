@@ -245,30 +245,44 @@ public class BO3 implements StructuredCustomObject
 	// This method is only used to spawn CustomObject.
 	// Called during decoration.
 	@Override
-	public boolean process(CustomStructureCache structureCache, IWorldGenRegion world,
-						   Random random)
-	{
+	public boolean process(
+			CustomStructureCache structureCache, IWorldGenRegion world, Random random
+	) {
 		boolean atLeastOneObjectHasSpawned = false;
 
-		// TODO: Remove this offset for 1.16?
-		int chunkMiddleX = world.getDecorationArea().getChunkBeingDecoratedMinX();
-		int chunkMiddleZ = world.getDecorationArea().getChunkBeingDecoratedMinZ();
-		int spawned = 0;
-		for (int i = 0; i < this.settings.frequency; i++)
-		{
-			if (this.settings.rarity > random.nextDouble() * 100.0)
+		int chunkMinX = world.getDecorationArea().getChunkBeingDecoratedMinX();
+		int chunkMinZ = world.getDecorationArea().getChunkBeingDecoratedMinZ();
+
+		if (
+				this.settings.getSpawnHeight() != SpawnHeightEnum.surface
+				&& this.settings.getSpawnHeight() != SpawnHeightEnum.solidSurface
+		) {
+			int spawned = 0;
+			for (int i = 0; i < this.settings.frequency; i++)
 			{
-				int x = chunkMiddleX + random.nextInt(Constants.CHUNK_SIZE);
-				int z = chunkMiddleZ + random.nextInt(Constants.CHUNK_SIZE);
-				if (spawn(structureCache, world, random, x, z, this.settings.minHeight, this.settings.maxHeight))
+				if (this.settings.rarity > random.nextDouble() * 100.0)
 				{
-					spawned++;
-					atLeastOneObjectHasSpawned = true;
+					int x = chunkMinX + random.nextInt(Constants.CHUNK_SIZE);
+					int z = chunkMinZ + random.nextInt(Constants.CHUNK_SIZE);
+					if (spawn(structureCache, world, random, x, z, this.settings.minHeight, this.settings.maxHeight))
+					{
+						spawned++;
+						atLeastOneObjectHasSpawned = true;
+					}
+				}
+				if(this.settings.maxSpawn > 0 && spawned == this.settings.maxSpawn)
+				{
+					break;
 				}
 			}
-			if(this.settings.maxSpawn > 0 && spawned == this.settings.maxSpawn)
-			{
-				break; 
+		} else {
+			for (int x = chunkMinX; x < chunkMinX + 16; x++) {
+				for (int z = chunkMinZ; z < chunkMinZ + 16; z++) {
+					if (this.settings.rarity > random.nextDouble() * 100.0
+							&& this.spawn(structureCache, world, random, x, z, this.settings.minHeight, this.settings.maxHeight)) {
+						atLeastOneObjectHasSpawned = true;
+					}
+				}
 			}
 		}
 
@@ -298,18 +312,13 @@ public class BO3 implements StructuredCustomObject
 		Rotation rotation = this.settings.rotateRandomly ? Rotation.getRandomRotation(random) : Rotation.NORTH;
 		int offsetY;
 		int baseY = 0;
-		if (this.settings.getSpawnHeight() == SpawnHeightEnum.randomY)
-		{
-			baseY = minY == maxY ? minY : RandomHelper.numberInRange(random, minY, maxY);
-		}
-		if (this.settings.getSpawnHeight() == SpawnHeightEnum.highestBlock)
-		{
-			baseY = worldGenRegion.getHighestBlockAboveYAt(x, z);
-		}
-		if (this.settings.getSpawnHeight() == SpawnHeightEnum.highestSolidBlock)
-		{
-			baseY = worldGenRegion.getBlockAboveSolidHeight(x, z);
-		}
+		SpawnHeightEnum height = this.settings.getSpawnHeight();
+		baseY = switch (height) {
+			case randomY -> minY == maxY ? minY : RandomHelper.numberInRange(random, minY, maxY);
+			case highestBlock, surface -> worldGenRegion.getHighestBlockAboveYAt(x, z);
+			case highestSolidBlock, solidSurface -> worldGenRegion.getBlockAboveSolidHeight(x, z);
+		};
+
 		// Offset by static and random settings values
 		// TODO: This is pointless used with randomY?
 		offsetY = baseY + this.getOffsetAndVariance(random, this.settings.getSpawnHeightOffset(), this.settings.spawnHeightVariance);

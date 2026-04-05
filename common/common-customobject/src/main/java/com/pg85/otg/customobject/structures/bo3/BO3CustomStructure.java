@@ -143,8 +143,8 @@ public class BO3CustomStructure extends CustomStructure
 	{
         return switch (this.height) {
             case randomY -> y;
-            case highestBlock -> worldGenRegion.getHighestBlockAboveYAt(x, z);
-            case highestSolidBlock -> worldGenRegion.getBlockAboveSolidHeight(x, z);
+            case highestBlock, surface -> worldGenRegion.getHighestBlockAboveYAt(x, z);
+			case highestSolidBlock, solidSurface -> worldGenRegion.getBlockAboveSolidHeight(x, z);
             default -> -1;
         };
 	}	

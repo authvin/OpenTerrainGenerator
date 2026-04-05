@@ -9,7 +9,9 @@ public class BO3Enums
 	{
 		randomY,
 		highestBlock,
-		highestSolidBlock
+		highestSolidBlock,
+		surface,
+		solidSurface
 	}
 
 	// How an object should be extended to a surface
