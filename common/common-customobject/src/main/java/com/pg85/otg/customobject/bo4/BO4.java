@@ -1,6 +1,9 @@
 package com.pg85.otg.customobject.bo4;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Random;
@@ -32,7 +35,7 @@ import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterials;
 
 // TODO: Refactor type hierarchy for customobject/structure
-public class BO4 implements StructuredCustomObject
+public class BO4 implements StructuredCustomObject, BOPackSerializable
 {	
 	public boolean isInvalidConfig;
 	private BO4Config config;
@@ -161,6 +164,28 @@ public class BO4 implements StructuredCustomObject
 	public Branch[] getBranches()
 	{
 		return config.getbranches();
+	}
+
+	// BOPackSerializable
+
+	@Override
+	public String getBOPackType()
+	{
+		return "BO4";
+	}
+
+	@Override
+	public byte[] serializeForPack(String presetFolderName, Path otgRootFolder) throws IOException
+	{
+		if(isInvalidConfig || config == null)
+		{
+			return null;
+		}
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		DataOutputStream dos = new DataOutputStream(bos);
+		config.writeToStream(dos, presetFolderName, otgRootFolder);
+		dos.close();
+		return bos.toByteArray();
 	}
 
 	public boolean isCollidable()

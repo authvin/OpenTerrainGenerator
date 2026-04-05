@@ -26,6 +26,7 @@ import com.pg85.otg.customobject.structures.bo4.BO4CustomStructureCoordinate;
 import com.pg85.otg.customobject.structures.bo4.CustomStructurePlaceHolder;
 import com.pg85.otg.customobject.structures.bo4.smoothing.SmoothingAreaLine;
 import com.pg85.otg.util.ChunkCoordinate;
+import com.pg85.otg.util.CompressionUtils;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.helpers.MathHelper;
@@ -102,7 +103,7 @@ public class CustomStructureFileManager
 					} else {
 						Files.move(occupiedChunksFile.toPath(), occupiedChunksBackupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 					}
-					byte[] compressedBytes = com.pg85.otg.util.CompressionUtils.compress(bos.toByteArray());
+					byte[] compressedBytes = CompressionUtils.compress(bos.toByteArray());
 					dos.close();
 					fos = new FileOutputStream(occupiedChunksFile);
 					dos2 = new DataOutputStream(fos);
@@ -225,7 +226,7 @@ public class CustomStructureFileManager
 					
 					byte[] compressedBytes = new byte[(int) fis.getChannel().size()];
 					buffer.get(compressedBytes);
-					byte[] decompressedBytes = com.pg85.otg.util.CompressionUtils.decompress(compressedBytes);
+					byte[] decompressedBytes = CompressionUtils.decompress(compressedBytes);
 					buffer = ByteBuffer.wrap(decompressedBytes);
 					result = parsePlottedChunksFileFromStream(buffer);
 				}
@@ -270,7 +271,7 @@ public class CustomStructureFileManager
 					
 					byte[] compressedBytes = new byte[(int) fis.getChannel().size()];
 					buffer.get(compressedBytes);
-					byte[] decompressedBytes = com.pg85.otg.util.CompressionUtils.decompress(compressedBytes);
+					byte[] decompressedBytes = CompressionUtils.decompress(compressedBytes);
 					buffer = ByteBuffer.wrap(decompressedBytes);
 					result = parsePlottedChunksFileFromStream(buffer);
 				}
@@ -581,7 +582,7 @@ public class CustomStructureFileManager
 			} else {
 				Files.move(structuresRegionFile.toPath(), structuresRegionBackupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			}
-			byte[] compressedBytes = com.pg85.otg.util.CompressionUtils.compress(bos.toByteArray());
+			byte[] compressedBytes = CompressionUtils.compress(bos.toByteArray());
 			dos.close();
 			fos = new FileOutputStream(structuresRegionFile);
 			dos2 = new DataOutputStream(fos);
@@ -697,7 +698,7 @@ public class CustomStructureFileManager
 					
 					byte[] compressedBytes = new byte[(int) fis.getChannel().size()];
 					buffer.get(compressedBytes);
-					byte[] decompressedBytes = com.pg85.otg.util.CompressionUtils.decompress(compressedBytes);
+					byte[] decompressedBytes = CompressionUtils.decompress(compressedBytes);
 					buffer = ByteBuffer.wrap(decompressedBytes);
 										
 					result = parseStructuresFileFromStream(buffer, regionCoord, presetFolderName, worldSeed, isBO4Enabled, otgRootFolder);
@@ -742,7 +743,7 @@ public class CustomStructureFileManager
 					
 					byte[] compressedBytes = new byte[(int) fis.getChannel().size()];
 					buffer.get(compressedBytes);
-					byte[] decompressedBytes = com.pg85.otg.util.CompressionUtils.decompress(compressedBytes);
+					byte[] decompressedBytes = CompressionUtils.decompress(compressedBytes);
 					buffer = ByteBuffer.wrap(decompressedBytes);
 										
 					result = parseStructuresFileFromStream(buffer, regionCoord, presetFolderName, worldSeed, isBO4Enabled, otgRootFolder);
@@ -1002,7 +1003,7 @@ public class CustomStructureFileManager
 				} else {
 					Files.move(occupiedChunksFile.toPath(), occupiedChunksBackupFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 				}
-				byte[] compressedBytes = com.pg85.otg.util.CompressionUtils.compress(bos.toByteArray());
+				byte[] compressedBytes = CompressionUtils.compress(bos.toByteArray());
 				fos = new FileOutputStream(occupiedChunksFile);
 				dos2 = new DataOutputStream(fos);
 				dos2.write(compressedBytes, 0, compressedBytes.length);
@@ -1048,7 +1049,7 @@ public class CustomStructureFileManager
 				
 				byte[] compressedBytes = new byte[(int) fis.getChannel().size()];
 				buffer.get(compressedBytes);
-				byte[] decompressedBytes = com.pg85.otg.util.CompressionUtils.decompress(compressedBytes);
+				byte[] decompressedBytes = CompressionUtils.decompress(compressedBytes);
 				buffer = ByteBuffer.wrap(decompressedBytes);
 				parseChunksMapFileFromStream(buffer, spawnedStructuresByName, spawnedStructuresByGroup);
 				return;
@@ -1083,7 +1084,7 @@ public class CustomStructureFileManager
 				
 				byte[] compressedBytes = new byte[(int) fis.getChannel().size()];
 				buffer.get(compressedBytes);
-				byte[] decompressedBytes = com.pg85.otg.util.CompressionUtils.decompress(compressedBytes);
+				byte[] decompressedBytes = CompressionUtils.decompress(compressedBytes);
 				buffer = ByteBuffer.wrap(decompressedBytes);
 				parseChunksMapFileFromStream(buffer, spawnedStructuresByName, spawnedStructuresByGroup);
 				return;

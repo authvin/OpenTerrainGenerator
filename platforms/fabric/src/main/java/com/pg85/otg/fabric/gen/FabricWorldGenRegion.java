@@ -61,14 +61,14 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
     private final int EMPTY;
 
 
-    protected FabricWorldGenRegion(
-        String presetFolderName,
-        IPluginConfig pluginConfig,
-        PresetConfig presetConfig,
-        OTGWorldInfo otgWorldInfo,
-        WorldGenLevel worldGenLevel,
-        ChunkAccess chunkAccess,
-        OTGFabricChunkGenerator chunkGenerator
+    public FabricWorldGenRegion(
+            String presetFolderName,
+            IPluginConfig pluginConfig,
+            PresetConfig presetConfig,
+            OTGWorldInfo otgWorldInfo,
+            WorldGenLevel worldGenLevel,
+            ChunkAccess chunkAccess,
+            OTGFabricChunkGenerator chunkGenerator
     ) {
         super(
             presetFolderName,

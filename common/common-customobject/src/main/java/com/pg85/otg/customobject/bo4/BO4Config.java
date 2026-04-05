@@ -211,23 +211,9 @@ public class BO4Config extends CustomObjectConfigFile
 		this.maxY = Integer.MIN_VALUE;
 		this.minZ = Integer.MAX_VALUE;
 		this.maxZ = Integer.MIN_VALUE;
-		if(!this.reader.getFile().getAbsolutePath().toLowerCase().endsWith(".bo4data"))
+		if(!readFromBinaryCache(false))
 		{
-			//long startTime = System.currentTimeMillis();
 			readConfigSettings(presetFolderName, otgRootFolder);
-			//BO4BlocksLoaded++;
-			//long timeTaken = (System.currentTimeMillis() - startTime);
-			//accumulatedTime += timeTaken;
-			//OTG.log(LogMarker.INFO, "BO4's loaded: " + BO4BlocksLoaded + " in " + accumulatedTime);
-			//OTG.log(LogMarker.INFO, ".BO4 loaded in: " + timeTaken + " " + this.getName() + ".BO4");
-		} else {
-			//long startTime = System.currentTimeMillis();
-			this.readFromBO4DataFile(false);
-			//BO4BlocksLoadedFromBO4Data++;
-			//long timeTaken = (System.currentTimeMillis() - startTime);
-			//accumulatedTime2 += timeTaken;			
-			//OTG.log(LogMarker.INFO, ".BO4Data's loaded: " + BO4BlocksLoadedFromBO4Data + " in " + accumulatedTime2);
-			//OTG.log(LogMarker.INFO, ".BO4Data loaded in: " + timeTaken + " " + this.getName()  + ".BO4Data");
 		}
 
 		// When writing, we'll need to read some raw data from the file,
@@ -311,7 +297,7 @@ public class BO4Config extends CustomObjectConfigFile
 				if(bo4Config != null)
 				{
 					try {
-						bo4Config.readFromBO4DataFile(true);
+						bo4Config.readFromBinaryCache(true);
 					} catch (InvalidConfigException e) {
 						if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 						{
@@ -432,7 +418,7 @@ public class BO4Config extends CustomObjectConfigFile
 			if(bo4Config != null)
 			{
 				try {
-					bo4Config.readFromBO4DataFile(true);
+					bo4Config.readFromBinaryCache(true);
 				} catch (InvalidConfigException e) {
 					if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 					{
@@ -1555,61 +1541,139 @@ public class BO4Config extends CustomObjectConfigFile
 		}
 	}
 
-	private BO4Config readFromBO4DataFile(boolean getBlocks) throws InvalidConfigException
+	/**
+	 * Determines whether a binary cache (BOPack or legacy .BO4Data file) is
+	 * available for this config and reads from it.
+	 *
+	 * Load preference: BOPack > legacy individual .BO4Data > (caller falls back to text parse)
+	 *
+	 * @return true if data was loaded from a binary cache, false if no cache exists
+	 */
+	private boolean readFromBinaryCache(boolean getBlocks) throws InvalidConfigException
 	{
-		IMaterialReader materialReader = OTGMaterialReader.get();
+		File sourceFile = this.reader.getFile();
+		boolean isLegacyBO4DataFile = sourceFile.getAbsolutePath().toLowerCase().endsWith(".bo4data");
+		if(isLegacyBO4DataFile)
+		{
+			// The registered file IS the .BO4Data binary — load it directly.
+			readFromBO4DataFile(getBlocks);
+			return true;
+		}
+		// Prefer BOPack over individual legacy .BO4Data files.
+		BOPack pack = BOPack.getForDirectory(sourceFile.getParentFile());
+		if(pack != null && pack.contains(this.getName()))
+		{
+			BOPack.Entry entry = pack.getEntryInfo(this.getName());
+			if(!"BO4".equals(entry.type))
+			{
+				throw new InvalidConfigException(
+					"Expected BO4 entry in BOPack but found type '" + entry.type
+					+ "' for " + this.getName() + ". Pack may be corrupted.");
+			}
+			try
+			{
+				ByteBuffer buffer = pack.getEntryBuffer(this.getName());
+				parseFromBuffer(buffer, getBlocks);
+			}
+			catch(IOException e)
+			{
+				throw new InvalidConfigException(
+					"Failed to read BOPack entry for " + this.getName() + ": " + e.getMessage());
+			}
+			return true;
+		}
+		// Fall back to legacy individual .BO4Data file.
+		if(BO4Data.bo4DataExists(this))
+		{
+			readFromBO4DataFile(getBlocks);
+			return true;
+		}
+		return false;
+	}
+
+	/**
+	 * Opens the .BO4Data binary for this config (either the registered file when
+	 * its extension is .bo4data, or the sibling .BO4Data file for a .BO4 source),
+	 * decompresses it, and delegates to parseFromBuffer.
+	 */
+	private void readFromBO4DataFile(boolean getBlocks) throws InvalidConfigException
+	{
+		File fileToRead;
+		String path = this.reader.getFile().getAbsolutePath();
+		if(path.toLowerCase().endsWith(".bo4data"))
+		{
+			fileToRead = this.reader.getFile();
+		} else {
+			String bo4DataPath =
+				path.endsWith(".BO4") ? path.replace(".BO4", ".BO4Data") :
+				path.endsWith(".bo4") ? path.replace(".bo4", ".BO4Data") :
+				path.endsWith(".BO3") ? path.replace(".BO3", ".BO4Data") :
+				path.endsWith(".bo3") ? path.replace(".bo3", ".BO4Data") :
+				path;
+			fileToRead = new File(bo4DataPath);
+		}
 		FileInputStream fis;
 		ByteBuffer bufferCompressed = null;
-		ByteBuffer bufferDecompressed = null;
 		try
 		{
-			fis = new FileInputStream(this.reader.getFile());
+			fis = new FileInputStream(fileToRead);
 			try
 			{
 				bufferCompressed = fis.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, fis.getChannel().size());
 				byte[] compressedBytes = new byte[(int) fis.getChannel().size()];
 				bufferCompressed.get(compressedBytes);
-				try {
-					byte[] decompressedBytes = com.pg85.otg.util.CompressionUtils.decompress(compressedBytes);
-					bufferDecompressed = ByteBuffer.wrap(decompressedBytes);
-				} catch (DataFormatException e1) {
-					e1.printStackTrace();
-				}
-
-				//buffer.get(data, 0, remaining);
-				// do something with data
-
-				boolean isBO4Data = true;
-				boolean inheritedBO3Loaded = true;
-				int bo4DataVersion = bufferDecompressed.getInt();
-				// Version 2 made breaking changes
-				if(bo4DataVersion < 2)
+				byte[] decompressedBytes;
+				try
 				{
-					// TODO: Should only need to close the reader?
-					if(bufferCompressed != null)
-					{
-						bufferCompressed.clear();
-					}
-					if(bufferDecompressed != null)
-					{
-						bufferDecompressed.clear();
-					}				
-					try {
-						fis.getChannel().close();
-					}
-					catch (IOException e)
-					{
-						e.printStackTrace();
-					}
-					try {
-						fis.close();
-					}
-					catch (IOException e)
-					{
-						e.printStackTrace();
-					}
-					throw new InvalidConfigException("Could not read BO4Data file " + this.reader.getName() + ", it is outdated. Delete and re-export BO4Data files to fix this, or delete and reinstall your OTG preset.");
+					decompressedBytes = com.pg85.otg.util.CompressionUtils.decompress(compressedBytes);
 				}
+				catch(DataFormatException e1)
+				{
+					throw new InvalidConfigException("Could not decompress BO4Data file " + fileToRead.getName() + ": " + e1.getMessage());
+				}
+				parseFromBuffer(ByteBuffer.wrap(decompressedBytes), getBlocks);
+			}
+			catch(InvalidConfigException ice)
+			{
+				throw ice;
+			}
+			catch(Exception | Error e1)
+			{
+				e1.printStackTrace();
+				throw new InvalidConfigException("Could not read BO4Data file " + fileToRead.getName() + ", it may be outdated or corrupted. Delete and re-export BO4Data files to fix this, or delete and reinstall your OTG preset.");
+			}
+			finally
+			{
+				if(bufferCompressed != null) bufferCompressed.clear();
+				try { fis.getChannel().close(); } catch(IOException ignored) {}
+				try { fis.close(); } catch(IOException ignored) {}
+			}
+		}
+		catch(FileNotFoundException e2)
+		{
+			e2.printStackTrace();
+			throw new InvalidConfigException("BO4Data file not found: " + fileToRead.getAbsolutePath());
+		}
+	}
+
+	/**
+	 * Parses a decompressed BO4Data buffer into this config's fields.
+	 * This is the core deserialization logic, shared by both the legacy individual
+	 * .BO4Data file path and the BOPack path.
+	 */
+	private void parseFromBuffer(ByteBuffer bufferDecompressed, boolean getBlocks) throws InvalidConfigException
+	{
+		IMaterialReader materialReader = OTGMaterialReader.get();
+		try
+		{
+			boolean isBO4Data = true;
+			boolean inheritedBO3Loaded = true;
+			int bo4DataVersion = bufferDecompressed.getInt();
+			// Version 2 made breaking changes
+			if(bo4DataVersion < 2)
+			{
+				throw new InvalidConfigException("Could not read BO4Data for " + this.getName() + ", it is outdated. Delete and re-export BO4Data files to fix this, or delete and reinstall your OTG preset.");
+			}
 				// Version 3 added fixedRotation
 				if(bo4DataVersion > 2)
 				{
@@ -1959,69 +2023,11 @@ public class BO4Config extends CustomObjectConfigFile
 					loadBlockArrays(newBlocks, columnSizes);
 				}
 			}
-			catch (Exception | Error e1)
+			catch(Exception | Error e1)
 			{
-				// TODO: Should only need to close the reader?
-				if(bufferCompressed != null)
-				{
-					bufferCompressed.clear();
-				}
-				if(bufferDecompressed != null)
-				{
-					bufferDecompressed.clear();
-				}				
-				try {
-					fis.getChannel().close();
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-				}
-				try {
-					fis.close();
-				}
-				catch (IOException e)
-				{
-					e.printStackTrace();
-				}
-				
 				e1.printStackTrace();
-				throw new InvalidConfigException("Could not read BO4Data file " + this.reader.getName() + ", it may be outdated or corrupted. Delete and re-export BO4Data files to fix this, or delete and reinstall your OTG preset.");
+				throw new InvalidConfigException("Could not parse BO4Data for " + this.getName() + ", it may be outdated or corrupted. Delete and re-export BO4Data files to fix this, or delete and reinstall your OTG preset.");
 			}
-
-			// When finished
-			
-			// TODO: Should only need to close the reader?
-			if(bufferCompressed != null)
-			{
-				bufferCompressed.clear();
-			}
-			if(bufferDecompressed != null)
-			{
-				bufferDecompressed.clear();
-			}
-			try {
-				fis.getChannel().close();
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-			try {
-				fis.close();
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
-		}
-		catch (FileNotFoundException e2)
-		{
-			e2.printStackTrace();
-			return null;
-		}
-
-		return this;
 	}
 			
 	private void loadBlockArrays(List<BlockFunction<?>> newBlocks, short[][] columnSizes)

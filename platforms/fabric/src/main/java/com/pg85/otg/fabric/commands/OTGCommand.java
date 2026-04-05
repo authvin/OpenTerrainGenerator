@@ -18,6 +18,7 @@ public final class OTGCommand {
                 .then(MapCommand.register())
                 .then(PresetCommand.register())
                 .then(SettingsCommand.register())
+                .then(PackCommand.register())
         );
     }
 
