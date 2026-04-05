@@ -1,10 +1,7 @@
 package com.pg85.otg.customobject;
 
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.CustomStructureCache;
-import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.minecraft.TreeType;
@@ -30,11 +27,7 @@ class TreeObject implements CustomObject {
     @Override
     public boolean onEnable(
             String presetFolderName,
-            Path otgRootFolder,
-            CustomObjectManager customObjectManager,
-            IMaterialReader materialReader,
-            CustomObjectResourcesManager manager,
-            IModLoadedChecker modLoadedChecker
+            Path otgRootFolder
     ) {
         return true;
     }
@@ -146,7 +139,7 @@ class TreeObject implements CustomObject {
     }
 
     @Override
-    public boolean loadChecks(IModLoadedChecker modLoadedChecker) {
+    public boolean loadChecks() {
         return true;
     }
 

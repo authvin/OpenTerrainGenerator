@@ -1,9 +1,6 @@
 package com.pg85.otg.customobject;
 
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
-import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -36,7 +33,7 @@ public class CustomObjectCollection
 	private final HashMap<String, HashMap<String, File>> customObjectFilesPerPreset = new HashMap<>();
 	private final HashMap<String, HashMap<String, File>> boTemplateFilesPerPreset = new HashMap<>();
 
-	public CustomObject loadObject(File file, String presetFolderName, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public CustomObject loadObject(File file, String presetFolderName, Path otgRootFolder)
 	{
 		synchronized(this.indexingFilesLock)
 		{
@@ -55,7 +52,7 @@ public class CustomObjectCollection
 					String objectName = fileName.substring(0, index);
 	
 					// Get the object
-					CustomObjectLoader loader = customObjectManager.getObjectLoaders().get(objectType.toLowerCase());
+					CustomObjectLoader loader = CustomObjectManager.get().getObjectLoaders().get(objectType.toLowerCase());
 					if (loader != null)
 					{
 						object = loader.loadFromFile(objectName, file);
@@ -68,13 +65,13 @@ public class CustomObjectCollection
 							this.objectsGlobalObjects.add(object);
 						}
 	
-						if (!object.onEnable(presetFolderName, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker) || !object.loadChecks(modLoadedChecker))
+						if (!object.onEnable(presetFolderName, otgRootFolder) || !object.loadChecks())
 						{
 							// Remove the object
 							removeLoadedObject(presetFolderName, object);
 							
 							// Try bo4
-							loader = customObjectManager.getObjectLoaders().get("bo4");
+							loader = CustomObjectManager.get().getObjectLoaders().get("bo4");
 							if (loader != null)
 							{
 								object = loader.loadFromFile(objectName, file);
@@ -86,7 +83,7 @@ public class CustomObjectCollection
 									this.objectsGlobalObjects.add(object);
 								}
 
-								if (!object.onEnable(presetFolderName, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker) || !object.loadChecks(modLoadedChecker))
+								if (!object.onEnable(presetFolderName, otgRootFolder) || !object.loadChecks())
 								{
 									// Remove the object
 									removeLoadedObject(presetFolderName, object);
@@ -257,11 +254,11 @@ public class CustomObjectCollection
 		if (customObjectFiles != null) customObjectFiles.put(objectName.toLowerCase(), boFile);
 	}
 	
-	public CustomObject getObjectByName(String name, String presetFolderName, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public CustomObject getObjectByName(String name, String presetFolderName, Path otgRootFolder)
 	{
 		synchronized(this.indexingFilesLock)
 		{
-			return getObjectByName(name, presetFolderName, true, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
+			return getObjectByName(name, presetFolderName, true, otgRootFolder);
 		}
 	}
 	
@@ -334,7 +331,7 @@ public class CustomObjectCollection
 	 * @param name Name of the object.
 	 * @return The object, or null if not found.
 	 */
-	private CustomObject getObjectByName(String name, String presetFolderName, boolean searchGlobalObjects, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private CustomObject getObjectByName(String name, String presetFolderName, boolean searchGlobalObjects, Path otgRootFolder)
 	{
 		synchronized(this.indexingFilesLock)
 		{
@@ -406,7 +403,7 @@ public class CustomObjectCollection
 					File searchForFile = presetCustomObjectFiles.get(name.toLowerCase());
 					if (searchForFile != null)
 					{
-						object = loadObject(searchForFile, presetFolderName, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
+						object = loadObject(searchForFile, presetFolderName, otgRootFolder);
 						if (object != null)
 						{
                             HashMap<String, CustomObject> presetObjectsByName = this.objectsByNamePerPreset.computeIfAbsent(presetFolderName, k -> new HashMap<>());
@@ -442,7 +439,7 @@ public class CustomObjectCollection
 	
 				if (searchForFile != null)
 				{
-					object = loadObject(searchForFile, presetFolderName, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
+					object = loadObject(searchForFile, presetFolderName, otgRootFolder);
 	
 					if (object != null)
 					{

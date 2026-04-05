@@ -1,14 +1,10 @@
 package com.pg85.otg.customobject.bo4.bo4function;
 
-import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.bo4.BO4Config;
 import com.pg85.otg.customobject.bofunctions.BranchFunction;
-import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.CustomStructureCoordinate;
 import com.pg85.otg.customobject.structures.bo4.BO4CustomStructureCoordinate;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.helpers.StreamHelper;
@@ -39,7 +35,7 @@ public class BO4BranchFunction extends BranchFunction<BO4Config>
 		this.holder = holder;
 	}
 	
-	public BO4BranchFunction rotate(Rotation rotation, String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public BO4BranchFunction rotate(Rotation rotation, String presetFolderName, Path otgRootFolder)
 	{
 		BO4BranchFunction rotatedBranch = new BO4BranchFunction(this.getHolder());
 
@@ -76,7 +72,7 @@ public class BO4BranchFunction extends BranchFunction<BO4Config>
 			ArrayList<BO4BranchNode> rotatedBranchBranches = new ArrayList<>();
 			for (BO4BranchNode holder : rotatedBranch.branchesBO4)
 			{
-				rotatedBranchBranches.add(new BO4BranchNode(holder.branchDepth, holder.isRequiredBranch, holder.isWeightedBranch, holder.getRotation().next(), holder.getChance(), holder.getCustomObject(false, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker), holder.customObjectName, holder.branchGroup));
+				rotatedBranchBranches.add(new BO4BranchNode(holder.branchDepth, holder.isRequiredBranch, holder.isWeightedBranch, holder.getRotation().next(), holder.getChance(), holder.getCustomObject(false, presetFolderName, otgRootFolder), holder.customObjectName, holder.branchGroup));
 			}
 			rotatedBranch.branchesBO4 = rotatedBranchBranches;
 		}
@@ -85,7 +81,7 @@ public class BO4BranchFunction extends BranchFunction<BO4Config>
 	}
 
 	@Override
-	public void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
+	public void load(List<String> args) throws InvalidConfigException
 	{
 		branchesBO4 = new ArrayList<>();
 		readArgs(args, false);
@@ -189,14 +185,14 @@ public class BO4BranchFunction extends BranchFunction<BO4Config>
 	 * should spawn. Returns null if no branch passes the check.
 	 */
 	@Override
-	public CustomStructureCoordinate toCustomObjectCoordinate(String presetFolderName, Random random, Rotation rotation, int x, int y, int z, String startBO3Name, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public CustomStructureCoordinate toCustomObjectCoordinate(String presetFolderName, Random random, Rotation rotation, int x, int y, int z, String startBO3Name, Path otgRootFolder)
 	{
         for (BO4BranchNode branch : this.branchesBO4) {
             double randomChance = random.nextDouble() * this.totalChance;
             if (randomChance <= branch.getChance()) {
                 BO4CustomStructureCoordinate rotatedCoords = BO4CustomStructureCoordinate.getRotatedCoord(this.x, this.y, this.z, rotation);
                 Rotation newRotation = Rotation.getRotation((rotation.getRotationId() + branch.getRotation().getRotationId()) % 4);
-                return new BO4CustomStructureCoordinate(presetFolderName, branch.getCustomObject(false, presetFolderName, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker), branch.customObjectName, newRotation, x + rotatedCoords.getX(), (short) (y + rotatedCoords.getY()), z + rotatedCoords.getZ(), branch.branchDepth, branch.isRequiredBranch, branch.isWeightedBranch, branch.branchGroup);
+                return new BO4CustomStructureCoordinate(presetFolderName, branch.getCustomObject(false, presetFolderName, otgRootFolder), branch.customObjectName, newRotation, x + rotatedCoords.getX(), (short) (y + rotatedCoords.getY()), z + rotatedCoords.getZ(), branch.branchDepth, branch.isRequiredBranch, branch.isWeightedBranch, branch.branchGroup);
             }
         }
 		return null;
@@ -213,14 +209,14 @@ public class BO4BranchFunction extends BranchFunction<BO4Config>
 		StreamHelper.writeStringToStream(stream, makeString());
 	}
 	
-	public static BO4BranchFunction fromStream(BO4Config holder, ByteBuffer buffer,  IMaterialReader materialReader) throws IOException, InvalidConfigException
+	public static BO4BranchFunction fromStream(BO4Config holder, ByteBuffer buffer) throws IOException, InvalidConfigException
 	{
 		BO4BranchFunction branchFunction = new BO4BranchFunction(holder);		
 		String configFunctionString = StreamHelper.readStringFromBuffer(buffer);
 		int bracketIndex = configFunctionString.indexOf('(');
 		String parameters = configFunctionString.substring(bracketIndex + 1, configFunctionString.length() - 1);
 		List<String> args = Arrays.asList(StringHelper.readCommaSeperatedString(parameters));
-		branchFunction.load(args,  materialReader);
+		branchFunction.load(args);
 		return branchFunction;
 	}
 }

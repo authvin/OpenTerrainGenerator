@@ -19,16 +19,12 @@ import java.util.Stack;
 import java.util.Map.Entry;
 
 import com.pg85.otg.constants.Constants;
-import com.pg85.otg.customobject.CustomObjectManager;
-import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.bo3.BO3CustomStructure;
 import com.pg85.otg.customobject.structures.bo3.BO3CustomStructureCoordinate;
 import com.pg85.otg.customobject.structures.bo4.BO4CustomStructure;
 import com.pg85.otg.customobject.structures.bo4.BO4CustomStructureCoordinate;
 import com.pg85.otg.customobject.structures.bo4.CustomStructurePlaceHolder;
 import com.pg85.otg.customobject.structures.bo4.smoothing.SmoothingAreaLine;
-import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.bo3.Rotation;
@@ -616,7 +612,7 @@ public class CustomStructureFileManager
 	
 	// TODO: Load one region file at a time, on-demand, rather than loading all region files at once.
 	// Almost everything should be set up for it, auto-replacing CustomStructurePlaceHolders take care of most things?
-	static HashMap<CustomStructure, ArrayList<ChunkCoordinate>> loadStructureData(String presetFolderName, Path worldSaveDir, long worldSeed, boolean isBO4Enabled, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	static HashMap<CustomStructure, ArrayList<ChunkCoordinate>> loadStructureData(String presetFolderName, Path worldSaveDir, long worldSeed, boolean isBO4Enabled, Path otgRootFolder)
 	{
 		HashMap<CustomStructure, ArrayList<ChunkCoordinate>> output = new HashMap<>();
 		
@@ -704,7 +700,7 @@ public class CustomStructureFileManager
 					byte[] decompressedBytes = com.pg85.otg.util.CompressionUtils.decompress(compressedBytes);
 					buffer = ByteBuffer.wrap(decompressedBytes);
 										
-					result = parseStructuresFileFromStream(buffer, regionCoord, presetFolderName, worldSeed, isBO4Enabled, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+					result = parseStructuresFileFromStream(buffer, regionCoord, presetFolderName, worldSeed, isBO4Enabled, otgRootFolder);
 				}
 				catch (Exception ex)
 				{
@@ -749,7 +745,7 @@ public class CustomStructureFileManager
 					byte[] decompressedBytes = com.pg85.otg.util.CompressionUtils.decompress(compressedBytes);
 					buffer = ByteBuffer.wrap(decompressedBytes);
 										
-					result = parseStructuresFileFromStream(buffer, regionCoord, presetFolderName, worldSeed, isBO4Enabled, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+					result = parseStructuresFileFromStream(buffer, regionCoord, presetFolderName, worldSeed, isBO4Enabled, otgRootFolder);
 				}
 				catch (Exception ex)
 				{
@@ -828,7 +824,7 @@ public class CustomStructureFileManager
 
 	// TODO: Since we're using regions now, can use byte/short for internal coords instead of int.
 	// TODO: Dev versions of v9 used region size 100, not 250, this may cause problems.
-	private static HashMap<CustomStructure, ArrayList<ChunkCoordinate>> parseStructuresFileFromStream(ByteBuffer buffer, ChunkCoordinate regionCoord, String presetFolderName, long worldSeed, boolean isBO4Enabled, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws IOException
+	private static HashMap<CustomStructure, ArrayList<ChunkCoordinate>> parseStructuresFileFromStream(ByteBuffer buffer, ChunkCoordinate regionCoord, String presetFolderName, long worldSeed, boolean isBO4Enabled, Path otgRootFolder) throws IOException
 	{
 		buffer.getInt(); // Version, not used atm.
 		HashMap<CustomStructure, ArrayList<ChunkCoordinate>> structuresFile = new HashMap<>();
@@ -938,9 +934,9 @@ public class CustomStructureFileManager
 					ChunkCoordinate startChunkCoord = ChunkCoordinate.fromChunkCoords(structureStart.getChunkX(), structureStart.getChunkZ());
 					if(!startChunkCoord.toRegionCoord().equals(regionCoord))
 					{
-						structure = new CustomStructurePlaceHolder(worldSeed, (BO4CustomStructureCoordinate)structureStart, objectsToSpawn, smoothingAreasToSpawn, 0, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+						structure = new CustomStructurePlaceHolder(worldSeed, (BO4CustomStructureCoordinate)structureStart, objectsToSpawn, smoothingAreasToSpawn, 0, otgRootFolder);
 					} else {
-						structure = new BO4CustomStructure(worldSeed, (BO4CustomStructureCoordinate)structureStart, objectsToSpawn, smoothingAreasToSpawn, 0, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+						structure = new BO4CustomStructure(worldSeed, (BO4CustomStructureCoordinate)structureStart, objectsToSpawn, smoothingAreasToSpawn, 0, otgRootFolder);
 					}
 					((BO4CustomStructure)structure).setStartChunkBlockChecksDone();
 				} else {

@@ -3,17 +3,11 @@ package com.pg85.otg.customobject.resource;
 import com.pg85.otg.config.biome.BiomeResourceBase;
 import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.CustomObjectManager;
-import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.StructuredCustomObject;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
-import com.pg85.otg.interfaces.ICustomObjectManager;
-import com.pg85.otg.interfaces.ICustomObjectResourcesManager;
 import com.pg85.otg.interfaces.ICustomStructureGen;
-import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IStructuredCustomObject;
-import com.pg85.otg.util.gen.OTGWorldInfo;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -67,24 +61,18 @@ public class CustomStructureResource extends BiomeResourceBase implements ICusto
 	}
 	
 	@Override
-	public List<IStructuredCustomObject> getObjects(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, ICustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public List<IStructuredCustomObject> getObjects(String presetFolderName, Path otgRootFolder)
 	{
 		List<IStructuredCustomObject> objects = new ArrayList<>();
 		if(!this.objectNames.isEmpty())
 		{
             for (String objectName : this.objectNames) {
-                // TODO: Refactor this so we don't have to cast CustomObjectManager/CustomObjectResourcesManager :(
-                // TODO: Remove any dependency on common-customobjects, interfaces only?
-                CustomObject object = ((CustomObjectManager) customObjectManager)
+                CustomObject object = CustomObjectManager.get()
 					 .getGlobalObjects()
 					 .getObjectByName(
 						 objectName,
 						 presetFolderName,
-						 otgRootFolder,
-						 (CustomObjectManager) customObjectManager,
-						 materialReader,
-						 (CustomObjectResourcesManager) manager,
-						 modLoadedChecker
+						 otgRootFolder
 					 );
                 objects.add((StructuredCustomObject) object);
             }

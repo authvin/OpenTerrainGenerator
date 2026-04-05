@@ -2,7 +2,6 @@ package com.pg85.otg.customobject.bo3.checks;
 
 import com.pg85.otg.customobject.bo3.BO3Config;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 
 import java.util.List;
@@ -27,7 +26,7 @@ public class LightCheck extends BO3Check
 	}
 
 	@Override
-	public void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
+	public void load(List<String> args) throws InvalidConfigException
 	{
 		assureSize(5, args);
 		x = readInt(args.get(0), -100, 100);

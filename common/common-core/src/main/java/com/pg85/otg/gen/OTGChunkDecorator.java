@@ -3,7 +3,6 @@ package com.pg85.otg.gen;
 import com.pg85.otg.OTG;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.ErroredFunction;
-import com.pg85.otg.config.biome.BiomeConfig;
 import com.pg85.otg.constants.settings.structure.CustomStructureType;
 import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.CustomObjectManager;
@@ -169,7 +168,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 			!worldGenRegion.getPresetConfig().getResourceSettings().getBO3AtSpawn().trim().isEmpty()
 		)
 		{
-			handleBO3AtSpawn(worldGenRegion, chunkCoord, worldGenRegion.getPresetConfig().getResourceSettings().getBO3AtSpawn(), worldGenRegion.getPresetFolderName(), otgRootFolder, structureCache, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);
+			handleBO3AtSpawn(worldGenRegion, chunkCoord, worldGenRegion.getPresetConfig().getResourceSettings().getBO3AtSpawn(), worldGenRegion.getPresetFolderName(), otgRootFolder, structureCache, customObjectManager);
 		}
 		
 		long startTimeAll = System.currentTimeMillis();
@@ -252,17 +251,13 @@ public class OTGChunkDecorator implements IChunkDecorator
 		structureCache.spawnBo4Chunk(worldGenRegion, chunkCoord, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
 	}
 	
-	private void handleBO3AtSpawn(IWorldGenRegion worldGenRegion, ChunkCoordinate targetChunk, String bo3AtSpawn, String presetFolderName, Path otgRootFolder, CustomStructureCache structureCache, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager customObjectResourcesManager, IModLoadedChecker modLoadedChecker)
+	private void handleBO3AtSpawn(IWorldGenRegion worldGenRegion, ChunkCoordinate targetChunk, String bo3AtSpawn, String presetFolderName, Path otgRootFolder, CustomStructureCache structureCache, CustomObjectManager customObjectManager)
 	{	
 		// If a BO3AtSpawn has been defined, spawn it.
 		CustomObject customObject = customObjectManager.getGlobalObjects().getObjectByName(
 			bo3AtSpawn,
 			presetFolderName,
-			otgRootFolder,
-			customObjectManager,
-			materialReader,
-			customObjectResourcesManager,
-			modLoadedChecker
+			otgRootFolder
 		);
 		if(customObject != null)
 		{

@@ -6,7 +6,6 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import com.pg85.otg.config.biome.BiomeConfig;
-import com.pg85.otg.config.biome.BiomeResourcesManager;
 import com.pg85.otg.config.biome.BiomeTemplate;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.loader.BiomeConfigLoader;
@@ -14,10 +13,8 @@ import com.pg85.otg.config.preset.PresetConfig;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.gen.biome.layers.BiomeLayerData;
 import com.pg85.otg.interfaces.IBiome;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.loader.PresetConfigLoader;
 import com.pg85.otg.util.OTGLog;
-import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 
@@ -40,11 +37,6 @@ public abstract class LocalPresetLoader
 
 	private static Path getPresetsDir(Path otgRootFolder) {
 		return Paths.get(otgRootFolder.toString(), File.separator + Constants.PRESETS_FOLDER);
-	}
-
-	public IMaterialReader getMaterialReader()
-	{
-		return OTGMaterialReader.get();
 	}
 
 

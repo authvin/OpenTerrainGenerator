@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Random;
 
 import com.pg85.otg.customobject.bo3.BO3Config;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.nbt.NBTHelper;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.IMaterialReader;
@@ -49,8 +50,9 @@ public class BO3RandomBlockFunction extends BO3BlockFunction
 	}
 	
 	@Override
-	public void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
+	public void load(List<String> args) throws InvalidConfigException
 	{
+		IMaterialReader materialReader = OTGMaterialReader.get();
 		assureSize(5, args);
 		x = readInt(args.get(0), -100, 100);
 		y = (short) readInt(args.get(1), -1000, 1000);

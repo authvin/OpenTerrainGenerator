@@ -1,6 +1,5 @@
 package com.pg85.otg.customobject.config;
 
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.helpers.StringHelper;
 
 import java.util.List;
@@ -28,7 +27,7 @@ public final class CustomObjectErroredFunction<T> extends CustomObjectConfigFunc
 	}
 
 	@Override
-	protected void load(List<String> args,  IMaterialReader materialReader) {
+	protected void load(List<String> args) {
 		throw new UnsupportedOperationException();
 	}
 

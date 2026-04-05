@@ -3,7 +3,6 @@ package com.pg85.otg.customobject.bo3.checks;
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.customobject.bo3.BO3Config;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.materials.MaterialSet;
 
@@ -20,13 +19,13 @@ public class BlockCheck extends BO3Check
 	}
 
 	@Override
-	public void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
+	public void load(List<String> args) throws InvalidConfigException
 	{
 		assureSize(4, args);
 		this.x = readInt(args.get(0), -100, 100);
 		this.y = readInt(args.get(1), -100, 100);
 		this.z = readInt(args.get(2), -100, 100);
-		this.toCheck = readMaterials(args, 3, materialReader);
+		this.toCheck = readMaterials(args, 3);
 	}
 
 	// The normal constructor, as used by CustomObjectConfigFunction::create

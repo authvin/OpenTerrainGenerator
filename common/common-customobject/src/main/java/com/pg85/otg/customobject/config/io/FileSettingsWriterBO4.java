@@ -7,8 +7,6 @@ import com.pg85.otg.customobject.bofunctions.BlockFunction;
 import com.pg85.otg.customobject.bofunctions.BranchFunction;
 import com.pg85.otg.customobject.config.CustomObjectConfigFile;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
-import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -41,9 +39,9 @@ public class FileSettingsWriterBO4 implements SettingsWriterBO4
 	 * @param configMode The configuration mode. If this is set to
 	 * WriteDisable, this method does nothing.
 	 */
-	public static void writeToFile(CustomObjectConfigFile config, ConfigMode configMode,  IMaterialReader materialReader, CustomObjectResourcesManager manager)
+	public static void writeToFile(CustomObjectConfigFile config, ConfigMode configMode)
 	{
-		writeToFile(config, config.getFile(), configMode,  materialReader, manager);
+		writeToFile(config, config.getFile(), configMode);
 	}
 
 	/**
@@ -55,7 +53,7 @@ public class FileSettingsWriterBO4 implements SettingsWriterBO4
 	 * @param configMode The configuration mode. If this is set to
 	 * WriteDisable, this method does nothing.
 	 */
-	public static void writeToFile(CustomObjectConfigFile config, File file, ConfigMode configMode,  IMaterialReader materialReader, CustomObjectResourcesManager manager)
+	public static void writeToFile(CustomObjectConfigFile config, File file, ConfigMode configMode)
 	{
 		if (configMode == ConfigMode.WriteDisable)
 		{
@@ -65,7 +63,7 @@ public class FileSettingsWriterBO4 implements SettingsWriterBO4
 		try
 		{
 			SettingsWriterBO4 writer = new FileSettingsWriterBO4(file);
-			config.write(writer, configMode,  materialReader, manager);
+			config.write(writer, configMode);
 		} catch (IOException e) {
 			OTGLog.log(
 				LogLevel.ERROR,
@@ -81,7 +79,7 @@ public class FileSettingsWriterBO4 implements SettingsWriterBO4
 	 * @param blocksList The list of blocks to be written to the config
 	 * @param branchesList The list of branches to be written to the config
 	 */
-	public static void writeToFileWithData(BO4Config config, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList,  IMaterialReader materialReader, CustomObjectResourcesManager manager)
+	public static void writeToFileWithData(BO4Config config, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList)
 	{
 		FileSettingsWriterBO4 writer = new FileSettingsWriterBO4(config.getFile());
 		try
@@ -90,10 +88,8 @@ public class FileSettingsWriterBO4 implements SettingsWriterBO4
 				(
 					writer,
 					blocksList == null ? new ArrayList<>() : blocksList,
-					branchesList == null ? new ArrayList<>() : branchesList,
-					
-					materialReader,
-					manager
+					branchesList == null ? new ArrayList<>() : branchesList
+
 				);
 		} catch (IOException e) {
 			OTGLog.log(

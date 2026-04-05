@@ -133,13 +133,13 @@ public class ObjectCreator
 		CustomObjectConfigFile config = makeNewConfig(type, template, objectName, destinationPath,
 			max, min, center, blocks, null, presetFolderName,  rootPath, boManager, mr, manager, mlc);
 
-		return writeToFile(type, objectName, exportPath,  mr, manager, config);
+		return writeToFile(type, objectName, exportPath, config);
 	}
 
-	private static StructuredCustomObject writeToFile(ObjectType type, String objectName, Path exportPath,  IMaterialReader mr, CustomObjectResourcesManager manager, CustomObjectConfigFile config) {
+	private static StructuredCustomObject writeToFile(ObjectType type, String objectName, Path exportPath, CustomObjectConfigFile config) {
         return switch (type) {
             case BO3 -> {
-                FileSettingsWriterBO4.writeToFile(config, config.getFile(), config.settingsMode, mr, manager);
+                FileSettingsWriterBO4.writeToFile(config, config.getFile(), config.settingsMode);
                 yield new BO3(objectName, type.getObjectFilePathFromName(objectName, exportPath).toFile(), (BO3Config) config);
             }
             case BO4 ->
@@ -224,22 +224,22 @@ public class ObjectCreator
 				if (x < exists.length - 1 && exists[x + 1][z] && !processed[x + 1][z])
 				{ // East
 					processed[x + 1][z] = true;
-					addBranch(type, branches, objectName, 16, 0, 0, x+1, z,  mr);
+					addBranch(type, branches, objectName, 16, 0, 0, x+1, z);
 				}
 				if (z < exists[0].length - 1 && exists[x][z + 1] && !processed[x][z + 1])
 				{ // South
 					processed[x][z + 1] = true;
-					addBranch(type, branches, objectName, 0, 0, 16, x, z+1,  mr);
+					addBranch(type, branches, objectName, 0, 0, 16, x, z+1);
 				}
 				if (x > 0 && exists[x - 1][z] && !processed[x - 1][z])
 				{ // West
 					processed[x - 1][z] = true;
-					addBranch(type, branches, objectName, -16, 0, 0, x-1, z,  mr);
+					addBranch(type, branches, objectName, -16, 0, 0, x-1, z);
 				}
 				if (z > 0 && exists[x][z - 1] && !processed[x][z - 1])
 				{ // North
 					processed[x][z - 1] = true;
-					addBranch(type, branches, objectName, 0, 0, -16, x, z-1,  mr);
+					addBranch(type, branches, objectName, 0, 0, -16, x, z-1);
 				}
 				String branchName = objectName + "_C" + x + "_R" + z;
 				Path branchPath = type.getObjectFilePathFromName(branchName, branchFolder.toPath());
@@ -251,7 +251,7 @@ public class ObjectCreator
 				{
 					branchTemplate = type == ObjectType.BO4 ? new BO4Config(
 						new FileSettingsReaderBO4(branchName, branchPath.toFile()),
-						true, presetFolderName, rootPath,  boManager, mr, manager, mlc
+						true, presetFolderName, rootPath
 					) : template;
 				}
 				catch (InvalidConfigException e)
@@ -274,7 +274,7 @@ public class ObjectCreator
 					branchGrid[x][z], branches, presetFolderName,  rootPath, boManager, mr, manager, mlc);
 
 				if (type != ObjectType.BO4) // Already written by MakeNewConfig
-					FileSettingsWriterBO4.writeToFile(branchConfig, branchConfig.getFile(), branchConfig.settingsMode,  mr, manager);
+					FileSettingsWriterBO4.writeToFile(branchConfig, branchConfig.getFile(), branchConfig.settingsMode);
 			}
 		}
 
@@ -285,32 +285,32 @@ public class ObjectCreator
 		for (ChunkCoordinate coord : heads)
 		{
 			addBranch(type, branches, objectName, (coord.getChunkX() * 16), 0, (coord.getChunkZ() * 16),
-				coord.getChunkX(), coord.getChunkZ(),  mr);
+				coord.getChunkX(), coord.getChunkZ());
 		}
 		OTGLog.log(LogLevel.INFO, LogCategory.MAIN, "Creating structure "+objectName+" with "+branches.size()+" direct branches");
 		CustomObjectConfigFile config = makeNewConfig(type, template, objectName,
 			type.getObjectFilePathFromName(objectName, objectPath),
 			min, max, center, null, branches, presetFolderName,  rootPath, boManager, mr, manager, mlc);
 
-		return writeToFile(type, objectName, objectPath,  mr, manager, config);
+		return writeToFile(type, objectName, objectPath, config);
 	}
 
 	// Method for creating branches; had to be a separate method to avoid a switch statement everywhere this is called.
 	private static void addBranch(ObjectType type, List<BranchFunction<?>> branches, String objectName,
-								  int x, int y, int z, int chunkX, int chunkZ,  IMaterialReader mr)
+								  int x, int y, int z, int chunkX, int chunkZ)
 	{
 		switch (type)
 		{
 			case BO3:
 			{
-				branches.add((BO3BranchFunction) CustomObjectConfigFunction.create(null, BO3BranchFunction.class,  mr,
-					x, y, z, (objectName + "_C" + chunkX + "_R" + chunkZ), "NORTH", 100));
+				branches.add((BO3BranchFunction) CustomObjectConfigFunction.create(null, BO3BranchFunction.class,
+						x, y, z, (objectName + "_C" + chunkX + "_R" + chunkZ), "NORTH", 100));
 				break;
 			}
 			case BO4:
 			{
-				branches.add(((BO4BranchFunction) CustomObjectConfigFunction.create(null, BO4BranchFunction.class,  mr,
-					x, y, z, true,
+				branches.add(((BO4BranchFunction) CustomObjectConfigFunction.create(null, BO4BranchFunction.class,
+						x, y, z, true,
 					(objectName + "_C" + chunkX + "_R" + chunkZ), "NORTH", 100, 0)));
 				break;
 			}
@@ -344,7 +344,7 @@ public class ObjectCreator
 
 				config.setBoundingBox(box);
 				config.extractBlocks(blocks);
-				config.rotateBlocksAndChecks(presetFolderName, rootPath,  boManager, mr, manager, mlc);
+				config.rotateBlocksAndChecks(presetFolderName, rootPath);
 				return config;
 			}
 			case BO4:
@@ -379,8 +379,7 @@ public class ObjectCreator
 					(
 						config,
 						mergedBlocks,
-						branches,
-						 mr, manager
+						branches
 					)
 				;
 
@@ -395,7 +394,7 @@ public class ObjectCreator
 					throw new RuntimeException("Could not load BO4 "+objectName+" at "+objectFilePath);
 				}
 
-				if (!object.onEnable(presetFolderName, rootPath,  boManager, mr, manager, mlc))
+				if (!object.onEnable(presetFolderName, rootPath))
 				{
 					throw new RuntimeException("Could not enable BO4 "+objectName);
 				}

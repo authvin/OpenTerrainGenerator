@@ -8,11 +8,9 @@ import java.util.Random;
 
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.constants.settings.ConfigMode;
-import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.bo3.bo3function.BO3BlockFunction;
 import com.pg85.otg.customobject.bo3.bo3function.BO3EntityFunction;
 import com.pg85.otg.customobject.bo3.checks.BO3Check;
-import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.config.io.FileSettingsReaderBO4;
 import com.pg85.otg.customobject.config.io.FileSettingsWriterBO4;
 import com.pg85.otg.customobject.creator.ObjectType;
@@ -27,8 +25,6 @@ import com.pg85.otg.customobject.util.BoundingBox;
 import com.pg85.otg.customobject.util.BO3Enums.OutsideSourceBlock;
 import com.pg85.otg.customobject.util.BO3Enums.SpawnHeightEnum;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
@@ -83,7 +79,7 @@ public class BO3 implements StructuredCustomObject
 	}
 
 	@Override
-	public boolean onEnable(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public boolean onEnable(String presetFolderName, Path otgRootFolder)
 	{
 		if(this.isInvalidConfig)
 		{
@@ -95,10 +91,10 @@ public class BO3 implements StructuredCustomObject
 		}
 		try
 		{
-			this.settings = new BO3Config(new FileSettingsReaderBO4(this.name, this.file), presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+			this.settings = new BO3Config(new FileSettingsReaderBO4(this.name, this.file), presetFolderName, otgRootFolder);
 			if (this.settings.settingsMode != ConfigMode.WriteDisable)
 			{
-				FileSettingsWriterBO4.writeToFile(this.settings, this.settings.settingsMode,  materialReader, manager);
+				FileSettingsWriterBO4.writeToFile(this.settings, this.settings.settingsMode);
 			}
 		}
 		catch (InvalidConfigException ex)
@@ -123,9 +119,9 @@ public class BO3 implements StructuredCustomObject
 	}
 	
 	@Override
-	public boolean loadChecks(IModLoadedChecker modLoadedChecker)
+	public boolean loadChecks()
 	{
-		return this.settings == null ? false : this.settings.parseModChecks(modLoadedChecker);
+		return this.settings == null ? false : this.settings.parseModChecks();
 	}
 
 	// Used to safely spawn this object from a grown sapling

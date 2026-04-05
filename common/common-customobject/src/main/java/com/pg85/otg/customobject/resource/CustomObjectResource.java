@@ -35,7 +35,7 @@ public class CustomObjectResource extends BiomeResourceBase implements ICustomOb
 	@Override
 	public void spawnForChunkDecoration(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		for (CustomObject object : getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker))
+		for (CustomObject object : getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder, customObjectManager))
 		{
 			if(object != null) // if null then BO2/BO3 file could not be found
 			{
@@ -44,13 +44,13 @@ public class CustomObjectResource extends BiomeResourceBase implements ICustomOb
 		}
 	}	
 	
-	private List<CustomObject> getObjects(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private List<CustomObject> getObjects(String presetFolderName, Path otgRootFolder, CustomObjectManager customObjectManager)
 	{
 		if(this.objects.isEmpty() && !this.objectNames.isEmpty())
 		{
 			CustomObject object;
             for (String objectName : this.objectNames) {
-                object = customObjectManager.getGlobalObjects().getObjectByName(objectName, presetFolderName, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
+                object = customObjectManager.getGlobalObjects().getObjectByName(objectName, presetFolderName, otgRootFolder);
                 this.objects.add(object);
             }
 		}

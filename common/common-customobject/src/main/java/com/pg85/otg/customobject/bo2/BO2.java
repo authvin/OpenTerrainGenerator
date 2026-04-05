@@ -141,7 +141,7 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 			this.getName(),
 			ObjectType.BO3.getObjectFilePathFromName(this.getName(), this.getFile().getParentFile().toPath()).toFile()
 			),
-			presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+			presetFolderName, otgRootFolder);
 
 		// Convert the blocks
 		BoundingBox box = BoundingBox.newEmptyBox();
@@ -155,7 +155,7 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 			}
 		}
 		newConfig.setBoundingBox(box);
-		newConfig.rotateBlocksAndChecks(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+		newConfig.rotateBlocksAndChecks(presetFolderName, otgRootFolder);
 
 		// Convert settings
 		newConfig.getSettingsFromBO2(this);
@@ -470,32 +470,32 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 	}
 
 	@Override
-	protected void writeConfigSettings(SettingsWriterBO4 writer,  IMaterialReader materialReader, CustomObjectResourcesManager manager) {
+	protected void writeConfigSettings(SettingsWriterBO4 writer) {
 		// It doesn't write.
 	}
 
 	@Override
-	protected void readConfigSettings(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	protected void readConfigSettings(String presetFolderName, Path otgRootFolder)
 	{
-		this.spawnOnBlockType = readSettings(BO2Settings.SPAWN_ON_BLOCK_TYPE,  materialReader, manager);
-		this.collisionBlockType = readSettings(BO2Settings.COLLISION_BLOCK_TYPE,  materialReader, manager);
-		this.spawnSunlight = readSettings(BO2Settings.SPAWN_SUNLIGHT,  materialReader, manager);
-		this.spawnDarkness = readSettings(BO2Settings.SPAWN_DARKNESS,  materialReader, manager);
-		this.spawnWater = readSettings(BO2Settings.SPAWN_WATER,  materialReader, manager);
-		this.spawnLava = readSettings(BO2Settings.SPAWN_LAVA,  materialReader, manager);
-		this.spawnAboveGround = readSettings(BO2Settings.SPAWN_ABOVE_GROUND,  materialReader, manager);
-		this.spawnUnderGround = readSettings(BO2Settings.SPAWN_UNDER_GROUND,  materialReader, manager);
-		this.randomRotation = readSettings(BO2Settings.RANDON_ROTATION,  materialReader, manager);
-		this.dig = readSettings(BO2Settings.DIG,  materialReader, manager);
-		this.tree = readSettings(BO2Settings.TREE,  materialReader, manager);
-		this.branch = readSettings(BO2Settings.BRANCH,  materialReader, manager);
-		this.needsFoundation = readSettings(BO2Settings.NEEDS_FOUNDATION,  materialReader, manager);
-		this.doReplaceBlocks = readSettings(BO2Settings.DO_REPLACE_BLOCKS,  materialReader, manager);
-		this.rarity = readSettings(BO2Settings.RARITY,  materialReader, manager);
-		this.collisionPercentage = readSettings(BO2Settings.COLLISION_PERCENTAGE,  materialReader, manager);
-		this.spawnElevationMin = readSettings(BO2Settings.SPAWN_ELEVATION_MIN,  materialReader, manager);
-		this.spawnElevationMax = readSettings(BO2Settings.SPAWN_ELEVATION_MAX,  materialReader, manager);
-		this.readCoordinates(materialReader);
+		this.spawnOnBlockType = readSettings(BO2Settings.SPAWN_ON_BLOCK_TYPE);
+		this.collisionBlockType = readSettings(BO2Settings.COLLISION_BLOCK_TYPE);
+		this.spawnSunlight = readSettings(BO2Settings.SPAWN_SUNLIGHT);
+		this.spawnDarkness = readSettings(BO2Settings.SPAWN_DARKNESS);
+		this.spawnWater = readSettings(BO2Settings.SPAWN_WATER);
+		this.spawnLava = readSettings(BO2Settings.SPAWN_LAVA);
+		this.spawnAboveGround = readSettings(BO2Settings.SPAWN_ABOVE_GROUND);
+		this.spawnUnderGround = readSettings(BO2Settings.SPAWN_UNDER_GROUND);
+		this.randomRotation = readSettings(BO2Settings.RANDON_ROTATION);
+		this.dig = readSettings(BO2Settings.DIG);
+		this.tree = readSettings(BO2Settings.TREE);
+		this.branch = readSettings(BO2Settings.BRANCH);
+		this.needsFoundation = readSettings(BO2Settings.NEEDS_FOUNDATION);
+		this.doReplaceBlocks = readSettings(BO2Settings.DO_REPLACE_BLOCKS);
+		this.rarity = readSettings(BO2Settings.RARITY);
+		this.collisionPercentage = readSettings(BO2Settings.COLLISION_PERCENTAGE);
+		this.spawnElevationMin = readSettings(BO2Settings.SPAWN_ELEVATION_MIN);
+		this.spawnElevationMax = readSettings(BO2Settings.SPAWN_ELEVATION_MAX);
+		this.readCoordinates();
 	}
 
 	@Override
@@ -504,12 +504,12 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 	@Override
 	protected void renameOldSettings() { }
 
-	private void readCoordinates(IMaterialReader materialReader)
+	private void readCoordinates()
 	{
 		ArrayList<ObjectCoordinate> coordinates = new ArrayList<>();
 		for (Entry<String, String> line : this.reader.getRawSettings())
 		{
-			ObjectCoordinate buffer = ObjectCoordinate.getCoordinateFromString(line.getKey(), line.getValue(), materialReader);
+			ObjectCoordinate buffer = ObjectCoordinate.getCoordinateFromString(line.getKey(), line.getValue());
 			if (buffer != null)
 			{
 				coordinates.add(buffer);
@@ -546,24 +546,24 @@ public class BO2 extends CustomObjectConfigFile implements CustomObject
 	}
 	
 	@Override
-	public boolean onEnable(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public boolean onEnable(String presetFolderName, Path otgRootFolder)
 	{
 		if(!this.isEnabled)
 		{
 			this.isEnabled = true;
-			enable(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+			enable(presetFolderName, otgRootFolder);
 		}
 		return true;
 	}
 
-	private void enable(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private void enable(String presetFolderName, Path otgRootFolder)
 	{
-		readConfigSettings(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+		readConfigSettings(presetFolderName, otgRootFolder);
 		correctSettings();
 	}
 
 	@Override
-	public boolean loadChecks(IModLoadedChecker modLoadedChecker)
+	public boolean loadChecks()
 	{
 		return true;
 	}

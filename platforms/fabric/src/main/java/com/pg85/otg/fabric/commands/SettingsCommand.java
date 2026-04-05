@@ -17,6 +17,7 @@ import com.pg85.otg.customobject.config.CustomObjectConfigFile;
 import com.pg85.otg.customobject.config.io.FileSettingsWriterBO4;
 import com.pg85.otg.fabric.gen.OTGFabricChunkGenerator;
 import com.pg85.otg.presets.Preset;
+import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.biome.OTGBiomeID;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -163,11 +164,7 @@ final class SettingsCommand {
         CustomObject obj = OTG.getEngine().getCustomObjectManager().getGlobalObjects().getObjectByName(
             objectName,
             preset.getFolderName(),
-            OTG.getEngine().getOTGRootFolder(),
-            OTG.getEngine().getCustomObjectManager(),
-            OTG.getEngine().getPresetLoader().getMaterialReader(),
-            OTG.getEngine().getCustomObjectResourcesManager(),
-            OTG.getEngine().getModLoadedChecker()
+            OTG.getEngine().getOTGRootFolder()
         );
 
         if (obj == null) {
@@ -190,9 +187,7 @@ final class SettingsCommand {
             FileSettingsWriterBO4.writeToFile(
                 config,
                 outFile.toFile(),
-                ConfigMode.WriteAll,
-                OTG.getEngine().getPresetLoader().getMaterialReader(),
-                OTG.getEngine().getCustomObjectResourcesManager()
+                ConfigMode.WriteAll
             );
             src.sendSuccess(() -> Component.literal("Object settings written to: " + outFile), false);
             return 1;
@@ -237,7 +232,9 @@ final class SettingsCommand {
     private static SuggestionProvider<CommandSourceStack> currentPresetObjectSuggestions() {
         return (ctx, builder) -> {
             OTGFabricChunkGenerator gen = CommandHelper.getGenerator(ctx.getSource().getLevel());
+            OTGLog.info("Suggesting objects...");
             if (gen != null) {
+                OTGLog.info("Fetching all BO names");
                 ArrayList<String> names = OTG.getEngine().getCustomObjectManager().getGlobalObjects()
                     .getAllBONamesForPreset(gen.getPreset().getFolderName(), OTG.getEngine().getOTGRootFolder());
                 if (names != null) {

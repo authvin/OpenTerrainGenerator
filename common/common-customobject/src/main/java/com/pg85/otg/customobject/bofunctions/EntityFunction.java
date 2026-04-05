@@ -4,7 +4,6 @@ import com.pg85.otg.customobject.config.CustomObjectConfigFile;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.IEntityFunction;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.nbt.NamedBinaryTag;
 import com.pg85.otg.util.logging.LogCategory;
@@ -66,7 +65,7 @@ public abstract class EntityFunction<T extends CustomObjectConfigFile> extends C
 	}
 	
 	@Override
-	public void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
+	public void load(List<String> args) throws InvalidConfigException
 	{
 		assureSize(5, args);
 		// Those limits are arbitrary, LocalWorld.setBlock will limit it

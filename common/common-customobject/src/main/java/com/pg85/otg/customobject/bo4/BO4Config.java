@@ -26,6 +26,7 @@ import com.pg85.otg.interfaces.ICustomObjectManager;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.util.OTGLog;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.nbt.NamedBinaryTag;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.helpers.StreamHelper;
@@ -185,12 +186,12 @@ public class BO4Config extends CustomObjectConfigFile
 	 *
 	 * @param reader		The settings of the BO4.
 	 */
-	public BO4Config(SettingsReaderBO4 reader, boolean init, String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException
+	public BO4Config(SettingsReaderBO4 reader, boolean init, String presetFolderName, Path otgRootFolder) throws InvalidConfigException
 	{
 		super(reader);
 		if(init)
 		{
-			init(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+			init(presetFolderName, otgRootFolder);
 		}
 	}
 
@@ -202,7 +203,7 @@ public class BO4Config extends CustomObjectConfigFile
 	static int BO4BlocksLoadedFromBO4Data = 0;
 	static int accumulatedTime = 0;
 	static int accumulatedTime2 = 0;
-	private void init(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException
+	private void init(String presetFolderName, Path otgRootFolder) throws InvalidConfigException
 	{
 		this.minX = Integer.MAX_VALUE;
 		this.maxX = Integer.MIN_VALUE;
@@ -213,7 +214,7 @@ public class BO4Config extends CustomObjectConfigFile
 		if(!this.reader.getFile().getAbsolutePath().toLowerCase().endsWith(".bo4data"))
 		{
 			//long startTime = System.currentTimeMillis();
-			readConfigSettings(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+			readConfigSettings(presetFolderName, otgRootFolder);
 			//BO4BlocksLoaded++;
 			//long timeTaken = (System.currentTimeMillis() - startTime);
 			//accumulatedTime += timeTaken;
@@ -221,7 +222,7 @@ public class BO4Config extends CustomObjectConfigFile
 			//OTG.log(LogMarker.INFO, ".BO4 loaded in: " + timeTaken + " " + this.getName() + ".BO4");
 		} else {
 			//long startTime = System.currentTimeMillis();
-			this.readFromBO4DataFile(false,  materialReader);
+			this.readFromBO4DataFile(false);
 			//BO4BlocksLoadedFromBO4Data++;
 			//long timeTaken = (System.currentTimeMillis() - startTime);
 			//accumulatedTime2 += timeTaken;			
@@ -282,12 +283,12 @@ public class BO4Config extends CustomObjectConfigFile
 		return this.inheritedBO3s;
 	}
 
-	public BO4BlockFunction[][] getSmoothingHeightMap(BO4 start, String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public BO4BlockFunction[][] getSmoothingHeightMap(BO4 start, String presetFolderName, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader)
 	{
-		return getSmoothingHeightMap(start, true, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+		return getSmoothingHeightMap(start, true, presetFolderName, otgRootFolder, materialReader);
 	}
 	
-	private BO4BlockFunction[][] getSmoothingHeightMap(BO4 start, boolean fromFile, String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private BO4BlockFunction[][] getSmoothingHeightMap(BO4 start, boolean fromFile, String presetFolderName, Path otgRootFolder, IMaterialReader materialReader)
 	{
 		// TODO: Caching the heightmap will mean this BO4 can only be used with 1 master BO4,
 		// it won't pick up smoothing area settings if it is also used in another structure.
@@ -298,7 +299,7 @@ public class BO4Config extends CustomObjectConfigFile
 				BO4Config bo4Config = null;
 				try
 				{
-					bo4Config = new BO4Config(this.reader, false, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+					bo4Config = new BO4Config(this.reader, false, presetFolderName, otgRootFolder);
 				}
 				catch (InvalidConfigException e)
 				{
@@ -310,7 +311,7 @@ public class BO4Config extends CustomObjectConfigFile
 				if(bo4Config != null)
 				{
 					try {
-						bo4Config.readFromBO4DataFile(true,  materialReader);
+						bo4Config.readFromBO4DataFile(true);
 					} catch (InvalidConfigException e) {
 						if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 						{
@@ -319,7 +320,7 @@ public class BO4Config extends CustomObjectConfigFile
 						this.heightMap = new BO4BlockFunction[16][16];
 						return this.heightMap;
 					}
-					this.heightMap = bo4Config.getSmoothingHeightMap(start, false, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+					this.heightMap = bo4Config.getSmoothingHeightMap(start, false, presetFolderName, otgRootFolder, materialReader);
 					return this.heightMap;
 				}
 			}
@@ -407,19 +408,19 @@ public class BO4Config extends CustomObjectConfigFile
 		return this.heightMap;
 	}
 
-	BO4BlockFunction[] getBlocks(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	BO4BlockFunction[] getBlocks(String presetFolderName, Path otgRootFolder)
 	{
-		return getBlocks(true, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+		return getBlocks(true, presetFolderName, otgRootFolder);
 	}
 	
-	private BO4BlockFunction[] getBlocks(boolean fromFile, String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private BO4BlockFunction[] getBlocks(boolean fromFile, String presetFolderName, Path otgRootFolder)
 	{
 		if(fromFile && this.isBO4Data)
 		{
 			BO4Config bo4Config = null;
 			try
 			{
-				bo4Config = new BO4Config(this.reader, false, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+				bo4Config = new BO4Config(this.reader, false, presetFolderName, otgRootFolder);
 			}
 			catch (InvalidConfigException e)
 			{
@@ -431,7 +432,7 @@ public class BO4Config extends CustomObjectConfigFile
 			if(bo4Config != null)
 			{
 				try {
-					bo4Config.readFromBO4DataFile(true,  materialReader);
+					bo4Config.readFromBO4DataFile(true);
 				} catch (InvalidConfigException e) {
 					if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 					{
@@ -439,7 +440,7 @@ public class BO4Config extends CustomObjectConfigFile
 					}
 					return null;
 				}
-				return bo4Config.getBlocks(false, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+				return bo4Config.getBlocks(false, presetFolderName, otgRootFolder);
 			}
 		}
 		
@@ -494,7 +495,7 @@ public class BO4Config extends CustomObjectConfigFile
 		return this.entityDataBO4;
 	}
 	
-	void loadInheritedBO3(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	void loadInheritedBO3(String presetFolderName, Path otgRootFolder)
 	{
 		if(this.inheritBO3 != null && !this.inheritBO3.trim().isEmpty() && !this.inheritedBO3Loaded)
 		{
@@ -512,11 +513,11 @@ public class BO4Config extends CustomObjectConfigFile
 			}
 			
 			// TODO: Re-wire this so we don't have to cast CustomObjectManager :(
-			CustomObjectManager customObjectManager2 = (CustomObjectManager)customObjectManager;			
-			CustomObject parentBO3 = customObjectManager2.getGlobalObjects().getObjectByName(this.inheritBO3, this.presetFolderName, otgRootFolder,  customObjectManager2, materialReader, manager, modLoadedChecker);
+			CustomObjectManager customObjectManager2 = CustomObjectManager.get();
+			CustomObject parentBO3 = customObjectManager2.getGlobalObjects().getObjectByName(this.inheritBO3, this.presetFolderName, otgRootFolder);
 			if(parentBO3 != null)
 			{
-				BO4BlockFunction[] blocks = getBlocks(this.presetFolderName, otgRootFolder,  customObjectManager2, materialReader, manager, modLoadedChecker);
+				BO4BlockFunction[] blocks = getBlocks(this.presetFolderName, otgRootFolder);
 				
 				this.inheritedBO3Loaded = true;
 
@@ -563,7 +564,7 @@ public class BO4Config extends CustomObjectConfigFile
 					this.minZ = parentMinZ;
 				}
 
-				BO4BlockFunction[] parentBlocks = ((BO4)parentBO3).getConfig().getBlocks(presetFolderName, otgRootFolder,  customObjectManager2, materialReader, manager, modLoadedChecker);				
+				BO4BlockFunction[] parentBlocks = ((BO4)parentBO3).getConfig().getBlocks(presetFolderName, otgRootFolder);
 				ArrayList<BlockFunction<?>> newBlocks = new ArrayList<>();				
 				newBlocks.addAll(new ArrayList<>(Arrays.asList(parentBlocks)));
 				newBlocks.addAll(new ArrayList<>(Arrays.asList(blocks)));
@@ -585,7 +586,7 @@ public class BO4Config extends CustomObjectConfigFile
 				}
 				for(BO4BranchFunction branch : ((BO4)parentBO3).getConfig().branchesBO4)
 				{
-					newBranches.add(branch.rotate(this.inheritBO3Rotation, presetFolderName, otgRootFolder,  customObjectManager2, materialReader, manager, modLoadedChecker));
+					newBranches.add(branch.rotate(this.inheritBO3Rotation, presetFolderName, otgRootFolder));
 				}
 				this.branchesBO4 = newBranches.toArray(new BO4BranchFunction[0]);
 
@@ -613,7 +614,7 @@ public class BO4Config extends CustomObjectConfigFile
 	}
 
 	static int BO4BlocksLoaded = 0;
-	private void readResources( IMaterialReader materialReader, CustomObjectResourcesManager manager) throws InvalidConfigException
+	private void readResources() throws InvalidConfigException
 	{		
 		List<BO4BlockFunction> tempBlocksList = new ArrayList<>();
 		List<BO4BranchFunction> tempBranchesList = new ArrayList<>();
@@ -626,7 +627,7 @@ public class BO4Config extends CustomObjectConfigFile
 		int maxX = 0;
 		int minZ = 0;
 		int maxZ = 0;
-		for (CustomObjectConfigFunction<BO4Config> res : reader.getConfigFunctions(this, true,  materialReader, manager))
+		for (CustomObjectConfigFunction<BO4Config> res : reader.getConfigFunctions(this, true))
 		{
 			if (res.isValid())
 			{
@@ -900,28 +901,28 @@ public class BO4Config extends CustomObjectConfigFile
 	@Override
 	public BlockFunction<?>[] getBlockFunctions(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		return getBlocks(presetFolderName, otgRootFolder,  (CustomObjectManager) customObjectManager, materialReader, manager, modLoadedChecker);
+		return getBlocks(presetFolderName, otgRootFolder);
 	}
 
 	@Override
-	protected void writeConfigSettings(SettingsWriterBO4 writer,  IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
+	protected void writeConfigSettings(SettingsWriterBO4 writer) throws IOException
 	{
-		writeSettings(writer, null, null,  materialReader, manager);
+		writeSettings(writer, null, null);
 	}
 
-	public void writeWithData(SettingsWriterBO4 writer, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList,  IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
+	public void writeWithData(SettingsWriterBO4 writer, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList) throws IOException
 	{
 		writer.setConfigMode(ConfigMode.WriteAll);
 		try
 		{
 			writer.open();
-			writeSettings(writer, blocksList, branchesList,  materialReader, manager);
+			writeSettings(writer, blocksList, branchesList);
 		} finally {
 			writer.close();
 		}
 	}
 	
-	private void writeSettings(SettingsWriterBO4 writer, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList,  IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
+	private void writeSettings(SettingsWriterBO4 writer, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList) throws IOException
 	{
 		// The object
 		writer.bigTitle("BO4 object");
@@ -1066,7 +1067,7 @@ public class BO4Config extends CustomObjectConfigFile
 		writer.setting(BO4Settings.DO_REPLACE_BLOCKS, this.doReplaceBlocks);
 		
 		// Blocks and other things
-		writeResources(writer, blocksList, branchesList,  materialReader, manager);
+		writeResources(writer, blocksList, branchesList);
 		
 		if(this.reader != null) // Can be true for BO4Creator?
 		{
@@ -1075,11 +1076,11 @@ public class BO4Config extends CustomObjectConfigFile
 	}
 
 	@Override
-	protected void readConfigSettings(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException
+	protected void readConfigSettings(String presetFolderName, Path otgRootFolder) throws InvalidConfigException
 	{
-		this.branchFrequency = readSettings(BO4Settings.BRANCH_FREQUENCY,  materialReader, manager);
+		this.branchFrequency = readSettings(BO4Settings.BRANCH_FREQUENCY);
 		
-		this.branchFrequencyGroup = readSettings(BO4Settings.BRANCH_FREQUENCY_GROUP,  materialReader, manager);
+		this.branchFrequencyGroup = readSettings(BO4Settings.BRANCH_FREQUENCY_GROUP);
 		this.branchFrequencyGroups = new HashMap<>();
 		if(this.branchFrequencyGroup != null && !this.branchFrequencyGroup.trim().isEmpty())
 		{
@@ -1095,23 +1096,23 @@ public class BO4Config extends CustomObjectConfigFile
 			}
 		}
 		
-		this.heightOffset = readSettings(BO4Settings.HEIGHT_OFFSET,  materialReader, manager);
-		this.inheritBO3Rotation = readSettings(BO4Settings.INHERITBO3ROTATION,  materialReader, manager);
+		this.heightOffset = readSettings(BO4Settings.HEIGHT_OFFSET);
+		this.inheritBO3Rotation = readSettings(BO4Settings.INHERITBO3ROTATION);
 
-		this.configRemoveAir = readSettings(BO4Settings.REMOVEAIR,  materialReader, manager);
+		this.configRemoveAir = readSettings(BO4Settings.REMOVEAIR);
 		this.removeAir = this.configRemoveAir;
-		this.isSpawnPoint = readSettings(BO4Settings.ISSPAWNPOINT,  materialReader, manager);
-		this.useCenterForHighestBlock = readSettings(BO4Settings.USE_CENTER_FOR_HIGHEST_BLOCK,  materialReader, manager);
-		this.configReplaceAbove = readSettings(BO4Settings.REPLACEABOVE,  materialReader, manager);
+		this.isSpawnPoint = readSettings(BO4Settings.ISSPAWNPOINT);
+		this.useCenterForHighestBlock = readSettings(BO4Settings.USE_CENTER_FOR_HIGHEST_BLOCK);
+		this.configReplaceAbove = readSettings(BO4Settings.REPLACEABOVE);
 		this.replaceAbove = this.configReplaceAbove;
-		this.configReplaceBelow = readSettings(BO4Settings.REPLACEBELOW,  materialReader, manager);
+		this.configReplaceBelow = readSettings(BO4Settings.REPLACEBELOW);
 		this.replaceBelow = this.configReplaceBelow;
-		this.replaceWithBiomeBlocks = readSettings(BO4Settings.REPLACEWITHBIOMEBLOCKS,  materialReader, manager);
-		this.replaceWithGroundBlock = readSettings(BO4Settings.REPLACEWITHGROUNDBLOCK,  materialReader, manager);
-		this.replaceWithSurfaceBlock = readSettings(BO4Settings.REPLACEWITHSURFACEBLOCK,  materialReader, manager);
-		this.replaceWithStoneBlock = readSettings(BO4Settings.REPLACEWITHSTONEBLOCK,  materialReader, manager);
+		this.replaceWithBiomeBlocks = readSettings(BO4Settings.REPLACEWITHBIOMEBLOCKS);
+		this.replaceWithGroundBlock = readSettings(BO4Settings.REPLACEWITHGROUNDBLOCK);
+		this.replaceWithSurfaceBlock = readSettings(BO4Settings.REPLACEWITHSURFACEBLOCK);
+		this.replaceWithStoneBlock = readSettings(BO4Settings.REPLACEWITHSTONEBLOCK);
 		
-		this.bo3Group = readSettings(BO4Settings.BO3GROUP,  materialReader, manager);
+		this.bo3Group = readSettings(BO4Settings.BO3GROUP);
 		this.bo4Groups = new HashMap<>();
 		if(this.bo3Group != null && !this.bo3Group.trim().isEmpty())
 		{
@@ -1127,11 +1128,11 @@ public class BO4Config extends CustomObjectConfigFile
 			}
 		}
 		
-		this.canOverride = readSettings(BO4Settings.CANOVERRIDE,  materialReader, manager);
-		this.mustBeBelowOther = readSettings(BO4Settings.MUSTBEBELOWOTHER,  materialReader, manager);
-		this.mustBeInsideWorldBorders = readSettings(BO4Settings.MUSTBEINSIDEWORLDBORDERS,  materialReader, manager);
+		this.canOverride = readSettings(BO4Settings.CANOVERRIDE);
+		this.mustBeBelowOther = readSettings(BO4Settings.MUSTBEBELOWOTHER);
+		this.mustBeInsideWorldBorders = readSettings(BO4Settings.MUSTBEINSIDEWORLDBORDERS);
 		
-		this.mustBeInside = readSettings(BO4Settings.MUSTBEINSIDE,  materialReader, manager);
+		this.mustBeInside = readSettings(BO4Settings.MUSTBEINSIDE);
 		this.mustBeInsideBranches = new ArrayList<>();
 		if(this.mustBeInside != null && !this.mustBeInside.trim().isEmpty())
 		{
@@ -1147,7 +1148,7 @@ public class BO4Config extends CustomObjectConfigFile
 			}
 		}
 		
-		this.cannotBeInside =  readSettings(BO4Settings.CANNOTBEINSIDE,  materialReader, manager);
+		this.cannotBeInside =  readSettings(BO4Settings.CANNOTBEINSIDE);
 		this.cannotBeInsideBranches = new ArrayList<>();
 		if(this.cannotBeInside != null && !this.cannotBeInside.trim().isEmpty())
 		{
@@ -1163,7 +1164,7 @@ public class BO4Config extends CustomObjectConfigFile
 			}
 		}
 		
-		this.replacesBO3 = readSettings(BO4Settings.REPLACESBO3,  materialReader, manager);
+		this.replacesBO3 = readSettings(BO4Settings.REPLACESBO3);
 		this.replacesBO3Branches = new ArrayList<>();
 		if(this.replacesBO3 != null && !this.replacesBO3.trim().isEmpty())
 		{
@@ -1180,19 +1181,19 @@ public class BO4Config extends CustomObjectConfigFile
 		}
 
 		//smoothHeightOffset = readSettings(BO3Settings.SMOOTH_HEIGHT_OFFSET).equals("HeightOffset") ? heightOffset : Integer.parseInt(readSettings(BO3Settings.SMOOTH_HEIGHT_OFFSET));
-		this.smoothHeightOffset = readSettings(BO4Settings.SMOOTH_HEIGHT_OFFSET,  materialReader, manager);
-		this.canSpawnOnWater = readSettings(BO4Settings.CANSPAWNONWATER,  materialReader, manager);
-		this.spawnOnWaterOnly = readSettings(BO4Settings.SPAWNONWATERONLY,  materialReader, manager);
-		this.spawnUnderWater = readSettings(BO4Settings.SPAWNUNDERWATER,  materialReader, manager);
-		this.spawnAtWaterLevel = readSettings(BO4Settings.SPAWNATWATERLEVEL,  materialReader, manager);
-		this.inheritBO3 = readSettings(BO4Settings.INHERITBO3,  materialReader, manager);
-		this.overrideChildSettings = readSettings(BO4Settings.OVERRIDECHILDSETTINGS,  materialReader, manager);
-		this.overrideParentHeight = readSettings(BO4Settings.OVERRIDEPARENTHEIGHT,  materialReader, manager);
-		this.smoothRadius = readSettings(BO4Settings.SMOOTHRADIUS,  materialReader, manager);
-		this.smoothStartTop = readSettings(BO4Settings.SMOOTHSTARTTOP,  materialReader, manager);
-		this.smoothStartWood = readSettings(BO4Settings.SMOOTHSTARTWOOD,  materialReader, manager);
-		this.smoothingSurfaceBlock = readSettings(BO4Settings.SMOOTHINGSURFACEBLOCK,  materialReader, manager);
-		this.smoothingGroundBlock = readSettings(BO4Settings.SMOOTHINGGROUNDBLOCK,  materialReader, manager);
+		this.smoothHeightOffset = readSettings(BO4Settings.SMOOTH_HEIGHT_OFFSET);
+		this.canSpawnOnWater = readSettings(BO4Settings.CANSPAWNONWATER);
+		this.spawnOnWaterOnly = readSettings(BO4Settings.SPAWNONWATERONLY);
+		this.spawnUnderWater = readSettings(BO4Settings.SPAWNUNDERWATER);
+		this.spawnAtWaterLevel = readSettings(BO4Settings.SPAWNATWATERLEVEL);
+		this.inheritBO3 = readSettings(BO4Settings.INHERITBO3);
+		this.overrideChildSettings = readSettings(BO4Settings.OVERRIDECHILDSETTINGS);
+		this.overrideParentHeight = readSettings(BO4Settings.OVERRIDEPARENTHEIGHT);
+		this.smoothRadius = readSettings(BO4Settings.SMOOTHRADIUS);
+		this.smoothStartTop = readSettings(BO4Settings.SMOOTHSTARTTOP);
+		this.smoothStartWood = readSettings(BO4Settings.SMOOTHSTARTWOOD);
+		this.smoothingSurfaceBlock = readSettings(BO4Settings.SMOOTHINGSURFACEBLOCK);
+		this.smoothingGroundBlock = readSettings(BO4Settings.SMOOTHINGGROUNDBLOCK);
 
 		// Make sure that the BO3 wont try to spawn below Y 0 because of the height offset
 		if(this.heightOffset < 0 && this.minHeight < -this.heightOffset)
@@ -1207,26 +1208,26 @@ public class BO4Config extends CustomObjectConfigFile
 			this.inheritedBO3s.add(this.inheritBO3);
 		}
 
-		this.author = readSettings(BO4Settings.AUTHOR,  materialReader, manager);
-		this.description = readSettings(BO4Settings.DESCRIPTION,  materialReader, manager);
-		this.settingsMode = readSettings(BO3Config.SETTINGS_MODE_BO3,  materialReader, manager);
+		this.author = readSettings(BO4Settings.AUTHOR);
+		this.description = readSettings(BO4Settings.DESCRIPTION);
+		this.settingsMode = readSettings(BO3Config.SETTINGS_MODE_BO3);
 
-		this.frequency = readSettings(BO4Settings.FREQUENCY,  materialReader, manager);
-		this.spawnHeight = readSettings(BO4Settings.SPAWN_HEIGHT,  materialReader, manager);
-		this.minHeight = readSettings(BO4Settings.MIN_HEIGHT,  materialReader, manager);
-		this.maxHeight = readSettings(BO4Settings.MAX_HEIGHT,  materialReader, manager);
+		this.frequency = readSettings(BO4Settings.FREQUENCY);
+		this.spawnHeight = readSettings(BO4Settings.SPAWN_HEIGHT);
+		this.minHeight = readSettings(BO4Settings.MIN_HEIGHT);
+		this.maxHeight = readSettings(BO4Settings.MAX_HEIGHT);
 		this.maxHeight = Math.max(this.maxHeight, this.minHeight);
 
-		this.doReplaceBlocks = readSettings(BO4Settings.DO_REPLACE_BLOCKS,  materialReader, manager);
+		this.doReplaceBlocks = readSettings(BO4Settings.DO_REPLACE_BLOCKS);
 
-		String fixedRotation = readSettings(BO4Settings.FIXED_ROTATION,  materialReader, manager);
+		String fixedRotation = readSettings(BO4Settings.FIXED_ROTATION);
 		this.fixedRotation = Rotation.getRotation(fixedRotation);
 
 		// Read the resources
-		readResources( materialReader, manager);
+		readResources();
 	}
 	
-	private void writeResources(SettingsWriterBO4 writer, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList,  IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
+	private void writeResources(SettingsWriterBO4 writer, List<BlockFunction<?>> blocksList, List<BranchFunction<?>> branchesList) throws IOException
 	{
 		writer.bigTitle("Blocks");
 		writer.comment("All the blocks used in the BO4 are listed here. Possible blocks:");
@@ -1248,7 +1249,7 @@ public class BO4Config extends CustomObjectConfigFile
 			blocksList = new ArrayList<>();
 			branchesList = new ArrayList<>();
 			
-			for (CustomObjectConfigFunction<BO4Config> res : reader.getConfigFunctions(this, true,  materialReader, manager))
+			for (CustomObjectConfigFunction<BO4Config> res : reader.getConfigFunctions(this, true))
 			{
 				if (res.isValid())
 				{
@@ -1342,7 +1343,7 @@ public class BO4Config extends CustomObjectConfigFile
 	}
 
 	private final int bo4DataVersion = 3;
-	void writeToStream(DataOutput stream, String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws IOException
+	void writeToStream(DataOutput stream, String presetFolderName, Path otgRootFolder) throws IOException
 	{		
 		stream.writeInt(this.bo4DataVersion);
 		// Version 3 added fixedRotation		
@@ -1430,7 +1431,7 @@ public class BO4Config extends CustomObjectConfigFile
 		ArrayList<String> metaDataNames = new ArrayList<>();
 		int randomBlockCount = 0;
 		int nonRandomBlockCount = 0;
-		BO4BlockFunction[] blocks = getBlocks(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+		BO4BlockFunction[] blocks = getBlocks(presetFolderName, otgRootFolder);
 		for(BO4BlockFunction block : blocks)
 		{		
 			if(block instanceof BO4RandomBlockFunction)
@@ -1554,8 +1555,9 @@ public class BO4Config extends CustomObjectConfigFile
 		}
 	}
 
-	private BO4Config readFromBO4DataFile(boolean getBlocks,  IMaterialReader materialReader) throws InvalidConfigException
+	private BO4Config readFromBO4DataFile(boolean getBlocks) throws InvalidConfigException
 	{
+		IMaterialReader materialReader = OTGMaterialReader.get();
 		FileInputStream fis;
 		ByteBuffer bufferCompressed = null;
 		ByteBuffer bufferDecompressed = null;
@@ -1761,9 +1763,9 @@ public class BO4Config extends CustomObjectConfigFile
 					branchType = bufferDecompressed.get() != 0;
 					if(branchType)
 					{
-						branch = BO4WeightedBranchFunction.fromStream(this, bufferDecompressed,  materialReader);
+						branch = BO4WeightedBranchFunction.fromStream(this, bufferDecompressed);
 					} else {
-						branch = BO4BranchFunction.fromStream(this, bufferDecompressed,  materialReader);
+						branch = BO4BranchFunction.fromStream(this, bufferDecompressed);
 					}
 					branchesBO4[i] = branch;
 				}

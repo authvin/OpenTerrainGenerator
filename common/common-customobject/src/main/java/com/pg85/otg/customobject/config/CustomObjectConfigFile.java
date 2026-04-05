@@ -31,25 +31,27 @@ public abstract class CustomObjectConfigFile
 	/**
 	 * Reads a setting. If the setting has an invalid value,
 	 * a message is logged and the default value is returned.
+	 *
 	 * @param setting The setting to read.
 	 * @return The value of the setting.
 	 */
-	protected <T> T readSettings(Setting<T> setting,  IMaterialReader materialReader, CustomObjectResourcesManager manager)
+	protected <T> T readSettings(Setting<T> setting)
 	{
-		return readSettings(setting, setting.getDefaultValue(),  materialReader, manager);
+		return readSettings(setting, setting.getDefaultValue());
 	}
 
 	/**
 	 * Reads a setting. This method allows you to provide another default
 	 * value. If the setting has an invalid value, a message is logged and
 	 * the default value is returned.
-	 * @param setting	  The setting to read.
+	 *
+	 * @param setting      The setting to read.
 	 * @param defaultValue Default value for the setting.
 	 * @return The value of the setting.
 	 */
-	private <T> T readSettings(Setting<T> setting, T defaultValue,  IMaterialReader materialReader, CustomObjectResourcesManager manager)
+	private <T> T readSettings(Setting<T> setting, T defaultValue)
 	{
-		return reader.getSetting(setting, defaultValue,  materialReader, manager);
+		return reader.getSetting(setting, defaultValue);
 	}
 
 	/**
@@ -59,7 +61,7 @@ public abstract class CustomObjectConfigFile
 	 * @param configMode
 	 * @throws IOException
 	 */
-	public void write(SettingsWriterBO4 writer, ConfigMode configMode,  IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException
+	public void write(SettingsWriterBO4 writer, ConfigMode configMode) throws IOException
 	{
 		if (configMode == ConfigMode.WriteDisable)
 		{
@@ -69,7 +71,7 @@ public abstract class CustomObjectConfigFile
 		try
 		{
 			writer.open();
-			writeConfigSettings(writer,  materialReader, manager);
+			writeConfigSettings(writer);
 		} finally
 		{
 			writer.close();
@@ -88,9 +90,9 @@ public abstract class CustomObjectConfigFile
 		*/
 	}
 
-	protected abstract void writeConfigSettings(SettingsWriterBO4 writer,  IMaterialReader materialReader, CustomObjectResourcesManager manager) throws IOException;
+	protected abstract void writeConfigSettings(SettingsWriterBO4 writer) throws IOException;
 
-	protected abstract void readConfigSettings(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException;
+	protected abstract void readConfigSettings(String presetFolderName, Path otgRootFolder) throws InvalidConfigException;
 	
 	protected abstract void correctSettings();
 

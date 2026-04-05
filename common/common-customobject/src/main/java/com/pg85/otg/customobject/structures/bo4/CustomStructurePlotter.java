@@ -167,7 +167,7 @@ public class CustomStructurePlotter
 		BO4CustomStructure structureStart = getFromStructureCache(chunkCoordinate);
 		if (structureStart != null && structureStart.start != null)
 		{
-			structureStart.spawnInChunk(chunkCoordinate, structureCache, worldGenRegion, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
+			structureStart.spawnInChunk(chunkCoordinate, structureCache, worldGenRegion, otgRootFolder);
 		} else {
 			// TODO: When can structure.start be null? Should only be possible for bo3 structures?
 			if(structureStart != null)
@@ -272,7 +272,7 @@ public class CustomStructurePlotter
 					for(ICustomStructureGen structureGen : customStructureGens)
 					{
 						int i = 0;
-						for(IStructuredCustomObject structure : structureGen.getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker))
+						for(IStructuredCustomObject structure : structureGen.getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder))
 						{
 							if(structure != null) // Structure was in resource list but file could not be found. TODO: Make this prettier!
 							{
@@ -306,10 +306,10 @@ public class CustomStructurePlotter
 							{
 								structuresToSpawn1.add(bo4AndRarity.getKey().getName());
 								structureCoord = new BO4CustomStructureCoordinate(worldGenRegion.getPresetFolderName(), bo4AndRarity.getKey(), null, Rotation.NORTH, chunkCoord.getBlockX(), (short)0, chunkCoord.getBlockZ(), 0, false, false, null);
-								structureStart2 = new BO4CustomStructure(worldGenRegion.getSeed(), structureCoord, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
+								structureStart2 = new BO4CustomStructure(worldGenRegion.getSeed(), structureCoord, otgRootFolder);
 								// Get minimum size (size if spawned with branchDepth 0)
 								try {
-									Object[] topLeftAndLowerRightChunkCoordinates = structureStart2.getMinimumSize(structureCache, worldGenRegion, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
+									Object[] topLeftAndLowerRightChunkCoordinates = structureStart2.getMinimumSize(structureCache, worldGenRegion, otgRootFolder);
 									double BO3size = Math.abs((Integer)topLeftAndLowerRightChunkCoordinates[0] - -(Integer)topLeftAndLowerRightChunkCoordinates[2]) * Math.abs((Integer)topLeftAndLowerRightChunkCoordinates[1] - -(Integer)topLeftAndLowerRightChunkCoordinates[3]);
 									bo4sBySize.add(new Object[]{ bo4AndRarity.getKey(), topLeftAndLowerRightChunkCoordinates, BO3size, bo4AndRarity.getValue() });
 								}
@@ -339,10 +339,10 @@ public class CustomStructurePlotter
 								{
 									structuresToSpawn1.add(bo4AndRarity.getKey().getName());
 									structureCoord = new BO4CustomStructureCoordinate(worldGenRegion.getPresetFolderName(), bo4AndRarity.getKey(), null, Rotation.NORTH, chunkCoord.getBlockX(), (short)0, chunkCoord.getBlockZ(), 0, false, false, null);
-									structureStart2 = new BO4CustomStructure(worldGenRegion.getSeed(), structureCoord, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
+									structureStart2 = new BO4CustomStructure(worldGenRegion.getSeed(), structureCoord, otgRootFolder);
 									// Get minimum size (size if spawned with branchDepth 0)
 									try {
-										Object[] topLeftAndLowerRightChunkCoordinates = structureStart2.getMinimumSize(structureCache, worldGenRegion, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
+										Object[] topLeftAndLowerRightChunkCoordinates = structureStart2.getMinimumSize(structureCache, worldGenRegion, otgRootFolder);
 										double BO3size = Math.abs((Integer)topLeftAndLowerRightChunkCoordinates[0] - -(Integer)topLeftAndLowerRightChunkCoordinates[2]) * Math.abs((Integer)topLeftAndLowerRightChunkCoordinates[1] - -(Integer)topLeftAndLowerRightChunkCoordinates[3]);
 										int insertAtIndex = bo4sBySize.size();
 										int i = 0;
@@ -905,7 +905,7 @@ public class CustomStructurePlotter
 											{
 												structureCache.addBo4ToStructureCache(spawnChunk, structureStart2);
 
-												BO4 structureCoordConfig = ((BO4)structureCoord.getObject(otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker));
+												BO4 structureCoordConfig = ((BO4)structureCoord.getObject(otgRootFolder));
 												
 												structureCoordConfig.getConfig().timesSpawned += 1;
 												if(OTGLog.getLogCategoryEnabled(LogCategory.STRUCTURE_PLOTTING))

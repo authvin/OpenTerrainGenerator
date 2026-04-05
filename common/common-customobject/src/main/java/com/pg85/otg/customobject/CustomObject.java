@@ -1,10 +1,7 @@
 package com.pg85.otg.customobject;
 
-import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.CustomStructureCache;
 import com.pg85.otg.interfaces.ICustomObject;
-import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.bo3.Rotation;
 
@@ -21,19 +18,15 @@ import java.util.Random;
  */
 public interface CustomObject extends SpawnableObject, ICustomObject {
     /**
-     * Called after all objects are loaded. The settings should be loaded
-     * inside this method.
-     *
-     * @param otherObjectsInDirectory A map of all other objects in the
-     *                                directory. Keys are lowercase.
-     */
+	 * Called after all objects are loaded. The settings should be loaded
+	 * inside this method.
+	 *
+	 * @param otherObjectsInDirectory A map of all other objects in the
+	 *                                directory. Keys are lowercase.
+	 */
     boolean onEnable(
             String presetFolderName,
-            Path otgRootFolder,
-            CustomObjectManager customObjectManager,
-            IMaterialReader materialReader,
-            CustomObjectResourcesManager manager,
-            IModLoadedChecker modLoadedChecker
+            Path otgRootFolder
     );
 
     /**
@@ -103,7 +96,7 @@ public interface CustomObject extends SpawnableObject, ICustomObject {
 			int z
     );
 
-    boolean loadChecks(IModLoadedChecker modLoadedChecker);
+    boolean loadChecks();
 
     // Disables biomeconfig replaceBlocks to save performance.
     boolean doReplaceBlocks();

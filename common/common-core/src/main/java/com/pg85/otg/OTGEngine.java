@@ -12,7 +12,6 @@ import com.pg85.otg.interfaces.ILogger;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IPluginConfig;
 import com.pg85.otg.presets.LocalPresetLoader;
-import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 import lombok.Getter;
@@ -297,11 +296,7 @@ public abstract class OTGEngine
 			worldSavepath, 
 			worldSeed, 
 			isBo4Enabled, 
-			getOTGRootFolder(),
-			getCustomObjectManager(),
-			OTGMaterialReader.get(),
-			getCustomObjectResourcesManager(), 
-			null
+			getOTGRootFolder()
 		);
 	}
 }

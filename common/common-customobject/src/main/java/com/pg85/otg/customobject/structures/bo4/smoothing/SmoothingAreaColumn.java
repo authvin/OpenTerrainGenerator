@@ -9,6 +9,7 @@ import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.OTGLog;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -33,7 +34,7 @@ class SmoothingAreaColumn
 		this.blocks.add(block);
 	}
 
-	void processBlocks(IWorldGenRegion worldGenRegion, BO4Config bo4Config,  IMaterialReader materialReader)
+	void processBlocks(IWorldGenRegion worldGenRegion, BO4Config bo4Config)
 	{
 		if(this.highestFillingBlock == null && this.lowestCuttingBlock == null)
 		{
@@ -65,11 +66,12 @@ class SmoothingAreaColumn
 			// TODO: When using SmoothStartTop:true, if a smoothing line is underneath a bo4 block, we can 
 			// cancel spawning the rest of the line since we know we won't need it.
 		}
-		spawn(worldGenRegion, bo4Config,  materialReader);
+		spawn(worldGenRegion, bo4Config);
 	}
 	
-	private void spawn(IWorldGenRegion worldGenRegion, BO4Config bo4Config,  IMaterialReader materialReader)
+	private void spawn(IWorldGenRegion worldGenRegion, BO4Config bo4Config)
 	{
+		IMaterialReader materialReader = OTGMaterialReader.get();
 		BiomeSettings biomeConfig = worldGenRegion.getBiomeConfigForDecoration(this.x, this.z);
 
 		LocalMaterialData replaceAboveMaterial = null;

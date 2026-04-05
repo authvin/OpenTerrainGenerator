@@ -46,7 +46,7 @@ public class BO3CustomStructureCoordinate extends CustomStructureCoordinate
 		// center of the object. We need to know the exact center to choose
 		// the appropriate spawning chunk.
 
-		IStructuredCustomObject object = getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+		IStructuredCustomObject object = getObject(otgRootFolder);
 		if(object == null)
 		{
 			return null;

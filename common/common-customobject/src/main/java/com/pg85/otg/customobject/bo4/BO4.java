@@ -7,10 +7,8 @@ import java.util.Random;
 
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.constants.settings.ConfigMode;
-import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.bo4.bo4function.BO4BlockFunction;
 import com.pg85.otg.customobject.bo4.bo4function.BO4RandomBlockFunction;
-import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.config.io.FileSettingsReaderBO4;
 import com.pg85.otg.customobject.config.io.FileSettingsWriterBO4;
 import com.pg85.otg.customobject.creator.ObjectType;
@@ -21,10 +19,10 @@ import com.pg85.otg.customobject.util.BoundingBox;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.OTGLog;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.nbt.NamedBinaryTag;
 import com.pg85.otg.util.bo3.Rotation;
@@ -80,7 +78,7 @@ public class BO4 implements StructuredCustomObject
 	}
 
 	@Override
-	public boolean onEnable(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public boolean onEnable(String presetFolderName, Path otgRootFolder)
 	{
 		if(isInvalidConfig)
 		{
@@ -93,13 +91,13 @@ public class BO4 implements StructuredCustomObject
 		
 		try
 		{
-			this.config = new BO4Config(new FileSettingsReaderBO4(name, file), true, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+			this.config = new BO4Config(new FileSettingsReaderBO4(name, file), true, presetFolderName, otgRootFolder);
 			if(this.config.settingsMode != ConfigMode.WriteDisable && !this.config.isBO4Data)
 			{
-				FileSettingsWriterBO4.writeToFile(this.config, this.config.settingsMode,  materialReader, manager);
+				FileSettingsWriterBO4.writeToFile(this.config, this.config.settingsMode);
 			}
 			// Merge inherited resources (after writing)
-			this.config.loadInheritedBO3(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+			this.config.loadInheritedBO3(presetFolderName, otgRootFolder);
 		}
 		catch(InvalidConfigException ex)
 		{
@@ -126,7 +124,7 @@ public class BO4 implements StructuredCustomObject
 	}	
 
 	@Override
-	public boolean loadChecks(IModLoadedChecker modLoadedChecker)
+	public boolean loadChecks()
 	{
 		return true;
 	}
@@ -191,8 +189,9 @@ public class BO4 implements StructuredCustomObject
 	}
 
 	// BO4's should always spawn within decoration bounds, so there is no SpawnForced, only TrySpawnAt
-	public boolean trySpawnAt(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker, IWorldGenRegion worldGenRegion, Random random, Rotation rotation, ChunkCoordinate chunkCoord, int x, int y, int z, String replaceAbove, String replaceBelow, boolean replaceWithBiomeBlocks, String replaceWithSurfaceBlock, String replaceWithGroundBlock, String replaceWithStoneBlock, boolean spawnUnderWater, int waterLevel, boolean isStructureAtSpawn, boolean doReplaceAboveBelowOnly, boolean doBiomeConfigReplaceBlocks)
+	public boolean trySpawnAt(String presetFolderName, Path otgRootFolder, IWorldGenRegion worldGenRegion, Random random, Rotation rotation, ChunkCoordinate chunkCoord, int x, int y, int z, String replaceAbove, String replaceBelow, boolean replaceWithBiomeBlocks, String replaceWithSurfaceBlock, String replaceWithGroundBlock, String replaceWithStoneBlock, boolean spawnUnderWater, int waterLevel, boolean isStructureAtSpawn, boolean doReplaceAboveBelowOnly, boolean doBiomeConfigReplaceBlocks)
 	{
+		IMaterialReader materialReader = OTGMaterialReader.get();
 		//OTG.log(LogMarker.INFO, "Spawning " + this.getName() + " in Chunk X" + chunkCoord.getChunkX() + "Z" + chunkCoord.getChunkZ() + " at pos " + x + " " + y + " " + z);
 
 		LocalMaterialData replaceBelowMaterial;
@@ -296,10 +295,10 @@ public class BO4 implements StructuredCustomObject
 		
 		// Spawn
 		long startTime = System.currentTimeMillis();
-		BO4BlockFunction[] blocks = config.getBlocks(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+		BO4BlockFunction[] blocks = config.getBlocks(presetFolderName, otgRootFolder);
 		if(blocks != null)
 		{
-			for (BO4BlockFunction block : config.getBlocks(presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+			for (BO4BlockFunction block : config.getBlocks(presetFolderName, otgRootFolder))
 			{
 				if(block instanceof BO4RandomBlockFunction)
 				{

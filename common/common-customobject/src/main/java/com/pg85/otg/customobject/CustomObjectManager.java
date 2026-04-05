@@ -45,11 +45,17 @@ import java.util.Map;
  */
 public class CustomObjectManager implements ICustomObjectManager
 {
+	private static CustomObjectManager INSTANCE = null;
+	public static CustomObjectManager get() {
+		return INSTANCE;
+	}
+
 	private final Map<String, CustomObjectLoader> loaders;	
 	private final CustomObjectCollection globalCustomObjects;
 
 	public CustomObjectManager(boolean developerMode, Path otgRootFolder, Path otgPresetsFolder, CustomObjectResourcesManager manager)
 	{
+		INSTANCE = this;
 		// These are the actual lists, not just a copy.
 		this.loaders = new HashMap<>();
 

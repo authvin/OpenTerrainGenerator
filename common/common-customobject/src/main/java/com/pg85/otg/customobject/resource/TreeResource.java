@@ -68,7 +68,7 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 	@Override
 	public void spawnForChunkDecoration(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Random random, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		loadTrees(worldGenRegion.getPresetFolderName(), otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
+		loadTrees(worldGenRegion.getPresetFolderName(), otgRootFolder, customObjectManager);
 
 		int x;
 		int z;
@@ -102,7 +102,7 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 	}
 	
 	// TODO: Could this cause problems for developer mode / flushcache, trees not updating during a session?
-	private void loadTrees(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private void loadTrees(String presetFolderName, Path otgRootFolder, CustomObjectManager customObjectManager)
 	{
 		if(!this.treesLoaded)
 		{
@@ -132,7 +132,7 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 				{
 					params = treeName.replace(")", "").split("\\(");
 					treeName = params[0];
-					tree = customObjectManager.getGlobalObjects().getObjectByName(treeName, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+					tree = customObjectManager.getGlobalObjects().getObjectByName(treeName, presetFolderName, otgRootFolder);
 					this.treeObjects[treeNumber] = tree;				
 					if(tree == null)
 					{
@@ -154,7 +154,7 @@ public class TreeResource extends BiomeResourceBase implements ICustomObjectReso
 						this.treeObjectMaxChances[treeNumber] = maxHeight;					
 					} catch(NumberFormatException ignored) {  }
 				} else {
-					tree = customObjectManager.getGlobalObjects().getObjectByName(treeName, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);				
+					tree = customObjectManager.getGlobalObjects().getObjectByName(treeName, presetFolderName, otgRootFolder);
 					this.treeObjects[treeNumber] = tree;
 					if(tree == null)
 					{

@@ -1,13 +1,9 @@
 package com.pg85.otg.customobject.bo3.bo3function;
 
-import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.bofunctions.BranchNode;
-import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.CustomStructureCoordinate;
 import com.pg85.otg.customobject.structures.bo3.BO3CustomStructureCoordinate;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.util.bo3.Rotation;
 
 import java.nio.file.Path;
@@ -20,14 +16,14 @@ public class BO3WeightedBranchFunction extends BO3BranchFunction
 	private double cumulativeChance = 0;
 		
 	@Override
-	public void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
+	public void load(List<String> args) throws InvalidConfigException
 	{
 		branches = new TreeSet<>();
 		cumulativeChance = readArgs(args, true);
 	}
 
 	@Override
-	public CustomStructureCoordinate toCustomObjectCoordinate(String presetFolderName, Random random, Rotation rotation, int x, int y, int z, String startBO3Name, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public CustomStructureCoordinate toCustomObjectCoordinate(String presetFolderName, Random random, Rotation rotation, int x, int y, int z, String startBO3Name, Path otgRootFolder)
 	{
 		double randomChance = random.nextDouble() * (totalChanceSet
 				? totalChance
@@ -39,7 +35,7 @@ public class BO3WeightedBranchFunction extends BO3BranchFunction
 		{
 			if (branch.getChance() >= randomChance)
 			{
-				return new BO3CustomStructureCoordinate(presetFolderName, branch.getCustomObject(false, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker), branch.customObjectName, branch.getRotation(), x + this.x, (short)(y + this.y), z + this.z);
+				return new BO3CustomStructureCoordinate(presetFolderName, branch.getCustomObject(false, presetFolderName, otgRootFolder), branch.customObjectName, branch.getRotation(), x + this.x, (short)(y + this.y), z + this.z);
 			}
 		}
 		return null;

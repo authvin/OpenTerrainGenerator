@@ -4,7 +4,6 @@ import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.helpers.StringHelper;
 import com.pg85.otg.util.logging.LogCategory;
@@ -112,7 +111,7 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 	}
 
 	@Override
-	public <T> List<CustomObjectConfigFunction<T>> getConfigFunctions(T holder, boolean useFallback,  IMaterialReader materialReader, CustomObjectResourcesManager manager)
+	public <T> List<CustomObjectConfigFunction<T>> getConfigFunctions(T holder, boolean useFallback)
 	{
 		List<CustomObjectConfigFunction<T>> result = new ArrayList<>(configFunctions.size());
 		for (StringOnLine configFunctionLine : configFunctions)
@@ -122,10 +121,10 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 			String functionName = configFunctionString.substring(0, bracketIndex);
 			String parameters = configFunctionString.substring(bracketIndex + 1, configFunctionString.length() - 1);
 			List<String> args = Arrays.asList(StringHelper.readCommaSeperatedString(parameters));
-			CustomObjectConfigFunction<T> function = manager.getConfigFunction(functionName, holder, args,  materialReader);
+			CustomObjectConfigFunction<T> function = CustomObjectResourcesManager.get().getConfigFunction(functionName, holder, args);
 			if(function == null)
 			{
-				function = manager.getConfigFunction(functionName, holder, args,  materialReader);	
+				function = CustomObjectResourcesManager.get().getConfigFunction(functionName, holder, args);
 			}
 			result.add(function);
 			if (!function.isValid() && OTGLog.getLogCategoryEnabled(LogCategory.CONFIGS))
@@ -147,7 +146,7 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 		// Add inherited functions
 		if (useFallback && fallback != null)
 		{
-			return FileSettingsReaderBO4.mergeListsCustomObject(result, fallback.getConfigFunctions(holder, true,  materialReader, manager));
+			return FileSettingsReaderBO4.mergeListsCustomObject(result, fallback.getConfigFunctions(holder, true));
 		}
 
 		return result;
@@ -177,7 +176,7 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 	}
 
 	@Override
-	public <S> S getSetting(Setting<S> setting, S defaultValue,  IMaterialReader materialReader, CustomObjectResourcesManager manager)
+	public <S> S getSetting(Setting<S> setting, S defaultValue)
 	{
 		// Try reading the setting from the file
 		StringOnLine stringWithLineNumber = this.settingsCache.get(setting.getName().toLowerCase());
@@ -211,7 +210,7 @@ public class FileSettingsReaderBO4 implements SettingsReaderBO4
 		// Try the fallback
 		if (this.fallback != null)
 		{
-			return this.fallback.getSetting(setting, defaultValue,  materialReader, manager);
+			return this.fallback.getSetting(setting, defaultValue);
 		}
 
 		// Return default value

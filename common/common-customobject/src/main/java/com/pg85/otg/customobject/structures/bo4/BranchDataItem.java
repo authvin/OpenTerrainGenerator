@@ -4,13 +4,9 @@ import java.nio.file.Path;
 import java.util.Random;
 import java.util.Stack;
 
-import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.bo4.BO4;
-import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.Branch;
 import com.pg85.otg.customobject.util.BO3Enums.SpawnHeightEnum;
-import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
 import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.OTGLog;
@@ -55,7 +51,7 @@ class BranchDataItem
 		branchNumber = BranchDataItem.BranchDataItemCounter;
 	}	
 	
-	Stack<BranchDataItem> getChildren(boolean dontSpawn, IWorldGenRegion worldGenRegion, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	Stack<BranchDataItem> getChildren(boolean dontSpawn, IWorldGenRegion worldGenRegion, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder)
 	{
 		// We may target unloaded/ungenerated chunks, so we'll use shadowgen when doing height/material checks.
 		
@@ -66,14 +62,14 @@ class BranchDataItem
 
 		if(!dontSpawn && this.children.isEmpty())
 		{
-			Branch[] branches = ((BO4)this.branch.getStructuredObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getBranches();
+			Branch[] branches = ((BO4)this.branch.getStructuredObject(otgRootFolder)).getBranches();
 			for (Branch branch1 : branches)
 			{
-				BO4CustomStructureCoordinate childCoordObject = (BO4CustomStructureCoordinate)branch1.toCustomObjectCoordinate(worldGenRegion.getPresetFolderName(), this.random, this.branch.getRotation(), this.branch.getX(), this.branch.getY(), this.branch.getZ(), this.startBO3Name != null ? this.startBO3Name : this.branch.bo3Name, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+				BO4CustomStructureCoordinate childCoordObject = (BO4CustomStructureCoordinate)branch1.toCustomObjectCoordinate(worldGenRegion.getPresetFolderName(), this.random, this.branch.getRotation(), this.branch.getX(), this.branch.getY(), this.branch.getZ(), this.startBO3Name != null ? this.startBO3Name : this.branch.bo3Name, otgRootFolder);
 				// Can be null if spawn roll fails TODO: dont roll for spawn in branch.toCustomObjectCoordinate?
 				if(childCoordObject != null)
 				{
-					BO4 childBO3 = ((BO4)childCoordObject.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker));
+					BO4 childBO3 = ((BO4)childCoordObject.getObject(otgRootFolder));
 					if(childBO3 == null)
 					{
 						continue;

@@ -4,7 +4,6 @@ import com.pg85.otg.customobject.config.CustomObjectConfigFile;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
 import com.pg85.otg.customobject.structures.Branch;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
 
 import java.util.*;
 
@@ -32,7 +31,7 @@ public abstract class BranchFunction<T extends CustomObjectConfigFile> extends C
 	protected boolean totalChanceSet = false;
 
 	@Override
-	public void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
+	public void load(List<String> args) throws InvalidConfigException
 	{
 		branches = new TreeSet<>();
 		readArgs(args, false);

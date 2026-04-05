@@ -60,7 +60,7 @@ public class CustomStructureCache
 	// WorldInfoChunks is used as little as possible, due to its size and slowness.
 	private Map<ChunkCoordinate, StructureDataRegion> worldInfoChunks;
 	
-	public CustomStructureCache(String presetFolderName, Path worldSaveDir, long worldSeed, boolean isBO4Enabled, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public CustomStructureCache(String presetFolderName, Path worldSaveDir, long worldSeed, boolean isBO4Enabled, Path otgRootFolder)
 	{
 		this.worldInfoChunks = new HashMap<>();
 		this.plotter = new CustomStructurePlotter();
@@ -69,7 +69,7 @@ public class CustomStructureCache
 		this.isBO4Enabled = isBO4Enabled;
 		this.presetFolderName = presetFolderName;
 		this.worldSeed = worldSeed;
-		loadStructureCache(otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
+		loadStructureCache(otgRootFolder);
 	}
 	
 	// WorldInfoChunks
@@ -188,11 +188,11 @@ public class CustomStructureCache
 		{
 			return null;
 		}
-		for (int objectNumber = 0; objectNumber < structureGen.getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker).size(); objectNumber++)
+		for (int objectNumber = 0; objectNumber < structureGen.getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder).size(); objectNumber++)
 		{
 			if (random.nextDouble() * 100.0 < structureGen.getObjectChance(objectNumber))
 			{
-				IStructuredCustomObject object = structureGen.getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker).get(objectNumber);
+				IStructuredCustomObject object = structureGen.getObjects(worldGenRegion.getPresetFolderName(), otgRootFolder).get(objectNumber);
 				if(object != null && object instanceof BO3)
 				{
 					return (BO3CustomStructureCoordinate)((BO3)object).makeCustomStructureCoordinate(worldGenRegion.getPresetFolderName(), worldGenRegion.getPresetConfig().getResourceSettings().isUseOldBO3StructureRarity(), random, chunkX, chunkZ);
@@ -302,13 +302,13 @@ public class CustomStructureCache
 		}
 	}
 
-	private void loadStructureCache(Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private void loadStructureCache(Path otgRootFolder)
 	{		
 		OTGLog.log(LogLevel.INFO, LogCategory.MAIN, "Loading structure data");
 
 		this.worldInfoChunks = new HashMap<>();
 		
-		Map<CustomStructure, ArrayList<ChunkCoordinate>> loadedStructures = CustomStructureFileManager.loadStructureData(this.presetFolderName, this.worldSaveDir, this.worldSeed, this.isBO4Enabled, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+		Map<CustomStructure, ArrayList<ChunkCoordinate>> loadedStructures = CustomStructureFileManager.loadStructureData(this.presetFolderName, this.worldSaveDir, this.worldSeed, this.isBO4Enabled, otgRootFolder);
 		if(loadedStructures != null)
 		{
 			if(this.isBO4Enabled)

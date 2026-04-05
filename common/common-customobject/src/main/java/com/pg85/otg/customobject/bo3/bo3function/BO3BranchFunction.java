@@ -1,15 +1,11 @@
 package com.pg85.otg.customobject.bo3.bo3function;
 
-import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.bo3.BO3Config;
 import com.pg85.otg.customobject.bofunctions.BranchFunction;
 import com.pg85.otg.customobject.bofunctions.BranchNode;
-import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.CustomStructureCoordinate;
 import com.pg85.otg.customobject.structures.bo3.BO3CustomStructureCoordinate;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.util.bo3.Rotation;
 
 import java.nio.file.Path;
@@ -21,7 +17,7 @@ import java.util.*;
  */
 public class BO3BranchFunction extends BranchFunction<BO3Config>
 {	
-	public BO3BranchFunction rotate(String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public BO3BranchFunction rotate(String presetFolderName, Path otgRootFolder)
 	{
 		BO3BranchFunction rotatedBranch = new BO3BranchFunction();
 		rotatedBranch.x = z;
@@ -32,7 +28,7 @@ public class BO3BranchFunction extends BranchFunction<BO3Config>
 		rotatedBranch.totalChanceSet = totalChanceSet;
 		for (BranchNode holder : this.branches)
 		{
-			rotatedBranch.branches.add(new BranchNode(holder.getRotation().next(), holder.getChance(), holder.getCustomObject(false, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker), holder.customObjectName));
+			rotatedBranch.branches.add(new BranchNode(holder.getRotation().next(), holder.getChance(), holder.getCustomObject(false, presetFolderName, otgRootFolder), holder.customObjectName));
 		}
 		return rotatedBranch;
 	}
@@ -73,12 +69,12 @@ public class BO3BranchFunction extends BranchFunction<BO3Config>
 	 * should spawn. Returns null if no branch passes the check.
 	 */
 	@Override
-	public CustomStructureCoordinate toCustomObjectCoordinate(String presetFolderName, Random random, Rotation rotation, int x, int y, int z, String startBO3Name, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public CustomStructureCoordinate toCustomObjectCoordinate(String presetFolderName, Random random, Rotation rotation, int x, int y, int z, String startBO3Name, Path otgRootFolder)
 	{
         for (BranchNode branch : branches) {
             double randomChance = random.nextDouble() * totalChance;
             if (randomChance < branch.getChance()) {
-                return new BO3CustomStructureCoordinate(presetFolderName, branch.getCustomObject(false, presetFolderName, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker), branch.customObjectName, branch.getRotation(), x + this.x, (short) (y + this.y), z + this.z);
+                return new BO3CustomStructureCoordinate(presetFolderName, branch.getCustomObject(false, presetFolderName, otgRootFolder), branch.customObjectName, branch.getRotation(), x + this.x, (short) (y + this.y), z + this.z);
             }
         }
 		return null;

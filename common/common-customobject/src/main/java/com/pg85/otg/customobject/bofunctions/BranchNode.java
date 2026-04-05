@@ -4,10 +4,7 @@ import java.nio.file.Path;
 
 import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.CustomObjectManager;
-import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
 import com.pg85.otg.customobject.structures.StructuredCustomObject;
-import com.pg85.otg.interfaces.IMaterialReader;
-import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.util.bo3.Rotation;
 
 /**
@@ -59,14 +56,14 @@ public class BranchNode implements Comparable<BranchNode>
 	/**
 	 * @return the branch CustomObject
 	 */
-	public StructuredCustomObject getCustomObject(boolean lazyLoad, String presetFolderName, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public StructuredCustomObject getCustomObject(boolean lazyLoad, String presetFolderName, Path otgRootFolder)
 	{
 		if(customObject != null || !lazyLoad)
 		{
 			return customObject;
 		}
 
-		CustomObject customObject = customObjectManager.getGlobalObjects().getObjectByName(customObjectName, presetFolderName, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+		CustomObject customObject = CustomObjectManager.get().getGlobalObjects().getObjectByName(customObjectName, presetFolderName, otgRootFolder);
 		if(customObject != null && !(customObject instanceof StructuredCustomObject))
 		{
 			customObject = null;

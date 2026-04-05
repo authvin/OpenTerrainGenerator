@@ -5,6 +5,7 @@ import java.util.Random;
 
 import com.pg85.otg.customobject.config.CustomObjectConfigFile;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.nbt.NBTHelper;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.IMaterialReader;
@@ -25,8 +26,9 @@ public abstract class BlockFunction<T extends CustomObjectConfigFile> extends Cu
 	public String nbtName;
 
 	@Override
-	public void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
+	public void load(List<String> args) throws InvalidConfigException
 	{
+		IMaterialReader materialReader = OTGMaterialReader.get();
 		assureSize(4, args);
 		// Those limits are arbitrary, LocalWorld.setBlock will limit it
 		// correctly based on what chunks can be accessed
@@ -34,7 +36,7 @@ public abstract class BlockFunction<T extends CustomObjectConfigFile> extends Cu
 		y = (short) readInt(args.get(1), -1000, 1000);
 		z = readInt(args.get(2), -100, 100);
 
-		material = readMaterial(args.get(3), materialReader);
+		material = materialReader.readMaterial(args.get(3));
 		if(material == null)
 		{
 			throw new InvalidConfigException("Material \"" + args.get(3) + "\" could not be read.");

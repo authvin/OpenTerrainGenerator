@@ -4,9 +4,9 @@ import java.util.List;
 
 import com.pg85.otg.customobject.bo3.BO3Config;
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
 import com.pg85.otg.interfaces.IModLoadedChecker;
 import com.pg85.otg.interfaces.IWorldGenRegion;
+import com.pg85.otg.util.OTGModChecker;
 
 public class ModCheck extends BO3Check
 {
@@ -25,7 +25,7 @@ public class ModCheck extends BO3Check
 	}
 
 	@Override
-	protected void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
+	protected void load(List<String> args) throws InvalidConfigException
 	{
 		assureSize(1, args);
 		mods = new String[args.size()];
@@ -58,11 +58,12 @@ public class ModCheck extends BO3Check
 		return BO3Config.class;
 	}
 
-	public boolean evaluate(IModLoadedChecker modLoadedChecker)
+	public boolean evaluate()
 	{
+		IModLoadedChecker check = OTGModChecker.get();
 		for (String mod : mods)
 		{
-			if (!modLoadedChecker.isModLoaded(mod))
+			if (!check.isModLoaded(mod))
 			{
 				return false;
 			}

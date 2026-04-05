@@ -1,7 +1,5 @@
 package com.pg85.otg.customobject.bo3.checks;
 
-import com.pg85.otg.interfaces.IModLoadedChecker;
-
 public class ModCheckNot extends ModCheck
 {
 	@Override
@@ -10,8 +8,8 @@ public class ModCheckNot extends ModCheck
 		return makeString("ModCheckNot");
 	}
 	
-	public boolean evaluate(IModLoadedChecker modLoadedChecker)
+	public boolean evaluate()
 	{
-		return !super.evaluate(modLoadedChecker);
+		return !super.evaluate();
 	}
 }

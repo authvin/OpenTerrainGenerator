@@ -44,7 +44,7 @@ public class BO3CustomStructure extends CustomStructure
 
 	public BO3CustomStructure(IWorldGenRegion worldGenRegion, BO3CustomStructureCoordinate start, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		StructuredCustomObject object = (StructuredCustomObject)start.getObject(otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
+		StructuredCustomObject object = (StructuredCustomObject)start.getObject(otgRootFolder);
 
 		if(object == null)
 		{
@@ -74,14 +74,14 @@ public class BO3CustomStructure extends CustomStructure
 	private void addBranches(BO3CustomStructureCoordinate coordObject, int depth, IWorldGenRegion worldGenRegion, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
 		ILogger logger = worldGenRegion.getLogger();
-		IStructuredCustomObject object = coordObject.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+		IStructuredCustomObject object = coordObject.getObject(otgRootFolder);
 
 		if(object != null)
 		{
 			for (Branch branch : getBranches(object, coordObject.getRotation()))
 			{
 				// TODO: Does passing null as startbo3name work?
-				BO3CustomStructureCoordinate childCoordObject = (BO3CustomStructureCoordinate)branch.toCustomObjectCoordinate(worldGenRegion.getPresetFolderName(), this.random, coordObject.getRotation(), coordObject.getX(), coordObject.getY(), coordObject.getZ(), null, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+				BO3CustomStructureCoordinate childCoordObject = (BO3CustomStructureCoordinate)branch.toCustomObjectCoordinate(worldGenRegion.getPresetFolderName(), this.random, coordObject.getRotation(), coordObject.getX(), coordObject.getY(), coordObject.getZ(), null, otgRootFolder);
 
 				// Don't add null objects
 				if (childCoordObject == null)
@@ -133,7 +133,7 @@ public class BO3CustomStructure extends CustomStructure
 		{
 			for (CustomStructureCoordinate coordObject : objectsInChunk)
 			{
-				BO3 bo3 = ((BO3)((BO3CustomStructureCoordinate)coordObject).getObject(otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker));
+				BO3 bo3 = ((BO3)((BO3CustomStructureCoordinate)coordObject).getObject(otgRootFolder));
 				bo3.trySpawnAt(this, structureCache, worldGenRegion, this.random, coordObject.rotation, coordObject.x, getCorrectY(worldGenRegion, coordObject.x, coordObject.y, coordObject.z), coordObject.z, bo3.getConfig().minHeight, bo3.getConfig().maxHeight, coordObject.y);
 			}
 		}

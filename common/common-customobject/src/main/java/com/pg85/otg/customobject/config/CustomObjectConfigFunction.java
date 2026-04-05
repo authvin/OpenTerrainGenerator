@@ -45,7 +45,7 @@ public abstract class CustomObjectConfigFunction<T>
 	 * @param args
 	 * @return
 	 */
-	public static final <T> CustomObjectConfigFunction<T> create(T holder, Class<? extends CustomObjectConfigFunction<T>> clazz,  IMaterialReader materialReader, Object... args)
+	public static final <T> CustomObjectConfigFunction<T> create(T holder, Class<? extends CustomObjectConfigFunction<T>> clazz, Object... args)
 	{
 		List<String> stringArgs = new ArrayList<>(args.length);
 		for (Object arg : args)
@@ -64,7 +64,7 @@ public abstract class CustomObjectConfigFunction<T>
         configFunction.setHolder(holder);
 		try
 		{
-			configFunction.load(stringArgs,  materialReader);
+			configFunction.load(stringArgs);
 		} catch (InvalidConfigException e) {
 			OTGLog.log(
 				LogLevel.ERROR,
@@ -131,15 +131,16 @@ public abstract class CustomObjectConfigFunction<T>
 
 	/**
 	 * Initializes the function: the holder is set and the arguments are read.
+	 *
 	 * @param holder The holder to set. Must be of the type returned by
-	 *				{@link #getHolderType()}.
-	 * @param args	Arguments to parse.
+	 *               {@link #getHolderType()}.
+	 * @param args   Arguments to parse.
 	 * @throws InvalidConfigException If the arguments are invalid.
 	 */
-	final void init(T holder, List<String> args,  IMaterialReader materialReader) throws InvalidConfigException
+	final void init(T holder, List<String> args) throws InvalidConfigException
 	{
 		this.holder = holder;
-		load(args,  materialReader);
+		load(args);
 	}
 
 	/**
@@ -181,10 +182,11 @@ public abstract class CustomObjectConfigFunction<T>
 	 * Parses the arguments. {@link #setHolder(Object)} must be called prior
 	 * to calling this method, as this method is allowed to use
 	 * {@link #getHolder()}.
+	 *
 	 * @param args The arguments to parse.
 	 * @throws InvalidConfigException If the syntax is invalid.
 	 */
-	protected abstract void load(List<String> args,  IMaterialReader materialReader) throws InvalidConfigException;
+	protected abstract void load(List<String> args) throws InvalidConfigException;
 	
 	/**
 	 * Formats the material list as a string list.
@@ -254,14 +256,15 @@ public abstract class CustomObjectConfigFunction<T>
 	/**
 	 * Reads all materials from the start position until the end of the
 	 * list.
+	 *
 	 * @param strings The input strings.
-	 * @param start	The position to start. The first element in the list
-	 *				has index 0, the last one size() - 1.
+	 * @param start   The position to start. The first element in the list
+	 *                has index 0, the last one size() - 1.
 	 * @return All block ids.
 	 * @throws InvalidConfigException If one of the elements in the list is
-	 *								not a valid block id.
+	 *                                not a valid block id.
 	 */
-	protected final MaterialSet readMaterials(List<String> strings, int start, IMaterialReader materialReader) throws InvalidConfigException
+	protected final MaterialSet readMaterials(List<String> strings, int start) throws InvalidConfigException
 	{
 		MaterialSet materials = new MaterialSet();
 		for (int i = start; i < strings.size(); i++)

@@ -1,7 +1,7 @@
 package com.pg85.otg.customobject.bo2;
 
 import com.pg85.otg.exceptions.InvalidConfigException;
-import com.pg85.otg.interfaces.IMaterialReader;
+import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.materials.LocalMaterialData;
 
 class ObjectCoordinate
@@ -58,7 +58,7 @@ class ObjectCoordinate
 		return newCoordinate;
 	}
 
-	static ObjectCoordinate getCoordinateFromString(String key, String value, IMaterialReader materialReader)
+	static ObjectCoordinate getCoordinateFromString(String key, String value)
 	{
 		String[] coordinates = key.split(",(?![^\\(\\[]*[\\]\\)])", 3); // Splits on any comma not inside brackets
 		if (coordinates.length != 3)
@@ -85,7 +85,7 @@ class ObjectCoordinate
 				newCoordinate.branchDirection = Integer.parseInt(branchData[0]);
 				newCoordinate.branchOdds = Integer.parseInt(branchData[1]);
 			}
-			newCoordinate.material = materialReader.readMaterial(workingDataString);
+			newCoordinate.material = OTGMaterialReader.get().readMaterial(workingDataString);
 
 			return newCoordinate;
 		}

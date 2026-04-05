@@ -168,15 +168,15 @@ public class BO4CustomStructure extends CustomStructure
 	
 	}	
 	
-	public BO4CustomStructure(long worldSeed, BO4CustomStructureCoordinate structureStart, Map<ChunkCoordinate, Stack<BO4CustomStructureCoordinate>> objectsToSpawn, Map<ChunkCoordinate, ArrayList<SmoothingAreaLine>> smoothingAreasToSpawn, int minY, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public BO4CustomStructure(long worldSeed, BO4CustomStructureCoordinate structureStart, Map<ChunkCoordinate, Stack<BO4CustomStructureCoordinate>> objectsToSpawn, Map<ChunkCoordinate, ArrayList<SmoothingAreaLine>> smoothingAreasToSpawn, int minY, Path otgRootFolder)
 	{
-		this(worldSeed, structureStart, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker);
+		this(worldSeed, structureStart, otgRootFolder);
 		this.objectsToSpawn = objectsToSpawn;
 		this.smoothingAreaManager.fillSmoothingLineCaches(smoothingAreasToSpawn);
 		this.minY = minY;
 	}
 	
-	public BO4CustomStructure(long worldSeed, BO4CustomStructureCoordinate start, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	public BO4CustomStructure(long worldSeed, BO4CustomStructureCoordinate start, Path otgRootFolder)
 	{
 		this.isStructureAtSpawn = false;
 
@@ -184,7 +184,7 @@ public class BO4CustomStructure extends CustomStructure
 		{
 			return;
 		}
-		if (!(start.getObject(otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker) instanceof StructuredCustomObject))
+		if (!(start.getObject(otgRootFolder) instanceof StructuredCustomObject))
 		{
 			throw new IllegalArgumentException("Start object must be a structure!");
 		}
@@ -197,7 +197,7 @@ public class BO4CustomStructure extends CustomStructure
 	{
 		this.isStructureAtSpawn = isStructureAtSpawn;
 
-		if (!(start.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker) instanceof StructuredCustomObject))
+		if (!(start.getObject(otgRootFolder) instanceof StructuredCustomObject))
 		{
 			throw new IllegalArgumentException("Start object must be a structure!");
 		}
@@ -216,8 +216,8 @@ public class BO4CustomStructure extends CustomStructure
 		
 		try
 		{
-			BO4Config bo4Config = ((BO4)this.start.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig();
-			calculateBranches(bo4Config, false, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+			BO4Config bo4Config = ((BO4)this.start.getObject(otgRootFolder)).getConfig();
+			calculateBranches(bo4Config, false, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 		} catch (InvalidConfigException ex) {
 			OTGLog.log(LogLevel.FATAL, LogCategory.STRUCTURE_PLOTTING, "An unknown error occurred while calculating branches for BO4 " + this.start.bo3Name + ". This is probably an error in the BO4's branch configuration, not a bug. If you can track this down, please tell us what caused it!");
 			throw new RuntimeException("An unknown error occurred while calculating branches for BO4 " + this.start.bo3Name + ". This is probably an error in the BO4's branch configuration, not a bug. If you can track this down, please tell us what caused it!");
@@ -235,7 +235,7 @@ public class BO4CustomStructure extends CustomStructure
 				StringBuilder structureInfo = new StringBuilder();
 				for(CustomStructureCoordinate customObjectCoord : chunkCoordSet.getValue())
 				{
-					structureInfo.append(customObjectCoord.getObject(otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker).getName()).append(":").append(customObjectCoord.getRotation()).append(", ");
+					structureInfo.append(customObjectCoord.getObject(otgRootFolder).getName()).append(":").append(customObjectCoord.getRotation()).append(", ");
 				}
 				if(structureInfo.length() > 0)
 				{
@@ -252,16 +252,16 @@ public class BO4CustomStructure extends CustomStructure
 				// Don't spawn BO4's that have been overriden because of replacesBO4
 				for (CustomStructureCoordinate coordObject : chunkCoordSet.getValue())
 				{
-					BO4Config objectConfig = ((BO4)coordObject.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig();
+					BO4Config objectConfig = ((BO4)coordObject.getObject(otgRootFolder)).getConfig();
 					if(!objectConfig.replacesBO3Branches.isEmpty())
 					{
 						for(String BO3ToReplace : objectConfig.replacesBO3Branches)
 						{
 							for (BO4CustomStructureCoordinate coordObjectToReplace : chunkCoordSet.getValue())
 							{
-								if(((BO4)coordObjectToReplace.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getName().equalsIgnoreCase(BO3ToReplace))
+								if(((BO4)coordObjectToReplace.getObject(otgRootFolder)).getName().equalsIgnoreCase(BO3ToReplace))
 								{
-									if(checkCollision(coordObject, coordObjectToReplace, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+									if(checkCollision(coordObject, coordObjectToReplace, otgRootFolder))
 									{
 										coordObjectToReplace.isSpawned = true;
 									}
@@ -303,7 +303,7 @@ public class BO4CustomStructure extends CustomStructure
 					totalBO3sSpawned += this.objectsToSpawn.get(entry).size();
 				}
 
-				OTGLog.log(LogLevel.INFO, LogCategory.STRUCTURE_PLOTTING, this.start.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker).getName() + " " + totalBO3sSpawned + " object(s) plotted in " + (System.currentTimeMillis() - startTime) + " Ms and " + Cycle + " cycle(s), " + (branchesTried + 1) + " object(s) tried.");
+				OTGLog.log(LogLevel.INFO, LogCategory.STRUCTURE_PLOTTING, this.start.getObject(otgRootFolder).getName() + " " + totalBO3sSpawned + " object(s) plotted in " + (System.currentTimeMillis() - startTime) + " Ms and " + Cycle + " cycle(s), " + (branchesTried + 1) + " object(s) tried.");
 			}
 		}
 	}
@@ -325,7 +325,7 @@ public class BO4CustomStructure extends CustomStructure
 			// Material checks:
 			// A BO3 may need to perform material checks when using !CanSpawnOnWater or SpawnOnWaterOnly
 
-			BO4Config config = ((BO4)this.start.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig();
+			BO4Config config = ((BO4)this.start.getObject(otgRootFolder)).getConfig();
 
 			short startY = 0;
 			int centerX = this.start.getX() + DecorationArea.BO_CHUNK_CENTER_X;
@@ -452,9 +452,9 @@ public class BO4CustomStructure extends CustomStructure
 	 * If this structure were spawned as small as possible (with branchDepth 0)
 	 * @throws InvalidConfigException
 	 */
-	public Object[] getMinimumSize(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException
+	public Object[] getMinimumSize(CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Path otgRootFolder) throws InvalidConfigException
 	{
-		BO4 bo4 = ((BO4)this.start.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker));
+		BO4 bo4 = ((BO4)this.start.getObject(otgRootFolder));
 		BO4Config bo4Config = bo4.getConfig();
 		if(
 			bo4Config.minimumSizeTop != -1 &&
@@ -473,7 +473,7 @@ public class BO4CustomStructure extends CustomStructure
 			return returnValue;
 		}
 		
-		calculateBranches(bo4Config, true, structureCache, worldGenRegion, null, null, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+		calculateBranches(bo4Config, true, structureCache, worldGenRegion, null, null, otgRootFolder);
 
 		// Calculate smoothing areas around the entire branching structure
 		// Smooth the terrain in all directions bordering the structure so
@@ -544,7 +544,7 @@ public class BO4CustomStructure extends CustomStructure
 		return returnValue;
 	}
 
-	private void calculateBranches(BO4Config startBO4Config, boolean minimumSize, CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, ArrayList<String> targetBiomes, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker) throws InvalidConfigException
+	private void calculateBranches(BO4Config startBO4Config, boolean minimumSize, CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, ArrayList<String> targetBiomes, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder) throws InvalidConfigException
 	{
 		if(OTGLog.getLogCategoryEnabled(LogCategory.STRUCTURE_PLOTTING))
 		{
@@ -559,10 +559,10 @@ public class BO4CustomStructure extends CustomStructure
 		{
 			OTGLog.log(LogLevel.INFO, LogCategory.STRUCTURE_PLOTTING, "");
 			OTGLog.log(LogLevel.INFO, LogCategory.STRUCTURE_PLOTTING, "---- Cycle 0 ----");
-			OTGLog.log(LogLevel.INFO, LogCategory.STRUCTURE_PLOTTING, "Plotted X" + branchData.chunkCoordinate.getChunkX() + " Z" + branchData.chunkCoordinate.getChunkZ() + " - " + branchData.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker).getName());
+			OTGLog.log(LogLevel.INFO, LogCategory.STRUCTURE_PLOTTING, "Plotted X" + branchData.chunkCoordinate.getChunkX() + " Z" + branchData.chunkCoordinate.getChunkZ() + " - " + branchData.branch.getObject(otgRootFolder).getName());
 		}
 
-		addToCaches(branchData, ((BO4)branchData.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)));		
+		addToCaches(branchData, ((BO4)branchData.branch.getObject(otgRootFolder)));
 
 		Cycle = 0;
 		boolean canOverrideBranchesSpawned = false;
@@ -581,13 +581,13 @@ public class BO4CustomStructure extends CustomStructure
 				OTGLog.log(LogLevel.INFO, LogCategory.STRUCTURE_PLOTTING, "---- Cycle " + Cycle + " ----");
 			}
 
-			traverseAndSpawnChildBranches(startBO4Config, branchData, minimumSize, true, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+			traverseAndSpawnChildBranches(startBO4Config, branchData, minimumSize, true, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 
 			if(OTGLog.getLogCategoryEnabled(LogCategory.STRUCTURE_PLOTTING))
 			{
 				OTGLog.log(LogLevel.INFO, LogCategory.STRUCTURE_PLOTTING, "All branch groups with required branches only have been processed for cycle " + Cycle + ", plotting branch groups with optional branches.");
 			}
-			traverseAndSpawnChildBranches(startBO4Config, branchData, minimumSize, false, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+			traverseAndSpawnChildBranches(startBO4Config, branchData, minimumSize, false, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 
 			processingDone = true;
 			for(BranchDataItem branchDataItem3 : AllBranchesBranchData)
@@ -608,11 +608,11 @@ public class BO4CustomStructure extends CustomStructure
 				processingDone = false;
 				for(BranchDataItem branchDataItem3 : AllBranchesBranchData)
 				{
-					for(BranchDataItem childBranch : branchDataItem3.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+					for(BranchDataItem childBranch : branchDataItem3.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder))
 					{
 						if(
 							!childBranch.branch.isRequiredBranch &&
-							((BO4)childBranch.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig().canOverride
+							((BO4)childBranch.branch.getObject(otgRootFolder)).getConfig().canOverride
 						)
 						{
 							branchDataItem3.doneSpawning = false;
@@ -673,28 +673,28 @@ public class BO4CustomStructure extends CustomStructure
 		AllBranchesBranchDataHash.clear();
 	}
 
-	private void traverseAndSpawnChildBranches(BO4Config startBO4Config, BranchDataItem branchData, boolean minimumSize, boolean spawningRequiredBranchesOnly, CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, ArrayList<String> targetBiomes, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private void traverseAndSpawnChildBranches(BO4Config startBO4Config, BranchDataItem branchData, boolean minimumSize, boolean spawningRequiredBranchesOnly, CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, ArrayList<String> targetBiomes, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder)
 	{
 		if(!branchData.doneSpawning)
 		{
-			addBranches(startBO4Config, branchData, minimumSize, false, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+			addBranches(startBO4Config, branchData, minimumSize, false, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 		} else {
 			if(!branchData.cannotSpawn)
 			{
-				for(BranchDataItem branchDataItem2 : branchData.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+				for(BranchDataItem branchDataItem2 : branchData.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder))
 				{
 					// BranchData.DoneSpawning can be set to true by a child branch
 					// that tried to spawn but couldnt
 					if(!branchDataItem2.cannotSpawn && branchData.doneSpawning)
 					{
-						traverseAndSpawnChildBranches(startBO4Config, branchDataItem2, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+						traverseAndSpawnChildBranches(startBO4Config, branchDataItem2, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 					}
 				}
 			}
 		}
 	}
 	
-	private void addBranches(BO4Config startBO4Config, BranchDataItem branchDataItem, boolean minimumSize, boolean traverseOnlySpawnedChildren, boolean spawningRequiredBranchesOnly, CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, ArrayList<String> targetBiomes, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private void addBranches(BO4Config startBO4Config, BranchDataItem branchDataItem, boolean minimumSize, boolean traverseOnlySpawnedChildren, boolean spawningRequiredBranchesOnly, CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, ArrayList<String> targetBiomes, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder)
 	{
 		// We may target unloaded/ungenerated chunks, so we'll use shadowgen when doing height/material checks.
 		
@@ -702,14 +702,14 @@ public class BO4CustomStructure extends CustomStructure
 		// This is useful for adding interiors and knocking out walls between rooms.
 		if(!SpawningCanOverrideBranches)
 		{
-			for(BranchDataItem branchDataItem3 : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+			for(BranchDataItem branchDataItem3 : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder))
 			{
 				if(
 					(
 						!branchDataItem3.cannotSpawn ||
 						!branchDataItem3.doneSpawning
 					) && (
-						((BO4)branchDataItem3.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig().canOverride &&
+						((BO4)branchDataItem3.branch.getObject(otgRootFolder)).getConfig().canOverride &&
 						!branchDataItem3.branch.isRequiredBranch
 					)
 				)
@@ -733,7 +733,7 @@ public class BO4CustomStructure extends CustomStructure
 			// The second (optional branches) phase of this branch spawning cycle will call AddBranches on the branch for the
 			// second time to try to spawn them and will set DoneSpawning to true.
 			boolean hasOnlyRequiredBranches = true;
-			for(BranchDataItem branchDataItem3 : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+			for(BranchDataItem branchDataItem3 : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder))
 			{
 				if(!branchDataItem3.branch.isRequiredBranch && !branchDataItem3.doneSpawning && !branchDataItem3.cannotSpawn)
 				{
@@ -752,7 +752,7 @@ public class BO4CustomStructure extends CustomStructure
 
 		if(!branchDataItem.cannotSpawn)
 		{			
-			for(BranchDataItem childBranchDataItem : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+			for(BranchDataItem childBranchDataItem : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder))
 			{			
 				if(!AllBranchesBranchDataHash.contains(childBranchDataItem.branchNumber) && !childBranchDataItem.spawnDelayed)
 				{
@@ -769,7 +769,7 @@ public class BO4CustomStructure extends CustomStructure
 					boolean branchFrequencyNotPassed = false;
 					boolean branchFrequencyGroupsNotPassed = false;
 
-					BO4 bo4 = ((BO4)childBranchDataItem.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker));
+					BO4 bo4 = ((BO4)childBranchDataItem.branch.getObject(otgRootFolder));
 
 					if(bo4 == null || bo4.isInvalidConfig)
 					{
@@ -798,7 +798,7 @@ public class BO4CustomStructure extends CustomStructure
 							boolean hasOnlyRequiredBranches = true;
 							if(childBranchDataItem.branch.branchGroup != null && !childBranchDataItem.branch.branchGroup.isEmpty())
 							{
-								for(BranchDataItem branchDataItem3 : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+								for(BranchDataItem branchDataItem3 : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder))
 								{
 									if(
 										!branchDataItem3.branch.isRequiredBranch &&
@@ -888,7 +888,7 @@ public class BO4CustomStructure extends CustomStructure
 						
 						if(canSpawn && bo4.getConfig().mustBeBelowOther)
 						{
-							canSpawn = checkMustBeBelowOther(childBranchDataItem, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+							canSpawn = checkMustBeBelowOther(childBranchDataItem, otgRootFolder);
 							if(!canSpawn)
 							{
 								wasntBelowOther = true;
@@ -897,7 +897,7 @@ public class BO4CustomStructure extends CustomStructure
 
 						if(canSpawn && !bo4.getConfig().mustBeInsideBranches.isEmpty())
 						{							
-							canSpawn = checkMustBeInside(childBranchDataItem, bo4, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+							canSpawn = checkMustBeInside(childBranchDataItem, bo4, otgRootFolder);
 							if(!canSpawn)
 							{
 								wasntInsideOther = true;
@@ -906,7 +906,7 @@ public class BO4CustomStructure extends CustomStructure
 
 						if(canSpawn && !bo4.getConfig().cannotBeInsideBranches.isEmpty())
 						{
-							canSpawn = checkCannotBeInside(childBranchDataItem, bo4, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+							canSpawn = checkCannotBeInside(childBranchDataItem, bo4, otgRootFolder);
 							if(!canSpawn)
 							{
 								cannotSpawnInsideOther = true;
@@ -933,7 +933,7 @@ public class BO4CustomStructure extends CustomStructure
 
 						if(!minimumSize && canSpawn)
 						{
-							if(!checkYBounds(worldGenRegion.getPresetConfig().getBlockSettings().isDisableBedrock(), childBranchDataItem.branch, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+							if(!checkYBounds(worldGenRegion.getPresetConfig().getBlockSettings().isDisableBedrock(), childBranchDataItem.branch, otgRootFolder))
 							{
 								canSpawn = false;
 								chunkIsIneligible = true;
@@ -954,7 +954,7 @@ public class BO4CustomStructure extends CustomStructure
 						{
 							// Returns null if the branch cannot spawn in the given biome or if there's another BO4 structure in the chunk, otherwise returns colliding branches. 
 							// CanOverride branches never collide with other branches, but may be unable to spawn if there's not enough space for smoothing areas.
-							collidingBranches = checkSpawnRequirementsAndCollisions(startBO4Config, structureCache, childBranchDataItem, minimumSize, worldGenRegion, targetBiomes, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+							collidingBranches = checkSpawnRequirementsAndCollisions(startBO4Config, structureCache, childBranchDataItem, minimumSize, worldGenRegion, targetBiomes, otgRootFolder);
 							if(collidingBranches == null)
 							{
 								canSpawn = false;
@@ -986,13 +986,13 @@ public class BO4CustomStructure extends CustomStructure
 							OTGLog.log(LogLevel.INFO, LogCategory.STRUCTURE_PLOTTING, "Plotted X" + childBranchDataItem.chunkCoordinate.getChunkX() + " Z" + childBranchDataItem.chunkCoordinate.getChunkZ() + (minimumSize ? "" : " Y" + (childBranchDataItem.branch.getY())) + " " +  childBranchDataItem.branch.bo3Name + ":" + childBranchDataItem.branch.getRotation() + (childBranchDataItem.branch.isRequiredBranch ? " required" : " optional") + " cycle " + Cycle + allParentsString);
 						}
 
-						if(childBranchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker).isEmpty())
+						if(childBranchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder).isEmpty())
 						{
 							childBranchDataItem.doneSpawning = true;
 						}
 
 						// Mark any branches in the same branch group so they wont try to spawn
-						for(BranchDataItem childBranchDataItem2 : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+						for(BranchDataItem childBranchDataItem2 : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder))
 						{
 							if(
 								childBranchDataItem2 != childBranchDataItem &&
@@ -1025,7 +1025,7 @@ public class BO4CustomStructure extends CustomStructure
 
 							spawningRequiredChildrenForOptionalBranch = true;
 							currentSpawningRequiredChildrenForOptionalBranch = childBranchDataItem;
-							traverseAndSpawnChildBranches(startBO4Config, childBranchDataItem, minimumSize, true, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+							traverseAndSpawnChildBranches(startBO4Config, childBranchDataItem, minimumSize, true, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 							spawningRequiredChildrenForOptionalBranch = false;
 
 							// Make sure the branch wasn't rolled back because the required branches couldn't spawn.
@@ -1056,7 +1056,7 @@ public class BO4CustomStructure extends CustomStructure
                                 traverseOnlySpawnedChildren && !spawningRequiredChildrenForOptionalBranch
 						)
 						{
-							traverseAndSpawnChildBranches(startBO4Config, childBranchDataItem, minimumSize, true, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+							traverseAndSpawnChildBranches(startBO4Config, childBranchDataItem, minimumSize, true, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 						}
 					}
 
@@ -1087,7 +1087,7 @@ public class BO4CustomStructure extends CustomStructure
 
 								// Check if there are any more branches in this group that haven't tried to spawn yet.
 								// *At this point, all optional branches should have had a chance to spawn.
-								for(BranchDataItem childBranchDataItem2 : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+								for(BranchDataItem childBranchDataItem2 : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder))
 								{
 									if(
 										childBranchDataItem2 != childBranchDataItem &&
@@ -1141,17 +1141,17 @@ public class BO4CustomStructure extends CustomStructure
 									OTGLog.log(LogLevel.INFO, LogCategory.STRUCTURE_PLOTTING, "Rolling back X" + branchDataItem.branch.getChunkX() + " Z" + branchDataItem.branch.getChunkZ() + " Y" + branchDataItem.branch.getY() + " " + branchDataItem.branch.bo3Name + ":" + branchDataItem.branch.getRotation() + allParentsString + " because required branch "+ childBranchDataItem.branch.bo3Name + " couldn't spawn. Reason: " + reason);
 								}
 
-								rollBackBranch(startBO4Config, branchDataItem, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+								rollBackBranch(startBO4Config, branchDataItem, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 								bBreak = true;
 							} else {
 								// if this child branch could not spawn then in some cases other child branches won't be able to either
 								// mark those child branches so they dont try to spawn and roll back the whole branch if a required branch can't spawn
 								// mustBeBelowOther / spawnOnWaterOnly / canSpawnOnWater
-								for(BranchDataItem childBranchDataItem2 : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+								for(BranchDataItem childBranchDataItem2 : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder))
 								{
 									if(!wasntBelowOther || !spawnedBranchLastCycle)
 									{
-										BO4Config childBranchDataItem2Config = ((BO4)childBranchDataItem2.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig();
+										BO4Config childBranchDataItem2Config = ((BO4)childBranchDataItem2.branch.getObject(otgRootFolder)).getConfig();
 										if(
 											childBranchDataItem == childBranchDataItem2 ||
 											(
@@ -1181,7 +1181,7 @@ public class BO4CustomStructure extends CustomStructure
 
 												// Check if there are any more branches in this group that haven't tried to spawn yet.
 												// *At this point, all optional branches should have had a chance to spawn.
-												for(BranchDataItem childBranchDataItem3 : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+												for(BranchDataItem childBranchDataItem3 : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder))
 												{
 													if(
 														childBranchDataItem3 != childBranchDataItem2 &&
@@ -1239,7 +1239,7 @@ public class BO4CustomStructure extends CustomStructure
 													;
 													OTGLog.log(LogLevel.INFO, LogCategory.STRUCTURE_PLOTTING, "Rolling back X" + branchDataItem.branch.getChunkX() + " Z" + branchDataItem.branch.getChunkZ() + " Y" + branchDataItem.branch.getY() + " " + branchDataItem.branch.bo3Name + ":" + branchDataItem.branch.getRotation() + allParentsString + " because required branch "+ childBranchDataItem.branch.bo3Name + " couldn't spawn. Reason: " + reason);
 												}
-												rollBackBranch(startBO4Config, branchDataItem, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+												rollBackBranch(startBO4Config, branchDataItem, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 												bBreak = true;
 												break;
 											}
@@ -1268,7 +1268,7 @@ public class BO4CustomStructure extends CustomStructure
 				!branchDataItem.cannotSpawn
 			)
 			{
-				for(BranchDataItem childBranchDataItem : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+				for(BranchDataItem childBranchDataItem : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder))
 				{
 					if(AllBranchesBranchDataHash.contains(childBranchDataItem.branchNumber))
 					{
@@ -1277,7 +1277,7 @@ public class BO4CustomStructure extends CustomStructure
 								childBranchDataItem.branch.isRequiredBranch ||
 								(
 									SpawningCanOverrideBranches &&
-									!((BO4)childBranchDataItem.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig().canOverride
+									!((BO4)childBranchDataItem.branch.getObject(otgRootFolder)).getConfig().canOverride
 								)
 							) &&
 							!childBranchDataItem.cannotSpawn &&
@@ -1287,7 +1287,7 @@ public class BO4CustomStructure extends CustomStructure
 							)
 						)
 						{
-							traverseAndSpawnChildBranches(startBO4Config, childBranchDataItem, minimumSize, false, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+							traverseAndSpawnChildBranches(startBO4Config, childBranchDataItem, minimumSize, false, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 						}
 					}
 				}
@@ -1300,13 +1300,13 @@ public class BO4CustomStructure extends CustomStructure
 				!branchDataItem.cannotSpawn
 			)
 			{
-				for(BranchDataItem childBranchDataItem : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+				for(BranchDataItem childBranchDataItem : branchDataItem.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder))
 				{
 					if(AllBranchesBranchDataHash.contains(childBranchDataItem.branchNumber))
 					{
 						if(childBranchDataItem.branch.isRequiredBranch)
 						{
-							traverseAndSpawnChildBranches(startBO4Config, childBranchDataItem, minimumSize, true, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+							traverseAndSpawnChildBranches(startBO4Config, childBranchDataItem, minimumSize, true, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 						}
 					}
 				}
@@ -1389,7 +1389,7 @@ public class BO4CustomStructure extends CustomStructure
 		return branchFrequencyGroupsPassed;
 	}
 	
-	private boolean checkMustBeBelowOther(BranchDataItem childBranchDataItem, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private boolean checkMustBeBelowOther(BranchDataItem childBranchDataItem, Path otgRootFolder)
 	{
 		// Check for mustBeBelowOther
 		boolean bFoundOther = false;
@@ -1399,7 +1399,7 @@ public class BO4CustomStructure extends CustomStructure
 			{
 				if(
 					branchDataItem2.chunkCoordinate.equals(childBranchDataItem.chunkCoordinate) &&
-					!((BO4) branchDataItem2.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig().canOverride &&
+					!((BO4) branchDataItem2.branch.getObject(otgRootFolder)).getConfig().canOverride &&
 					branchDataItem2.branch.getY() >= childBranchDataItem.branch.getY()
 				)
 				{
@@ -1411,7 +1411,7 @@ public class BO4CustomStructure extends CustomStructure
 		return bFoundOther;
 	}
 
-	private boolean checkCannotBeInside(BranchDataItem childBranchDataItem, BO4 bo3, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private boolean checkCannotBeInside(BranchDataItem childBranchDataItem, BO4 bo3, Path otgRootFolder)
 	{
 		boolean foundSpawnBlocker = false;
 		if(AllBranchesBranchDataByChunk.containsKey(childBranchDataItem.chunkCoordinate))
@@ -1423,11 +1423,11 @@ public class BO4CustomStructure extends CustomStructure
 				{
 					if(branchDataItem3 != childBranchDataItem && branchDataItem3 != childBranchDataItem.parent)
 					{
-						for(String branchName : ((BO4)branchDataItem3.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig().getInheritedBO3s()) // getInheritedBO3s also contains this BO3
+						for(String branchName : ((BO4)branchDataItem3.branch.getObject(otgRootFolder)).getConfig().getInheritedBO3s()) // getInheritedBO3s also contains this BO3
 						{
 							if(branchName.equalsIgnoreCase(cantBeInsideBO3))
 							{
-									if(checkCollision(childBranchDataItem.branch, branchDataItem3.branch, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+									if(checkCollision(childBranchDataItem.branch, branchDataItem3.branch, otgRootFolder))
 									{
 			 							if(OTGLog.getLogCategoryEnabled(LogCategory.STRUCTURE_PLOTTING))
 										{
@@ -1453,7 +1453,7 @@ public class BO4CustomStructure extends CustomStructure
 		return !foundSpawnBlocker;
 	}
 
-	private boolean checkMustBeInside(BranchDataItem childBranchDataItem, BO4 bo3, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private boolean checkMustBeInside(BranchDataItem childBranchDataItem, BO4 bo3, Path otgRootFolder)
 	{
 		// AND/OR is supported, comma is OR, space is and, f.e: branch1, branch2 branch3, branch 4.
 		if(AllBranchesBranchDataByChunk.containsKey(childBranchDataItem.chunkCoordinate))
@@ -1471,11 +1471,11 @@ public class BO4CustomStructure extends CustomStructure
 					{
 						if(branchDataItem3 != childBranchDataItem && branchDataItem3 != childBranchDataItem.parent)
 						{
-							for(String branchName : ((BO4)branchDataItem3.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig().getInheritedBO3s()) // getInheritedBO3s also contains this BO3
+							for(String branchName : ((BO4)branchDataItem3.branch.getObject(otgRootFolder)).getConfig().getInheritedBO3s()) // getInheritedBO3s also contains this BO3
 							{
 								if(branchName.equalsIgnoreCase(mustBeInsideBO3Name))
 								{
-									if(checkCollision(childBranchDataItem.branch, branchDataItem3.branch, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+									if(checkCollision(childBranchDataItem.branch, branchDataItem3.branch, otgRootFolder))
 									{
 										bFoundPart = true;
 										break;
@@ -1502,7 +1502,7 @@ public class BO4CustomStructure extends CustomStructure
 		return false;
 	}
 
-	private void rollBackBranch(BO4Config startBO4Config, BranchDataItem branchData, boolean minimumSize, boolean spawningRequiredBranchesOnly, CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, ArrayList<String> targetBiomes, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private void rollBackBranch(BO4Config startBO4Config, BranchDataItem branchData, boolean minimumSize, boolean spawningRequiredBranchesOnly, CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, ArrayList<String> targetBiomes, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder)
 	{
 		// When spawning an optional branch its required branches are spawned immediately as well (if there are no optional branches in the same branchGroup)
 		// This can cause a rollback if the required branches cannot spawn. Make sure that the parent branch of the optional branch isn't rolled back since it
@@ -1523,7 +1523,7 @@ public class BO4CustomStructure extends CustomStructure
 		branchData.wasDeleted = true;
 
 		branchData.isBeingRolledBack = true;
-		deleteBranchChildren(startBO4Config, branchData, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+		deleteBranchChildren(startBO4Config, branchData, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 
 		if(AllBranchesBranchDataHash.contains(branchData.branchNumber))
 		{
@@ -1539,10 +1539,10 @@ public class BO4CustomStructure extends CustomStructure
 				OTGLog.log(LogLevel.INFO, LogCategory.STRUCTURE_PLOTTING, "Deleted X" + branchData.branch.getChunkX() + " Z" + branchData.branch.getChunkZ() + " Y" + branchData.branch.getY() + " " + branchData.branch.bo3Name + ":" + branchData.branch.getRotation()  + (branchData.branch.isRequiredBranch ? " required" : " optional") + " cycle " + Cycle + allParentsString);
 			}
 
-			removeFromCaches(branchData, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);		
+			removeFromCaches(branchData, otgRootFolder);
 		}
 
-		BO4Config branchDataConfig = ((BO4)branchData.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig();
+		BO4Config branchDataConfig = ((BO4)branchData.branch.getObject(otgRootFolder)).getConfig();
 		
 		if(!branchDataConfig.canOverride)
 		{
@@ -1558,12 +1558,12 @@ public class BO4CustomStructure extends CustomStructure
 					{
 						if(branchDataItem2 != branchData)
 						{
-							if(((BO4)branchDataItem2.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig().mustBeBelowOther && branchDataItem2.chunkCoordinate.equals(branchData.chunkCoordinate))
+							if(((BO4)branchDataItem2.branch.getObject(otgRootFolder)).getConfig().mustBeBelowOther && branchDataItem2.chunkCoordinate.equals(branchData.chunkCoordinate))
 							{
 								boolean branchAboveFound = false;
 								for(BranchDataItem branchDataItem3 : AllBranchesBranchDataByChunk.get(branchDataItem2.chunkCoordinate))
 								{
-									BO4Config branchDataItem3Config = ((BO4)branchDataItem3.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig();
+									BO4Config branchDataItem3Config = ((BO4)branchDataItem3.branch.getObject(otgRootFolder)).getConfig();
 									if(
 										branchDataItem3 != branchData &&
 										!branchDataItem3Config.mustBeBelowOther &&
@@ -1580,7 +1580,7 @@ public class BO4CustomStructure extends CustomStructure
 								}
 								if(!branchAboveFound)
 								{
-									rollBackBranch(startBO4Config, branchDataItem2, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+									rollBackBranch(startBO4Config, branchDataItem2, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 								}
 							}
 						}
@@ -1600,7 +1600,7 @@ public class BO4CustomStructure extends CustomStructure
 				{
 					if(branchDataItem2 != branchData)
 					{
-						BO4 branchDataItem2BO4 = ((BO4)branchDataItem2.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker));
+						BO4 branchDataItem2BO4 = ((BO4)branchDataItem2.branch.getObject(otgRootFolder));
 						BO4Config branchDataItem2Config = branchDataItem2BO4.getConfig();
 						if(
                                 !branchDataItem2Config.mustBeInsideBranches.isEmpty() &&
@@ -1627,9 +1627,9 @@ public class BO4CustomStructure extends CustomStructure
 							if(currentBO3Found) 
 							{
 								// Check if the branch can remain spawned without the branch we're rolling back
-								if(!checkMustBeInside(branchDataItem2, branchDataItem2BO4, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+								if(!checkMustBeInside(branchDataItem2, branchDataItem2BO4, otgRootFolder))
 								{
-									rollBackBranch(startBO4Config, branchDataItem2, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+									rollBackBranch(startBO4Config, branchDataItem2, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 								}
 							}
 						}
@@ -1644,13 +1644,13 @@ public class BO4CustomStructure extends CustomStructure
 			if(branchData.branch.isRequiredBranch)
 			{
 				//OTG.log(LogMarker.INFO, "RollBackBranch 4: " + branchData.Parent.Branch.BO3Name + " <> " + branchData.Branch.BO3Name);
-				rollBackBranch(startBO4Config, branchData.parent, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+				rollBackBranch(startBO4Config, branchData.parent, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 			} else {
 
 				// Mark for spawning the parent and all other branches in the same branch group that spawn after this branch (unless they have already been spawned successfully)
 				boolean parentDoneSpawning = true;
 				boolean currentBranchFound = false;
-				for (BranchDataItem branchDataItem2 : branchData.parent.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+				for (BranchDataItem branchDataItem2 : branchData.parent.getChildren(false, worldGenRegion, chunkBeingDecorated, otgRootFolder))
 				{
 					if(currentBranchFound)
 					{
@@ -1702,7 +1702,7 @@ public class BO4CustomStructure extends CustomStructure
 							// AddBranches should be called for the parent of the branch being rolled back and its parent if a branch group failed to spawn (and so on).
 
 							// Since we're using SpawningRequiredBranchesOnly AddBranches can traverse all child branches without problems.
-							addBranches(startBO4Config, branchData.parent, minimumSize, false, true, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+							addBranches(startBO4Config, branchData.parent, minimumSize, false, true, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 						} else {
 							// 2. During the second phase of a cycle branch groups with optional branches are spawned, the optional branches get a chance to spawn first, after that the
 							// required branches try to spawn, if that fails the branch is rolled back.
@@ -1710,7 +1710,7 @@ public class BO4CustomStructure extends CustomStructure
 
 							// Since we're not using SpawningRequiredBranchesOnly AddBranches should only traverse child branches for any branches that it spawns from the branch group its re-trying.
 							// Otherwise some branches may have the same children traversed multiple times in a single phase.
-							addBranches(startBO4Config, branchData.parent, minimumSize, true, false, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+							addBranches(startBO4Config, branchData.parent, minimumSize, true, false, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 						}
 					} else {
 
@@ -1726,7 +1726,7 @@ public class BO4CustomStructure extends CustomStructure
 
 						spawningRequiredChildrenForOptionalBranch = false;
 						// Since we're using SpawningRequiredBranchesOnly AddBranches can traverse all child branches without problems.
-						addBranches(startBO4Config, branchData.parent, minimumSize, false, true, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+						addBranches(startBO4Config, branchData.parent, minimumSize, false, true, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 						spawningRequiredChildrenForOptionalBranch = true;
 					}
 				}
@@ -1736,19 +1736,19 @@ public class BO4CustomStructure extends CustomStructure
 		branchData.isBeingRolledBack = false;
 	}
 
-	private void deleteBranchChildren(BO4Config startBO4Config, BranchDataItem branchData, boolean minimumSize, boolean spawningRequiredBranchesOnly, CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, ArrayList<String> targetBiomes, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private void deleteBranchChildren(BO4Config startBO4Config, BranchDataItem branchData, boolean minimumSize, boolean spawningRequiredBranchesOnly, CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, ArrayList<String> targetBiomes, ChunkCoordinate chunkBeingDecorated, Path otgRootFolder)
 	{
 		// Remove all children of this branch from AllBranchesBranchData
-		Stack<BranchDataItem> children = branchData.getChildren(true, worldGenRegion, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+		Stack<BranchDataItem> children = branchData.getChildren(true, worldGenRegion, chunkBeingDecorated, otgRootFolder);
 		for(BranchDataItem branchDataItem : children)
 		{
 			branchDataItem.cannotSpawn = true;
 			branchDataItem.doneSpawning = true;
 			branchDataItem.wasDeleted = true;
 
-			if(!branchDataItem.getChildren(true, worldGenRegion, chunkBeingDecorated, otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker).isEmpty())
+			if(!branchDataItem.getChildren(true, worldGenRegion, chunkBeingDecorated, otgRootFolder).isEmpty())
 			{
-				deleteBranchChildren(startBO4Config, branchDataItem, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+				deleteBranchChildren(startBO4Config, branchDataItem, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 			}
 			if(AllBranchesBranchDataHash.contains(branchDataItem.branchNumber))
 			{
@@ -1765,9 +1765,9 @@ public class BO4CustomStructure extends CustomStructure
 					OTGLog.log(LogLevel.INFO, LogCategory.STRUCTURE_PLOTTING, "Deleted X" + branchDataItem.branch.getChunkX() + " Z" + branchDataItem.branch.getChunkZ() + " Y" + branchDataItem.branch.getY() + " " + branchDataItem.branch.bo3Name + ":" + branchDataItem.branch.getRotation() + (branchDataItem.branch.isRequiredBranch ? " required" : " optional") + " cycle " + Cycle + allParentsString);
 				}
 
-				removeFromCaches(branchDataItem, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+				removeFromCaches(branchDataItem, otgRootFolder);
 
-				BO4Config branchDataItemConfig = ((BO4)branchDataItem.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig();
+				BO4Config branchDataItemConfig = ((BO4)branchDataItem.branch.getObject(otgRootFolder)).getConfig();
 				
 				if(!branchDataItemConfig.canOverride)
 				{
@@ -1782,12 +1782,12 @@ public class BO4CustomStructure extends CustomStructure
 							{
 								if(branchDataItem2 != branchDataItem)
 								{
-									if(((BO4)branchDataItem2.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig().mustBeBelowOther && branchDataItem2.chunkCoordinate.equals(branchDataItem.chunkCoordinate))
+									if(((BO4)branchDataItem2.branch.getObject(otgRootFolder)).getConfig().mustBeBelowOther && branchDataItem2.chunkCoordinate.equals(branchDataItem.chunkCoordinate))
 									{
 										boolean branchAboveFound = false;
 										for(BranchDataItem branchDataItem3 : AllBranchesBranchDataByChunk.get(branchDataItem2.chunkCoordinate))
 										{
-											BO4Config branchDataItem3Config = ((BO4)branchDataItem3.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig();
+											BO4Config branchDataItem3Config = ((BO4)branchDataItem3.branch.getObject(otgRootFolder)).getConfig();
 											if(
 												branchDataItem3 != branchDataItem &&
 												!branchDataItem3Config.mustBeBelowOther &&
@@ -1804,7 +1804,7 @@ public class BO4CustomStructure extends CustomStructure
 										}
 										if(!branchAboveFound)
 										{
-											rollBackBranch(startBO4Config, branchDataItem2, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+											rollBackBranch(startBO4Config, branchDataItem2, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 										}
 									}
 								}
@@ -1824,7 +1824,7 @@ public class BO4CustomStructure extends CustomStructure
 						{
 							if(branchDataItem2 != branchDataItem)
 							{
-								BO4 branchDataItem2BO4 = ((BO4)branchDataItem2.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker));
+								BO4 branchDataItem2BO4 = ((BO4)branchDataItem2.branch.getObject(otgRootFolder));
 								BO4Config branchDataItem2Config = branchDataItem2BO4.getConfig();
 								if(
                                         !branchDataItem2Config.mustBeInsideBranches.isEmpty() &&
@@ -1851,9 +1851,9 @@ public class BO4CustomStructure extends CustomStructure
 									if(currentBO3Found) 
 									{
 										// Check if the branch can remain spawned without the branch we're rolling back
-										if(!checkMustBeInside(branchDataItem2, branchDataItem2BO4, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+										if(!checkMustBeInside(branchDataItem2, branchDataItem2BO4, otgRootFolder))
 										{
-											rollBackBranch(startBO4Config, branchDataItem2, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker);
+											rollBackBranch(startBO4Config, branchDataItem2, minimumSize, spawningRequiredBranchesOnly, structureCache, worldGenRegion, targetBiomes, chunkBeingDecorated, otgRootFolder);
 										}
 									}
 								}
@@ -1899,7 +1899,7 @@ public class BO4CustomStructure extends CustomStructure
 		}
 	}
 	
-	private void removeFromCaches(BranchDataItem branchDataItem, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private void removeFromCaches(BranchDataItem branchDataItem, Path otgRootFolder)
 	{		
 		AllBranchesBranchData.remove(branchDataItem);
 		AllBranchesBranchDataHash.remove(branchDataItem.branchNumber);
@@ -1917,7 +1917,7 @@ public class BO4CustomStructure extends CustomStructure
 			{
 				AllBranchesBranchDataByName.remove(branchDataItem.branch.bo3Name);
 			}
-			BO4Config branchDataItemConfig = ((BO4)branchDataItem.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig();
+			BO4Config branchDataItemConfig = ((BO4)branchDataItem.branch.getObject(otgRootFolder)).getConfig();
 			for(Entry<String, Integer> entry : branchDataItemConfig.branchFrequencyGroups.entrySet())
 			{
 				HashMap<ChunkCoordinate, ArrayList<Integer>> branchesByGroup = AllBranchesBranchDataByGroup.get(entry.getKey());
@@ -1937,7 +1937,7 @@ public class BO4CustomStructure extends CustomStructure
 
 	// Returns null if the branch cannot spawn in the given biome or if there's another BO4 structure in the chunk, otherwise returns colliding branches. 
 	// CanOverride branches never collide with other branches, but may be unable to spawn if there's not enough space for smoothing areas.
-	private Stack<BranchDataItem> checkSpawnRequirementsAndCollisions(BO4Config startBO4Config, CustomStructureCache structureCache, BranchDataItem branchData, boolean minimumSize, IWorldGenRegion worldGenRegion, ArrayList<String> targetBiomes, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private Stack<BranchDataItem> checkSpawnRequirementsAndCollisions(BO4Config startBO4Config, CustomStructureCache structureCache, BranchDataItem branchData, boolean minimumSize, IWorldGenRegion worldGenRegion, ArrayList<String> targetBiomes, Path otgRootFolder)
 	{
 		CustomStructureCoordinate coordObject = branchData.branch;
 
@@ -1988,7 +1988,7 @@ public class BO4CustomStructure extends CustomStructure
 			}
 
 			int smoothRadius = startBO4Config.smoothRadius; // For collision detection use Start's SmoothingRadius. TODO: Improve this and use smoothingradius of individual branches?
-			if(smoothRadius == -1 || ((BO4)coordObject.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig().smoothRadius == -1)
+			if(smoothRadius == -1 || ((BO4)coordObject.getObject(otgRootFolder)).getConfig().smoothRadius == -1)
 			{
 				smoothRadius = 0;
 			}
@@ -2062,14 +2062,14 @@ public class BO4CustomStructure extends CustomStructure
 		// collidingObjects are only used for size > 0 check and to see if this branch tried to spawn on top of its parent
 		Stack<BranchDataItem> collidingObjects = new Stack<>();
 		
-		if(!((BO4) coordObject.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig().canOverride)
+		if(!((BO4) coordObject.getObject(otgRootFolder)).getConfig().canOverride)
 		{
 			Stack<BranchDataItem> existingBranches = new Stack<>();
 			if(AllBranchesBranchDataByChunk.containsKey(branchData.chunkCoordinate))
 			{
 				for(BranchDataItem existingBranchData : AllBranchesBranchDataByChunk.get(branchData.chunkCoordinate))
 				{
-					if(branchData.chunkCoordinate.equals(existingBranchData.chunkCoordinate) && !((BO4)existingBranchData.branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig().canOverride)
+					if(branchData.chunkCoordinate.equals(existingBranchData.chunkCoordinate) && !((BO4)existingBranchData.branch.getObject(otgRootFolder)).getConfig().canOverride)
 					{
 						existingBranches.add(existingBranchData);
 					}
@@ -2080,7 +2080,7 @@ public class BO4CustomStructure extends CustomStructure
 			{
 				for (BranchDataItem cachedBranch : existingBranches)
 				{
-					if(checkCollision(coordObject, cachedBranch.branch, otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker))
+					if(checkCollision(coordObject, cachedBranch.branch, otgRootFolder))
 					{
 						collidingObjects.add(cachedBranch);
 					}
@@ -2091,16 +2091,16 @@ public class BO4CustomStructure extends CustomStructure
 		return collidingObjects;
 	}
 
-	private boolean checkYBounds(boolean disableBedrock, CustomStructureCoordinate branchData1Branch, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private boolean checkYBounds(boolean disableBedrock, CustomStructureCoordinate branchData1Branch, Path otgRootFolder)
 	{
-		int startY = branchData1Branch.getY() + ((BO4)branchData1Branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker)).getConfig().getminY();
+		int startY = branchData1Branch.getY() + ((BO4)branchData1Branch.getObject(otgRootFolder)).getConfig().getminY();
 		return disableBedrock ? startY >= 0 : startY > 0;
 	}
 	
-	private boolean checkCollision(CustomStructureCoordinate branchData1Branch, CustomStructureCoordinate branchData2Branch, Path otgRootFolder,  CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	private boolean checkCollision(CustomStructureCoordinate branchData1Branch, CustomStructureCoordinate branchData2Branch, Path otgRootFolder)
 	{
-		BO4 branch1Object = ((BO4)branchData1Branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker));
-		BO4 branch2Object = ((BO4)branchData2Branch.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker));
+		BO4 branch1Object = ((BO4)branchData1Branch.getObject(otgRootFolder));
+		BO4 branch2Object = ((BO4)branchData2Branch.getObject(otgRootFolder));
 		
 		if(
 			!branch1Object.isCollidable() ||
@@ -2171,7 +2171,7 @@ public class BO4CustomStructure extends CustomStructure
 	* Checks if this structure or any of its branches are inside the given
 	* chunk and spawns all objects that are including their smoothing areas (if any)
 	*/
-	void spawnInChunk(ChunkCoordinate chunkCoordinate, CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
+	void spawnInChunk(ChunkCoordinate chunkCoordinate, CustomStructureCache structureCache, IWorldGenRegion worldGenRegion, Path otgRootFolder)
 	{		
 		if (
 			!this.objectsToSpawn.containsKey(chunkCoordinate) && 
@@ -2184,7 +2184,7 @@ public class BO4CustomStructure extends CustomStructure
 		// Get all BO3's that should spawn in the given chunk, if any
 		// Note: The given chunk may not necessarily be the chunkCoordinate of this.Start
 		Stack<BO4CustomStructureCoordinate> objectsInChunk = this.objectsToSpawn.get(chunkCoordinate);
-		BO4Config config = ((BO4)this.start.getObject(otgRootFolder, customObjectManager, materialReader, manager, modLoadedChecker)).getConfig();
+		BO4Config config = ((BO4)this.start.getObject(otgRootFolder)).getConfig();
 		if (objectsInChunk != null)
 		{
 			BiomeSettings biomeConfig = null;
@@ -2194,7 +2194,7 @@ public class BO4CustomStructure extends CustomStructure
 			}
 
 			// Spawn smooth areas in this chunk if any exist, before replaceabove/replacebelow or bo4 blocks.
-			this.smoothingAreaManager.spawnSmoothAreas(config, chunkCoordinate, this.start, structureCache, worldGenRegion,  materialReader);
+			this.smoothingAreaManager.spawnSmoothAreas(config, chunkCoordinate, this.start, structureCache, worldGenRegion);
 			
 			// Spawn ReplaceAbove / ReplaceBelow before bo4 blocks.
 			for (BO4CustomStructureCoordinate coordObject : objectsInChunk)
@@ -2205,19 +2205,15 @@ public class BO4CustomStructure extends CustomStructure
 					continue;
 				}
 
-				BO4 bo4 = ((BO4)coordObject.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker));
+				BO4 bo4 = ((BO4)coordObject.getObject(otgRootFolder));
 				BO4Config objectConfig = bo4.getConfig();
 				if (
 					//Path otgRootFolder, boolean developerMode,  CustomObjectManager customObjectManager, IPresetNameProvider presetNameProvider, IMaterialReader materialReader, CustomObjectResourcesManager manager, IWorldGenRegion worldGenRegion, Random random, Rotation rotation, ChunkCoordinate chunkCoord, int x, int y, int z, String replaceAbove, String replaceBelow, boolean replaceWithBiomeBlocks, String replaceWithSurfaceBlock, String replaceWithGroundBlock, String replaceWithStoneBlock, boolean spawnUnderWater, int waterLevel, boolean isStructureAtSpawn, boolean doReplaceAboveBelowOnly, ChunkCoordinate chunkBeingDecorated, boolean doBiomeConfigReplaceBlocks
 					!bo4.trySpawnAt(
 						worldGenRegion.getPresetFolderName(),
 						otgRootFolder,
-						
-						customObjectManager,
-						materialReader,
-						manager,
-						modLoadedChecker,
-						worldGenRegion, 
+
+							worldGenRegion,
 						random,
 						coordObject.getRotation(),
 						chunkCoordinate, 
@@ -2261,19 +2257,15 @@ public class BO4CustomStructure extends CustomStructure
 					continue;
 				}
 
-				BO4 bo4 = ((BO4)coordObject.getObject(otgRootFolder,  customObjectManager, materialReader, manager, modLoadedChecker));
+				BO4 bo4 = ((BO4)coordObject.getObject(otgRootFolder));
 				BO4Config objectConfig = bo4.getConfig();
 
 				if (
 					!bo4.trySpawnAt(
 						worldGenRegion.getPresetFolderName(),
 						otgRootFolder,
-						
-						customObjectManager,
-						materialReader,
-						manager,
-						modLoadedChecker,						
-						worldGenRegion, 
+
+							worldGenRegion,
 						random, 
 						coordObject.getRotation(),
 						chunkCoordinate, 
@@ -2312,7 +2304,7 @@ public class BO4CustomStructure extends CustomStructure
 			}
 		} else {
 			// Spawn smooth areas in this chunk if any exist
-			smoothingAreaManager.spawnSmoothAreas(config, chunkCoordinate, this.start, structureCache, worldGenRegion,  materialReader);
+			smoothingAreaManager.spawnSmoothAreas(config, chunkCoordinate, this.start, structureCache, worldGenRegion);
 		}
 
 		this.objectsToSpawn.remove(chunkCoordinate);

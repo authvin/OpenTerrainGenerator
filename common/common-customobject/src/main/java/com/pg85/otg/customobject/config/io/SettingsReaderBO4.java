@@ -2,8 +2,6 @@ package com.pg85.otg.customobject.config.io;
 
 import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
-import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
-import com.pg85.otg.interfaces.IMaterialReader;
 
 import java.io.File;
 import java.util.List;
@@ -39,13 +37,13 @@ public interface SettingsReaderBO4
 	 * Gets all ConfigFunctions in this configuration. If this reader doesn't
 	 * support ConfigFunctions, an empty list will be returned.
 	 *
-	 * @param <T> The type of the config functions.
-	 * @param holder	  The holder of all config functions.
+	 * @param <T>         The type of the config functions.
+	 * @param holder      The holder of all config functions.
 	 * @param useFallback True if the {@link #setFallbackReader(SettingsReader)
-	 * fallback reader} must be used, false otherwise.
+	 *                    fallback reader} must be used, false otherwise.
 	 * @return The config functions.
 	 */
-	<T> List<CustomObjectConfigFunction<T>> getConfigFunctions(T holder, boolean useFallback,  IMaterialReader materialReader, CustomObjectResourcesManager manager);
+	<T> List<CustomObjectConfigFunction<T>> getConfigFunctions(T holder, boolean useFallback);
 
 	/**
 	 * Gets the file this reader if reading from. Will be null if this reader
@@ -86,11 +84,12 @@ public interface SettingsReaderBO4
 	 * Reads a setting. This method allows you to provide another default
 	 * value. If the setting has an invalid value, a message is logged and
 	 * the default value is returned.
-	 * @param setting	  The setting to read.
+	 *
+	 * @param setting      The setting to read.
 	 * @param defaultValue Default value for the setting.
 	 * @return The value of the setting.
 	 */
-	<S> S getSetting(Setting<S> setting, S defaultValue,  IMaterialReader materialReader, CustomObjectResourcesManager manager);
+	<S> S getSetting(Setting<S> setting, S defaultValue);
 	
 
 	/**

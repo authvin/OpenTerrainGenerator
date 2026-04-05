@@ -3,7 +3,6 @@ package com.pg85.otg.customobject.config;
 import com.pg85.otg.config.ErroredFunction;
 import com.pg85.otg.exceptions.InvalidConfigException;
 import com.pg85.otg.interfaces.ICustomObjectResourcesManager;
-import com.pg85.otg.interfaces.IMaterialReader;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,12 +11,21 @@ import java.util.Map;
 
 public class CustomObjectResourcesManager implements ICustomObjectResourcesManager
 {
+	private static CustomObjectResourcesManager INSTANCE = null;
+	public static CustomObjectResourcesManager get() {
+		return INSTANCE;
+	}
+	public static void set(CustomObjectResourcesManager manager) {
+		INSTANCE = manager;
+	}
+
 	private final Map<String, ArrayList<Class<? extends CustomObjectConfigFunction<?>>>> configFunctions;
 
 	public CustomObjectResourcesManager()
 	{
 		// Also store in this class
 		this.configFunctions = new HashMap<>();
+		INSTANCE = this;
 	}
 
 	public void registerConfigFunction(String name, Class<? extends CustomObjectConfigFunction<?>> value)
@@ -28,18 +36,19 @@ public class CustomObjectResourcesManager implements ICustomObjectResourcesManag
 
 	/**
 	 * Returns a config function with the given name.
-	 * @param <T>	Type of the holder of the config function.
-	 * @param name	The name of the config function.
+	 *
+	 * @param <T>    Type of the holder of the config function.
+	 * @param name   The name of the config function.
 	 * @param holder The holder of the config function, like
-	 *				{@link PresetConfig}.
-	 * @param args	The args of the function.
+	 *               {@link PresetConfig}.
+	 * @param args   The args of the function.
 	 * @return A config function with the given name, or null if the config
 	 * function requires another holder. For invalid or non-existing config
 	 * functions, it returns an instance of {@link ErroredFunction}.
 	 */
 	// It's checked with clazz.getConstructor(holder.getClass(), ...))
 	@SuppressWarnings("unchecked")
-	public <T> CustomObjectConfigFunction<T> getConfigFunction(String name, T holder, List<String> args,  IMaterialReader materialReader)
+	public <T> CustomObjectConfigFunction<T> getConfigFunction(String name, T holder, List<String> args)
 	{
 		// If a Block() tag has the parameters of a RandomBlock tag then transform it into a RandomBlock
 		// This allows users to edit Bo3's and change Blocks to RandomBlocks with a simple find/replace.
@@ -77,7 +86,7 @@ public class CustomObjectResourcesManager implements ICustomObjectResourcesManag
 			// Initialize the function
 			try
 			{
-				configFunction.init(holder, args,  materialReader);
+				configFunction.init(holder, args);
 			} catch (InvalidConfigException e)
 			{
 				configFunction.invalidate(name, args, e.getMessage());
