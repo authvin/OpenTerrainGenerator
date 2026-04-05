@@ -10,6 +10,11 @@ import com.pg85.otg.config.io.FileSettingsWriter;
 import com.pg85.otg.config.io.SimpleSettingsMap;
 import com.pg85.otg.config.settings.biome.BiomeSettings;
 import com.pg85.otg.constants.settings.ConfigMode;
+import com.pg85.otg.customobject.CustomObject;
+import com.pg85.otg.customobject.bo3.BO3;
+import com.pg85.otg.customobject.bo4.BO4;
+import com.pg85.otg.customobject.config.CustomObjectConfigFile;
+import com.pg85.otg.customobject.config.io.FileSettingsWriterBO4;
 import com.pg85.otg.fabric.gen.OTGFabricChunkGenerator;
 import com.pg85.otg.presets.Preset;
 import com.pg85.otg.util.biome.OTGBiomeID;
@@ -26,6 +31,7 @@ import net.minecraft.world.level.biome.Biome;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -43,6 +49,13 @@ final class SettingsCommand {
                     .executes(ctx -> executeBiome(ctx,
                         StringArgumentType.getString(ctx, "name"),
                         null)))
+            )
+            // /otg settings object <name>  (uses current world's preset)
+            .then(Commands.literal("object")
+                .then(Commands.argument("name", StringArgumentType.greedyString())
+                    .suggests(currentPresetObjectSuggestions())
+                    .executes(ctx -> executeObject(ctx,
+                        StringArgumentType.getString(ctx, "name"))))
             )
             // /otg settings preset  (current world's preset)
             .then(Commands.literal("preset")
@@ -140,6 +153,55 @@ final class SettingsCommand {
         return executeBiome(ctx, otgBiomeID.biomeName(), null);
     }
 
+    private static int executeObject(CommandContext<CommandSourceStack> ctx, String objectName) {
+        if (!CommandHelper.requireOTGWorld(ctx)) return 0;
+        CommandSourceStack src = ctx.getSource();
+        OTGFabricChunkGenerator gen = CommandHelper.getGenerator(src.getLevel());
+        if (gen == null) return 0;
+
+        Preset preset = gen.getPreset();
+        CustomObject obj = OTG.getEngine().getCustomObjectManager().getGlobalObjects().getObjectByName(
+            objectName,
+            preset.getFolderName(),
+            OTG.getEngine().getOTGRootFolder(),
+            OTG.getEngine().getCustomObjectManager(),
+            OTG.getEngine().getPresetLoader().getMaterialReader(),
+            OTG.getEngine().getCustomObjectResourcesManager(),
+            OTG.getEngine().getModLoadedChecker()
+        );
+
+        if (obj == null) {
+            src.sendFailure(Component.literal("Object \"" + objectName + "\" not found in preset \"" + preset.getFolderName() + "\"."));
+            return 0;
+        }
+
+        CustomObjectConfigFile config;
+        if (obj instanceof BO3 bo3) {
+            config = bo3.getConfig();
+        } else if (obj instanceof BO4 bo4) {
+            config = bo4.getConfig();
+        } else {
+            src.sendFailure(Component.literal("Object \"" + objectName + "\" is not a BO3 or BO4."));
+            return 0;
+        }
+
+        try {
+            Path outFile = prepareOutputFile(preset.getFolderName(), config.getFile().getName());
+            FileSettingsWriterBO4.writeToFile(
+                config,
+                outFile.toFile(),
+                ConfigMode.WriteAll,
+                OTG.getEngine().getPresetLoader().getMaterialReader(),
+                OTG.getEngine().getCustomObjectResourcesManager()
+            );
+            src.sendSuccess(() -> Component.literal("Object settings written to: " + outFile), false);
+            return 1;
+        } catch (IOException e) {
+            src.sendFailure(Component.literal("Failed to write settings: " + e.getMessage()));
+            return 0;
+        }
+    }
+
     // -------------------------------------------------------------------------
 
     private static Preset resolvePreset(CommandContext<CommandSourceStack> ctx, String presetName) {
@@ -167,6 +229,20 @@ final class SettingsCommand {
             OTGFabricChunkGenerator gen = CommandHelper.getGenerator(ctx.getSource().getLevel());
             if (gen != null) {
                 return SharedSuggestionProvider.suggest(gen.getPreset().getAllBiomeNames(), builder);
+            }
+            return builder.buildFuture();
+        };
+    }
+
+    private static SuggestionProvider<CommandSourceStack> currentPresetObjectSuggestions() {
+        return (ctx, builder) -> {
+            OTGFabricChunkGenerator gen = CommandHelper.getGenerator(ctx.getSource().getLevel());
+            if (gen != null) {
+                ArrayList<String> names = OTG.getEngine().getCustomObjectManager().getGlobalObjects()
+                    .getAllBONamesForPreset(gen.getPreset().getFolderName(), OTG.getEngine().getOTGRootFolder());
+                if (names != null) {
+                    return SharedSuggestionProvider.suggest(names, builder);
+                }
             }
             return builder.buildFuture();
         };
