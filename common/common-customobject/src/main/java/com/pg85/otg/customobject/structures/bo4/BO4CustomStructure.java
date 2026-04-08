@@ -2210,10 +2210,7 @@ public class BO4CustomStructure extends CustomStructure
 				if (
 					//Path otgRootFolder, boolean developerMode,  CustomObjectManager customObjectManager, IPresetNameProvider presetNameProvider, IMaterialReader materialReader, CustomObjectResourcesManager manager, IWorldGenRegion worldGenRegion, Random random, Rotation rotation, ChunkCoordinate chunkCoord, int x, int y, int z, String replaceAbove, String replaceBelow, boolean replaceWithBiomeBlocks, String replaceWithSurfaceBlock, String replaceWithGroundBlock, String replaceWithStoneBlock, boolean spawnUnderWater, int waterLevel, boolean isStructureAtSpawn, boolean doReplaceAboveBelowOnly, ChunkCoordinate chunkBeingDecorated, boolean doBiomeConfigReplaceBlocks
 					!bo4.trySpawnAt(
-						worldGenRegion.getPresetFolderName(),
-						otgRootFolder,
-
-							worldGenRegion,
+						worldGenRegion,
 						random,
 						coordObject.getRotation(),
 						chunkCoordinate, 
@@ -2262,10 +2259,7 @@ public class BO4CustomStructure extends CustomStructure
 
 				if (
 					!bo4.trySpawnAt(
-						worldGenRegion.getPresetFolderName(),
-						otgRootFolder,
-
-							worldGenRegion,
+						worldGenRegion,
 						random, 
 						coordObject.getRotation(),
 						chunkCoordinate, 

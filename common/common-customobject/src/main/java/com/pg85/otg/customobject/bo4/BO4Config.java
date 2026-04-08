@@ -2,6 +2,7 @@ package com.pg85.otg.customobject.bo4;
 
 import com.pg85.otg.constants.Constants;
 import com.pg85.otg.constants.settings.ConfigMode;
+import com.pg85.otg.customobject.BOFileExtensions;
 import com.pg85.otg.customobject.CustomObject;
 import com.pg85.otg.customobject.CustomObjectManager;
 import com.pg85.otg.customobject.bo3.BO3Config;
@@ -16,6 +17,7 @@ import com.pg85.otg.customobject.config.CustomObjectConfigFile;
 import com.pg85.otg.customobject.config.CustomObjectConfigFunction;
 import com.pg85.otg.customobject.config.CustomObjectErroredFunction;
 import com.pg85.otg.customobject.config.CustomObjectResourcesManager;
+import com.pg85.otg.customobject.config.io.BinarySourceReaderBO4;
 import com.pg85.otg.customobject.config.io.SettingsReaderBO4;
 import com.pg85.otg.customobject.config.io.SettingsWriterBO4;
 import com.pg85.otg.customobject.structures.bo4.BO4CustomStructureCoordinate;
@@ -37,17 +39,13 @@ import com.pg85.otg.util.minecraft.DefaultStructurePart;
 
 import java.io.DataOutput;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.zip.DataFormatException;
 
 public class BO4Config extends CustomObjectConfigFile
 {
@@ -158,9 +156,7 @@ public class BO4Config extends CustomObjectConfigFile
 	public boolean spawnUnderWater;
 	public boolean spawnAtWaterLevel;
 
-	private String presetFolderName;
-
-	// Store blocks in arrays instead of as BO4BlockFunctions,
+    // Store blocks in arrays instead of as BO4BlockFunctions,
 	// since that gives way too much overhead memory wise.
 	// We may have tens of millions of blocks, java doesn't handle lots of small classes well.
 	private short[][][]blocks;
@@ -180,7 +176,8 @@ public class BO4Config extends CustomObjectConfigFile
 		
 	private boolean isCollidable = false;
 	boolean isBO4Data = false;
-		
+	private boolean bo4DataLoaded;
+
 	/**
 	 * Creates a BO4Config from a file.
 	 *
@@ -195,15 +192,25 @@ public class BO4Config extends CustomObjectConfigFile
 		}
 	}
 
+	/**
+	 * Creates a BO4Config pre-populated from a decompressed binary buffer.
+	 * The reader is a BinarySourceReaderBO4 that holds the object name and
+	 * source file; no text settings are read.
+	 */
+	public static BO4Config fromBuffer(ByteBuffer buffer, String name, File sourceFile) throws InvalidConfigException
+	{
+		BO4Config config = new BO4Config(new BinarySourceReaderBO4(name, sourceFile));
+		config.initBounds();
+		config.parseFromBuffer(buffer, false);
+		return config;
+	}
+
 	private BO4Config(SettingsReaderBO4 reader)
 	{
 		super(reader);
 	}
-	
-	static int BO4BlocksLoadedFromBO4Data = 0;
-	static int accumulatedTime = 0;
-	static int accumulatedTime2 = 0;
-	private void init(String presetFolderName, Path otgRootFolder) throws InvalidConfigException
+
+	private void initBounds()
 	{
 		this.minX = Integer.MAX_VALUE;
 		this.maxX = Integer.MIN_VALUE;
@@ -211,10 +218,15 @@ public class BO4Config extends CustomObjectConfigFile
 		this.maxY = Integer.MIN_VALUE;
 		this.minZ = Integer.MAX_VALUE;
 		this.maxZ = Integer.MIN_VALUE;
-		if(!readFromBinaryCache(false))
-		{
-			readConfigSettings(presetFolderName, otgRootFolder);
-		}
+	}
+
+	static int BO4BlocksLoadedFromBO4Data = 0;
+	static int accumulatedTime = 0;
+	static int accumulatedTime2 = 0;
+	private void init(String presetFolderName, Path otgRootFolder) throws InvalidConfigException
+	{
+		initBounds();
+		readConfigSettings(presetFolderName, otgRootFolder);
 
 		// When writing, we'll need to read some raw data from the file,
 		// so can't flush the cache yet. Flush after writing.
@@ -222,6 +234,36 @@ public class BO4Config extends CustomObjectConfigFile
 		{
 			this.reader.flushCache();
 		}
+	}
+
+	/**
+	 * Reloads this config's binary source (pack or .bo4data) with block data.
+	 * Only valid for configs created via {@link #fromBuffer} (isBO4Data == true).
+	 */
+	private void reloadFromBinarySource() throws IOException, InvalidConfigException
+	{
+		File sourceFile = this.getFile();
+		String fileName = sourceFile.getName().toLowerCase();
+		ByteBuffer buffer;
+		if(fileName.endsWith(BOFileExtensions.BOPACK))
+		{
+			BOPack pack = BOPack.forFile(sourceFile);
+			if(pack == null || !pack.contains(this.getName()))
+			{
+				throw new IOException("Pack entry not found for " + this.getName() + " in " + sourceFile.getName());
+			}
+			buffer = pack.getEntryBuffer(this.getName());
+		}
+		else if(fileName.endsWith(BOFileExtensions.BO4DATA))
+		{
+			buffer = BO4Data.readBuffer(sourceFile);
+		}
+		else
+		{
+			throw new IOException("Cannot reload blocks: unrecognised binary source " + sourceFile.getName());
+		}
+		parseFromBuffer(buffer, true);
+		this.bo4DataLoaded = true;
 	}
 
 	public int getXOffset()
@@ -268,47 +310,30 @@ public class BO4Config extends CustomObjectConfigFile
 	{
 		return this.inheritedBO3s;
 	}
-
-	public BO4BlockFunction[][] getSmoothingHeightMap(BO4 start, String presetFolderName, Path otgRootFolder, CustomObjectManager customObjectManager, IMaterialReader materialReader)
-	{
-		return getSmoothingHeightMap(start, true, presetFolderName, otgRootFolder, materialReader);
-	}
 	
-	private BO4BlockFunction[][] getSmoothingHeightMap(BO4 start, boolean fromFile, String presetFolderName, Path otgRootFolder, IMaterialReader materialReader)
+	public BO4BlockFunction[][] getSmoothingHeightMap(BO4 start)
 	{
 		// TODO: Caching the heightmap will mean this BO4 can only be used with 1 master BO4,
 		// it won't pick up smoothing area settings if it is also used in another structure.
 		if(this.heightMap == null)
 		{
-			if(this.isBO4Data && fromFile)
+			if(this.isBO4Data && !this.bo4DataLoaded)
 			{
-				BO4Config bo4Config = null;
 				try
 				{
-					bo4Config = new BO4Config(this.reader, false, presetFolderName, otgRootFolder);
+					reloadFromBinarySource();
 				}
-				catch (InvalidConfigException e)
+				catch (IOException | InvalidConfigException e)
 				{
 					if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 					{
 						OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Error fetching smoothing heightmap for BO4 " + start.getName() + ": " + e.getMessage());
 					}
-				}
-				if(bo4Config != null)
-				{
-					try {
-						bo4Config.readFromBinaryCache(true);
-					} catch (InvalidConfigException e) {
-						if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
-						{
-							OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, "Error fetching smoothing heightmap for BO4Data " + start.getName() + ": " + e.getMessage());
-						}
-						this.heightMap = new BO4BlockFunction[16][16];
-						return this.heightMap;
-					}
-					this.heightMap = bo4Config.getSmoothingHeightMap(start, false, presetFolderName, otgRootFolder, materialReader);
+					this.heightMap = new BO4BlockFunction[16][16];
 					return this.heightMap;
 				}
+				this.heightMap = getSmoothingHeightMap(start);
+				return this.heightMap;
 			}
 			
 			this.heightMap = new BO4BlockFunction[16][16];
@@ -393,41 +418,24 @@ public class BO4Config extends CustomObjectConfigFile
 		}
 		return this.heightMap;
 	}
-
-	BO4BlockFunction[] getBlocks(String presetFolderName, Path otgRootFolder)
-	{
-		return getBlocks(true, presetFolderName, otgRootFolder);
-	}
 	
-	private BO4BlockFunction[] getBlocks(boolean fromFile, String presetFolderName, Path otgRootFolder)
+	BO4BlockFunction[] getBlocks()
 	{
-		if(fromFile && this.isBO4Data)
+		if(this.isBO4Data && !this.bo4DataLoaded)
 		{
-			BO4Config bo4Config = null;
 			try
 			{
-				bo4Config = new BO4Config(this.reader, false, presetFolderName, otgRootFolder);
+				reloadFromBinarySource();
 			}
-			catch (InvalidConfigException e)
+			catch (IOException | InvalidConfigException e)
 			{
 				if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
 				{
 					OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, " Error fetching blocks for BO4 " + this.getName() + ": " + e.getMessage());
 				}
+				return null;
 			}
-			if(bo4Config != null)
-			{
-				try {
-					bo4Config.readFromBinaryCache(true);
-				} catch (InvalidConfigException e) {
-					if(OTGLog.getLogCategoryEnabled(LogCategory.CUSTOM_OBJECTS))
-					{
-						OTGLog.log(LogLevel.ERROR, LogCategory.CUSTOM_OBJECTS, " Error fetching blocks for BO4Data " + this.getName() + ": " + e.getMessage());
-					}
-					return null;
-				}
-				return bo4Config.getBlocks(false, presetFolderName, otgRootFolder);
-			}
+			return getBlocks();
 		}
 		
 		BO4BlockFunction[] blocksOTGPlus = new BO4BlockFunction[this.blocksMaterial.length];
@@ -486,24 +494,23 @@ public class BO4Config extends CustomObjectConfigFile
 		if(this.inheritBO3 != null && !this.inheritBO3.trim().isEmpty() && !this.inheritedBO3Loaded)
 		{
 			File currentFile = this.getFile().getParentFile();
-			this.presetFolderName = currentFile.getName();
+            String presetFolderName1 = currentFile.getName();
 			while(currentFile.getParentFile() != null && !currentFile.getName().equals(Constants.PRESETS_FOLDER))
 			{
-				this.presetFolderName = currentFile.getName();
+				presetFolderName1 = currentFile.getName();
 				currentFile = currentFile.getParentFile();
-				if(this.presetFolderName.equals(Constants.GLOBAL_OBJECTS_FOLDER))
+				if(presetFolderName1.equals(Constants.GLOBAL_OBJECTS_FOLDER))
 				{
-					this.presetFolderName = null;
+					presetFolderName1 = null;
 					break;
 				}
 			}
 			
-			// TODO: Re-wire this so we don't have to cast CustomObjectManager :(
 			CustomObjectManager customObjectManager2 = CustomObjectManager.get();
-			CustomObject parentBO3 = customObjectManager2.getGlobalObjects().getObjectByName(this.inheritBO3, this.presetFolderName, otgRootFolder);
+			CustomObject parentBO3 = customObjectManager2.getGlobalObjects().getObjectByName(this.inheritBO3, presetFolderName1, otgRootFolder);
 			if(parentBO3 != null)
 			{
-				BO4BlockFunction[] blocks = getBlocks(this.presetFolderName, otgRootFolder);
+				BO4BlockFunction[] blocks = getBlocks();
 				
 				this.inheritedBO3Loaded = true;
 
@@ -550,7 +557,7 @@ public class BO4Config extends CustomObjectConfigFile
 					this.minZ = parentMinZ;
 				}
 
-				BO4BlockFunction[] parentBlocks = ((BO4)parentBO3).getConfig().getBlocks(presetFolderName, otgRootFolder);
+				BO4BlockFunction[] parentBlocks = ((BO4)parentBO3).getConfig().getBlocks();
 				ArrayList<BlockFunction<?>> newBlocks = new ArrayList<>();				
 				newBlocks.addAll(new ArrayList<>(Arrays.asList(parentBlocks)));
 				newBlocks.addAll(new ArrayList<>(Arrays.asList(blocks)));
@@ -887,7 +894,7 @@ public class BO4Config extends CustomObjectConfigFile
 	@Override
 	public BlockFunction<?>[] getBlockFunctions(String presetFolderName, Path otgRootFolder,  ICustomObjectManager customObjectManager, IMaterialReader materialReader, CustomObjectResourcesManager manager, IModLoadedChecker modLoadedChecker)
 	{
-		return getBlocks(presetFolderName, otgRootFolder);
+		return getBlocks();
 	}
 
 	@Override
@@ -1329,7 +1336,7 @@ public class BO4Config extends CustomObjectConfigFile
 	}
 
 	private final int bo4DataVersion = 3;
-	void writeToStream(DataOutput stream, String presetFolderName, Path otgRootFolder) throws IOException
+	void writeToStream(DataOutput stream) throws IOException
 	{		
 		stream.writeInt(this.bo4DataVersion);
 		// Version 3 added fixedRotation		
@@ -1417,7 +1424,7 @@ public class BO4Config extends CustomObjectConfigFile
 		ArrayList<String> metaDataNames = new ArrayList<>();
 		int randomBlockCount = 0;
 		int nonRandomBlockCount = 0;
-		BO4BlockFunction[] blocks = getBlocks(presetFolderName, otgRootFolder);
+		BO4BlockFunction[] blocks = getBlocks();
 		for(BO4BlockFunction block : blocks)
 		{		
 			if(block instanceof BO4RandomBlockFunction)
@@ -1542,124 +1549,8 @@ public class BO4Config extends CustomObjectConfigFile
 	}
 
 	/**
-	 * Determines whether a binary cache (BOPack or legacy .BO4Data file) is
-	 * available for this config and reads from it.
-	 *
-	 * Load preference: BOPack > legacy individual .BO4Data > (caller falls back to text parse)
-	 *
-	 * @return true if data was loaded from a binary cache, false if no cache exists
-	 */
-	private boolean readFromBinaryCache(boolean getBlocks) throws InvalidConfigException
-	{
-		File sourceFile = this.reader.getFile();
-		boolean isLegacyBO4DataFile = sourceFile.getAbsolutePath().toLowerCase().endsWith(".bo4data");
-		if(isLegacyBO4DataFile)
-		{
-			// The registered file IS the .BO4Data binary — load it directly.
-			readFromBO4DataFile(getBlocks);
-			return true;
-		}
-		// Prefer BOPack over individual legacy .BO4Data files.
-		BOPack pack = BOPack.getForDirectory(sourceFile.getParentFile());
-		if(pack != null && pack.contains(this.getName()))
-		{
-			BOPack.Entry entry = pack.getEntryInfo(this.getName());
-			if(!"BO4".equals(entry.type))
-			{
-				throw new InvalidConfigException(
-					"Expected BO4 entry in BOPack but found type '" + entry.type
-					+ "' for " + this.getName() + ". Pack may be corrupted.");
-			}
-			try
-			{
-				ByteBuffer buffer = pack.getEntryBuffer(this.getName());
-				parseFromBuffer(buffer, getBlocks);
-			}
-			catch(IOException e)
-			{
-				throw new InvalidConfigException(
-					"Failed to read BOPack entry for " + this.getName() + ": " + e.getMessage());
-			}
-			return true;
-		}
-		// Fall back to legacy individual .BO4Data file.
-		if(BO4Data.bo4DataExists(this))
-		{
-			readFromBO4DataFile(getBlocks);
-			return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Opens the .BO4Data binary for this config (either the registered file when
-	 * its extension is .bo4data, or the sibling .BO4Data file for a .BO4 source),
-	 * decompresses it, and delegates to parseFromBuffer.
-	 */
-	private void readFromBO4DataFile(boolean getBlocks) throws InvalidConfigException
-	{
-		File fileToRead;
-		String path = this.reader.getFile().getAbsolutePath();
-		if(path.toLowerCase().endsWith(".bo4data"))
-		{
-			fileToRead = this.reader.getFile();
-		} else {
-			String bo4DataPath =
-				path.endsWith(".BO4") ? path.replace(".BO4", ".BO4Data") :
-				path.endsWith(".bo4") ? path.replace(".bo4", ".BO4Data") :
-				path.endsWith(".BO3") ? path.replace(".BO3", ".BO4Data") :
-				path.endsWith(".bo3") ? path.replace(".bo3", ".BO4Data") :
-				path;
-			fileToRead = new File(bo4DataPath);
-		}
-		FileInputStream fis;
-		ByteBuffer bufferCompressed = null;
-		try
-		{
-			fis = new FileInputStream(fileToRead);
-			try
-			{
-				bufferCompressed = fis.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, fis.getChannel().size());
-				byte[] compressedBytes = new byte[(int) fis.getChannel().size()];
-				bufferCompressed.get(compressedBytes);
-				byte[] decompressedBytes;
-				try
-				{
-					decompressedBytes = com.pg85.otg.util.CompressionUtils.decompress(compressedBytes);
-				}
-				catch(DataFormatException e1)
-				{
-					throw new InvalidConfigException("Could not decompress BO4Data file " + fileToRead.getName() + ": " + e1.getMessage());
-				}
-				parseFromBuffer(ByteBuffer.wrap(decompressedBytes), getBlocks);
-			}
-			catch(InvalidConfigException ice)
-			{
-				throw ice;
-			}
-			catch(Exception | Error e1)
-			{
-				e1.printStackTrace();
-				throw new InvalidConfigException("Could not read BO4Data file " + fileToRead.getName() + ", it may be outdated or corrupted. Delete and re-export BO4Data files to fix this, or delete and reinstall your OTG preset.");
-			}
-			finally
-			{
-				if(bufferCompressed != null) bufferCompressed.clear();
-				try { fis.getChannel().close(); } catch(IOException ignored) {}
-				try { fis.close(); } catch(IOException ignored) {}
-			}
-		}
-		catch(FileNotFoundException e2)
-		{
-			e2.printStackTrace();
-			throw new InvalidConfigException("BO4Data file not found: " + fileToRead.getAbsolutePath());
-		}
-	}
-
-	/**
 	 * Parses a decompressed BO4Data buffer into this config's fields.
-	 * This is the core deserialization logic, shared by both the legacy individual
-	 * .BO4Data file path and the BOPack path.
+	 * This is the core deserialization logic shared by the BOPack and .BO4Data paths.
 	 */
 	private void parseFromBuffer(ByteBuffer bufferDecompressed, boolean getBlocks) throws InvalidConfigException
 	{

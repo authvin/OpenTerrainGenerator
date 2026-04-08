@@ -183,7 +183,7 @@ public class BO4 implements StructuredCustomObject, BOPackSerializable
 		}
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		DataOutputStream dos = new DataOutputStream(bos);
-		config.writeToStream(dos, presetFolderName, otgRootFolder);
+		config.writeToStream(dos);
 		dos.close();
 		return bos.toByteArray();
 	}
@@ -214,8 +214,12 @@ public class BO4 implements StructuredCustomObject, BOPackSerializable
 	}
 
 	// BO4's should always spawn within decoration bounds, so there is no SpawnForced, only TrySpawnAt
-	public boolean trySpawnAt(String presetFolderName, Path otgRootFolder, IWorldGenRegion worldGenRegion, Random random, Rotation rotation, ChunkCoordinate chunkCoord, int x, int y, int z, String replaceAbove, String replaceBelow, boolean replaceWithBiomeBlocks, String replaceWithSurfaceBlock, String replaceWithGroundBlock, String replaceWithStoneBlock, boolean spawnUnderWater, int waterLevel, boolean isStructureAtSpawn, boolean doReplaceAboveBelowOnly, boolean doBiomeConfigReplaceBlocks)
-	{
+	public boolean trySpawnAt(
+			IWorldGenRegion worldGenRegion, Random random, Rotation rotation, ChunkCoordinate chunkCoord, int x, int y, int z,
+			String replaceAbove, String replaceBelow, boolean replaceWithBiomeBlocks, String replaceWithSurfaceBlock,
+			String replaceWithGroundBlock, String replaceWithStoneBlock, boolean spawnUnderWater, int waterLevel,
+			boolean isStructureAtSpawn, boolean doReplaceAboveBelowOnly, boolean doBiomeConfigReplaceBlocks
+	) {
 		IMaterialReader materialReader = OTGMaterialReader.get();
 		//OTG.log(LogMarker.INFO, "Spawning " + this.getName() + " in Chunk X" + chunkCoord.getChunkX() + "Z" + chunkCoord.getChunkZ() + " at pos " + x + " " + y + " " + z);
 
@@ -320,10 +324,10 @@ public class BO4 implements StructuredCustomObject, BOPackSerializable
 		
 		// Spawn
 		long startTime = System.currentTimeMillis();
-		BO4BlockFunction[] blocks = config.getBlocks(presetFolderName, otgRootFolder);
+		BO4BlockFunction[] blocks = config.getBlocks();
 		if(blocks != null)
 		{
-			for (BO4BlockFunction block : config.getBlocks(presetFolderName, otgRootFolder))
+			for (BO4BlockFunction block : config.getBlocks())
 			{
 				if(block instanceof BO4RandomBlockFunction)
 				{

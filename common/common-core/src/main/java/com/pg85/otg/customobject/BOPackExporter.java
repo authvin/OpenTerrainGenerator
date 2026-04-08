@@ -95,23 +95,56 @@ public class BOPackExporter
 			}
 		}
 
-		// Pass 2: iterate every known BO object and collect those that are serializable,
-		// grouped by parent directory.
-		//
-		// directory → (objectName → rawBytes), (objectName → typeTag)
-		Map<File, LinkedHashMap<String, byte[]>> rawByDir = new LinkedHashMap<>();
-		Map<File, Map<String, String>> typeByDir = new LinkedHashMap<>();
-
 		ArrayList<String> allNames = CustomObjectManager.get()
 			.getGlobalObjects()
 			.getAllBONamesForPreset(presetFolderName, otgRootFolder);
 
-		int total = allNames == null ? 0 : allNames.size();
-		int current = 0;
-
-		if (allNames != null)
+		if (allNames == null || allNames.isEmpty())
 		{
-			for (String name : allNames)
+			OTGLog.log(LogLevel.INFO, LogCategory.MAIN, "BOPackExporter: no objects found, nothing to export.");
+			return;
+		}
+
+		// Pass 2: lightweight scan — group serializable object names by directory.
+		// Objects are unloaded after each file lookup so no byte data accumulates.
+		Map<File, List<String>> namesByDir = new LinkedHashMap<>();
+		for (String name : allNames)
+		{
+			CustomObject obj = CustomObjectManager.get()
+				.getGlobalObjects()
+				.getObjectByName(name, presetFolderName, otgRootFolder);
+
+			if (obj instanceof BOPackSerializable)
+			{
+				File sourceFile = resolveSourceFile(obj);
+				if (sourceFile == null)
+				{
+					OTGLog.log(LogLevel.WARN, LogCategory.MAIN,
+						"BOPackExporter: could not resolve file for " + name + ", skipping.");
+				}
+				else
+				{
+					namesByDir.computeIfAbsent(sourceFile.getParentFile(), d -> new ArrayList<>()).add(name);
+				}
+			}
+			CustomObjectManager.get().getGlobalObjects().unloadCustomObjectFiles();
+		}
+
+		// Pass 3: process and write one directory at a time.
+		// At most one directory's worth of byte[] data lives in memory simultaneously.
+		int packsWritten = 0;
+		int current = 0;
+		int total = allNames.size();
+
+		for (Map.Entry<File, List<String>> dirEntry : namesByDir.entrySet())
+		{
+			File dir = dirEntry.getKey();
+			List<String> dirNames = dirEntry.getValue();
+
+			LinkedHashMap<String, byte[]> entries = new LinkedHashMap<>();
+			Map<String, String> types = new LinkedHashMap<>();
+
+			for (String name : dirNames)
 			{
 				current++;
 				CustomObject obj = CustomObjectManager.get()
@@ -120,18 +153,9 @@ public class BOPackExporter
 
 				if (!(obj instanceof BOPackSerializable serializable))
 				{
+					CustomObjectManager.get().getGlobalObjects().unloadCustomObjectFiles();
 					continue;
 				}
-
-                // Resolve the source file to determine the directory
-				File sourceFile = resolveSourceFile(obj);
-				if (sourceFile == null)
-				{
-					OTGLog.log(LogLevel.WARN, LogCategory.MAIN,
-						"BOPackExporter: could not resolve file for " + name + ", skipping.");
-					continue;
-				}
-				File dir = sourceFile.getParentFile();
 
 				byte[] raw;
 				try
@@ -142,34 +166,28 @@ public class BOPackExporter
 				{
 					OTGLog.log(LogLevel.ERROR, LogCategory.MAIN,
 						"BOPackExporter: serialization failed for " + name + ": " + e.getMessage());
+					CustomObjectManager.get().getGlobalObjects().unloadCustomObjectFiles();
 					continue;
 				}
 
-				if (raw == null)
+				if (raw != null)
 				{
-					continue; // object opted out
+					entries.put(name, raw);
+					types.put(name, serializable.getBOPackType());
 				}
-
-				rawByDir.computeIfAbsent(dir, d -> new LinkedHashMap<>()).put(name, raw);
-				typeByDir.computeIfAbsent(dir, d -> new LinkedHashMap<>()).put(name, serializable.getBOPackType());
 
 				if (progressCallback != null)
 				{
 					progressCallback.onProgress(current, total, name);
 				}
 
-				// Unload to free memory between objects
 				CustomObjectManager.get().getGlobalObjects().unloadCustomObjectFiles();
 			}
-		}
 
-		// Pass 3: write one .bopack per directory
-		int packsWritten = 0;
-		for (Map.Entry<File, LinkedHashMap<String, byte[]>> entry : rawByDir.entrySet())
-		{
-			File dir = entry.getKey();
-			LinkedHashMap<String, byte[]> entries = entry.getValue();
-			Map<String, String> types = typeByDir.get(dir);
+			if (entries.isEmpty())
+			{
+				continue;
+			}
 
 			File packFile = BOPack.getPackFileForDir(dir);
 			try
@@ -182,6 +200,8 @@ public class BOPackExporter
 				OTGLog.log(LogLevel.ERROR, LogCategory.MAIN,
 					"BOPackExporter: failed to write " + packFile.getAbsolutePath() + ": " + e.getMessage());
 			}
+			// entries and types go out of scope here; GC can reclaim all byte[] data
+			// for this directory before the next directory is processed.
 		}
 
 		OTGLog.log(LogLevel.INFO, LogCategory.MAIN,

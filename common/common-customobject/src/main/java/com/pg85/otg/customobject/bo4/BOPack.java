@@ -1,5 +1,6 @@
 package com.pg85.otg.customobject.bo4;
 
+import com.pg85.otg.customobject.BOFileExtensions;
 import com.pg85.otg.util.CompressionUtils;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.logging.LogCategory;
@@ -13,9 +14,12 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 import java.util.zip.DataFormatException;
 
@@ -48,7 +52,7 @@ public class BOPack
 {
 	private static final int MAGIC = 0x4F504B00; // "OPK\0"
 	private static final int FORMAT_VERSION = 1;
-	static final String FILE_EXTENSION = ".bopack";
+	static final String FILE_EXTENSION = BOFileExtensions.BOPACK;
 
 	// Static cache: pack file → loaded BOPack (header + ToC only, data is lazy)
 	private static final ConcurrentHashMap<File, BOPack> cache = new ConcurrentHashMap<>();
@@ -96,23 +100,48 @@ public class BOPack
 	// -------------------------------------------------------------------------
 
 	/**
+	 * Returns a BOPack for the given pack file, loading and caching it on first
+	 * access. Returns null if the file does not exist or fails to load.
+	 */
+	public static BOPack forFile(File packFile)
+	{
+		if (!packFile.exists())
+		{
+			return null;
+		}
+		BOPack cached = cache.get(packFile);
+		if (cached != null)
+		{
+			return cached;
+		}
+		BOPack loaded = loadFromFile(packFile);
+		if (loaded == null)
+		{
+			return null;
+		}
+		cache.put(packFile, loaded);
+		return loaded;
+	}
+
+	/**
 	 * Returns a BOPack for the given directory if a .bopack file exists there,
 	 * otherwise returns null. The result is cached after the first load.
 	 */
 	public static BOPack getForDirectory(File directory)
 	{
-		File packFile = getPackFileForDir(directory);
-		if (!packFile.exists())
-		{
-			return null;
-		}
-		return cache.computeIfAbsent(packFile, BOPack::loadFromFile);
+		return forFile(getPackFileForDir(directory));
 	}
 
 	/** Evict the cached BOPack for a directory (call after writing a new pack). */
 	public static void invalidateCache(File directory)
 	{
 		cache.remove(getPackFileForDir(directory));
+	}
+
+	/** Returns the names of all entries in this pack (order matches the ToC). */
+	public Set<String> getEntryNames()
+	{
+		return Collections.unmodifiableSet(toc.keySet());
 	}
 
 	/** The canonical pack file path for a given directory. */
@@ -127,7 +156,7 @@ public class BOPack
 
 	public boolean contains(String name)
 	{
-		return toc.containsKey(name);
+		return toc.containsKey(name.toLowerCase());
 	}
 
 	/**
@@ -138,7 +167,7 @@ public class BOPack
 	 */
 	public ByteBuffer getEntryBuffer(String name) throws IOException
 	{
-		Entry entry = toc.get(name);
+		Entry entry = toc.get(name.toLowerCase());
 		if (entry == null)
 		{
 			throw new IOException("Entry '" + name + "' not found in pack " + packFile.getName());
@@ -187,7 +216,7 @@ public class BOPack
 	/** Returns the entry metadata from the ToC without reading data, or null. */
 	public Entry getEntryInfo(String name)
 	{
-		return toc.get(name);
+		return toc.get(name.toLowerCase());
 	}
 
 	// -------------------------------------------------------------------------
@@ -334,7 +363,7 @@ public class BOPack
 				int crcComp = raf.readInt();
 				int crcRaw = raf.readInt();
 
-				toc.put(name, new Entry(name, type, dataOffset, dataLength, crcComp, crcRaw));
+				toc.put(name.toLowerCase(), new Entry(name, type, dataOffset, dataLength, crcComp, crcRaw));
 			}
 			return new BOPack(packFile, toc);
 		}

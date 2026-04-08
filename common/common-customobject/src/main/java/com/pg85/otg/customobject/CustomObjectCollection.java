@@ -1,6 +1,8 @@
 package com.pg85.otg.customobject;
 
 import com.pg85.otg.constants.Constants;
+import static com.pg85.otg.customobject.BOFileExtensions.*;
+import com.pg85.otg.customobject.bo4.BOPack;
 import com.pg85.otg.util.OTGLog;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
@@ -33,7 +35,7 @@ public class CustomObjectCollection
 	private final HashMap<String, HashMap<String, File>> customObjectFilesPerPreset = new HashMap<>();
 	private final HashMap<String, HashMap<String, File>> boTemplateFilesPerPreset = new HashMap<>();
 
-	public CustomObject loadObject(File file, String presetFolderName, Path otgRootFolder)
+	public CustomObject loadObject(String objectName, File file, String presetFolderName, Path otgRootFolder)
 	{
 		synchronized(this.indexingFilesLock)
 		{
@@ -49,8 +51,7 @@ public class CustomObjectCollection
 				if (index != -1)
 				{
 					String objectType = fileName.substring(index + 1);
-					String objectName = fileName.substring(0, index);
-	
+
 					// Get the object
 					CustomObjectLoader loader = CustomObjectManager.get().getObjectLoaders().get(objectType.toLowerCase());
 					if (loader != null)
@@ -197,7 +198,7 @@ public class CustomObjectCollection
 			indexPresetObjectsFolder(presetFolderName, otgRootPath);
 			files = this.customObjectFilesPerPreset.get(presetFolderName);
 		}
-		return files == null ? null : new ArrayList<>(files.values().stream().map(a -> a.getName().substring(0, a.getName().lastIndexOf("."))).collect(Collectors.toList()));
+		return files == null ? null : new ArrayList<>(files.keySet());
 	}
 
 	public ArrayList<String> getTemplatesForPreset(String presetFolderName,  Path otgRootPath)
@@ -208,7 +209,7 @@ public class CustomObjectCollection
 			indexPresetObjectsFolder(presetFolderName, otgRootPath);
 			files = this.customObjectFilesPerPreset.get(presetFolderName);
 		}
-		return files == null ? null : new ArrayList<>(files.values().stream().map(a -> a.getName().substring(0, a.getName().lastIndexOf("."))).collect(Collectors.toList()));
+		return files == null ? null : new ArrayList<>(files.keySet());
 	}
 
 	public File getTemplateFileForPreset(String presetFolderName, String templateName, Path otgRootPath)
@@ -403,7 +404,7 @@ public class CustomObjectCollection
 					File searchForFile = presetCustomObjectFiles.get(name.toLowerCase());
 					if (searchForFile != null)
 					{
-						object = loadObject(searchForFile, presetFolderName, otgRootFolder);
+						object = loadObject(name, searchForFile, presetFolderName, otgRootFolder);
 						if (object != null)
 						{
                             HashMap<String, CustomObject> presetObjectsByName = this.objectsByNamePerPreset.computeIfAbsent(presetFolderName, k -> new HashMap<>());
@@ -439,7 +440,7 @@ public class CustomObjectCollection
 	
 				if (searchForFile != null)
 				{
-					object = loadObject(searchForFile, presetFolderName, otgRootFolder);
+					object = loadObject(name, searchForFile, presetFolderName, otgRootFolder);
 	
 					if (object != null)
 					{
@@ -481,17 +482,16 @@ public class CustomObjectCollection
 					} else {
 						String name = fileInDir.getName().contains(".") ? fileInDir.getName().substring(0, fileInDir.getName().lastIndexOf(".")) : fileInDir.getName();
 						String fileExtension = fileInDir.getName().contains(".") ? fileInDir.getName().substring(fileInDir.getName().lastIndexOf(".")).toLowerCase() : null;
-						if (
-							fileExtension != null &&
-							(
-								fileExtension.equals(".bo4data") || 
-								fileExtension.equals(".bo4") || 
-								fileExtension.equals(".bo3") || 
-								fileExtension.equals(".bo2")
-							)
-						) {
+						if (BOPACK.equals(fileExtension)) {
+							BOPack pack = BOPack.forFile(fileInDir);
+							if (pack != null) {
+								for (String entryName : pack.getEntryNames()) {
+									customObjectFiles.put(entryName.toLowerCase(), fileInDir);
+								}
+							}
+						} else if (isCustomObjectExtension(fileExtension)) {
 							if (
-								fileExtension.equals(".bo4data") || 
+								BO4DATA.equals(fileExtension) ||
 								!customObjectFiles.containsKey(name.toLowerCase())
 							) {
 								customObjectFiles.put(name.toLowerCase(), fileInDir);
@@ -502,7 +502,7 @@ public class CustomObjectCollection
 								}
 							}
 						}
-						else if (fileExtension != null && fileExtension.equals(".bo3template"))
+						else if (BO3TEMPLATE.equals(fileExtension))
 						{
 							templateFiles.put(name.toLowerCase(), fileInDir);
 						}
@@ -511,18 +511,19 @@ public class CustomObjectCollection
 			} else {
 				String name = searchDir.getName().contains(".") ? searchDir.getName().substring(0, searchDir.getName().lastIndexOf(".")) : searchDir.getName();
 				String fileExtension = searchDir.getName().contains(".") ? searchDir.getName().substring(searchDir.getName().lastIndexOf(".")).toLowerCase() : null;				
-				if (
-					fileExtension != null &&
-					(
-						fileExtension.equals(".bo4data") || 
-						fileExtension.equals(".bo4") || 
-						fileExtension.equals(".bo3") || 
-						fileExtension.equals(".bo2")
-					)
-				)
+				if (BOPACK.equals(fileExtension))
+				{
+					BOPack pack = BOPack.forFile(searchDir);
+					if (pack != null) {
+						for (String entryName : pack.getEntryNames()) {
+							customObjectFiles.put(entryName.toLowerCase(), searchDir);
+						}
+					}
+				}
+				else if (isCustomObjectExtension(fileExtension))
 				{
 					if (
-						fileExtension.endsWith(".bo4data") || 
+						BO4DATA.equals(fileExtension) ||
 						!customObjectFiles.containsKey(name.toLowerCase())
 					)
 					{

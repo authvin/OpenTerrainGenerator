@@ -31,7 +31,7 @@ public class SmoothingAreaGenerator
 	// Holds all unspawned smoothing area lines per chunk.
 	public final Map<ChunkCoordinate, ArrayList<SmoothingAreaLine>> smoothingAreasToSpawn = new HashMap<>();
 	private final Map<ChunkCoordinate, ArrayList<SmoothingAreaLine>> smoothingAreasToSpawnPerLineDestination = new HashMap<>();
-		
+
 	public ArrayList<ChunkCoordinate> getSmoothingAreaChunkCoords()
 	{
 		return new ArrayList<>(smoothingAreasToSpawn.keySet());
@@ -108,7 +108,7 @@ public class SmoothingAreaGenerator
 				}
 				if(smoothRadius > 0)
 				{
-					heightMap = bO3InChunk.getConfig().getSmoothingHeightMap(startBO4, worldGenRegion.getPresetFolderName(), otgRootFolder,  customObjectManager, materialReader);
+					heightMap = bO3InChunk.getConfig().getSmoothingHeightMap(startBO4);
 
 					// if !SmoothStartTop then for each BO3 that has a smoothradius > 0 get the lowest layer of blocks and determine smooth area starting points
 					// if SmoothStartTop then for each BO3 that has a smoothradius > 0 get the highest blocks of the BO4 and determine smooth area starting points
@@ -349,7 +349,7 @@ public class SmoothingAreaGenerator
 					if(bO3ToCheck != objectInChunk)
 					{
 						// Now find the actual block
-						neighbouringBO3HeightMap = ((BO4)bO3ToCheck.getObject(otgRootFolder)).getConfig().getSmoothingHeightMap(startBO4, presetFolderName, otgRootFolder,  customObjectManager, materialReader);
+						neighbouringBO3HeightMap = ((BO4)bO3ToCheck.getObject(otgRootFolder)).getConfig().getSmoothingHeightMap(startBO4);
 
 						for(int x = 0; x < 16; x++)
 						{

@@ -40,12 +40,16 @@ public class FabricMaterialData extends LocalMaterialData {
     }
 
     public static LocalMaterialData ofBlockState(@NonNull BlockState blockState) {
-        return ofBlockState(blockState, blockState.toString());
+        return ofBlockState(blockState, null);
     }
 
     public static LocalMaterialData ofBlockState(BlockState blockState, String input) {
         if (stateToMaterialDataMap.containsKey(blockState)) {
             return stateToMaterialDataMap.get(blockState);
+        }
+        if (input == null) {
+            // avoid calling toString for literally every ofBlockState lookup
+            input = blockState.toString();
         }
         FabricMaterialData materialData = new FabricMaterialData(blockState, input);
         FabricMaterialData previous = stateToMaterialDataMap.putIfAbsent(blockState, materialData);

@@ -59,11 +59,13 @@ public class CustomObjectManager implements ICustomObjectManager
 		// These are the actual lists, not just a copy.
 		this.loaders = new HashMap<>();
 
-		// Register loaders
-		registerCustomObjectLoader("bo2", new BO2Loader());
-		registerCustomObjectLoader("bo3", new BO3Loader(manager));
-		registerCustomObjectLoader("bo4", new BO4Loader(manager));
-		registerCustomObjectLoader("bo4data", new BO4Loader(manager));
+		// Register loaders — strip leading dot from BOFileExtensions constants
+		registerCustomObjectLoader(BOFileExtensions.BO2.substring(1), new BO2Loader());
+		registerCustomObjectLoader(BOFileExtensions.BO3.substring(1), new BO3Loader(manager));
+		BO4Loader bo4Loader = new BO4Loader(manager);
+		registerCustomObjectLoader(BOFileExtensions.BO4.substring(1), bo4Loader);
+		registerCustomObjectLoader(BOFileExtensions.BO4DATA.substring(1), bo4Loader);
+		registerCustomObjectLoader(BOFileExtensions.BOPACK.substring(1), bo4Loader);
 
 		this.globalCustomObjects = new CustomObjectCollection();
 
