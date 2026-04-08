@@ -27,7 +27,8 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @Getter
-public class OTGFabricBiomeProvider extends BiomeSource implements ILayerSource, BiomeManager.NoiseBiomeSource {
+public class
+OTGFabricBiomeProvider extends BiomeSource implements ILayerSource, BiomeManager.NoiseBiomeSource {
     public static final Codec<OTGFabricBiomeProvider> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
                     Codec.STRING.fieldOf("preset_name").stable().forGetter(OTGFabricBiomeProvider::getPresetFolderName),

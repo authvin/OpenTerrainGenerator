@@ -78,6 +78,7 @@ public class LocalMaterials
 	public static LocalMaterialData BIRCH_LOG;
 	public static LocalMaterialData DARK_OAK_LOG;
 	public static LocalMaterialData OAK_LOG;
+	public static LocalMaterialData JUNGLE_LOG;
 	public static LocalMaterialData SPRUCE_LOG;
 	public static LocalMaterialData STRIPPED_ACACIA_LOG;
 	public static LocalMaterialData STRIPPED_BIRCH_LOG;
@@ -89,7 +90,8 @@ public class LocalMaterials
 	public static LocalMaterialData BIRCH_WOOD;
 	public static LocalMaterialData DARK_OAK_WOOD;
 	public static LocalMaterialData OAK_WOOD;
-	public static LocalMaterialData SPRUCE_WOOD;	
+	public static LocalMaterialData SPRUCE_WOOD;
+	public static LocalMaterialData JUNGLE_WOOD;
 	
 	public static LocalMaterialData ACACIA_LEAVES;
 	public static LocalMaterialData BIRCH_LEAVES;

@@ -413,7 +413,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
 
     @Override
     public void addDebugScreenInfo(List<String> list, RandomState randomState, BlockPos blockPos) {
-        IBiome biome = this.internalGenerator.getCachedBiomeProvider().getNoiseBiome(blockPos.getX(), blockPos.getZ());
+        IBiome biome = this.internalGenerator.getCachedBiomeProvider().getNoiseBiome(blockPos.getX() >> 2, blockPos.getZ() >> 2);
         list.add("Preset: " + this.preset.getFolderName());
         list.add("Biome: " + biome.getBiomeSettings().getIdentitySettings().getDisplayName());
         list.add("OTG Debug { "+otgWorldInfo.toString()+" }");

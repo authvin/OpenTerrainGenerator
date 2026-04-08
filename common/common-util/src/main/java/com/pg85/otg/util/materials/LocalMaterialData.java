@@ -131,45 +131,51 @@ public abstract class LocalMaterialData extends LocalMaterialBase
 
 	private boolean isLeavesSet;
 	private boolean isLeaves;
-	public boolean isLeaves()
+	public final boolean isLeaves()
 	{
-		// TODO: Use blocktags for this, to pick up all leaves?
 		if(this.isLeavesSet)
 		{
 			return this.isLeaves;
 		}
-		this.isLeaves =
-			isMaterial(LocalMaterials.ACACIA_LEAVES) ||
-			isMaterial(LocalMaterials.BIRCH_LEAVES) ||
-			isMaterial(LocalMaterials.DARK_OAK_LEAVES) ||
-			isMaterial(LocalMaterials.JUNGLE_LEAVES) ||
-			isMaterial(LocalMaterials.OAK_LEAVES) ||
-			isMaterial(LocalMaterials.SPRUCE_LEAVES)
-		;
+		this.isLeaves = checkIsLeaves();
 		this.isLeavesSet = true;
 		return this.isLeaves;
 	}
 
 	private boolean isLogSet;
-	private boolean isLog;	
-	public boolean isLog()
+	private boolean isLog;
+	public final boolean isLog()
 	{
-		// TODO: Use blocktags for this, to pick up all logs?
 		if(this.isLogSet)
 		{
 			return this.isLog;
 		}
-		this.isLog =
+		this.isLog = checkIsLog();
+		this.isLogSet = true;
+		return this.isLog;
+	}
+
+	/**
+	 * Platform-specific check for whether this material is a log.
+	 * Should use block tags where available for best compatibility.
+	 * @return true if this is a log block
+	 */
+	protected boolean checkIsLog()
+	{
+		// Fallback implementation for platforms without tag support
+		return
 			isMaterial(LocalMaterials.ACACIA_LOG) ||
 			isMaterial(LocalMaterials.BIRCH_LOG) ||
 			isMaterial(LocalMaterials.DARK_OAK_LOG) ||
+			isMaterial(LocalMaterials.JUNGLE_LOG) ||
 			isMaterial(LocalMaterials.OAK_LOG) ||
 			isMaterial(LocalMaterials.SPRUCE_LOG) ||
 			isMaterial(LocalMaterials.ACACIA_WOOD) ||
 			isMaterial(LocalMaterials.BIRCH_WOOD) ||
 			isMaterial(LocalMaterials.DARK_OAK_WOOD) ||
+			isMaterial(LocalMaterials.JUNGLE_WOOD) ||
 			isMaterial(LocalMaterials.OAK_WOOD) ||
-			isMaterial(LocalMaterials.SPRUCE_WOOD) ||			
+			isMaterial(LocalMaterials.SPRUCE_WOOD) ||
 			isMaterial(LocalMaterials.STRIPPED_ACACIA_LOG) ||
 			isMaterial(LocalMaterials.STRIPPED_BIRCH_LOG) ||
 			isMaterial(LocalMaterials.STRIPPED_DARK_OAK_LOG) ||
@@ -177,8 +183,24 @@ public abstract class LocalMaterialData extends LocalMaterialBase
 			isMaterial(LocalMaterials.STRIPPED_OAK_LOG) ||
 			isMaterial(LocalMaterials.STRIPPED_SPRUCE_LOG)
 		;
-		this.isLogSet = true;
-		return this.isLog;
+	}
+
+	/**
+	 * Platform-specific check for whether this material is leaves.
+	 * Should use block tags where available for best compatibility.
+	 * @return true if this is a leaves block
+	 */
+	protected boolean checkIsLeaves()
+	{
+		// Fallback implementation for platforms without tag support
+		return
+			isMaterial(LocalMaterials.ACACIA_LEAVES) ||
+			isMaterial(LocalMaterials.BIRCH_LEAVES) ||
+			isMaterial(LocalMaterials.DARK_OAK_LEAVES) ||
+			isMaterial(LocalMaterials.JUNGLE_LEAVES) ||
+			isMaterial(LocalMaterials.OAK_LEAVES) ||
+			isMaterial(LocalMaterials.SPRUCE_LEAVES)
+		;
 	}
 	
 	public boolean isSapling()

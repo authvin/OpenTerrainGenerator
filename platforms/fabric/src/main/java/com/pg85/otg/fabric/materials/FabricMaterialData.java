@@ -9,7 +9,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -28,6 +31,10 @@ public class FabricMaterialData extends LocalMaterialData {
     private final String registryName;
     private final String name;
     private static final ConcurrentHashMap<BlockState, FabricMaterialData> stateToMaterialDataMap = new ConcurrentHashMap<>();
+
+    // OTG block tags for logs and leaves
+    private static final TagKey<Block> LOGS_TAG = TagKey.create(Registries.BLOCK, new ResourceLocation("otg", "log"));
+    private static final TagKey<Block> LEAVES_TAG = TagKey.create(Registries.BLOCK, new ResourceLocation("otg", "leaves"));
 
     public FabricMaterialData(BlockState state, String raw) {
         super(raw);
@@ -165,12 +172,14 @@ public class FabricMaterialData extends LocalMaterialData {
 
     @Override
     public boolean isLiquid() {
+        // So far, no replacement exists
         return this.state != null && this.state.liquid();
     }
 
     @Override
     public boolean isSolid() {
         // isSolid is deprecated, but is used plenty. When it disappears, compare to 1.20 and see how they change it
+        // So far, no replacement exists
         return this.state != null && this.state.isSolid();
     }
 
@@ -250,5 +259,17 @@ public class FabricMaterialData extends LocalMaterialData {
             return FabricMaterialData.ofBlockState(
                     state.setValue(LeavesBlock.PERSISTENT, false));
         }
+    }
+
+    @Override
+    protected boolean checkIsLog() {
+        // Use tag-based check for logs (includes vanilla + modded logs)
+        return this.state != null && this.state.is(LOGS_TAG);
+    }
+
+    @Override
+    protected boolean checkIsLeaves() {
+        // Use tag-based check for leaves (includes vanilla + modded leaves)
+        return this.state != null && this.state.is(LEAVES_TAG);
     }
 }

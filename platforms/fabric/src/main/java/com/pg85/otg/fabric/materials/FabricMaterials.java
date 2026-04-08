@@ -75,11 +75,14 @@ public class FabricMaterials extends LocalMaterials
 		DARK_OAK_LOG = FabricMaterialData.ofBlockState(Blocks.DARK_OAK_LOG.defaultBlockState());
 		OAK_LOG = FabricMaterialData.ofBlockState(Blocks.OAK_LOG.defaultBlockState());
 		SPRUCE_LOG = FabricMaterialData.ofBlockState(Blocks.SPRUCE_LOG.defaultBlockState());
+		JUNGLE_LOG = FabricMaterialData.ofBlockState(Blocks.JUNGLE_LOG.defaultBlockState());
 		ACACIA_WOOD = FabricMaterialData.ofBlockState(Blocks.ACACIA_WOOD.defaultBlockState());
 		BIRCH_WOOD = FabricMaterialData.ofBlockState(Blocks.BIRCH_WOOD.defaultBlockState());
 		DARK_OAK_WOOD = FabricMaterialData.ofBlockState(Blocks.DARK_OAK_WOOD.defaultBlockState());
 		OAK_WOOD = FabricMaterialData.ofBlockState(Blocks.OAK_WOOD.defaultBlockState());
-		SPRUCE_WOOD = FabricMaterialData.ofBlockState(Blocks.SPRUCE_WOOD.defaultBlockState());			
+		SPRUCE_WOOD = FabricMaterialData.ofBlockState(Blocks.SPRUCE_WOOD.defaultBlockState());
+		JUNGLE_WOOD = FabricMaterialData.ofBlockState(Blocks.JUNGLE_WOOD.defaultBlockState());
+
 		STRIPPED_ACACIA_LOG = FabricMaterialData.ofBlockState(Blocks.STRIPPED_ACACIA_LOG.defaultBlockState());
 		STRIPPED_BIRCH_LOG = FabricMaterialData.ofBlockState(Blocks.STRIPPED_BIRCH_LOG.defaultBlockState());
 		STRIPPED_DARK_OAK_LOG = FabricMaterialData.ofBlockState(Blocks.STRIPPED_DARK_OAK_LOG.defaultBlockState());

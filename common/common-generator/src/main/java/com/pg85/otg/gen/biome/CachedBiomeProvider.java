@@ -81,9 +81,9 @@ public class CachedBiomeProvider implements ICachedBiomeProvider
 				cacheHits++;
 				//logger.log(LogLevel.INFO, LogCategory.MAIN, "Cache hit " + cacheHits);
 			}
+			this.locked = false;
 		}
-		this.locked = false;
-		return biomeConfigs;		
+		return biomeConfigs;
 	}
 	
 	// Used by any method that can preemptively request a chunk of biomeconfigs,
