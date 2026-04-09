@@ -14,5 +14,8 @@
   "generator.otg.vanillavistas":  "Vanilla Vistas",
   "generator.otg.vv":             "Vanilla Vistas",
   "generator.otg.void":           "Void",
-  "generator.otg.wildlands":      "Wildlands"
+  "generator.otg.wildlands":      "Wildlands",
+  "generator.otg.resource_test":  "Resource Test",
+  "generator.otg.idtest":         "ID Test",
+  "generator.otg.world_height":   "World Height Test"
 }

@@ -323,7 +323,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
         BiomeSettings biome;
         BiomeTerrainSettings biomeTerrainSettings;
         TerrainSettings terrainSettings = this.preset.getPresetConfig().getTerrainSettings();
-        int worldHeightCap = terrainSettings.getWorldHeightCap();
+        int worldHeightCap = terrainSettings.getHeight();
         float heightAt;
         float weightAt;
         int cacheX;
@@ -433,8 +433,8 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
                 noise += falloff;
 
                 // Reduce the last 4 layers
-                if (y > 28) {
-                    noise = MathHelper.clampedLerp(noise, -10, ((double) y - 28) / 4.0);
+                if (y > this.noiseSizeY - 4) {
+                    noise = MathHelper.clampedLerp(noise, -10, ((double) y - this.noiseSizeY - 4) / 4.0);
                 }
             }
 
@@ -639,7 +639,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
         }
     }
 
-    public void carve(ChunkBuffer chunk, long seed, BitSet carvingMask, boolean cavesEnabled, boolean ravinesEnabled) {
+    public void carve(ChunkBuffer chunk, long seed, BitSet carvingMask, boolean cavesEnabled, boolean ravinesEnabled, OTGWorldInfo otgWorldInfo) {
         // TODO: it should be possible to cache these carver graphs to make larger carvers more efficient and easier to use
         if (cavesEnabled || ravinesEnabled) {
             Random random = new Random();
@@ -661,7 +661,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
                                 chunkZ,
                                 carvingMask,
                                 this.cachedBiomeProvider,
-                                Constants.DEFAULT_WORLD_INFO
+                                otgWorldInfo
                         );
                     }
 
@@ -678,7 +678,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
                                 chunkZ,
                                 carvingMask,
                                 this.cachedBiomeProvider,
-                                Constants.DEFAULT_WORLD_INFO
+                                otgWorldInfo
                         );
                     }
                 }

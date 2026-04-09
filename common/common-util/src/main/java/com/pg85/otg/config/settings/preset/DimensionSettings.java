@@ -67,24 +67,13 @@ public class DimensionSettings extends ConfigSection {
             "Effects registry key, minecraft:overworld by default.",
             "Can be either overworld/nether/end (or potentially modded)."
     );
-    public static final Setting<Integer> MIN_Y = Settings.intSetting(
-            "MinY", 0, Constants.WORLD_START_MIN_Y, Constants.WORLD_END_MAX_Y-15,
-            t -> ((DimensionSettings) t).getMinY(),
-            "Minimum Y value for this dimension, 0 by default.",
-            "Must be a multiple of 16."
-    );
-    public static final Setting<Integer> HEIGHT = Settings.intSetting(
-            "Height", 256, 16, Constants.WORLD_MAX_HEIGHT,
-            t -> ((DimensionSettings) t).getHeight(),
-            "Total height of this dimension, 256 by default (0 to 255).",
-            "Must be a multiple of 16."
-    );
+
     public static final Setting<Integer> LOGICAL_HEIGHT = Settings.intSetting(
             "LogicalHeight", 256, 16, Constants.WORLD_MAX_HEIGHT,
             t -> ((DimensionSettings) t).getLogicalHeight(),
             "The max height at which nether portals and chorus fruits can safely teleport players in this dimension.",
             "Does not affect existing portals.",
-            "Cannot be greater than "+HEIGHT.getName()+"."
+            "Cannot be greater than total world height."
     );
     public static final Setting<Long> FIXED_TIME = Settings.longSetting(
             "FixedTime", -1L, -1L, 24000L,
@@ -176,7 +165,7 @@ public class DimensionSettings extends ConfigSection {
             "Must be greater than or equal to "+MONSTER_SPAWN_LIGHT_VARIATION_MIN.getName()+"."
     );
 
-    public static DimensionSettings getDimensionSettings(SettingsMap reader) {
+    public static DimensionSettings getDimensionSettings(SettingsMap reader, TerrainSettings terrain) {
         var dimensionSettingsBuilder = builder();
         dimensionSettingsBuilder.defaultDimensions(reader.getSetting(DEFAULT_DIMENSIONS));
         dimensionSettingsBuilder.dimensionType(reader.getSetting(DIMENSION_TYPE));
@@ -192,8 +181,8 @@ public class DimensionSettings extends ConfigSection {
         dimensionSettingsBuilder.bedWorks(reader.getSetting(BED_WORKS));
         dimensionSettingsBuilder.respawnAnchorWorks(reader.getSetting(RESPAWN_ANCHOR_WORKS));
         dimensionSettingsBuilder.hasRaids(reader.getSetting(HAS_RAIDS));
-        dimensionSettingsBuilder.minY(reader.getSetting(MIN_Y));
-        dimensionSettingsBuilder.height(reader.getSetting(HEIGHT));
+        dimensionSettingsBuilder.minY(terrain.getMinY());
+        dimensionSettingsBuilder.height(terrain.getHeight());
         dimensionSettingsBuilder.logicalHeight(reader.getSetting(LOGICAL_HEIGHT));
         dimensionSettingsBuilder.infiniburn(reader.getSetting(INFINIBURN));
         dimensionSettingsBuilder.effectsLocation(reader.getSetting(EFFECTS_LOCATION));
@@ -219,8 +208,8 @@ public class DimensionSettings extends ConfigSection {
         writer.putSetting(DimensionSettings.BED_WORKS, this);
         writer.putSetting(DimensionSettings.RESPAWN_ANCHOR_WORKS, this);
         writer.putSetting(DimensionSettings.HAS_RAIDS, this);
-        writer.putSetting(DimensionSettings.MIN_Y, this);
-        writer.putSetting(DimensionSettings.HEIGHT, this);
+        //writer.putSetting(DimensionSettings.MIN_Y, this);
+        //writer.putSetting(DimensionSettings.HEIGHT, this);
         writer.putSetting(DimensionSettings.LOGICAL_HEIGHT, this);
         writer.putSetting(DimensionSettings.INFINIBURN, this);
         writer.putSetting(DimensionSettings.EFFECTS_LOCATION, this);

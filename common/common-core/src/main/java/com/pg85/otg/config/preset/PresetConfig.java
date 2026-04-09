@@ -50,11 +50,11 @@ public class PresetConfig extends PresetSettings {
         presetInfo = PresetInfo.buildPresetInfo(settingsReader);
         visualSettings = VisualSettings.builder().fogColor(settingsReader.getSetting(VisualSettings.PRESET_FOG_COLOR)).build();
         blockSettings = BlockSettings.getBlockSettings(settingsReader);
-        dimensionSettings = DimensionSettings.getDimensionSettings(settingsReader);
+        terrainSettings = TerrainSettings.getTerrainSettings(settingsReader);
+        dimensionSettings = DimensionSettings.getDimensionSettings(settingsReader, terrainSettings);
         generationSettings = GenerationSettings.getGenerationSettings(
                 this, settingsReader, PresetResourcesManager.get(), biomes, settingsDir);
         resourceSettings = ResourceSettings.getResourceSettings(settingsReader);
-        terrainSettings = TerrainSettings.getTerrainSettings(settingsReader);
         imageSettings = ImageSettings.getImageSettings(settingsReader, biomes);
         structureSettings = StructureSettings.getStructureSettings(settingsReader);
         carverSettings = CarverSettings.getCarverSettings(settingsReader, terrainSettings);
@@ -104,7 +104,6 @@ public class PresetConfig extends PresetSettings {
 
     @Override
     public void writeConfigSettings(SettingsMap writer) {
-        writer.putSetting(Constants.ConfigVersionSetting, Constants.ConfigVersion);
         PresetWriter.writePresetConfig(this, writer);
     }
 

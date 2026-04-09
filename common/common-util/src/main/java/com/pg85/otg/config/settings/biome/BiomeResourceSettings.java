@@ -1,6 +1,7 @@
 package com.pg85.otg.config.settings.biome;
 
 import com.pg85.otg.config.ConfigFunction;
+import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settings.ConfigSection;
 import com.pg85.otg.config.settings.preset.ResourceSettings;
 import com.pg85.otg.constants.Constants;
@@ -163,5 +164,17 @@ public class BiomeResourceSettings extends ConfigSection {
                 }
             }
         }
+    }
+
+    public void write(SettingsMap writer) {
+        writer.header1("Resource Queue", RESOURCE_COMMENTS);
+
+        writer.addConfigFunctions(resourceQueue);
+
+        writer.header1("Saplings", SAPLING_COMMENTS);
+
+        writer.addConfigFunctions(saplingGrowers.values());
+        writer.addConfigFunctions(customSaplingGrowers.values());
+        writer.addConfigFunctions(customBigSaplingGrowers.values());
     }
 }

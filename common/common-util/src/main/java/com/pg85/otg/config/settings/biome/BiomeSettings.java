@@ -19,6 +19,7 @@ import lombok.Setter;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -163,7 +164,7 @@ public abstract class BiomeSettings implements ConfigFile {
         if (visualSettings != null)
             writeConfigSection(writer, visualSettings);
         if (resourceSettings != null)
-            writeConfigSection(writer, resourceSettings);
+            resourceSettings.write(writer);
         if (structureSettings != null)
             writeConfigSection(writer, structureSettings);
         if (mobSettings != null)
@@ -183,7 +184,6 @@ public abstract class BiomeSettings implements ConfigFile {
 
     public void writeConfigSection(SettingsMap writer, ConfigSection section) {
         writer.header1(section.getSectionName(), section.getSectionComment());
-
 
         for (Setting<?> setting : section.getSettingsList()) {
             writer.putSetting(setting, section);

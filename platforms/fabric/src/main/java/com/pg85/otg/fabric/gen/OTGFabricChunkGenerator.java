@@ -305,7 +305,8 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
                 seed,
                 bitSet,
                 cavesEnabled,
-                ravinesEnabled
+                ravinesEnabled,
+                otgWorldInfo
         );
     }
 

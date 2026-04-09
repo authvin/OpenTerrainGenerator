@@ -1,6 +1,7 @@
 package com.pg85.otg.config.preset;
 
 import com.pg85.otg.config.io.SettingsMap;
+import com.pg85.otg.config.settings.biome.OutdatedSettings;
 import com.pg85.otg.config.settings.preset.*;
 import com.pg85.otg.constants.Constants;
 
@@ -11,6 +12,8 @@ public class PresetWriter {
                 "This file controls biome groupings, ocean and land sizes/rarities, river settings, cave and canyon distribution,",
                 "vanilla minecraft structure spawning, sea level, dimension/portal settings and more."
         );
+
+        writer.putSetting(Constants.ConfigVersionSetting, Constants.ConfigVersion);
 
         writer.header2("Config Writing");
 
@@ -280,25 +283,13 @@ public class PresetWriter {
                 "The settings in this section control terrain settings that are not specific to any biome."
         );
 
-        writer.putSetting(TerrainSettings.WORLD_HEIGHT_SCALE_BITS, presetConfig.getTerrainSettings().getWorldHeightScale(),
-                "The height scale of the world. Increasing this by one doubles the terrain height of the world, substracting one halves the terrain height. Values must be between 5 and 8, inclusive."
-        );
+        writer.putSetting(TerrainSettings.WORLD_HEIGHT_SCALE, presetConfig.getTerrainSettings());
+        writer.putSetting(TerrainSettings.MIN_Y, presetConfig.getTerrainSettings());
+        writer.putSetting(TerrainSettings.HEIGHT, presetConfig.getTerrainSettings());
 
-        writer.putSetting(TerrainSettings.WORLD_HEIGHT_CAP_BITS, presetConfig.getTerrainSettings().getWorldHeightCap(),
-                "The height cap of the world. A cap of 7 will make sure that there is no terrain above 128 (y=2^7). Near this cap less and less terrain generates with no terrain above this cap.",
-                "Values must be between 5 and 8 (inclusive), and may not be lower that WorldHeightScaleBits."
-        );
+        writer.putSetting(TerrainSettings.FRACTURE_HORIZONTAL, presetConfig.getTerrainSettings());
 
-        writer.putSetting(TerrainSettings.FRACTURE_HORIZONTAL, presetConfig.getTerrainSettings().getFractureHorizontal(),
-                "Can increase (values greater than 0) or decrease (values less than 0) how much the landscape is fractured horizontally.",
-                "Values less than 0 will 'relax' the terrain, leading to more gradual and smoother height transitions."
-        );
-
-        writer.putSetting(TerrainSettings.FRACTURE_VERTICAL, presetConfig.getTerrainSettings().getFractureVertical(),
-                "Can increase (values greater than 0) or decrease (values less than 0) how much the landscape is fractured vertically.",
-                "Values above 0 will lead to large cliffs/overhangs, floating islands, and/or a cavern world depending on other settings.",
-                "Values less than 0 will make terrain volatility more 'spiky' but lessen the likelihood of overhangs and floating terrain."
-        );
+        writer.putSetting(TerrainSettings.FRACTURE_VERTICAL, presetConfig.getTerrainSettings().getFractureVertical());
 
         writer.header1("Blocks");
 

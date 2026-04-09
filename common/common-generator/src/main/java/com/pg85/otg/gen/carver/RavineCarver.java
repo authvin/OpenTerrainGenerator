@@ -67,7 +67,7 @@ public class RavineCarver extends Carver
 		Random random = new Random(seed);
 		float stretchFactor = 1.0F;
 
-		float[] heightToHorizontalStretchFactor = new float[1024];
+		float[] heightToHorizontalStretchFactor = new float[otgWorldInfo.getHeight()];
 		for (int y1 = 0; y1 < otgWorldInfo.getHeight(); ++y1)
 		{
 			if (y1 == 0 || random.nextInt(3) == 0)

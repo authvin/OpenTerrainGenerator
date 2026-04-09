@@ -11,7 +11,9 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Builder
 @Getter
@@ -24,7 +26,7 @@ public class BiomeTagSettings extends ConfigSection {
         };
     }
 
-    public static final Setting<List<String>> BIOME_TAGS = Settings.stringListSetting(
+    public static final Setting<Set<String>> BIOME_TAGS = Settings.stringSetSetting(
             "BiomeTags",
             new String[]{""},
             t -> ((BiomeTagSettings)t).getBiomeTags(),
@@ -42,7 +44,7 @@ public class BiomeTagSettings extends ConfigSection {
     );
 
     private final BiomeType biomeType;
-    private final List<String> biomeTags;
+    private final Set<String> biomeTags;
 
     // biome properties
     private final boolean aquatic;
@@ -113,9 +115,10 @@ public class BiomeTagSettings extends ConfigSection {
         BiomeTagSettingsBuilder builder = builder();
 
         builder.biomeType(reader.getSetting(BiomeTagSettings.BIOME_TYPE));
-        ArrayList<String> tags = new ArrayList<>(reader.getSetting(BiomeTagSettings.BIOME_TAGS));
+        HashSet<String> tags = new HashSet<>(reader.getSetting(BiomeTagSettings.BIOME_TAGS));
         builder.biomeTags(tags);
-        tags.add(reader.getSetting(OutdatedSettings.BIOME_CATEGORY));
+        if (reader.hasSetting(OutdatedSettings.BIOME_CATEGORY))
+            tags.add(reader.getSetting(OutdatedSettings.BIOME_CATEGORY));
 
         for (String dictTag : builder.biomeTags) {
             handleDictTag(dictTag, builder);

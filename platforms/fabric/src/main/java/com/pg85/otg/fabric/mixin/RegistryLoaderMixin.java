@@ -291,14 +291,19 @@ public class RegistryLoaderMixin {
         BlockSettings blockSettings = presetSettings.getBlockSettings();
         ResourceSettings resourceSettings = presetSettings.getResourceSettings();
         var ngs = new NoiseGeneratorSettings(
-                new NoiseSettings(0, 256, 1, 2),
+                new NoiseSettings(
+                        dimensionSettings.getMinY(),
+                        dimensionSettings.getHeight(),
+                        1,
+                        2
+                ),
                 ((FabricMaterialData) blockSettings.getDefaultStoneBlock()).getState(),
                 ((FabricMaterialData) blockSettings.getWaterBlock()).getState(),
                 getZeroNoiseRouter(),
                 SurfaceRuleData.overworld(),
                 new OverworldBiomeBuilder().spawnTarget(),
-                63,
-                false,
+                presetSettings.getTerrainSettings().getWaterLevelMax(),
+                false, // disableMobGeneration
                 false, // is aquifers enabled
                 !resourceSettings.isDisableOreGen(), // is veins enabled
                 false // use legacy random source

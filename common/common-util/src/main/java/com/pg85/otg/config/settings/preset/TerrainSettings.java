@@ -1,6 +1,7 @@
 package com.pg85.otg.config.settings.preset;
 
 import com.pg85.otg.config.io.SettingsMap;
+import com.pg85.otg.config.settings.biome.OutdatedSettings;
 import com.pg85.otg.config.settingtype.IntSetting;
 import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.config.settingtype.Settings;
@@ -16,6 +17,8 @@ public class TerrainSettings extends ConfigSection {
     private final double fractureVertical;
     private final int worldHeightCap;
     private final int worldHeightScale;
+    private final int minY;
+    private final int height;
     private final boolean betterSnowFall;
     private final int waterLevelMax;
     private final int waterLevelMin;
@@ -30,29 +33,26 @@ public class TerrainSettings extends ConfigSection {
             "Higher altitudes have lower temperatures, so snow becomes deeper higher up.",
             "Also causes snow to fall through leaves, leaves can carry 3 layers while the rest falls through."
     );
-    public static final Setting<Integer> WORLD_HEIGHT_SCALE_BITS = Settings.intSetting(
-            "WorldHeightScaleBits", 7, 5, 8,
-            t -> ((TerrainSettings) t).getWorldHeightScale(),
-            "The height scale of the world. Increasing this by one doubles the terrain height of the world,",
-            "substracting one halves the terrain height. Values must be between 5 and 8, inclusive."
-    );
-    public static final Setting<Integer> WORLD_HEIGHT_CAP_BITS = Settings.intSetting(
-            "WorldHeightCapBits", 8, 5, 8,
-            t -> ((TerrainSettings) t).getWorldHeightCap(),
-            "The height cap of the world. A cap of 7 will make sure that there is no terrain above 128 (y=2^7). Near this cap less and less terrain generates with no terrain above this cap.",
-            "Values must be between 5 and 8 (inclusive), and may not be lower that WorldHeightScaleBits."
-    );
 
     public static final Setting<Integer> WORLD_HEIGHT_SCALE = Settings.intSetting(
-        "WorldHeightScale", 128, 16, 2032,
-        t -> ((TerrainSettings) t).getWorldHeightScale(),
-        "Surface Height in the world"
+            "WorldHeightScale", 128, 16, 2032,
+            t -> ((TerrainSettings) t).getWorldHeightScale(),
+            "Surface Height in the world"
     );
-    public static final Setting<Integer> WORLD_HEIGHT_CAP = Settings.intSetting(
-        "WorldHeightCap", 256, 16, 2032,
-        t -> ((TerrainSettings) t).getWorldHeightCap(),
-        "The height cap of the world"
+
+    public static final Setting<Integer> MIN_Y = Settings.intSetting(
+            "MinY", 0, Constants.WORLD_START_MIN_Y, Constants.WORLD_END_MAX_Y-15,
+            t -> ((TerrainSettings) t).getMinY(),
+            "Minimum Y value for this dimension, 0 by default.",
+            "Must be a multiple of 16."
     );
+    public static final Setting<Integer> HEIGHT = Settings.intSetting(
+            "Height", 256, 16, Constants.WORLD_MAX_HEIGHT,
+            t -> ((TerrainSettings) t).getHeight(),
+            "Total height of this dimension, 256 by default (0 to 255).",
+            "Must be a multiple of 16."
+    );
+
     public static final Setting<Integer> WATER_LEVEL_MAX = Settings.intSetting(
             "WaterLevelMax", 63, Constants.WORLD_START_MIN_Y, Constants.WORLD_END_MAX_Y,
             t -> ((TerrainSettings) t).getWaterLevelMax(),
@@ -95,17 +95,26 @@ public class TerrainSettings extends ConfigSection {
 
         builder.fractureHorizontal(reader.getSetting(FRACTURE_HORIZONTAL));
         builder.fractureVertical(reader.getSetting(FRACTURE_VERTICAL));
-        if (reader.hasSetting(WORLD_HEIGHT_CAP_BITS)) {
-            builder.worldHeightCap(1 << reader.getSetting(WORLD_HEIGHT_CAP_BITS));
+
+        // Handle world height
+        if (reader.hasSetting(OutdatedSettings.WORLD_HEIGHT_CAP_BITS)) {
+            builder.worldHeightCap(1 << reader.getSetting(OutdatedSettings.WORLD_HEIGHT_CAP_BITS));
         } else {
-            builder.worldHeightCap(reader.getSetting(WORLD_HEIGHT_CAP));
+            builder.worldHeightCap(reader.getSetting(OutdatedSettings.WORLD_HEIGHT_CAP));
         }
-        if (reader.hasSetting(WORLD_HEIGHT_SCALE_BITS)) {
-             builder.worldHeightCap(1 << reader.getSetting(WORLD_HEIGHT_SCALE_BITS));
+        if (reader.hasSetting(OutdatedSettings.WORLD_HEIGHT_SCALE_BITS)) {
+             builder.worldHeightScale(1 << reader.getSetting(OutdatedSettings.WORLD_HEIGHT_SCALE_BITS));
         } else {
             builder.worldHeightScale(reader.getSetting(WORLD_HEIGHT_SCALE));
         }
-        builder.worldHeightScale(1 << reader.getSetting(WORLD_HEIGHT_SCALE_BITS));
+
+        builder.minY(reader.getSetting(MIN_Y));
+        if (reader.hasSetting(HEIGHT)) {
+            builder.height(reader.getSetting(HEIGHT));
+        } else {
+            builder.height(builder.worldHeightCap - builder.minY);
+        }
+
         builder.betterSnowFall(reader.getSetting(BETTER_SNOW_FALL));
         builder.waterLevelMax(reader.getSetting(WATER_LEVEL_MAX));
         builder.waterLevelMin(reader.getSetting(WATER_LEVEL_MIN));

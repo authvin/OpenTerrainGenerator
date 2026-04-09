@@ -1,6 +1,7 @@
 package com.pg85.otg.config.settingtype;
 
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 import com.pg85.otg.config.settings.ConfigSection;
@@ -205,6 +206,11 @@ public abstract class Settings
 	public static Setting<List<String>> stringListSetting(String name, String[] defaultValues, Function<ConfigSection, List<String>> getter, String ...description)
 	{
 		return new StringListSetting(name, defaultValues, getter, description);
+	}
+
+	public static Setting<Set<String>> stringSetSetting(String name, String[] defaultValues, Function<ConfigSection, Set<String>> getter, String ...description)
+	{
+		return new StringSetSetting(name, defaultValues, getter, description);
 	}
 
 	/**
