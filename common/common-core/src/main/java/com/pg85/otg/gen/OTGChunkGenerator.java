@@ -9,8 +9,9 @@ import com.pg85.otg.gen.biome.CachedBiomeProvider;
 import com.pg85.otg.gen.carver.Carver;
 import com.pg85.otg.gen.carver.CaveCarver;
 import com.pg85.otg.gen.carver.RavineCarver;
+import com.pg85.otg.gen.noise.BlendedBiomeParams;
 import com.pg85.otg.gen.noise.OctavePerlinNoiseSampler;
-import com.pg85.otg.gen.noise.PerlinNoiseSampler;
+import com.pg85.otg.gen.noise.TerrainNoisePipeline;
 import com.pg85.otg.gen.noise.legacy.NoiseGeneratorPerlinMesaBlocks;
 import com.pg85.otg.interfaces.*;
 import com.pg85.otg.presets.Preset;
@@ -64,10 +65,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
     // ThreadLocal may have some overhead for the gets/sets, even when used on a single thread.
     // Some of these classes may not be thread-safe (tho testing seems ok), need to check all the internal state.
 
-    private OctavePerlinNoiseSampler interpolationNoise;     // Volatility noise
-    private OctavePerlinNoiseSampler lowerInterpolatedNoise; // Volatility1 noise
-    private OctavePerlinNoiseSampler upperInterpolatedNoise; // Volatility2 noise
-    private OctavePerlinNoiseSampler depthNoise;
+    private TerrainNoisePipeline noisePipeline;
 
     private final Preset preset;
     private long seed;
@@ -114,11 +112,31 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
         // Setup noises
         Random random = new Random(seed);
 
-        this.interpolationNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-7, 0));
-        this.lowerInterpolatedNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-15, 0));
-        this.upperInterpolatedNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-15, 0));
-        this.depthNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-15, 0));
+        // Volatility noise
+        OctavePerlinNoiseSampler interpolationNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-7, 0));
+        // Volatility1 noise
+        OctavePerlinNoiseSampler lowerInterpolatedNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-15, 0));
+        // Volatility2 noise
+        OctavePerlinNoiseSampler upperInterpolatedNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-15, 0));
+        OctavePerlinNoiseSampler depthNoise = new OctavePerlinNoiseSampler(random, IntStream.rangeClosed(-15, 0));
         this.biomeBlocksNoiseGen = new NoiseGeneratorPerlinMesaBlocks(random, 4);
+
+        TerrainSettings terrainSettings = this.preset.getPresetConfig().getTerrainSettings();
+        this.noisePipeline = new TerrainNoisePipeline(
+                interpolationNoise,
+                lowerInterpolatedNoise,
+                upperInterpolatedNoise,
+                depthNoise,
+                this.noiseSizeY,
+                terrainSettings.getWorldHeightScale() / Constants.PIECE_Y_SIZE + 1, // surfaceSections
+                terrainSettings.getContinentalScale(),
+                terrainSettings.getContinentalBias(),
+                terrainSettings.getBaseHeightFraction(),
+                terrainSettings.getBiomeHeightWeight(),
+                terrainSettings.getContinentalHeightWeight(),
+                terrainSettings.getFalloffSteepness(),
+                terrainSettings.getNoiseAmplitude()
+        );
     }
 
     public ICachedBiomeProvider getCachedBiomeProvider() {
@@ -167,128 +185,6 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
         return yOffset * density;
     }
 
-    private double sampleNoise(
-            int x,
-            int y,
-            int z,
-            double horizontalScale,
-            double verticalScale,
-            double horizontalStretch,
-            double verticalStretch,
-            double volatility1,
-            double volatility2,
-            double volatilityWeight1,
-            double volatilityWeight2
-    ) {
-        // The algorithm for noise generation varies slightly here as it calculates the interpolation first and then the interpolated noise to avoid sampling noise that will never be used.
-        // The end result is ~2x faster terrain generation.
-
-        double delta = getInterpolationNoise(x, y, z, horizontalStretch, verticalStretch);
-
-        if (delta < volatilityWeight1) {
-            return getInterpolatedNoise(this.lowerInterpolatedNoise, x, y, z, horizontalScale, verticalScale) / 512.0D
-                   * volatility1;
-        } else if (delta > volatilityWeight2) {
-            return getInterpolatedNoise(this.upperInterpolatedNoise, x, y, z, horizontalScale, verticalScale) / 512.0D
-                   * volatility2;
-        } else {
-            // TODO: should probably use clamping here to prevent weird artifacts
-            return MathHelper.lerp(
-                    delta,
-                    getInterpolatedNoise(this.lowerInterpolatedNoise, x, y, z, horizontalScale, verticalScale) / 512.0D
-                    * volatility1,
-                    getInterpolatedNoise(this.upperInterpolatedNoise, x, y, z, horizontalScale, verticalScale) / 512.0D
-                    * volatility2
-            );
-        }
-    }
-
-    private double getInterpolationNoise(int x, int y, int z, double horizontalStretch, double verticalStretch) {
-        double interpolation = 0.0D;
-        double amplitude = 1.0D;
-        PerlinNoiseSampler interpolationSampler;
-        for (int i = 0; i < 8; i++) {
-            interpolationSampler = this.interpolationNoise.getOctave(i);
-            if (interpolationSampler != null) {
-                interpolation += interpolationSampler.sample(
-                        OctavePerlinNoiseSampler.maintainPrecision((double) x * horizontalStretch * amplitude),
-                        OctavePerlinNoiseSampler.maintainPrecision((double) y * verticalStretch * amplitude),
-                        OctavePerlinNoiseSampler.maintainPrecision((double) z * horizontalStretch * amplitude),
-                        verticalStretch * amplitude,
-                        (double) y * verticalStretch * amplitude
-                ) / amplitude;
-            }
-
-            amplitude /= 2.0D;
-        }
-
-        return (interpolation / 10.0D + 1.0D) / 2.0D;
-    }
-
-    private double getInterpolatedNoise(
-            OctavePerlinNoiseSampler sampler,
-            int x,
-            int y,
-            int z,
-            double horizontalScale,
-            double verticalScale
-    ) {
-        double noise = 0.0D;
-        double amplitude = 1.0D;
-        double scaledX;
-        double scaledY;
-        double scaledZ;
-        double scaledVerticalScale;
-        PerlinNoiseSampler perlinNoiseSampler;
-        for (int i = 0; i < Constants.CHUNK_SIZE; ++i) {
-            scaledX = OctavePerlinNoiseSampler.maintainPrecision((double) x * horizontalScale * amplitude);
-            scaledY = OctavePerlinNoiseSampler.maintainPrecision((double) y * verticalScale * amplitude);
-            scaledZ = OctavePerlinNoiseSampler.maintainPrecision((double) z * horizontalScale * amplitude);
-            scaledVerticalScale = verticalScale * amplitude;
-
-            perlinNoiseSampler = sampler.getOctave(i);
-            if (perlinNoiseSampler != null) {
-                noise += perlinNoiseSampler.sample(
-                        scaledX,
-                        scaledY,
-                        scaledZ,
-                        scaledVerticalScale,
-                        (double) y * scaledVerticalScale
-                ) / amplitude;
-            }
-
-            amplitude /= 2.0D;
-        }
-
-        return noise;
-    }
-
-    private double getExtraHeightAt(int x, int z, double maxAverageDepth, double maxAverageHeight) {
-        double noiseHeight = this.depthNoise.sample(x * 200, 10.0D, z * 200, 1.0D, 0.0D, true) * 65535.0 / 8000.0;
-
-        if (noiseHeight < 0.0D) {
-            noiseHeight = -noiseHeight * 0.3D;
-        }
-        noiseHeight = noiseHeight * 3.0D - 2.0D;
-
-        if (noiseHeight < 0.0D) {
-            noiseHeight /= 2.0D;
-            if (noiseHeight < -1.0D) {
-                noiseHeight = -1.0D;
-            }
-            noiseHeight -= maxAverageDepth;
-            noiseHeight /= 1.4D;
-            noiseHeight /= 2.0D;
-        } else {
-            if (noiseHeight > 1.0D) {
-                noiseHeight = 1.0D;
-            }
-            noiseHeight += maxAverageHeight;
-            noiseHeight /= 8.0D;
-        }
-
-        return noiseHeight;
-    }
 
     public void getNoiseColumn(double[] buffer, int x, int z) {
         // TODO: check only for edges
@@ -298,17 +194,16 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
     private void generateNoiseColumn(double[] noiseColumn, int noiseX, int noiseZ) {
         BiomeSettings center = this.cachedBiomeProvider.getNoiseBiomeConfig(noiseX, noiseZ, true);
 
-        final int usedYSections = preset.getPresetConfig().getTerrainSettings().getWorldHeightScale() / Constants.PIECE_Y_SIZE + 1;
         float height = 0; // depth
-        float volatility = 0; // scale
+        float biomeVolatility = 0;
         double volatility1 = 0;
         double volatility2 = 0;
         double horizontalFracture = 0;
         double verticalFracture = 0;
         double volatilityWeight1 = 0;
         double volatilityWeight2 = 0;
-        double maxAverageDepth = 0;
-        double maxAverageHeight = 0;
+        double valleyFactor = 0;
+        double peakFactor = 0;
         double[] chc = new double[this.noiseSizeY + 1];
         float weight = 0;
         int smoothRadius = center.getTerrainSettings().getSmoothRadius();
@@ -342,15 +237,15 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
                 weight += weightAt;
 
                 height += heightAt * weightAt;
-                volatility += biomeTerrainSettings.getBiomeVolatility() * weightAt;
+                biomeVolatility += biomeTerrainSettings.getBiomeVolatility() * weightAt;
                 volatility1 += biomeTerrainSettings.getVolatility1() * weightAt;
                 volatility2 += biomeTerrainSettings.getVolatility2() * weightAt;
                 horizontalFracture += terrainSettings.getFractureHorizontal() * weightAt;
                 verticalFracture += terrainSettings.getFractureVertical() * weightAt;
                 volatilityWeight1 += biomeTerrainSettings.getVolatilityWeight1() * weightAt;
                 volatilityWeight2 += biomeTerrainSettings.getVolatilityWeight2() * weightAt;
-                maxAverageDepth += biomeTerrainSettings.getMaxAverageDepth() * weightAt;
-                maxAverageHeight += biomeTerrainSettings.getMaxAverageHeight() * weightAt;
+                valleyFactor += biomeTerrainSettings.getValleyFactor() * weightAt;
+                peakFactor += biomeTerrainSettings.getPeakFactor() * weightAt;
             }
         }
 
@@ -376,74 +271,33 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
 
         // Normalize biome data
         height /= weight;
-        volatility /= weight;
+        biomeVolatility /= weight;
         volatility1 /= weight;
         volatility2 /= weight;
         horizontalFracture /= weight;
         verticalFracture /= weight;
         volatilityWeight1 /= weight;
         volatilityWeight2 /= weight;
-        maxAverageDepth /= weight;
-        maxAverageHeight /= weight;
+        valleyFactor /= weight;
+        peakFactor /= weight;
 
         // Normalize CHC
         for (int y = 0; y < this.noiseSizeY + 1; y++) {
             chc[y] /= chcWeight;
         }
 
-        // Vary the height with more noise
-        float extraHeight = (float) (getExtraHeightAt(noiseX, noiseZ, maxAverageDepth, maxAverageHeight) * 0.2);
+        BlendedBiomeParams params = new BlendedBiomeParams(
+                height, biomeVolatility,
+                volatility1, volatility2,
+                horizontalFracture, verticalFracture,
+                volatilityWeight1, volatilityWeight2,
+                valleyFactor, peakFactor
+        );
 
-        // Do some math on volatility and height
-        volatility = volatility * 0.9f + 0.1f;
-        height = (height * 4.0F - 1.0F) / 8.0F;
-
-        // Factor in y sections
-        height = usedYSections * (2.0f + height + extraHeight) / 4.0f;
-
-        double falloff;
-        double horizontalScale;
-        double verticalScale;
-        double noise;
-        for (int y = 0; y <= this.noiseSizeY; ++y) {
-            // Calculate falloff
-            falloff = (height - y) * 12.0D * 128.0D / worldHeightCap / volatility;
-            if (falloff > 0.0) {
-                falloff *= 4.0;
-            }
-
-            horizontalScale = WORLD_GEN_CONSTANT * horizontalFracture;
-            verticalScale = WORLD_GEN_CONSTANT * verticalFracture;
-            noise = sampleNoise(
-                    noiseX,
-                    y,
-                    noiseZ,
-                    horizontalScale,
-                    verticalScale,
-                    horizontalScale / 80,
-                    verticalScale / 160,
-                    volatility1,
-                    volatility2,
-                    volatilityWeight1,
-                    volatilityWeight2
-            );
-
-            if (!center.getTerrainSettings().isDisableBiomeHeight()) {
-                // Add the falloff at this height
-                noise += falloff;
-
-                // Reduce the last 4 layers
-                if (y > this.noiseSizeY - 4) {
-                    noise = MathHelper.clampedLerp(noise, -10, ((double) y - this.noiseSizeY - 4) / 4.0);
-                }
-            }
-
-            // Add chc data
-            noise += chc[y];
-
-            // Store value
-            noiseColumn[y] = noise;
-        }
+        this.noisePipeline.generateColumn(
+                noiseColumn, noiseX, noiseZ, params, chc,
+                center.getTerrainSettings().isDisableBiomeHeight()
+        );
     }
 
     // Surface / ground / stone blocks / SAGC
@@ -686,13 +540,12 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
         }
     }
 
-    private long setCarverSeed(Random random, long seed, int x, int z) {
+    private void setCarverSeed(Random random, long seed, int x, int z) {
         random.setSeed(seed);
         long i = random.nextLong();
         long j = random.nextLong();
         long k = (long) x * i ^ (long) z * j ^ seed;
         random.setSeed(k);
-        return k;
     }
 
     private void doSurfaceAndGroundControl(
@@ -772,7 +625,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
             this.values = new double[size * noiseSize];
         }
 
-        public double[] get(double[] buffer, int noiseX, int noiseZ) {
+        public void get(double[] buffer, int noiseX, int noiseZ) {
             long key = key(noiseX, noiseZ);
             int idx = hash(key) & this.mask;
 
@@ -792,7 +645,6 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
                 this.keys[idx] = key;
             }
 
-            return buffer;
         }
 
         private int hash(long key) {

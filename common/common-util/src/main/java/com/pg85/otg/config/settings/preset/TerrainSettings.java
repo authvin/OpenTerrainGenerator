@@ -24,6 +24,13 @@ public class TerrainSettings extends ConfigSection {
     private final int waterLevelMin;
     private final int carverLavaBlockHeight;
     private final int chcStart;
+    private final double continentalScale;
+    private final double continentalBias;
+    private final double baseHeightFraction;
+    private final double biomeHeightWeight;
+    private final double continentalHeightWeight;
+    private final double falloffSteepness;
+    private final double noiseAmplitude;
 
     public static final Setting<Boolean> BETTER_SNOW_FALL = Settings.booleanSetting(
             "BetterSnowFall", false,
@@ -71,23 +78,77 @@ public class TerrainSettings extends ConfigSection {
             "Defaults to: 10"
     );
     public static final Setting<Double> FRACTURE_HORIZONTAL = Settings.doubleSetting(
-            "FractureHorizontal", 0, -500, 500,
+            "FractureHorizontal", 1.0, -500, 500,
             t -> ((TerrainSettings) t).getFractureHorizontal(),
-            "Can increase (values greater than 0) or decrease (values less than 0) how much the landscape is fractured horizontally.",
-            "Values less than 0 will 'relax' the terrain, leading to more gradual and smoother height transitions."
+            "Multiplier for horizontal terrain noise frequency. 1.0 = default feature size.",
+            "Above 1.0 fractures the landscape more (smaller, busier features).",
+            "Below 1.0 (but above 0) relaxes it, leading to more gradual and smoother height transitions.",
+            "Legacy (version 1) configs store 0-centered values; these are converted on load."
     );
     public static final Setting<Double> FRACTURE_VERTICAL = Settings.doubleSetting(
-            "FractureVertical", 0, -500, 500,
+            "FractureVertical", 1.0, -500, 500,
             t -> ((TerrainSettings) t).getFractureVertical(),
-            "Can increase (values greater than 0) or decrease (values less than 0) how much the landscape is fractured vertically.",
-            "Values above 0 will lead to large cliffs/overhangs, floating islands, and/or a cavern world depending on other settings.",
-            "Values less than 0 will make terrain volatility more 'spiky' but lessen the likelihood of overhangs and floating terrain."
+            "Multiplier for vertical terrain noise frequency. 1.0 = default feature size.",
+            "Above 1.0 leads to large cliffs/overhangs, floating islands, and/or a cavern world depending on other settings.",
+            "Below 1.0 (but above 0) makes terrain volatility more 'spiky' but lessens overhangs and floating terrain.",
+            "Legacy (version 1) configs store 0-centered values; these are converted on load."
     );
 
     public static final Setting<Integer> CHC_START = new IntSetting(
         "CHCStart", 0, Constants.WORLD_START_MIN_Y, Constants.WORLD_END_MAX_Y - 15,
         t -> ((TerrainSettings) t).getChcStart(),
         "Start Y for custom height control array. Default is 0. Must be divisible by 8."
+    );
+
+    public static final Setting<Double> CONTINENTAL_SCALE = Settings.doubleSetting(
+            "ContinentalScale", 0.2, 0.0, 10.0,
+            t -> ((TerrainSettings) t).getContinentalScale(),
+            "Overall amplitude of continental height variation.",
+            "Controls how much the large-scale terrain undulates vertically.",
+            "0 = no continental variation (flat baseline), 0.2 = default, higher = more dramatic."
+    );
+    public static final Setting<Double> CONTINENTAL_BIAS = Settings.doubleSetting(
+            "ContinentalBias", -0.05, -1.0, 1.0,
+            t -> ((TerrainSettings) t).getContinentalBias(),
+            "Shifts the balance between valleys and peaks in continental noise.",
+            "Positive values = more peaks than valleys. Negative = more valleys than peaks.",
+            "Measured splits: -0.05 = ~55% valleys, -0.15 = ~65% valleys, -0.30 = ~77% valleys."
+    );
+    public static final Setting<Double> BASE_HEIGHT_FRACTION = Settings.doubleSetting(
+            "BaseHeightFraction", 0.46875, 0.0, 1.0,
+            t -> ((TerrainSettings) t).getBaseHeightFraction(),
+            "Where the terrain surface sits as a fraction of world height when biome height is 0.",
+            "0.47 = surface roughly at half world height (default).",
+            "0.25 = low surface with lots of sky, 0.75 = high surface with deep underground."
+    );
+    public static final Setting<Double> BIOME_HEIGHT_WEIGHT = Settings.doubleSetting(
+            "BiomeHeightWeight", 0.125, 0.0, 1.0,
+            t -> ((TerrainSettings) t).getBiomeHeightWeight(),
+            "How much biome height config shifts the terrain surface.",
+            "0 = all biomes at same baseline, 0.125 = default.",
+            "Higher values create more dramatic height differences between biomes."
+    );
+    public static final Setting<Double> CONTINENTAL_HEIGHT_WEIGHT = Settings.doubleSetting(
+            "ContinentalHeightWeight", 0.25, 0.0, 1.0,
+            t -> ((TerrainSettings) t).getContinentalHeightWeight(),
+            "How much continental noise shifts the terrain surface.",
+            "0 = continental noise has no effect on surface position, 0.25 = default.",
+            "Higher values create larger-scale terrain undulation."
+    );
+    public static final Setting<Double> FALLOFF_STEEPNESS = Settings.doubleSetting(
+            "FalloffSteepness", 6.0, 0.1, 100.0,
+            t -> ((TerrainSettings) t).getFalloffSteepness(),
+            "Controls how sharply terrain transitions from solid to air.",
+            "Higher values = thinner transition zone = sharper terrain edges.",
+            "Lower values = thicker transition zone = smoother, more blobby terrain.",
+            "Default 6.0 produces ~80 block transition at default biome volatility (0.3)."
+    );
+    public static final Setting<Double> NOISE_AMPLITUDE = Settings.doubleSetting(
+            "NoiseAmplitude", 1.0, 0.0, 1000.0,
+            t -> ((TerrainSettings) t).getNoiseAmplitude(),
+            "Global multiplier for terrain noise contribution.",
+            "Scales the effect of Volatility1/Volatility2 from all biomes uniformly.",
+            "1.0 = noise at face value, higher = more chaotic terrain, 0 = falloff-only terrain."
     );
 
     public static TerrainSettings getTerrainSettings(SettingsMap reader) {
@@ -120,21 +181,34 @@ public class TerrainSettings extends ConfigSection {
         builder.waterLevelMin(reader.getSetting(WATER_LEVEL_MIN));
         builder.carverLavaBlockHeight(reader.getSetting(CARVER_LAVA_BLOCK_HEIGHT));
         builder.chcStart(reader.getSetting(CHC_START));
-
+        builder.continentalScale(reader.getSetting(CONTINENTAL_SCALE));
+        builder.continentalBias(reader.getSetting(CONTINENTAL_BIAS));
+        builder.baseHeightFraction(reader.getSetting(BASE_HEIGHT_FRACTION));
+        builder.biomeHeightWeight(reader.getSetting(BIOME_HEIGHT_WEIGHT));
+        builder.continentalHeightWeight(reader.getSetting(CONTINENTAL_HEIGHT_WEIGHT));
+        builder.falloffSteepness(reader.getSetting(FALLOFF_STEEPNESS));
+        builder.noiseAmplitude(reader.getSetting(NOISE_AMPLITUDE));
 
         int configVersion = reader.getVersion();
         if (configVersion < 2) {
-            // In older configs, the values were stored as negative values and then converted
-            // to positive values in the getter. This is no longer necessary.
-            builder.fractureHorizontal(builder.fractureHorizontal < 0.0D
-                    ? 1.0D / (Math.abs(builder.fractureHorizontal) + 1.0D)
-                    : builder.fractureHorizontal + 1.0D);
-            builder.fractureVertical(builder.fractureVertical < 0.0D
-                    ? 1.0D / (Math.abs(builder.fractureVertical) + 1.0D)
-                    : builder.fractureVertical + 1.0D);
+            // Version 1 stored user-facing 0-centered values; internal values are multipliers
+            // (1 = neutral). Only convert values actually present in the file — absent settings
+            // already hold the internal default.
+            if (reader.hasSetting(FRACTURE_HORIZONTAL)) {
+                builder.fractureHorizontal(legacyToMultiplier(builder.fractureHorizontal));
+            }
+            if (reader.hasSetting(FRACTURE_VERTICAL)) {
+                builder.fractureVertical(legacyToMultiplier(builder.fractureVertical));
+            }
         }
 
         return builder.fixSettings().build();
+    }
+
+    // Maps a legacy 0-centered config value onto the internal multiplier scale:
+    // 0 -> 1 (neutral), positive -> value+1, negative -> shrinking fraction of 1.
+    public static double legacyToMultiplier(double value) {
+        return value < 0.0D ? 1.0D / (Math.abs(value) + 1.0D) : value + 1.0D;
     }
 
     @Override
@@ -152,14 +226,16 @@ public class TerrainSettings extends ConfigSection {
         private void checkWaterLevelMax() {
             waterLevelMax = Math.max(waterLevelMax, waterLevelMin);
         }
+        // Negative values in version 2+ configs are legacy-style input; convert with the same
+        // formula as the version 1 migration rather than rejecting them.
         private void checkFractionHorizontal() {
             if (fractureHorizontal < 0) {
-                fractureHorizontal = 1.0D / Math.abs(fractureHorizontal);
+                fractureHorizontal = legacyToMultiplier(fractureHorizontal);
             }
         }
         private void checkFractionVertical() {
             if (fractureVertical < 0) {
-                fractureVertical = 1.0D / Math.abs(fractureVertical);
+                fractureVertical = legacyToMultiplier(fractureVertical);
             }
         }
     }

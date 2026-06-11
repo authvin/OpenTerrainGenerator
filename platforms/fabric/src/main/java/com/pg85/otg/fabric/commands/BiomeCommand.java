@@ -75,7 +75,7 @@ final class BiomeCommand {
         BiomeTerrainSettings terrain = config.getTerrainSettings();
         if (terrain != null) {
             src.sendSuccess(() -> Component.literal(String.format(
-                "Height: %.3f  Volatility: %.3f  SmoothRadius: %d  CHCSmoothRadius: %d",
+                "Height: %.3f  BiomeVolatility: %.3f  SmoothRadius: %d  CHCSmoothRadius: %d",
                 terrain.getBiomeHeight(), terrain.getBiomeVolatility(),
                 terrain.getSmoothRadius(), terrain.getCHCSmoothRadius()
             )), false);

@@ -289,7 +289,15 @@ public class PresetWriter {
 
         writer.putSetting(TerrainSettings.FRACTURE_HORIZONTAL, presetConfig.getTerrainSettings());
 
-        writer.putSetting(TerrainSettings.FRACTURE_VERTICAL, presetConfig.getTerrainSettings().getFractureVertical());
+        writer.putSetting(TerrainSettings.FRACTURE_VERTICAL, presetConfig.getTerrainSettings());
+
+        writer.putSetting(TerrainSettings.CONTINENTAL_SCALE, presetConfig.getTerrainSettings());
+        writer.putSetting(TerrainSettings.CONTINENTAL_BIAS, presetConfig.getTerrainSettings());
+        writer.putSetting(TerrainSettings.BASE_HEIGHT_FRACTION, presetConfig.getTerrainSettings());
+        writer.putSetting(TerrainSettings.BIOME_HEIGHT_WEIGHT, presetConfig.getTerrainSettings());
+        writer.putSetting(TerrainSettings.CONTINENTAL_HEIGHT_WEIGHT, presetConfig.getTerrainSettings());
+        writer.putSetting(TerrainSettings.FALLOFF_STEEPNESS, presetConfig.getTerrainSettings());
+        writer.putSetting(TerrainSettings.NOISE_AMPLITUDE, presetConfig.getTerrainSettings());
 
         writer.header1("Blocks");
 

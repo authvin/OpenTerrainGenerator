@@ -19,8 +19,8 @@ public class BiomeTerrainSettings extends ConfigSection {
     private final float biomeVolatility;
     private final int smoothRadius;
     private final int CHCSmoothRadius;
-    private final double maxAverageHeight;
-    private final double maxAverageDepth;
+    private final double peakFactor;
+    private final double valleyFactor;
     private final double volatility1;
     private final double volatility2;
     private final double volatilityWeight1;
@@ -48,41 +48,44 @@ public class BiomeTerrainSettings extends ConfigSection {
             "Does nothing if Custom Height Control smoothing is not enabled in the world config."
     );
     public static final Setting<Double> VOLATILITY_1 = Settings.doubleSetting(
-            "Volatility1", 0, -10000, 1000,
+            "Volatility1", 1.0, -10000, 1000,
             t -> ((BiomeTerrainSettings) t).getVolatility1(),
-            "Another type of noise. This noise is independent from biomes.",
-            "The larger the values the more chaotic/volatile landscape generation becomes.",
-            "Setting the values to negative will have the opposite effect and make landscape generation calmer/gentler."
+            "Multiplier for the first independent terrain noise layer. 1.0 = noise at face value.",
+            "Higher values make landscape generation more chaotic/volatile.",
+            "Values between 0 and 1 make it calmer/gentler; 0 disables this noise layer.",
+            "Legacy (version 1) configs store 0-centered values; these are converted on load."
     );
     public static final Setting<Double> VOLATILITY_2 = Settings.doubleSetting(
-            "Volatility2", 0, -10000, 1000,
-            t -> ((BiomeTerrainSettings) t).getVolatility2()
+            "Volatility2", 1.0, -10000, 1000,
+            t -> ((BiomeTerrainSettings) t).getVolatility2(),
+            "Same as Volatility1, for the second noise layer.",
+            "VolatilityWeight1/VolatilityWeight2 control where each layer applies."
     );
     public static final Setting<Double> VOLATILITY_WEIGHT_1 = Settings.doubleSetting(
-            "VolatilityWeight1", 0.5, -1000, 1000,
+            "VolatilityWeight1", 0.45, -1000, 1000,
             t -> ((BiomeTerrainSettings) t).getVolatilityWeight1(),
             "Adjust the weight of the corresponding volatility settings.",
             "This allows you to change how prevalent you want either of the volatility settings to be in the terrain."
     );
     public static final Setting<Double> VOLATILITY_WEIGHT_2 = Settings.doubleSetting(
-            "VolatilityWeight2", 0.45, -1000, 1000,
+            "VolatilityWeight2", 0.5, -1000, 1000,
             t -> ((BiomeTerrainSettings) t).getVolatilityWeight2()
     );
-    public static final Setting<Double> MAX_AVERAGE_HEIGHT = Settings.doubleSetting(
-            "MaxAverageHeight", 0, -1000, 1000,
-            t -> ((BiomeTerrainSettings) t).getMaxAverageHeight(),
-            "If this value is greater than 0, then it will affect how much, on average,",
-            "the terrain will rise before leveling off when it begins to increase in elevation.",
-            "If the value is less than 0, then it will cause the terrain to either increase to a lower height",
-            "before leveling out or decrease in height if the value is a large enough negative."
+    public static final Setting<Double> PEAK_FACTOR = Settings.doubleSetting(
+            "PeakFactor", 1.0, -1000, 1000,
+            t -> ((BiomeTerrainSettings) t).getPeakFactor(),
+            "How strongly this biome responds to continental peaks. Multiplier: 1.0 = full",
+            "response, between 0 and 1 = weaker peaks, 0 = no continental peaks in this biome.",
+            "Negative values invert the response (continental peaks lower the terrain instead).",
+            "Legacy (version 1) configs store this as MaxAverageHeight (0-centered); converted on load."
     );
-    public static final Setting<Double> MAX_AVERAGE_DEPTH = Settings.doubleSetting(
-            "MaxAverageDepth", 0, -1000, 1000,
-            t -> ((BiomeTerrainSettings) t).getMaxAverageDepth(),
-            "If this value is greater than 0, then it will affect how much, on average,",
-            "the terrain (usually at the ottom of the ocean) will fall before leveling off when it begins to decrease in elevation. ",
-            "If the value is less than 0, then it will cause the terrain to either fall to a lesser depth",
-            "before leveling out or increase in height if the value is a large enough negative."
+    public static final Setting<Double> VALLEY_FACTOR = Settings.doubleSetting(
+            "ValleyFactor", 1.0, -1000, 1000,
+            t -> ((BiomeTerrainSettings) t).getValleyFactor(),
+            "How strongly this biome responds to continental valleys (usually ocean depth).",
+            "Multiplier: 1.0 = full response, between 0 and 1 = shallower valleys, 0 = none.",
+            "Negative values invert the response (continental valleys raise the terrain instead).",
+            "Legacy (version 1) configs store this as MaxAverageDepth (0-centered); converted on load."
     );
     public static final Setting<Float> BIOME_HEIGHT = Settings.floatSetting(
             "BiomeHeight", 0.1f, -10, 10,
@@ -94,7 +97,9 @@ public class BiomeTerrainSettings extends ConfigSection {
     public static final Setting<Float> BIOME_VOLATILITY = Settings.floatSetting(
             "BiomeVolatility", 0.3f, -1000, 1000,
             t -> ((BiomeTerrainSettings) t).getBiomeVolatility(),
-            "Biome volatility."
+            "Controls the width of the transition zone where noise sculpts terrain.",
+            "Higher values = wider transition = softer, more varied terrain.",
+            "Lower values = narrow transition = sharper, flatter terrain."
     );
     public static final Setting<Boolean> DISABLE_BIOME_HEIGHT = Settings.booleanSetting(
             "DisableBiomeHeight", false,
@@ -130,19 +135,30 @@ public class BiomeTerrainSettings extends ConfigSection {
         builder.biomeVolatility(reader.getSetting(BIOME_VOLATILITY));
         builder.smoothRadius(reader.getSetting(SMOOTH_RADIUS));
         builder.CHCSmoothRadius(reader.getSetting(CUSTOM_HEIGHT_CONTROL_SMOOTH_RADIUS));
-        builder.maxAverageHeight(reader.getSetting(MAX_AVERAGE_HEIGHT));
-        builder.maxAverageDepth(reader.getSetting(MAX_AVERAGE_DEPTH));
+        builder.peakFactor(reader.getSetting(PEAK_FACTOR));
+        builder.valleyFactor(reader.getSetting(VALLEY_FACTOR));
         builder.volatility1(reader.getSetting(VOLATILITY_1));
         builder.volatility2(reader.getSetting(VOLATILITY_2));
         builder.volatilityWeight1(reader.getSetting(VOLATILITY_WEIGHT_1));
         builder.volatilityWeight2(reader.getSetting(VOLATILITY_WEIGHT_2));
         int configVersion = reader.getVersion();
         if (configVersion < 2) {
-            // In older configs, the values were stored as negative values and then converted
-            builder.volatility1(builder.volatility1 < 0.00D ? 1.0D / Math.abs(builder.volatility1) : builder.volatility1 + 1.0D);
-            builder.volatility2(builder.volatility2 < 0.00D ? 1.0D / Math.abs(builder.volatility2) : builder.volatility2 + 1.0D);
-            builder.volatilityWeight1((builder.volatilityWeight1 - 0.5D) * 24.0D);
-            builder.volatilityWeight2((builder.volatilityWeight2 - 0.5D) * 24.0D);
+            // Version 1 stored user-facing 0-centered values; internal values are multipliers
+            // (1 = neutral). Only convert values actually present in the file — absent settings
+            // already hold the internal default. PeakFactor/ValleyFactor arrive via the
+            // MaxAverageHeight/MaxAverageDepth renames, whose additive scale just shifts by 1.
+            if (reader.hasSetting(VOLATILITY_1)) {
+                builder.volatility1(TerrainSettings.legacyToMultiplier(builder.volatility1));
+            }
+            if (reader.hasSetting(VOLATILITY_2)) {
+                builder.volatility2(TerrainSettings.legacyToMultiplier(builder.volatility2));
+            }
+            if (reader.hasSetting(PEAK_FACTOR)) {
+                builder.peakFactor(builder.peakFactor + 1);
+            }
+            if (reader.hasSetting(VALLEY_FACTOR)) {
+                builder.valleyFactor(builder.valleyFactor + 1);
+            }
         }
 
         builder.disableBiomeHeight(reader.getSetting(DISABLE_BIOME_HEIGHT));
@@ -161,7 +177,7 @@ public class BiomeTerrainSettings extends ConfigSection {
             // TODO: will OTGChunkGenerator fetch negative Y values here? I suspect not...
             int offset = chcStart / Constants.PIECE_Y_SIZE;
 
-            for (int i = 0; i < heightMatrix.size() && i < keys.length; i++)
+            for (int i = 0; i < keys.length; i++)
             {
                 heightMatrix.put(i + offset, keys[i]);
             }
@@ -172,14 +188,16 @@ public class BiomeTerrainSettings extends ConfigSection {
             checkVolatility2();
             return this;
         }
+        // Negative values in version 2+ configs are legacy-style input; convert with the same
+        // formula as the version 1 migration rather than rejecting them.
         private void checkVolatility1() {
             if (this.volatility1 < 0.0D) {
-                this.volatility1 = 1.0D / (Math.abs(this.volatility1) + 1.0D);
+                this.volatility1 = TerrainSettings.legacyToMultiplier(this.volatility1);
             }
         }
         private void checkVolatility2() {
             if (this.volatility2 < 0.0D) {
-                this.volatility2 = 1.0D / (Math.abs(this.volatility2) + 1.0D);
+                this.volatility2 = TerrainSettings.legacyToMultiplier(this.volatility2);
             }
         }
     }

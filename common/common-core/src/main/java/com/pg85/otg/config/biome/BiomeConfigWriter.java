@@ -96,14 +96,17 @@ public class BiomeConfigWriter {
                 "to spawn in, so the " + BiomePlacementSettings.BIOME_SIZE_WHEN_BORDER + " number must be larger than the "
                         + BiomePlacementSettings.BIOME_SIZE + " of the other biome.");
 
-        writer.header1("Terrain height and volatility");
+        writer.header1("Terrain height and noise transition");
 
         writer.putSetting(BiomeTerrainSettings.BIOME_HEIGHT, biomeConfig.getTerrainSettings().getBiomeHeight(),
                 "BiomeHeight defines how much height will be added during terrain generation",
                 "Must be between -10.0 and 10.0",
                 "Value 0.0 is equivalent to half of map height with all other settings at defaults.");
 
-        writer.putSetting(BiomeTerrainSettings.BIOME_VOLATILITY, biomeConfig.getTerrainSettings().getBiomeVolatility(), "Biome volatility.");
+        writer.putSetting(BiomeTerrainSettings.BIOME_VOLATILITY, biomeConfig.getTerrainSettings().getBiomeVolatility(),
+                "Controls the width of the transition zone where noise sculpts terrain.",
+                "Higher values = wider transition = softer, more varied terrain.",
+                "Lower values = narrow transition = sharper, flatter terrain.");
 
         writer.putSetting(BiomeTerrainSettings.SMOOTH_RADIUS, biomeConfig.getTerrainSettings().getSmoothRadius(),
                 "Smooth radius between biomes. Must be between 0 and 32, inclusive. The resulting",
@@ -115,11 +118,11 @@ public class BiomeConfigWriter {
                 "Works the same way as SmoothRadius but only acts on CustomHeightControl. Must be between 0 and 32, inclusive.",
                 "Does nothing if Custom Height Control smoothing is not enabled in the world config.");
 
-        writer.putSetting(BiomeTerrainSettings.MAX_AVERAGE_HEIGHT, biomeConfig.getTerrainSettings().getMaxAverageHeight(),
+        writer.putSetting(BiomeTerrainSettings.PEAK_FACTOR, biomeConfig.getTerrainSettings().getPeakFactor(),
                 "If this value is greater than 0, then it will affect how much, on average, the terrain will rise before leveling off when it begins to increase in elevation.",
                 "If the value is less than 0, then it will cause the terrain to either increase to a lower height before leveling out or decrease in height if the value is a large enough negative.");
 
-        writer.putSetting(BiomeTerrainSettings.MAX_AVERAGE_DEPTH, biomeConfig.getTerrainSettings().getMaxAverageDepth(),
+        writer.putSetting(BiomeTerrainSettings.VALLEY_FACTOR, biomeConfig.getTerrainSettings().getValleyFactor(),
                 "If this value is greater than 0, then it will affect how much, on average, the terrain (usually at the ottom of the ocean) will fall before leveling off when it begins to decrease in elevation. ",
                 "If the value is less than 0, then it will cause the terrain to either fall to a lesser depth before leveling out or increase in height if the value is a large enough negative.");
 
