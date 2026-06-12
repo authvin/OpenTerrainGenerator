@@ -21,6 +21,7 @@ public record TerrainNoisePipeline(
 
     // Vanilla Minecraft base frequency for terrain noise coordinate scaling.
     // Not normalization — controls feature size in world space.
+    // "It's a number that made the worldgen look good!" - Dinnerbone 2020
     private static final double WORLD_GEN_CONSTANT = 684.412;
     private static final int INTERPOLATION_OCTAVES = 8;
     private static final int TERRAIN_OCTAVES = 16;
