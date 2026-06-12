@@ -9,6 +9,8 @@ import com.pg85.otg.constants.settings.structure.CustomStructureType;
 import com.pg85.otg.customobject.structures.CustomStructureCache;
 import com.pg85.otg.fabric.biome.FabricBiome;
 import com.pg85.otg.fabric.biome.OTGFabricBiomeProvider;
+import com.pg85.otg.fabric.gen.noise.OTGNoiseCaveFiller;
+import com.pg85.otg.fabric.gen.noise.OTGNoiseRouterFactory;
 import com.pg85.otg.fabric.mixin.StructureManagerAccessor;
 import com.pg85.otg.gen.OTGChunkDecorator;
 import com.pg85.otg.gen.OTGChunkGenerator;
@@ -76,6 +78,8 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
     private final NoiseBasedChunkGenerator horribleDelegateForCarvers;
     private final ShadowChunkGenerator shadowChunkGenerator;
     private Aquifer.FluidPicker globalFluidPicker = null;
+    // Lazily built per world when VanillaCavesEnabled; holds the runtime noise router wiring.
+    private volatile OTGNoiseRouterFactory.OTGNoiseCaveContext noiseCaveContext = null;
     private final OTGChunkDecorator chunkDecorator;
     private CustomStructureCache structureCache = null;
     private Long seed = 0L;
@@ -231,7 +235,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
         WorldgenRandom worldgenRandom = new WorldgenRandom(new LegacyRandomSource(RandomSupport.generateUniqueSeed()));
         int i2 = 8;
         ChunkPos chunkPos = chunkAccess.getPos();
-        NoiseChunk noiseChunk = chunkAccess.getOrCreateNoiseChunk(chunkAccess2 -> this.createNoiseChunk(chunkAccess2, structureManager, Blender.of(worldGenRegion), randomState));
+        NoiseChunk noiseChunk = chunkAccess.getOrCreateNoiseChunk(chunkAccess2 -> this.createNoiseChunk(chunkAccess2, structureManager, Blender.of(worldGenRegion), randomState, worldGenRegion.registryAccess()));
         CarvingMask carvingMask = ((ProtoChunk) chunkAccess).getOrCreateCarvingMask(carving);
         Aquifer aquifer = noiseChunk.aquifer();
         CarvingContext carvingContext = new CarvingContext(this.horribleDelegateForCarvers, worldGenRegion.registryAccess(), chunkAccess.getHeightAccessorForGeneration(), noiseChunk, randomState, this.settings.value().surfaceRule());
@@ -310,8 +314,38 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
         );
     }
 
-    private NoiseChunk createNoiseChunk(ChunkAccess chunkAccess, StructureManager structureManager, Blender blender, RandomState randomState) {
+    private NoiseChunk createNoiseChunk(ChunkAccess chunkAccess, StructureManager structureManager, Blender blender, RandomState randomState, RegistryAccess registryAccess) {
+        if (isVanillaCavesEnabled()) {
+            // Use the OTG cave router so carvers and the fill path see the same NoiseChunk.
+            OTGNoiseRouterFactory.OTGNoiseCaveContext ctx = ensureNoiseCaveContext(registryAccess);
+            return NoiseChunk.forChunk(chunkAccess, ctx.randomState(), Beardifier.forStructuresInChunk(structureManager, chunkAccess.getPos()), ctx.runtimeSettings(), ctx.fluidPicker(), blender);
+        }
         return NoiseChunk.forChunk(chunkAccess, randomState, Beardifier.forStructuresInChunk(structureManager, chunkAccess.getPos()), this.settings.value(), this.globalFluidPicker, blender);
+    }
+
+    boolean isVanillaCavesEnabled() {
+        return this.preset.getPresetConfig().getCarverSettings().isVanillaCavesEnabled();
+    }
+
+    OTGNoiseRouterFactory.OTGNoiseCaveContext ensureNoiseCaveContext(RegistryAccess registryAccess) {
+        OTGNoiseRouterFactory.OTGNoiseCaveContext ctx = this.noiseCaveContext;
+        if (ctx == null) {
+            synchronized (this) {
+                ctx = this.noiseCaveContext;
+                if (ctx == null) {
+                    ctx = OTGNoiseRouterFactory.create(
+                            this.internalGenerator,
+                            this.preset.getPresetConfig().getCarverSettings().getVanillaCaveDensityScale(),
+                            this.preset.getPresetConfig().getCarverSettings().getVanillaCaveDepthGradient(),
+                            this.settings.value(),
+                            registryAccess,
+                            this.seed
+                    );
+                    this.noiseCaveContext = ctx;
+                }
+            }
+        }
+        return ctx;
     }
 
     @Override
@@ -352,6 +386,18 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
         if (cachedChunk != null) {
             // Copy the cached chunk data to the new chunk.
             this.shadowChunkGenerator.fillWorldGenChunkFromShadowChunk(chunkAccess, cachedChunk);
+        } else if (isVanillaCavesEnabled()) {
+            // Vanilla noise cave path: fill the chunk via vanilla's NoiseChunk machinery, with
+            // OTG terrain at the slopedCheese slot of the router. Structure terrain adaptation
+            // comes from the real Beardifier (instead of OTG's NOISE_WEIGHT_TABLE approximation)
+            // and per-biome water levels from the fluid picker.
+            OTGNoiseRouterFactory.OTGNoiseCaveContext ctx = ensureNoiseCaveContext(levelAccessor.registryAccess());
+            NoiseChunk noiseChunk = chunkAccess.getOrCreateNoiseChunk(
+                    c -> this.createNoiseChunk(c, structureManager, blender, randomState, levelAccessor.registryAccess())
+            );
+            OTGNoiseCaveFiller.fill(noiseChunk, chunkAccess, buffer, ctx.runtimeSettings());
+            this.internalGenerator.doSurfaceAndGroundControlForChunk(otgWorldInfo, buffer, getRandomFromChunkCoord(chunkCoord));
+            this.shadowChunkGenerator.setChunkGenerated(chunkCoord);
         } else {
             // Setup jigsaw data
             ObjectList<JigsawStructureData> structures = new ObjectArrayList<>(10);

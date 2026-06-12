@@ -1,7 +1,6 @@
 package com.pg85.otg.config.preset;
 
 import com.pg85.otg.config.io.SettingsMap;
-import com.pg85.otg.config.settings.biome.OutdatedSettings;
 import com.pg85.otg.config.settings.preset.*;
 import com.pg85.otg.constants.Constants;
 
@@ -530,6 +529,30 @@ public class PresetWriter {
                 "Setting this to true will turn off the randomizer for cave frequency (above). Do note that",
                 "if you turn this on you will probably want to adjust the cave frequency down to avoid long",
                 "load times at world creation."
+        );
+
+        writer.header2("Vanilla noise caves");
+
+        writer.putSetting(CarverSettings.VANILLA_CAVES_ENABLED, presetConfig.getCarverSettings().isVanillaCavesEnabled(),
+                "Enables vanilla 1.18+ noise caves (cheese/spaghetti/noodle/pillar caves), carved into OTG's",
+                "base terrain via vanilla's density function system. Independent of CavesEnabled/RavinesEnabled,",
+                "which control OTG's legacy worm carvers; both can be enabled at once.",
+                "Note: with this enabled, stone block replacement comes from surface/ground control layers only,",
+                "and caves below a biome's WaterLevelMax will flood (aquifers are not yet supported)."
+        );
+        writer.putSetting(CarverSettings.VANILLA_CAVE_DENSITY_SCALE, presetConfig.getCarverSettings().getVanillaCaveDensityScale(),
+                "Divisor mapping OTG's raw terrain noise onto vanilla's density scale for noise caves.",
+                "This controls how strongly terrain density resists carving near the surface (cave",
+                "entrances and cave/terrain blending); the depth at which caves open up is controlled",
+                "by VanillaCaveDepthGradient instead."
+        );
+        writer.putSetting(CarverSettings.VANILLA_CAVE_DEPTH_GRADIENT, presetConfig.getCarverSettings().getVanillaCaveDepthGradient(),
+                "Density-per-block depth gradient for vanilla noise caves, measured from the blended",
+                "terrain center height of each column. This makes cave depth independent of biome",
+                "volatility, so caves open up at the same depth in flat and mountainous biomes alike.",
+                "Full-size caves start at roughly 1.56/value blocks below the terrain center height",
+                "(default 0.05 -> ~31 blocks); cheese caves are fully open from ~2.34/value blocks",
+                "(default -> ~47 blocks). Higher values move caves closer to the surface."
         );
 
         writer.header2("Ravines");

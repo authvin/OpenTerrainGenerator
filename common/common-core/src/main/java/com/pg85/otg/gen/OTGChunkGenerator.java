@@ -35,8 +35,6 @@ import java.util.stream.IntStream;
  */
 //@SuppressWarnings("deprecation")
 public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
-    // "It's a number that made the worldgen look good!" - Dinnerbone 2020
-    private static final double WORLD_GEN_CONSTANT = 684.412;
 
     private static final float[] BIOME_WEIGHT_TABLE = make(
             new float[65 * 65], (array) -> {
@@ -192,6 +190,30 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
     }
 
     private void generateNoiseColumn(double[] noiseColumn, int noiseX, int noiseZ) {
+        BlendedColumn blended = blendColumnParams(noiseX, noiseZ);
+        this.noisePipeline.generateColumn(
+                noiseColumn, noiseX, noiseZ, blended.params(), blended.chc(),
+                blended.disableBiomeHeight()
+        );
+    }
+
+    /**
+     * Blended terrain center height for a noise column, in blocks. This is the surface anchor
+     * of the falloff gradient, before detail noise; the vanilla noise cave depth proxy keys
+     * cave depth to it so cave placement is independent of biome volatility.
+     */
+    public double getColumnCenterHeightInBlocks(int noiseX, int noiseZ) {
+        BlendedBiomeParams params = blendColumnParams(noiseX, noiseZ).params();
+        float extraHeight = (float) (this.noisePipeline.computeExtraHeight(
+                noiseX, noiseZ, params.valleyFactor(), params.peakFactor()
+        ) * this.noisePipeline.continentalScale());
+        return this.noisePipeline.computeColumnHeight(params.height(), extraHeight, this.noisePipeline.surfaceSections()) * 8.0;
+    }
+
+    private record BlendedColumn(BlendedBiomeParams params, double[] chc, boolean disableBiomeHeight) {
+    }
+
+    private BlendedColumn blendColumnParams(int noiseX, int noiseZ) {
         BiomeSettings center = this.cachedBiomeProvider.getNoiseBiomeConfig(noiseX, noiseZ, true);
 
         float height = 0; // depth
@@ -294,10 +316,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
                 valleyFactor, peakFactor
         );
 
-        this.noisePipeline.generateColumn(
-                noiseColumn, noiseX, noiseZ, params, chc,
-                center.getTerrainSettings().isDisableBiomeHeight()
-        );
+        return new BlendedColumn(params, chc, center.getTerrainSettings().isDisableBiomeHeight());
     }
 
     // Surface / ground / stone blocks / SAGC
@@ -546,6 +565,27 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
         long j = random.nextLong();
         long k = (long) x * i ^ (long) z * j ^ seed;
         random.setSeed(k);
+    }
+
+    /**
+     * Runs surface and ground control for a chunk whose base terrain was filled outside
+     * populateNoise (e.g. the vanilla noise cave fill path). Computes the per-column water
+     * levels and biomes itself; requires the buffer's highest-block-per-column data to be
+     * populated by the caller.
+     */
+    public void doSurfaceAndGroundControlForChunk(OTGWorldInfo worldInfo, ChunkBuffer buffer, Random random) {
+        ChunkCoordinate chunkCoord = buffer.getChunkCoordinate();
+        IBiome[] biomes = this.cachedBiomeProvider.getBiomesForChunk(chunkCoord);
+
+        int[] waterLevel = new int[Constants.CHUNK_SIZE * Constants.CHUNK_SIZE];
+        for (int x = 0; x < Constants.CHUNK_SIZE; x++) {
+            for (int z = 0; z < Constants.CHUNK_SIZE; z++) {
+                waterLevel[x * Constants.CHUNK_SIZE + z] =
+                        biomes[x * Constants.CHUNK_SIZE + z].getBiomeSettings().getSurfaceSettings().getWaterLevelMax();
+            }
+        }
+
+        doSurfaceAndGroundControl(biomes, random, worldInfo, this.seed, buffer, waterLevel);
     }
 
     private void doSurfaceAndGroundControl(

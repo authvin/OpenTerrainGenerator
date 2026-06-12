@@ -3,6 +3,8 @@ package com.pg85.otg.fabric.gen;
 import java.util.*;
 
 import com.pg85.otg.fabric.biome.FabricBiome;
+import com.pg85.otg.fabric.gen.noise.OTGNoiseCaveFiller;
+import com.pg85.otg.fabric.gen.noise.OTGNoiseRouterFactory;
 import com.pg85.otg.fabric.materials.FabricMaterialData;
 import com.pg85.otg.fabric.mixin.WorldGenRegionAccessor;
 import com.pg85.otg.interfaces.IBiome;
@@ -18,6 +20,7 @@ import com.pg85.otg.util.materials.LocalMaterials;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -32,8 +35,12 @@ import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.*;
+import net.minecraft.world.level.levelgen.Beardifier;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.NoiseChunk;
+import net.minecraft.world.level.levelgen.blending.Blender;
+import net.minecraft.world.level.levelgen.structure.pools.JigsawJunction;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.TerrainAdjustment;
 import net.minecraft.world.level.levelgen.structure.structures.EndCityStructure;
@@ -183,9 +190,31 @@ public class ShadowChunkGenerator {
         // ignores the sampler argument entirely, so null is safe here.
         chunk.fillBiomesFromNoise(otgChunkGenerator.getBiomeSource(), null);
 
-        ObjectList<JigsawStructureData> structures = new ObjectArrayList<>(10);
         Random random = otgChunkGenerator.getRandomFromChunkCoord(chunkCoordinate);
-        otgChunkGenerator.getInternalGenerator().populateNoise(otgWorldInfo, buffer, buffer.getChunkCoordinate(), structures, random);
+        if (otgChunkGenerator.isVanillaCavesEnabled()) {
+            // Vanilla noise cave path: shadow chunks must match what fillFromNoise produces, or
+            // BO4 height/material checks would see cave-less terrain. Structure terrain
+            // adaptation is skipped (empty Beardifier) — shadowgen already avoids chunks near
+            // noise-affecting structures, same guarantee as the legacy path.
+            OTGNoiseRouterFactory.OTGNoiseCaveContext ctx =
+                    otgChunkGenerator.ensureNoiseCaveContext(serverLevel.registryAccess());
+            NoiseChunk noiseChunk = NoiseChunk.forChunk(
+                    chunk,
+                    ctx.randomState(),
+                    new Beardifier(
+                            ObjectLists.<Beardifier.Rigid>emptyList().listIterator(),
+                            ObjectLists.<JigsawJunction>emptyList().listIterator()
+                    ),
+                    ctx.runtimeSettings(),
+                    ctx.fluidPicker(),
+                    Blender.empty()
+            );
+            OTGNoiseCaveFiller.fill(noiseChunk, chunk, buffer, ctx.runtimeSettings());
+            otgChunkGenerator.getInternalGenerator().doSurfaceAndGroundControlForChunk(otgWorldInfo, buffer, random);
+        } else {
+            ObjectList<JigsawStructureData> structures = new ObjectArrayList<>(10);
+            otgChunkGenerator.getInternalGenerator().populateNoise(otgWorldInfo, buffer, buffer.getChunkCoordinate(), structures, random);
+        }
         return buffer;
     }
 

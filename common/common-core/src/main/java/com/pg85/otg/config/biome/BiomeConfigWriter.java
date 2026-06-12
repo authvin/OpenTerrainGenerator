@@ -96,7 +96,7 @@ public class BiomeConfigWriter {
                 "to spawn in, so the " + BiomePlacementSettings.BIOME_SIZE_WHEN_BORDER + " number must be larger than the "
                         + BiomePlacementSettings.BIOME_SIZE + " of the other biome.");
 
-        writer.header1("Terrain height and noise transition");
+        writer.header1("Terrain height and volatility");
 
         writer.putSetting(BiomeTerrainSettings.BIOME_HEIGHT, biomeConfig.getTerrainSettings().getBiomeHeight(),
                 "BiomeHeight defines how much height will be added during terrain generation",

@@ -22,6 +22,9 @@ public class CarverSettings extends ConfigSection {
     private final int caveSystemPocketMinSize;
     private final int caveSystemPocketChance;
     private final int caveSystemPocketMaxSize;
+    private final boolean vanillaCavesEnabled;
+    private final double vanillaCaveDensityScale;
+    private final double vanillaCaveDepthGradient;
     private final boolean ravinesEnabled;
     private final int ravineRarity;
     private final int ravineMinLength;
@@ -133,10 +136,37 @@ public class CarverSettings extends ConfigSection {
             "RavineDepth", 3, 0.1, 15,
             t -> ((CarverSettings) t).getRavineDepth()
     );
+    public static final Setting<Boolean> VANILLA_CAVES_ENABLED = Settings.booleanSetting(
+            "VanillaCavesEnabled", true,
+            t -> ((CarverSettings) t).isVanillaCavesEnabled(),
+            "Enables vanilla 1.18+ noise caves (cheese/spaghetti/noodle/pillar caves), carved into OTG's",
+            "base terrain via vanilla's density function system. Independent of CavesEnabled/RavinesEnabled,",
+            "which control OTG's legacy worm carvers; both can be enabled at once.",
+            "Note: with this enabled, stone block replacement comes from surface/ground control layers only,",
+            "and caves below a biome's WaterLevelMax will flood (aquifers are not yet supported)."
+    );
+    public static final Setting<Double> VANILLA_CAVE_DENSITY_SCALE = Settings.doubleSetting(
+            "VanillaCaveDensityScale", 128.0, 1.0, 10000.0,
+            t -> ((CarverSettings) t).getVanillaCaveDensityScale(),
+            "Divisor mapping OTG's raw terrain noise onto vanilla's density scale for noise caves.",
+            "This controls how strongly terrain density resists carving near the surface (cave",
+            "entrances and cave/terrain blending); the depth at which caves open up is controlled",
+            "by VanillaCaveDepthGradient instead."
+    );
+    public static final Setting<Double> VANILLA_CAVE_DEPTH_GRADIENT = Settings.doubleSetting(
+            "VanillaCaveDepthGradient", 0.05, 0.001, 1.0,
+            t -> ((CarverSettings) t).getVanillaCaveDepthGradient(),
+            "Density-per-block depth gradient for vanilla noise caves, measured from the blended",
+            "terrain center height of each column. This makes cave depth independent of biome",
+            "volatility, so caves open up at the same depth in flat and mountainous biomes alike.",
+            "Full-size caves start at roughly 1.56/value blocks below the terrain center height",
+            "(default 0.05 -> ~31 blocks); cheese caves are fully open from ~2.34/value blocks",
+            "(default -> ~47 blocks). Higher values move caves closer to the surface."
+    );
 
 
     public static CarverSettings getCarverSettings(SettingsMap reader, TerrainSettings terrainSettings) {
-        var carverSettingsBuilder = builder();
+        CarverSettingsBuilder carverSettingsBuilder = builder();
 
         carverSettingsBuilder.cavesEnabled(reader.getSetting(CAVES_ENABLED));
         carverSettingsBuilder.caveFrequency(reader.getSetting(CAVE_FREQUENCY));
@@ -149,6 +179,10 @@ public class CarverSettings extends ConfigSection {
         carverSettingsBuilder.caveSystemPocketChance(reader.getSetting(CAVE_SYSTEM_POCKET_CHANCE));
         carverSettingsBuilder.caveSystemPocketMinSize(reader.getSetting(CAVE_SYSTEM_POCKET_MIN_SIZE));
         carverSettingsBuilder.caveSystemPocketMaxSize(reader.getSetting(CAVE_SYSTEM_POCKET_MAX_SIZE));
+
+        carverSettingsBuilder.vanillaCavesEnabled(reader.getSetting(VANILLA_CAVES_ENABLED));
+        carverSettingsBuilder.vanillaCaveDensityScale(reader.getSetting(VANILLA_CAVE_DENSITY_SCALE));
+        carverSettingsBuilder.vanillaCaveDepthGradient(reader.getSetting(VANILLA_CAVE_DEPTH_GRADIENT));
 
         carverSettingsBuilder.ravinesEnabled(reader.getSetting(RAVINES_ENABLED));
         carverSettingsBuilder.ravineRarity(reader.getSetting(RAVINE_RARITY));
