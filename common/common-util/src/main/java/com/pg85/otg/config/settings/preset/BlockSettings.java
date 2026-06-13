@@ -1,14 +1,21 @@
 package com.pg85.otg.config.settings.preset;
 
+import com.pg85.otg.config.ConfigFunction;
+import com.pg85.otg.config.biome.StoneLayerFunction;
+import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settingtype.MaterialSetting;
 import com.pg85.otg.config.settingtype.Setting;
 import com.pg85.otg.config.settingtype.Settings;
 import com.pg85.otg.config.settings.ConfigSection;
+import com.pg85.otg.util.biome.StoneLayerStack;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterials;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Builder
 @Getter
@@ -79,8 +86,12 @@ public class BlockSettings extends ConfigSection {
     private final boolean ceilingBedrock;
     private final boolean flatBedrock;
     private final boolean disableBedrock;
+    // World-default stone strata, see StoneLayerFunction. Biomes without their
+    // own StoneLayer lines share this stack instance.
+    private final List<StoneLayerFunction> stoneLayerFunctions;
+    private final StoneLayerStack stoneLayers;
 
-    public static BlockSettings getBlockSettings(SettingsMap reader) {
+    public static BlockSettings getBlockSettings(SettingsMap reader, PresetSettings presetSettings, IConfigFunctionProvider provider) {
         var blockSettingsBuilder = builder();
 
         blockSettingsBuilder.removeSurfaceStone(reader.getSetting(REMOVE_SURFACE_STONE));
@@ -94,6 +105,17 @@ public class BlockSettings extends ConfigSection {
         blockSettingsBuilder.disableBedrock(reader.getSetting(DISABLE_BEDROCK));
         blockSettingsBuilder.ceilingBedrock(reader.getSetting(CEILING_BEDROCK));
         blockSettingsBuilder.flatBedrock(reader.getSetting(FLAT_BEDROCK));
+
+        var stoneLayerFunctions = new ArrayList<StoneLayerFunction>();
+        for (ConfigFunction<?> res : reader.getConfigFunctions(presetSettings, provider)) {
+            if (res instanceof StoneLayerFunction stoneLayerFunction) {
+                stoneLayerFunctions.add(stoneLayerFunction);
+            }
+        }
+        blockSettingsBuilder.stoneLayerFunctions(stoneLayerFunctions);
+        blockSettingsBuilder.stoneLayers(stoneLayerFunctions.isEmpty()
+                ? StoneLayerStack.EMPTY
+                : new StoneLayerStack(stoneLayerFunctions.stream().map(StoneLayerFunction::getLayer).toList()));
         return blockSettingsBuilder.build();
     }
 

@@ -29,8 +29,14 @@ final class TpCommand {
 
     private static final int DEFAULT_RANGE = 10000;
 
+    static final CommandInfo INFO = new CommandInfo(
+        "tp",
+        "Teleports you to the nearest occurrence of an OTG biome.",
+        "/otg tp <biome> [range]");
+
     static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("tp")
+            .executes(ctx -> CommandHelper.showUsage(ctx, INFO))
             .then(Commands.argument("biome", StringArgumentType.string())
                 .suggests(biomeSuggestions())
                 .executes(ctx -> execute(ctx, DEFAULT_RANGE))

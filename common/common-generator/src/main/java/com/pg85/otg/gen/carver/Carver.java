@@ -135,7 +135,8 @@ public abstract class Carver {
                                     currentY,
                                     currentZ,
                                     foundSurface,
-                                    biomeConfig
+                                    biomeConfig,
+                                    otgWorldInfo
                             );
                         }
                     }
@@ -155,10 +156,12 @@ public abstract class Carver {
             int y,
             int relativeZ,
             MutableBoolean foundSurface,
-            BiomeSettings biomeConfig
+            BiomeSettings biomeConfig,
+            OTGWorldInfo otgWorldInfo
     ) {
         SurfaceSettings surface = biomeConfig.getSurfaceSettings();
-        int i = relativeX | relativeZ << 4 | y << 8;
+        // Match vanilla CarvingMask indexing: y is offset by minY so sub-0 coords stay non-negative.
+        int i = relativeX | relativeZ << 4 | (y - otgWorldInfo.minY()) << 8;
         if (carvingMask.get(i)) {
             return false;
         }

@@ -19,6 +19,7 @@ import com.pg85.otg.util.ChunkCoordinate;
 import com.pg85.otg.util.gen.*;
 import com.pg85.otg.util.helpers.MathHelper;
 import com.pg85.otg.util.logging.LogCategory;
+import com.pg85.otg.util.profiling.GenProfiler;
 import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
@@ -102,6 +103,10 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
         this.caves = new CaveCarver(preset.getPresetConfig());
         this.ravines = new RavineCarver(preset.getPresetConfig());
 
+    }
+
+    public long getSeed() {
+        return this.seed;
     }
 
     public void setSeed(long seed) {
@@ -191,10 +196,12 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
 
     private void generateNoiseColumn(double[] noiseColumn, int noiseX, int noiseZ) {
         BlendedColumn blended = blendColumnParams(noiseX, noiseZ);
+        long t = GenProfiler.start();
         this.noisePipeline.generateColumn(
                 noiseColumn, noiseX, noiseZ, blended.params(), blended.chc(),
                 blended.disableBiomeHeight()
         );
+        GenProfiler.stop("noise.pipeline.generateColumn", t);
     }
 
     /**
@@ -203,18 +210,83 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
      * cave depth to it so cave placement is independent of biome volatility.
      */
     public double getColumnCenterHeightInBlocks(int noiseX, int noiseZ) {
+        long t = GenProfiler.start();
         BlendedBiomeParams params = blendColumnParams(noiseX, noiseZ).params();
         float extraHeight = (float) (this.noisePipeline.computeExtraHeight(
                 noiseX, noiseZ, params.valleyFactor(), params.peakFactor()
         ) * this.noisePipeline.continentalScale());
-        return this.noisePipeline.computeColumnHeight(params.height(), extraHeight, this.noisePipeline.surfaceSections()) * 8.0;
+        double result = this.noisePipeline.computeColumnHeight(params.height(), extraHeight, this.noisePipeline.surfaceSections()) * 8.0;
+        GenProfiler.stop("noise.columnCenterHeight", t);
+        return result;
     }
+
+    private static final ThreadLocal<ChcScratch> CHC_SCRATCH =
+            ThreadLocal.withInitial(() -> new ChcScratch(16));
+
+    private static final class ChcScratch {
+        BiomeSettings[] biomes;
+        double[] weights;
+        int count;
+        ChcScratch(int cap) { biomes = new BiomeSettings[cap]; weights = new double[cap]; }
+        void reset() { count = 0; }
+        void add(BiomeSettings b, double w) {
+            for (int i = 0; i < count; i++) {           // dedup: find existing
+                if (biomes[i] == b) { weights[i] += w; return; }
+            }
+            if (count == biomes.length) grow();
+            biomes[count] = b; weights[count] = w; count++;
+        }
+        private void grow() {
+            int n = biomes.length << 1;
+            biomes = java.util.Arrays.copyOf(biomes, n);
+            weights = java.util.Arrays.copyOf(weights, n);
+        }
+    }
+
+    /* Suggested new code:
+long tChcSmoothing = GenProfiler.start();
+final int chcLen = this.noiseSizeY + 1;
+double chcWeight = 0;
+
+ChcScratch scratch = CHC_SCRATCH.get();
+scratch.reset();
+
+for (int x1 = -chcSmoothRadius; x1 <= chcSmoothRadius; ++x1) {
+    int rowBase = (x1 + largestRadius) * areaSize;
+    int tableRowBase = x1 + 32;
+    for (int z1 = -chcSmoothRadius; z1 <= chcSmoothRadius; ++z1) {
+        biome = biomes[rowBase + (z1 + largestRadius)];
+        heightAt = biome.getTerrainSettings().getBiomeHeight();
+        weightAt = Math.abs(BIOME_WEIGHT_TABLE[tableRowBase + (z1 + 32) * 65] / (heightAt + 2.0F));
+
+        chcWeight += weightAt;
+        scratch.add(biome, weightAt);
+    }
+}
+
+// Expensive Y-loop now runs once per UNIQUE biome, not per cell.
+for (int i = 0; i < scratch.count; i++) {
+    BiomeSettings b = scratch.biomes[i];
+    double w = scratch.weights[i];
+    for (int y = 0; y < chcLen; y++) {
+        chc[y] += b.getCHCData(y) * w;
+    }
+}
+GenProfiler.stop("noise.chcSmoothing", tChcSmoothing);
+
+This should stop the inner loop, as well as avoid millions of allocations
+
+    *
+    * */
 
     private record BlendedColumn(BlendedBiomeParams params, double[] chc, boolean disableBiomeHeight) {
     }
 
     private BlendedColumn blendColumnParams(int noiseX, int noiseZ) {
+        long tBlend = GenProfiler.start();
+        long tNoiseBiome = tBlend;
         BiomeSettings center = this.cachedBiomeProvider.getNoiseBiomeConfig(noiseX, noiseZ, true);
+        GenProfiler.stop("noise.getNoiseBiome", tNoiseBiome);
 
         float height = 0; // depth
         float biomeVolatility = 0;
@@ -232,15 +304,19 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
         int chcSmoothRadius = center.getTerrainSettings().getCHCSmoothRadius();
         int largestRadius = Math.max(smoothRadius, chcSmoothRadius);
         int areaSize = largestRadius * 2 + 1;
+        long tRegion = GenProfiler.start();
         BiomeSettings[] biomes = this.cachedBiomeProvider.getNoiseBiomeConfigsForRegion(
                 noiseX - largestRadius,
                 noiseZ - largestRadius,
                 areaSize
         );
+        GenProfiler.stop("biome.noiseRegionLookup", tRegion);
+
+        long tBiomeSmoothing = GenProfiler.start();
+
         BiomeSettings biome;
         BiomeTerrainSettings biomeTerrainSettings;
         TerrainSettings terrainSettings = this.preset.getPresetConfig().getTerrainSettings();
-        int worldHeightCap = terrainSettings.getHeight();
         float heightAt;
         float weightAt;
         int cacheX;
@@ -271,25 +347,38 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
             }
         }
 
-        // CHC Smoothing
-        double chcWeight = 0;
-        for (int x1 = -chcSmoothRadius; x1 <= chcSmoothRadius; ++x1) {
-            cacheX = x1 + largestRadius;
-            for (int z1 = -chcSmoothRadius; z1 <= chcSmoothRadius; ++z1) {
-                cacheZ = z1 + largestRadius;
-                biome = biomes[cacheX * areaSize + cacheZ];
+        GenProfiler.stop("noise.biomeSmoothing", tBiomeSmoothing);
 
+
+        long tChcSmoothing = GenProfiler.start();
+        final int chcLen = this.noiseSizeY + 1;
+        double chcWeight = 0;
+
+        ChcScratch scratch = CHC_SCRATCH.get();
+        scratch.reset();
+
+        for (int x1 = -chcSmoothRadius; x1 <= chcSmoothRadius; ++x1) {
+            int rowBase = (x1 + largestRadius) * areaSize;
+            int tableRowBase = x1 + 32;
+            for (int z1 = -chcSmoothRadius; z1 <= chcSmoothRadius; ++z1) {
+                biome = biomes[rowBase + (z1 + largestRadius)];
                 heightAt = biome.getTerrainSettings().getBiomeHeight();
-                weightAt = BIOME_WEIGHT_TABLE[x1 + 32 + (z1 + 32) * 65] / (heightAt + 2.0F);
-                weightAt = Math.abs(weightAt);
+                weightAt = Math.abs(BIOME_WEIGHT_TABLE[tableRowBase + (z1 + 32) * 65] / (heightAt + 2.0F));
 
                 chcWeight += weightAt;
-
-                for (int y = 0; y < this.noiseSizeY + 1; y++) {
-                    chc[y] += biome.getCHCData(y) * weightAt;
-                }
+                scratch.add(biome, weightAt);
             }
         }
+
+// Expensive Y-loop now runs once per UNIQUE biome, not per cell.
+        for (int i = 0; i < scratch.count; i++) {
+            BiomeSettings b = scratch.biomes[i];
+            double w = scratch.weights[i];
+            for (int y = 0; y < chcLen; y++) {
+                chc[y] += b.getCHCData(y) * w;
+            }
+        }
+        GenProfiler.stop("noise.chcSmoothing", tChcSmoothing);
 
         // Normalize biome data
         height /= weight;
@@ -316,6 +405,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
                 valleyFactor, peakFactor
         );
 
+        GenProfiler.stop("noise.blendColumnParams", tBlend);
         return new BlendedColumn(params, chc, center.getTerrainSettings().isDisableBiomeHeight());
     }
 
@@ -333,6 +423,8 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
         ObjectListIterator<JigsawStructureData> structureIterator = structures.iterator();
 
         long startTime = System.currentTimeMillis();
+        long tTotal = GenProfiler.start();
+        long tBaseFill = tTotal;
 
         // Fill waterLevel array, used when placing stone/ground/surface blocks.
         // This 256 is a combined x/z size, not y.
@@ -474,7 +566,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
                                             localX,
                                             realY,
                                             localZ,
-                                            biomeConfig.getSurfaceSettings().getStoneBlockReplaced(realY)
+                                            biomeConfig.getSurfaceSettings().getStrataBlockReplaced(this.seed, realX, realY, realZ)
                                     );
                                     buffer.setHighestBlockForColumn(pieceX + noiseX * 4, noiseZ * 4 + pieceZ, realY);
                                 } else if (realY < waterLevel[localX * Constants.CHUNK_SIZE + localZ]
@@ -498,8 +590,10 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
             noiseData[0] = noiseData[1];
             noiseData[1] = xColumn;
         }
+        GenProfiler.stop("terrain.populateNoise.baseFill", tBaseFill);
 
         doSurfaceAndGroundControl(biomes, random, worldHeight, this.seed, buffer, waterLevel);
+        GenProfiler.stop("terrain.populateNoise", tTotal);
 
         if (logger.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50) {
             logger.warn(
@@ -515,6 +609,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
     public void carve(ChunkBuffer chunk, long seed, BitSet carvingMask, boolean cavesEnabled, boolean ravinesEnabled, OTGWorldInfo otgWorldInfo) {
         // TODO: it should be possible to cache these carver graphs to make larger carvers more efficient and easier to use
         if (cavesEnabled || ravinesEnabled) {
+            long tCarve = GenProfiler.start();
             Random random = new Random();
             ChunkCoordinate chunkCoordinate = chunk.getChunkCoordinate();
             int chunkX = chunkCoordinate.getChunkX();
@@ -524,6 +619,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
                     setCarverSeed(random, seed, localChunkX, localChunkZ);
 
                     if (cavesEnabled && this.caves.isStartChunk(random, localChunkX, localChunkZ)) {
+                        long tCaves = GenProfiler.start();
                         this.caves.carve(
                                 this,
                                 chunk,
@@ -536,11 +632,13 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
                                 this.cachedBiomeProvider,
                                 otgWorldInfo
                         );
+                        GenProfiler.stop("terrain.carve.caves", tCaves);
                     }
 
                     setCarverSeed(random, seed, localChunkX, localChunkZ);
 
                     if (ravinesEnabled && this.ravines.isStartChunk(random, localChunkX, localChunkZ)) {
+                        long tRavines = GenProfiler.start();
                         this.ravines.carve(
                                 this,
                                 chunk,
@@ -553,9 +651,11 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
                                 this.cachedBiomeProvider,
                                 otgWorldInfo
                         );
+                        GenProfiler.stop("terrain.carve.ravines", tRavines);
                     }
                 }
             }
+            GenProfiler.stop("terrain.carve", tCarve);
         }
     }
 
@@ -597,6 +697,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
             int[] waterLevel
     ) {
         // Process surface and ground blocks for each column in the chunk
+        long tSagc = GenProfiler.start();
         ChunkCoordinate chunkCoord = chunkBuffer.getChunkCoordinate();
         double d1 = 0.03125D;
         this.biomeBlocksNoise.set(this.biomeBlocksNoiseGen.getRegion(
@@ -627,6 +728,7 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
                 ;
             }
         }
+        GenProfiler.stop("terrain.surfaceAndGround", tSagc);
     }
 
     // Used by sagc for generating surface/ground block patterns
@@ -671,10 +773,12 @@ public class OTGChunkGenerator implements ISurfaceGeneratorNoiseProvider {
 
             // if the entry here has a key that matches ours, we have a cache hit
             if (this.keys[idx] == key) {
+                GenProfiler.count("noise.columnCache.hit");
                 // Copy values into buffer
                 System.arraycopy(this.values, idx * buffer.length, buffer, 0, buffer.length);
             } else {
                 // cache miss: sample and put the result into our cache entry
+                GenProfiler.count("noise.columnCache.miss");
 
                 // Sample the noise column to store the new values
                 generateNoiseColumn(buffer, noiseX, noiseZ);

@@ -1,7 +1,11 @@
 package com.pg85.otg.fabric.gen.noise;
 
+import com.pg85.otg.fabric.materials.FabricMaterialData;
 import com.pg85.otg.fabric.mixin.NoiseChunkAccessor;
+import com.pg85.otg.gen.OTGChunkGenerator;
+import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.util.gen.ChunkBuffer;
+import com.pg85.otg.util.profiling.GenProfiler;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,8 +36,14 @@ public final class OTGNoiseCaveFiller {
             NoiseChunk noiseChunk,
             ChunkAccess chunkAccess,
             ChunkBuffer buffer,
-            NoiseGeneratorSettings settings
+            NoiseGeneratorSettings settings,
+            OTGChunkGenerator internalGenerator
     ) {
+        long tFill = GenProfiler.start();
+        // Same full-res biome array as the legacy populateNoise path, so both
+        // fill paths agree on strata-vs-biome boundaries.
+        IBiome[] biomes = internalGenerator.getCachedBiomeProvider().getBiomesForChunk(buffer.getChunkCoordinate());
+        long seed = internalGenerator.getSeed();
         NoiseSettings noiseSettings = settings.noiseSettings().clampToHeightAccessor(chunkAccess.getHeightAccessorForGeneration());
         int cellHeight = noiseSettings.getCellHeight();
         int cellWidth = noiseSettings.getCellWidth();
@@ -86,7 +96,12 @@ public final class OTGNoiseCaveFiller {
 
                                 BlockState state = ((NoiseChunkAccessor) noiseChunk).callGetInterpolatedState();
                                 if (state == null) {
-                                    state = settings.defaultBlock();
+                                    // null means "solid default" in vanilla's material rule
+                                    // chain (aquifer barriers too); use the biome's strata
+                                    // block instead of the settings' default block.
+                                    state = ((FabricMaterialData) biomes[localX * 16 + localZ]
+                                            .getBiomeSettings().getSurfaceSettings()
+                                            .getStrataBlockReplaced(seed, blockX, blockY, blockZ)).getState();
                                 }
                                 if (state.isAir()) {
                                     continue;
@@ -110,5 +125,6 @@ public final class OTGNoiseCaveFiller {
         }
 
         noiseChunk.stopInterpolation();
+        GenProfiler.stop("terrain.noiseCaveFill", tFill);
     }
 }

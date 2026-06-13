@@ -39,33 +39,51 @@ import java.util.stream.Collectors;
 
 final class SettingsCommand {
 
+    static final CommandInfo INFO = new CommandInfo(
+        "settings",
+        "Dumps biome, object or preset configs to the output folder.",
+        "/otg settings <biome|object|preset|all> [name|all]");
+
     static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("settings")
+            .executes(ctx -> CommandHelper.showUsage(ctx, INFO))
             // /otg settings biome  (uses biome at current position)
+            // /otg settings biome all  (every biome in current world's preset)
             // /otg settings biome <name>  (uses current world's preset)
             .then(Commands.literal("biome")
                 .executes(SettingsCommand::executeBiomeAtPosition)
+                .then(Commands.literal("all")
+                    .executes(SettingsCommand::executeAllBiomes))
                 .then(Commands.argument("name", StringArgumentType.greedyString())
                     .suggests(currentPresetBiomeSuggestions())
                     .executes(ctx -> executeBiome(ctx,
                         StringArgumentType.getString(ctx, "name"),
                         null)))
             )
+            // /otg settings object all  (every object in current world's preset)
             // /otg settings object <name>  (uses current world's preset)
             .then(Commands.literal("object")
+                .then(Commands.literal("all")
+                    .executes(SettingsCommand::executeAllObjects))
                 .then(Commands.argument("name", StringArgumentType.greedyString())
                     .suggests(currentPresetObjectSuggestions())
                     .executes(ctx -> executeObject(ctx,
                         StringArgumentType.getString(ctx, "name"))))
             )
             // /otg settings preset  (current world's preset)
+            // /otg settings preset all  (every loaded preset)
             .then(Commands.literal("preset")
                 .executes(SettingsCommand::executePreset)
+                .then(Commands.literal("all")
+                    .executes(SettingsCommand::executeAllPresets))
                 // /otg settings preset <name>
                 .then(Commands.argument("name", StringArgumentType.greedyString())
                     .suggests(presetSuggestions())
                     .executes(ctx -> executePresetByName(ctx,
-                        StringArgumentType.getString(ctx, "name")))));
+                        StringArgumentType.getString(ctx, "name")))))
+            // /otg settings all  (config + every biome + every object of current preset)
+            .then(Commands.literal("all")
+                .executes(SettingsCommand::executeAll));
     }
 
     // -------------------------------------------------------------------------
@@ -86,17 +104,39 @@ final class SettingsCommand {
             return 0;
         }
 
+        Path outFile = writeBiome(src, preset, bc);
+        if (outFile == null) return 0;
+        src.sendSuccess(() -> Component.literal("Biome settings written to: " + outFile), false);
+        return 1;
+    }
+
+    /** Writes a single biome config; returns the output path on success, null on failure (failure already reported). */
+    private static Path writeBiome(CommandSourceStack src, Preset preset, BiomeConfig bc) {
+        String biomeName = bc.getConfigName();
         try {
             Path outFile = prepareOutputFile(preset.getFolderName(), biomeName.replace(' ', '_') + ".bc");
             SimpleSettingsMap map = new SimpleSettingsMap(biomeName, outFile);
             bc.writeConfigSettings(map);
             FileSettingsWriter.writeToFile(map, outFile.toFile(), ConfigMode.WriteAll);
-            src.sendSuccess(() -> Component.literal("Biome settings written to: " + outFile), false);
-            return 1;
+            return outFile;
         } catch (IOException e) {
-            src.sendFailure(Component.literal("Failed to write settings: " + e.getMessage()));
-            return 0;
+            src.sendFailure(Component.literal("Failed to write biome \"" + biomeName + "\": " + e.getMessage()));
+            return null;
         }
+    }
+
+    private static int executeAllBiomes(CommandContext<CommandSourceStack> ctx) {
+        CommandSourceStack src = ctx.getSource();
+        Preset preset = resolvePreset(ctx, null);
+        if (preset == null) return 0;
+
+        int written = 0;
+        for (BiomeConfig bc : preset.getBiomeConfigList()) {
+            if (writeBiome(src, preset, bc) != null) written++;
+        }
+        final int count = written;
+        src.sendSuccess(() -> Component.literal("Wrote " + count + " biome config(s) to output/" + preset.getFolderName()), false);
+        return written;
     }
 
     private static int executePreset(CommandContext<CommandSourceStack> ctx) {
@@ -116,17 +156,35 @@ final class SettingsCommand {
 
     private static int dumpPreset(CommandContext<CommandSourceStack> ctx, Preset preset) {
         CommandSourceStack src = ctx.getSource();
+        Path outFile = writePreset(src, preset);
+        if (outFile == null) return 0;
+        src.sendSuccess(() -> Component.literal("Preset settings written to: " + outFile), false);
+        return 1;
+    }
+
+    /** Writes a single preset config; returns the output path on success, null on failure (failure already reported). */
+    private static Path writePreset(CommandSourceStack src, Preset preset) {
         try {
             Path outFile = prepareOutputFile(preset.getFolderName(), "PresetConfig.ini");
             SimpleSettingsMap map = new SimpleSettingsMap(preset.getFolderName(), outFile);
             preset.getPresetConfig().writeConfigSettings(map);
             FileSettingsWriter.writeToFile(map, outFile.toFile(), ConfigMode.WriteAll);
-            src.sendSuccess(() -> Component.literal("Preset settings written to: " + outFile), false);
-            return 1;
+            return outFile;
         } catch (IOException e) {
-            src.sendFailure(Component.literal("Failed to write settings: " + e.getMessage()));
-            return 0;
+            src.sendFailure(Component.literal("Failed to write preset \"" + preset.getFolderName() + "\": " + e.getMessage()));
+            return null;
         }
+    }
+
+    private static int executeAllPresets(CommandContext<CommandSourceStack> ctx) {
+        CommandSourceStack src = ctx.getSource();
+        int written = 0;
+        for (Preset preset : OTG.getEngine().getPresetLoader().getAllPresets()) {
+            if (writePreset(src, preset) != null) written++;
+        }
+        final int count = written;
+        src.sendSuccess(() -> Component.literal("Wrote " + count + " preset config(s) to output/"), false);
+        return written;
     }
 
     private static int executeBiomeAtPosition(CommandContext<CommandSourceStack> ctx) {
@@ -160,7 +218,14 @@ final class SettingsCommand {
         OTGFabricChunkGenerator gen = CommandHelper.getGenerator(src.getLevel());
         if (gen == null) return 0;
 
-        Preset preset = gen.getPreset();
+        Path outFile = writeObject(src, gen.getPreset(), objectName);
+        if (outFile == null) return 0;
+        src.sendSuccess(() -> Component.literal("Object settings written to: " + outFile), false);
+        return 1;
+    }
+
+    /** Writes a single object config; returns the output path on success, null on failure (failure already reported). */
+    private static Path writeObject(CommandSourceStack src, Preset preset, String objectName) {
         CustomObject obj = OTG.getEngine().getCustomObjectManager().getGlobalObjects().getObjectByName(
             objectName,
             preset.getFolderName(),
@@ -169,7 +234,7 @@ final class SettingsCommand {
 
         if (obj == null) {
             src.sendFailure(Component.literal("Object \"" + objectName + "\" not found in preset \"" + preset.getFolderName() + "\"."));
-            return 0;
+            return null;
         }
 
         CustomObjectConfigFile config;
@@ -179,7 +244,7 @@ final class SettingsCommand {
             config = bo4.getConfig();
         } else {
             src.sendFailure(Component.literal("Object \"" + objectName + "\" is not a BO3 or BO4."));
-            return 0;
+            return null;
         }
 
         try {
@@ -189,12 +254,52 @@ final class SettingsCommand {
                 outFile.toFile(),
                 ConfigMode.WriteAll
             );
-            src.sendSuccess(() -> Component.literal("Object settings written to: " + outFile), false);
-            return 1;
+            return outFile;
         } catch (IOException e) {
-            src.sendFailure(Component.literal("Failed to write settings: " + e.getMessage()));
+            src.sendFailure(Component.literal("Failed to write object \"" + objectName + "\": " + e.getMessage()));
+            return null;
+        }
+    }
+
+    private static int executeAllObjects(CommandContext<CommandSourceStack> ctx) {
+        CommandSourceStack src = ctx.getSource();
+        Preset preset = resolvePreset(ctx, null);
+        if (preset == null) return 0;
+        return writeAllObjects(src, preset);
+    }
+
+    private static int writeAllObjects(CommandSourceStack src, Preset preset) {
+        ArrayList<String> names = OTG.getEngine().getCustomObjectManager().getGlobalObjects()
+            .getAllBONamesForPreset(preset.getFolderName(), OTG.getEngine().getOTGRootFolder());
+        if (names == null || names.isEmpty()) {
+            src.sendSuccess(() -> Component.literal("No objects found in preset \"" + preset.getFolderName() + "\"."), false);
             return 0;
         }
+        int written = 0;
+        for (String name : names) {
+            if (writeObject(src, preset, name) != null) written++;
+        }
+        final int count = written;
+        src.sendSuccess(() -> Component.literal("Wrote " + count + " object(s) to output/" + preset.getFolderName()), false);
+        return written;
+    }
+
+    /** /otg settings all — dumps the current preset's config plus every biome and object it contains. */
+    private static int executeAll(CommandContext<CommandSourceStack> ctx) {
+        CommandSourceStack src = ctx.getSource();
+        Preset preset = resolvePreset(ctx, null);
+        if (preset == null) return 0;
+
+        int written = 0;
+        if (writePreset(src, preset) != null) written++;
+        for (BiomeConfig bc : preset.getBiomeConfigList()) {
+            if (writeBiome(src, preset, bc) != null) written++;
+        }
+        written += writeAllObjects(src, preset);
+
+        final int count = written;
+        src.sendSuccess(() -> Component.literal("Dumped " + count + " file(s) for preset \"" + preset.getFolderName() + "\" to output/" + preset.getFolderName()), false);
+        return written;
     }
 
     // -------------------------------------------------------------------------

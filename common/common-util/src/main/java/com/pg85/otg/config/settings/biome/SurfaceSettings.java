@@ -11,7 +11,9 @@ import com.pg85.otg.constants.Constants;
 import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.interfaces.ISurfaceGenerator;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
+import com.pg85.otg.config.biome.StoneLayerFunction;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
+import com.pg85.otg.util.biome.StoneLayerStack;
 import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.gen.GeneratingChunk;
 import com.pg85.otg.util.materials.LocalMaterialData;
@@ -19,6 +21,8 @@ import com.pg85.otg.util.materials.LocalMaterials;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+
+import java.util.List;
 
 @Builder
 @Getter
@@ -44,6 +48,10 @@ public class SurfaceSettings extends ConfigSection {
     private final LocalMaterialData packedIceBlock;
     private final LocalMaterialData snowBlock;
     private final LocalMaterialData cooledLavaBlock;
+    // Biome's own StoneLayer functions (empty = stack inherited from preset).
+    private final List<StoneLayerFunction> stoneLayerFunctions;
+    private final StoneLayerStack stoneLayers;
+    private final boolean replacesAnyStoneLayer;
 
     @Override
     public String getSectionName() {
@@ -159,12 +167,29 @@ public class SurfaceSettings extends ConfigSection {
     );
 
     public static SurfaceSettings getSurfaceSettings(SettingsMap settingsReader,
-                                                     BlockSettings presetBlocks, TerrainSettings presetTerrain) {
+                                                     BlockSettings presetBlocks, TerrainSettings presetTerrain,
+                                                     List<StoneLayerFunction> biomeStoneLayerFunctions) {
         SurfaceSettingsBuilder builder = SurfaceSettings.builder();
 
         builder.surfaceGenerator(settingsReader.getSetting(SURFACE_GENERATOR));
         builder.replacedBlocks(settingsReader.getSetting(REPLACED_BLOCKS));
         builder.blockSettings(presetBlocks);
+
+        List<StoneLayerFunction> stoneLayerFunctions =
+                biomeStoneLayerFunctions == null ? List.of() : List.copyOf(biomeStoneLayerFunctions);
+        StoneLayerStack stoneLayers = stoneLayerFunctions.isEmpty()
+                ? presetBlocks.getStoneLayers()
+                : new StoneLayerStack(stoneLayerFunctions.stream().map(StoneLayerFunction::getLayer).toList());
+        builder.stoneLayerFunctions(stoneLayerFunctions);
+        builder.stoneLayers(stoneLayers);
+        boolean replacesAnyStoneLayer = false;
+        for (LocalMaterialData layerBlock : stoneLayers.getLayerBlocks()) {
+            if (builder.replacedBlocks.replacesBlock(layerBlock)) {
+                replacesAnyStoneLayer = true;
+                break;
+            }
+        }
+        builder.replacesAnyStoneLayer(replacesAnyStoneLayer);
         builder.useWorldWaterLevel(settingsReader.getSetting(USE_WORLD_WATER_LEVEL));
         builder.configWaterLevelMax(settingsReader.getSetting(WATER_LEVEL_MAX));
         builder.configWaterLevelMin(settingsReader.getSetting(WATER_LEVEL_MIN));
@@ -286,6 +311,26 @@ public class SurfaceSettings extends ConfigSection {
             return replacedBlocks.replaceBlock(y, stoneBlock);
         }
         return stoneBlock;
+    }
+
+    /**
+     * Base stone lookup honouring the StoneLayer strata stack. Y levels not
+     * covered by any layer (or presets without StoneLayer lines) fall back to
+     * the plain StoneBlock path. ReplacedBlocks applies after the strata pick,
+     * so per-biome re-theming of layer blocks keeps working.
+     */
+    public LocalMaterialData getStrataBlockReplaced(long seed, int x, int y, int z) {
+        if (stoneLayers.isEmpty()) {
+            return getStoneBlockReplaced(y);
+        }
+        LocalMaterialData strata = stoneLayers.sample(seed, x, y, z);
+        if (strata == null) {
+            return getStoneBlockReplaced(y);
+        }
+        if (replacesAnyStoneLayer) {
+            return replacedBlocks.replaceBlock(y, strata);
+        }
+        return strata;
     }
 
     public LocalMaterialData getBedrockBlockReplaced(int y) {

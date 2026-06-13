@@ -2,6 +2,7 @@ package com.pg85.otg.config.settings.biome;
 
 import com.pg85.otg.config.ConfigFile;
 import com.pg85.otg.config.ConfigFunction;
+import com.pg85.otg.config.biome.StoneLayerFunction;
 import com.pg85.otg.config.io.IConfigFunctionProvider;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settings.ConfigSection;
@@ -136,20 +137,32 @@ public abstract class BiomeSettings implements ConfigFile {
         biomeTagSettings = BiomeTagSettings.getBiomeTagConfig(settingsMap, identitySettings);
         biomeStructureTagConfig = BiomeStructureTagConfig.getBiomeStructureTagConfig(settingsMap, structureSettings);
 
+        // StoneLayer functions are biome strata overrides, not decoration
+        // resources; pull them out before the rest goes to the resource queue.
+        var configFunctions = new ArrayList<>(settingsMap.getConfigFunctions(
+                this,
+                provider,
+                presetSettings.getConfigName()
+        ));
+        var biomeStoneLayerFunctions = new ArrayList<StoneLayerFunction>();
+        for (var it = configFunctions.iterator(); it.hasNext(); ) {
+            ConfigFunction<?> function = it.next();
+            if (function instanceof StoneLayerFunction stoneLayerFunction) {
+                biomeStoneLayerFunctions.add(stoneLayerFunction);
+                it.remove();
+            }
+        }
+
         surfaceSettings = SurfaceSettings.getSurfaceSettings(
                 settingsMap,
                 presetSettings.getBlockSettings(),
-                presetSettings.getTerrainSettings()
+                presetSettings.getTerrainSettings(),
+                biomeStoneLayerFunctions
                 );
 
         resourceSettings = BiomeResourceSettings.getResourceSettings(
                 presetSettings.getResourceSettings(),
-                new ArrayList<>(
-                        settingsMap.getConfigFunctions(
-                                this,
-                                provider,
-                                presetSettings.getConfigName()
-                        )));
+                configFunctions);
     }
 
     @Override
@@ -160,8 +173,11 @@ public abstract class BiomeSettings implements ConfigFile {
             writeConfigSection(writer, generationSettings);
         if (terrainSettings != null)
             writeConfigSection(writer, terrainSettings);
-        if (surfaceSettings != null)
+        if (surfaceSettings != null) {
             writeConfigSection(writer, surfaceSettings);
+            // Biome strata overrides; no lines means the preset stack is inherited.
+            writer.addConfigFunctions(surfaceSettings.getStoneLayerFunctions());
+        }
         if (visualSettings != null)
             writeConfigSection(writer, visualSettings);
         if (resourceSettings != null)

@@ -25,6 +25,7 @@ public class CarverSettings extends ConfigSection {
     private final boolean vanillaCavesEnabled;
     private final double vanillaCaveDensityScale;
     private final double vanillaCaveDepthGradient;
+    private final boolean vanillaAquifersEnabled;
     private final boolean ravinesEnabled;
     private final int ravineRarity;
     private final int ravineMinLength;
@@ -142,8 +143,18 @@ public class CarverSettings extends ConfigSection {
             "Enables vanilla 1.18+ noise caves (cheese/spaghetti/noodle/pillar caves), carved into OTG's",
             "base terrain via vanilla's density function system. Independent of CavesEnabled/RavinesEnabled,",
             "which control OTG's legacy worm carvers; both can be enabled at once.",
-            "Note: with this enabled, stone block replacement comes from surface/ground control layers only,",
-            "and caves below a biome's WaterLevelMax will flood (aquifers are not yet supported)."
+            "Note: with this enabled, stone block replacement comes from surface/ground control layers only.",
+            "Without VanillaAquifersEnabled, caves below a biome's WaterLevelMax will flood."
+    );
+    public static final Setting<Boolean> VANILLA_AQUIFERS_ENABLED = Settings.booleanSetting(
+            "VanillaAquifersEnabled", true,
+            t -> ((CarverSettings) t).isVanillaAquifersEnabled(),
+            "Enables vanilla 1.18+ aquifers for vanilla noise caves (requires VanillaCavesEnabled).",
+            "Instead of flooding every cave below a biome's WaterLevelMax, water level is computed",
+            "locally: most caves below WaterLevelMax stay dry, with isolated water pockets walled",
+            "off by stone barriers. A biome's WaterLevelMax remains the upper bound, so oceans and",
+            "surface lakes are unaffected. Below Y -10, vanilla swaps some aquifers to lava.",
+            "When disabled, fluid placement follows the legacy rule (flood below WaterLevelMax)."
     );
     public static final Setting<Double> VANILLA_CAVE_DENSITY_SCALE = Settings.doubleSetting(
             "VanillaCaveDensityScale", 128.0, 1.0, 10000.0,
@@ -183,6 +194,7 @@ public class CarverSettings extends ConfigSection {
         carverSettingsBuilder.vanillaCavesEnabled(reader.getSetting(VANILLA_CAVES_ENABLED));
         carverSettingsBuilder.vanillaCaveDensityScale(reader.getSetting(VANILLA_CAVE_DENSITY_SCALE));
         carverSettingsBuilder.vanillaCaveDepthGradient(reader.getSetting(VANILLA_CAVE_DEPTH_GRADIENT));
+        carverSettingsBuilder.vanillaAquifersEnabled(reader.getSetting(VANILLA_AQUIFERS_ENABLED));
 
         carverSettingsBuilder.ravinesEnabled(reader.getSetting(RAVINES_ENABLED));
         carverSettingsBuilder.ravineRarity(reader.getSetting(RAVINE_RARITY));

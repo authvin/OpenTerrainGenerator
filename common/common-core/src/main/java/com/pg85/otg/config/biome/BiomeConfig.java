@@ -67,6 +67,9 @@ public class BiomeConfig extends BiomeSettings
 		RESOURCE_QUEUE_RESOURCES.put("BasaltColumn", BasaltColumnResource.class);
 		RESOURCE_QUEUE_RESOURCES.put("Group", VegetationGroupResource.class);
 		RESOURCE_QUEUE_RESOURCES.put("Scatter", VegetationScatterResource.class);
+		// Not a decoration resource; parsed here so biomes can override the
+		// preset's stone layer stack, then filtered out of the resource queue.
+		RESOURCE_QUEUE_RESOURCES.put("StoneLayer", StoneLayerFunction.class);
 	}
 
 	private final PresetConfig parent;

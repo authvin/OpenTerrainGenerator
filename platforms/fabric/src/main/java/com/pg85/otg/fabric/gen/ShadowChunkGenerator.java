@@ -17,6 +17,7 @@ import com.pg85.otg.util.gen.JigsawStructureData;
 import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.materials.LocalMaterialData;
 import com.pg85.otg.util.materials.LocalMaterials;
+import com.pg85.otg.util.profiling.GenProfiler;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
@@ -164,6 +165,7 @@ public class ShadowChunkGenerator {
             OTGFabricChunkGenerator otgChunkGenerator, OTGWorldInfo otgWorldInfo,
             ChunkCoordinate chunkCoordinate
     ) {
+        long tShadowGen = GenProfiler.start();
 
         Registry<Biome> biomeRegistry = getRegistry(serverLevel.registryAccess(), Registries.BIOME);
         if (biomeRegistry == null) {
@@ -209,12 +211,13 @@ public class ShadowChunkGenerator {
                     ctx.fluidPicker(),
                     Blender.empty()
             );
-            OTGNoiseCaveFiller.fill(noiseChunk, chunk, buffer, ctx.runtimeSettings());
+            OTGNoiseCaveFiller.fill(noiseChunk, chunk, buffer, ctx.runtimeSettings(), otgChunkGenerator.getInternalGenerator());
             otgChunkGenerator.getInternalGenerator().doSurfaceAndGroundControlForChunk(otgWorldInfo, buffer, random);
         } else {
             ObjectList<JigsawStructureData> structures = new ObjectArrayList<>(10);
             otgChunkGenerator.getInternalGenerator().populateNoise(otgWorldInfo, buffer, buffer.getChunkCoordinate(), structures, random);
         }
+        GenProfiler.stop("shadow.unloadedChunkGen", tShadowGen);
         return buffer;
     }
 
@@ -255,6 +258,7 @@ public class ShadowChunkGenerator {
 
         // A worker thread is generating the chunk, wait.
 
+        long tWait = GenProfiler.start();
         while (true) {
             try {
                 //OTG.log(LogMarker.INFO, "Waiting for chunk");
@@ -266,6 +270,7 @@ public class ShadowChunkGenerator {
             synchronized (this.workerLock) {
                 ChunkAccess cachedChunk = this.unloadedChunksCache.get(chunkCoord);
                 if (cachedChunk != null) {
+                    GenProfiler.stop("shadow.waitForWorker", tWait);
                     return cachedChunk;
                 } else {
                     // If a chunk is in unloadedChunksCache but is null, it's in a chunk that
@@ -275,6 +280,7 @@ public class ShadowChunkGenerator {
                         this.chunksToLoad.remove(chunkCoord);
                         // MaxConcurrent means worldgen thread, not a worker thread.
                         this.chunksBeingLoaded[this.maxConcurrent] = chunkCoord;
+                        GenProfiler.stop("shadow.waitForWorker", tWait);
                         return null;
                     }
                 }

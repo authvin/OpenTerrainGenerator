@@ -2,6 +2,7 @@ package com.pg85.otg.fabric.gen.noise;
 
 import com.mojang.serialization.MapCodec;
 import com.pg85.otg.gen.OTGChunkGenerator;
+import com.pg85.otg.util.profiling.GenProfiler;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.levelgen.DensityFunction;
@@ -23,6 +24,10 @@ import net.minecraft.world.level.levelgen.DensityFunction;
 public final class OTGDepthProxyFunction implements DensityFunction.SimpleFunction {
     private static final double MAX_DENSITY = 64.0;
 
+    // Resolved once; compute() runs per density sample, too hot for a per-call map lookup.
+    private static final GenProfiler.Counter SAMPLES = GenProfiler.counter("density.depthProxy.samples");
+    private static final GenProfiler.Counter COLUMN_FETCH = GenProfiler.counter("density.depthProxy.columnFetch");
+
     private final OTGChunkGenerator internalGenerator;
     private final double depthGradient;
     private final KeyDispatchDataCodec<? extends DensityFunction> codec =
@@ -37,6 +42,7 @@ public final class OTGDepthProxyFunction implements DensityFunction.SimpleFuncti
 
     @Override
     public double compute(DensityFunction.FunctionContext context) {
+        SAMPLES.increment();
         int noiseX = Math.floorDiv(context.blockX(), 4);
         int noiseZ = Math.floorDiv(context.blockZ(), 4);
         double centerHeight = this.columnMemo.get().fetch(this.internalGenerator, noiseX, noiseZ);
@@ -66,6 +72,7 @@ public final class OTGDepthProxyFunction implements DensityFunction.SimpleFuncti
 
         private double fetch(OTGChunkGenerator generator, int noiseX, int noiseZ) {
             if (this.noiseX != noiseX || this.noiseZ != noiseZ) {
+                COLUMN_FETCH.increment();
                 this.centerHeight = generator.getColumnCenterHeightInBlocks(noiseX, noiseZ);
                 this.noiseX = noiseX;
                 this.noiseZ = noiseZ;

@@ -17,6 +17,11 @@ import java.util.List;
 
 final class BiomeCommand {
 
+    static final CommandInfo INFO = new CommandInfo(
+        "biome",
+        "Shows info about the OTG biome you are standing in.",
+        "/otg biome [info|spawns]");
+
     static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("biome")
             .executes(BiomeCommand::executeSummary)

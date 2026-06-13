@@ -31,9 +31,15 @@ final class PackCommand
 	private static final AtomicReference<String> currentName = new AtomicReference<>("");
 	private static final AtomicReference<Thread> packThread = new AtomicReference<>(null);
 
+	static final CommandInfo INFO = new CommandInfo(
+		"pack",
+		"Exports the current preset's objects as .bopack files.",
+		"/otg pack <start|stop|status>");
+
 	static LiteralArgumentBuilder<CommandSourceStack> register()
 	{
 		return Commands.literal("pack")
+			.executes(ctx -> CommandHelper.showUsage(ctx, INFO))
 			.then(Commands.literal("start").executes(PackCommand::executeStart))
 			.then(Commands.literal("stop").executes(PackCommand::executeStop))
 			.then(Commands.literal("status").executes(PackCommand::executeStatus));

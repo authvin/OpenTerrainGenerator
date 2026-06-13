@@ -3,6 +3,7 @@ package com.pg85.otg.config.preset;
 import com.pg85.otg.config.ConfigFunction;
 import com.pg85.otg.config.biome.BiomeGroupFunction;
 import com.pg85.otg.config.biome.BiomeResourcesManager;
+import com.pg85.otg.config.biome.StoneLayerFunction;
 import com.pg85.otg.config.biome.TemplateBiome;
 import com.pg85.otg.config.io.SettingsMap;
 import com.pg85.otg.config.settingtype.Setting;
@@ -39,6 +40,7 @@ public class PresetConfig extends PresetSettings {
     static {
         CONFIG_FUNCTIONS.put("BiomeGroup", BiomeGroupFunction.class);
         CONFIG_FUNCTIONS.put("TemplateBiome", TemplateBiome.class);
+        CONFIG_FUNCTIONS.put("StoneLayer", StoneLayerFunction.class);
     }
 
     protected boolean biomeConfigsHaveReplacement = false;
@@ -49,7 +51,7 @@ public class PresetConfig extends PresetSettings {
         this.renameOldSettings(settingsReader);
         presetInfo = PresetInfo.buildPresetInfo(settingsReader);
         visualSettings = VisualSettings.builder().fogColor(settingsReader.getSetting(VisualSettings.PRESET_FOG_COLOR)).build();
-        blockSettings = BlockSettings.getBlockSettings(settingsReader);
+        blockSettings = BlockSettings.getBlockSettings(settingsReader, this, PresetResourcesManager.get());
         terrainSettings = TerrainSettings.getTerrainSettings(settingsReader);
         dimensionSettings = DimensionSettings.getDimensionSettings(settingsReader, terrainSettings);
         generationSettings = GenerationSettings.getGenerationSettings(

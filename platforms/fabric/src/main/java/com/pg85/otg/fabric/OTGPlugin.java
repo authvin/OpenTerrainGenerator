@@ -34,6 +34,7 @@ public class OTGPlugin implements ModInitializer {
 
 	void registerCommands() {
 		CommandRegistrationCallback.EVENT.register(OTGCommand::register);
+		OTGCommand.registerEvents();
 	}
 
 	void registerWorldSave() {

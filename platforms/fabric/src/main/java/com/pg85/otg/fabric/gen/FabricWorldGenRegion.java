@@ -90,6 +90,11 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
         return this.otgWorldInfo;
     }
 
+    /** The underlying Minecraft world this region writes to. Used by the edit command for neighbour-shape block fixing. */
+    public WorldGenLevel getInternal() {
+        return this.worldGenLevel;
+    }
+
     @Override
     public long getSeed() {
         return worldGenLevel.getSeed();
@@ -139,6 +144,16 @@ public class FabricWorldGenRegion extends LocalWorldGenRegion {
             return false;
         }
         BlockPos pos = new BlockPos(x, y, z);
+
+        // Vanilla tree ConfiguredFeatures don't validate the ground (that lives in the
+        // skipped PlacedFeature survival filter), so reject land trees whose placement
+        // position sits in or directly over liquid (coasts, rivers, oceans, aquifers).
+        if (!type.spawnsInWater() && (
+            !worldGenLevel.getFluidState(pos).isEmpty() ||
+            !worldGenLevel.getFluidState(pos.below()).isEmpty()
+        )) {
+            return false;
+        }
 
         var r = worldGenLevel.getLevel().registryAccess().registry(Registries.CONFIGURED_FEATURE);
         if (r.isEmpty()) {

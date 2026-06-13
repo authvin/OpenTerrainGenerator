@@ -160,6 +160,31 @@ public class PresetWriter {
                 "When using biome dictionary tags and/or biome categories with biome groups, these (non-OTG) biomes are excluded. Example: minecraft:plains."
         );
 
+        writer.header2("Cave Biomes",
+                "Cave biomes apply below ground only: they affect visuals, mob spawning and",
+                "vanilla feature decoration, while terrain shape, OTG decoration and surface",
+                "blocks stay driven by the surface biome above."
+        );
+
+        writer.putSetting(GenerationSettings.CAVE_BIOMES, presetConfig.getGenerationSettings().getCaveBiomes(),
+                "Biomes used below ground, selected by 3D cellular noise. Must exist in this",
+                "preset's Biomes folder; they do not need to be in any BiomeGroup.",
+                "Leave empty to disable cave biomes. Biome name is case sensitive."
+        );
+
+        writer.putSetting(GenerationSettings.CAVE_BIOME_DEPTH_BELOW_SURFACE, presetConfig.getGenerationSettings().getCaveBiomeDepthBelowSurface(),
+                "Cave biomes start this many blocks below the blended terrain center height",
+                "of each column, so the boundary tracks the terrain."
+        );
+
+        writer.putSetting(GenerationSettings.CAVE_BIOME_REGION_SIZE, presetConfig.getGenerationSettings().getCaveBiomeRegionSize(),
+                "Approximate horizontal size of cave biome regions, in blocks."
+        );
+
+        writer.putSetting(GenerationSettings.CAVE_BIOME_REGION_HEIGHT, presetConfig.getGenerationSettings().getCaveBiomeRegionHeight(),
+                "Approximate vertical size of cave biome regions, in blocks."
+        );
+
         writer.header2("Isle & Border Biomes");
 
         writer.putSetting(GenerationSettings.ISLE_BIOMES, presetConfig.getGenerationSettings().getIsleBiomes(),
@@ -346,6 +371,24 @@ public class PresetWriter {
         writer.putSetting(BlockSettings.DEFAULT_STONE_BLOCK, presetConfig.getBlockSettings().getDefaultStoneBlock(),
                 "Block used as stone in biomes where stone block is not specified."
         );
+
+        writer.header2("Stone Layers",
+                "Defines the vertical makeup of base stone for the whole world.",
+                "Syntax: StoneLayer(BlockName, MinY, MaxY[, Transition])",
+                "Layers span MinY to MaxY (inclusive). Transition is the number of blocks",
+                "the layer dithers upward past its MaxY into the layer above, like vanilla's",
+                "stone/deepslate gradient. Example:",
+                "  StoneLayer(DEEPSLATE, -64, 0, 8)",
+                "  StoneLayer(STONE, 1, 319)",
+                "Y levels not covered by any layer use the biome's StoneBlock, so presets",
+                "without StoneLayer lines behave exactly as before. Layers are painted in",
+                "order, so a later-defined layer wins where layers overlap.",
+                "A biome config may declare its own StoneLayer lines, which replace this",
+                "stack entirely for that biome. ReplacedBlocks applies after the layer is",
+                "picked, so (DEEPSLATE,TUFF) re-themes deepslate layers per biome."
+        );
+
+        writer.addConfigFunctions(presetConfig.getBlockSettings().getStoneLayerFunctions());
 
         writer.putSetting(TerrainSettings.BETTER_SNOW_FALL, presetConfig.getTerrainSettings().isBetterSnowFall(),
                 "When set to false, 1 layer of snow falls on the highest block only.",
@@ -537,8 +580,16 @@ public class PresetWriter {
                 "Enables vanilla 1.18+ noise caves (cheese/spaghetti/noodle/pillar caves), carved into OTG's",
                 "base terrain via vanilla's density function system. Independent of CavesEnabled/RavinesEnabled,",
                 "which control OTG's legacy worm carvers; both can be enabled at once.",
-                "Note: with this enabled, stone block replacement comes from surface/ground control layers only,",
-                "and caves below a biome's WaterLevelMax will flood (aquifers are not yet supported)."
+                "Note: with this enabled, stone block replacement comes from surface/ground control layers only.",
+                "Without VanillaAquifersEnabled, caves below a biome's WaterLevelMax will flood."
+        );
+        writer.putSetting(CarverSettings.VANILLA_AQUIFERS_ENABLED, presetConfig.getCarverSettings().isVanillaAquifersEnabled(),
+                "Enables vanilla 1.18+ aquifers for vanilla noise caves (requires VanillaCavesEnabled).",
+                "Instead of flooding every cave below a biome's WaterLevelMax, water level is computed",
+                "locally: most caves below WaterLevelMax stay dry, with isolated water pockets walled",
+                "off by stone barriers. A biome's WaterLevelMax remains the upper bound, so oceans and",
+                "surface lakes are unaffected. Below Y -10, vanilla swaps some aquifers to lava.",
+                "When disabled, fluid placement follows the legacy rule (flood below WaterLevelMax)."
         );
         writer.putSetting(CarverSettings.VANILLA_CAVE_DENSITY_SCALE, presetConfig.getCarverSettings().getVanillaCaveDensityScale(),
                 "Divisor mapping OTG's raw terrain noise onto vanilla's density scale for noise caves.",

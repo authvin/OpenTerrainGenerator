@@ -52,6 +52,10 @@ public class GenerationSettings extends ConfigSection {
     private final boolean forceLandAtSpawn;
     private final BiomeGroupManager biomeGroupManager;
     private final List<TemplateBiome> templateBiomes;
+    private final List<String> caveBiomes;
+    private final int caveBiomeDepthBelowSurface;
+    private final int caveBiomeRegionSize;
+    private final int caveBiomeRegionHeight;
 
     public static final Setting<BiomeMode> BIOME_MODE = Settings.enumSetting(
             "BiomeMode", BiomeMode.Normal,
@@ -200,6 +204,29 @@ public class GenerationSettings extends ConfigSection {
             "BlacklistedBiomes", new String[]{""},
             t -> ((GenerationSettings) t).getBlackListedBiomes()
     );
+    public static final Setting<List<String>> CAVE_BIOMES = Settings.stringListSetting(
+            "CaveBiomes", new String[]{},
+            t -> ((GenerationSettings) t).getCaveBiomes(),
+            "Biomes used below ground, selected by 3D cellular noise. Must exist in this",
+            "preset's Biomes folder; they do not need to be in any BiomeGroup.",
+            "Leave empty to disable cave biomes. Biome name is case sensitive."
+    );
+    public static final Setting<Integer> CAVE_BIOME_DEPTH_BELOW_SURFACE = Settings.intSetting(
+            "CaveBiomeDepthBelowSurface", 24, 0, 1024,
+            t -> ((GenerationSettings) t).getCaveBiomeDepthBelowSurface(),
+            "Cave biomes start this many blocks below the blended terrain center height",
+            "of each column, so the boundary tracks the terrain."
+    );
+    public static final Setting<Integer> CAVE_BIOME_REGION_SIZE = Settings.intSetting(
+            "CaveBiomeRegionSize", 64, 4, 4096,
+            t -> ((GenerationSettings) t).getCaveBiomeRegionSize(),
+            "Approximate horizontal size of cave biome regions, in blocks."
+    );
+    public static final Setting<Integer> CAVE_BIOME_REGION_HEIGHT = Settings.intSetting(
+            "CaveBiomeRegionHeight", 32, 4, 4096,
+            t -> ((GenerationSettings) t).getCaveBiomeRegionHeight(),
+            "Approximate vertical size of cave biome regions, in blocks."
+    );
 
 
 
@@ -250,6 +277,10 @@ public class GenerationSettings extends ConfigSection {
         generationSettingsBuilder.isleBiomes(ConfigFile.filterBiomes(reader.getSetting(ISLE_BIOMES), biomes));
         generationSettingsBuilder.borderBiomes(ConfigFile.filterBiomes(reader.getSetting(BORDER_BIOMES), biomes));
         generationSettingsBuilder.blackListedBiomes(reader.getSetting(BLACKLISTED_BIOMES));
+        generationSettingsBuilder.caveBiomes(ConfigFile.filterBiomes(reader.getSetting(CAVE_BIOMES), biomes));
+        generationSettingsBuilder.caveBiomeDepthBelowSurface(reader.getSetting(CAVE_BIOME_DEPTH_BELOW_SURFACE));
+        generationSettingsBuilder.caveBiomeRegionSize(reader.getSetting(CAVE_BIOME_REGION_SIZE));
+        generationSettingsBuilder.caveBiomeRegionHeight(reader.getSetting(CAVE_BIOME_REGION_HEIGHT));
         return generationSettingsBuilder.fixSettings().build();
     }
 

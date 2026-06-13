@@ -39,7 +39,10 @@ import net.minecraft.world.level.levelgen.synth.NormalNoise;
  *   cave threshold depth; caves are carved out of solid terrain only.
  * - No slideOverworld: OTG's pipeline already fades the top of the world, and vanilla's slide
  *   anchors are hardcoded to -64..320, which mis-anchors on configurable world heights.
- * - Aquifers and ore veins disabled; fluid placement comes from {@link OTGFluidPicker}.
+ * - Aquifers optional (VanillaAquifersEnabled): when on, vanilla's NoiseBasedAquifer runs with
+ *   {@link OTGFluidPicker} as the global baseline, so per-biome WaterLevelMax caps local fluid
+ *   levels; when off, fluid placement comes from the picker alone (legacy flood rule).
+ *   Ore veins disabled either way.
  * - Climate/biome slots are zero; OTG does its own biome placement.
  */
 public final class OTGNoiseRouterFactory {
@@ -60,6 +63,7 @@ public final class OTGNoiseRouterFactory {
             OTGChunkGenerator internalGenerator,
             double densityScale,
             double depthGradient,
+            boolean aquifersEnabled,
             NoiseGeneratorSettings registeredSettings,
             RegistryAccess registryAccess,
             long seed
@@ -73,11 +77,26 @@ public final class OTGNoiseRouterFactory {
         DensityFunction depthProxy = new OTGDepthProxyFunction(internalGenerator, depthGradient);
         DensityFunction finalDensity = finalDensity(otgTerrain, depthProxy, functions, noises);
 
+        // Aquifer noise slots mirror NoiseRouterData.overworld (1.20.1). NoiseBasedAquifer also
+        // reads erosion and depth, but only for the deep dark check; zero never matches it.
+        DensityFunction barrier = aquifersEnabled
+                ? DensityFunctions.noise(noises.getOrThrow(Noises.AQUIFER_BARRIER), 0.5)
+                : DensityFunctions.zero();
+        DensityFunction floodedness = aquifersEnabled
+                ? DensityFunctions.noise(noises.getOrThrow(Noises.AQUIFER_FLUID_LEVEL_FLOODEDNESS), 0.67)
+                : DensityFunctions.zero();
+        DensityFunction fluidSpread = aquifersEnabled
+                ? DensityFunctions.noise(noises.getOrThrow(Noises.AQUIFER_FLUID_LEVEL_SPREAD), 0.7142857142857143)
+                : DensityFunctions.zero();
+        DensityFunction lava = aquifersEnabled
+                ? DensityFunctions.noise(noises.getOrThrow(Noises.AQUIFER_LAVA))
+                : DensityFunctions.zero();
+
         NoiseRouter router = new NoiseRouter(
-                DensityFunctions.zero(), // barrierNoise
-                DensityFunctions.zero(), // fluidLevelFloodednessNoise
-                DensityFunctions.zero(), // fluidLevelSpreadNoise
-                DensityFunctions.zero(), // lavaNoise
+                barrier,                 // barrierNoise
+                floodedness,             // fluidLevelFloodednessNoise
+                fluidSpread,             // fluidLevelSpreadNoise
+                lava,                    // lavaNoise
                 DensityFunctions.zero(), // temperature
                 DensityFunctions.zero(), // vegetation
                 DensityFunctions.zero(), // continents
@@ -100,7 +119,7 @@ public final class OTGNoiseRouterFactory {
                 registeredSettings.spawnTarget(),
                 registeredSettings.seaLevel(),
                 registeredSettings.disableMobGeneration(),
-                false, // aquifersEnabled: NoiseChunk uses Aquifer.createDisabled(fluidPicker)
+                aquifersEnabled, // off: NoiseChunk uses Aquifer.createDisabled(fluidPicker)
                 false, // oreVeinsEnabled: vein router slots are zero
                 registeredSettings.useLegacyRandomSource()
         );
@@ -108,7 +127,7 @@ public final class OTGNoiseRouterFactory {
         return new OTGNoiseCaveContext(
                 runtimeSettings,
                 RandomState.create(runtimeSettings, noises, seed),
-                new OTGFluidPicker(internalGenerator)
+                new OTGFluidPicker(internalGenerator, registeredSettings.noiseSettings().minY())
         );
     }
 

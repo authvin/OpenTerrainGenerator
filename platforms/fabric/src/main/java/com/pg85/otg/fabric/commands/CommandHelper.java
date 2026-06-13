@@ -25,5 +25,12 @@ final class CommandHelper {
         return true;
     }
 
+    /** Prints a command's own description and usage. Used as the base action when a command is invoked without a valid subcommand. */
+    static int showUsage(CommandContext<CommandSourceStack> ctx, CommandInfo info) {
+        ctx.getSource().sendSuccess(() -> Component.literal("/otg " + info.name() + ": " + info.description()), false);
+        ctx.getSource().sendSuccess(() -> Component.literal("usage: " + info.usage()), false);
+        return 1;
+    }
+
     private CommandHelper() {}
 }

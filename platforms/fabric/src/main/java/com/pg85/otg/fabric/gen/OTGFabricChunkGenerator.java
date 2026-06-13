@@ -21,7 +21,9 @@ import com.pg85.otg.util.gen.ChunkBuffer;
 import com.pg85.otg.util.gen.JigsawStructureData;
 import com.pg85.otg.util.gen.OTGWorldInfo;
 import com.pg85.otg.util.helpers.MathHelper;
+import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.materials.LocalMaterialData;
+import com.pg85.otg.util.profiling.GenProfiler;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 import lombok.Getter;
@@ -101,6 +103,9 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
                 OTG.getEngine().getPresetLoader().getGlobalIdMapping(biomeSource.getPresetFolderName()),
                 otgWorldInfo
         );
+        // Lets the biome source answer y-aware (cave biome) lookups using the
+        // same blended column heights the depth proxy uses.
+        biomeSource.setTerrainHeightSource(this.internalGenerator);
         this.preset = OTG.getEngine().getPresetLoader().getPresetByFolderName(biomeSource.getPresetFolderName());
         this.biomeRegistry = biomeHolderGetter;
         this.horribleDelegateForCarvers = new NoiseBasedChunkGenerator(biomeSource, settings);
@@ -132,6 +137,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
         if(!OTG.getEngine().getPluginConfig().getDecorationEnabled()) {
             return;
         }
+        long tDecorate = GenProfiler.start();
         // Do OTG resource decoration, then MC decoration for any non-OTG resources registered to this biome, then snow.
         ChunkCoordinate chunkBeingDecorated = getChunkCoordinate(worldGenLevel, chunkAccess);
         FabricWorldGenRegion fabricWorldGenRegion = new FabricWorldGenRegion(this.preset.getFolderName(), OTG.getEngine().getPluginConfig(), this.preset.getPresetConfig(), otgWorldInfo, worldGenLevel, chunkAccess, this);
@@ -140,16 +146,22 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
         // World save folder name may not be identical to level name, fetch it.
         Path worldSaveFolder = worldGenLevel.getLevel().getServer().getWorldPath(LevelResource.PLAYER_DATA_DIR).getParent();
 
+        long tOtg = GenProfiler.start();
         this.chunkDecorator.decorate(chunkBeingDecorated, fabricWorldGenRegion, biome.getBiomeSettings(),
                                       getStructureCache(worldSaveFolder));
+        GenProfiler.stop("decorate.otgResources", tOtg);
+        long tVanilla = GenProfiler.start();
         super.applyBiomeDecoration(worldGenLevel, chunkAccess, structureManager);
+        GenProfiler.stop("decorate.vanilla", tVanilla);
 
         // Template biomes handle their own snow, OTG biomes use OTG snow.
         // TODO: Snow is handled per chunk, so this may cause some artifacts on biome borders.
         if(!biome.getBiomeSettings().getIdentitySettings().isTemplateForBiome()) {
+            long tSnow = GenProfiler.start();
             this.chunkDecorator.doSnowAndIce(fabricWorldGenRegion, chunkBeingDecorated);
+            GenProfiler.stop("decorate.snowAndIce", tSnow);
         }
-
+        GenProfiler.stop("chunk.applyBiomeDecoration", tDecorate);
     }
 
     public void saveStructureCache() {
@@ -224,8 +236,11 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
 
     @Override
     public void applyCarvers(WorldGenRegion worldGenRegion, long seed, RandomState randomState, BiomeManager biomeManager, StructureManager structureManager, ChunkAccess chunkAccess, GenerationStep.Carving carving) {
+        long tCarvers = GenProfiler.start();
 
+        long tOtgCarvers = GenProfiler.start();
         handleOTGCarvers(seed, chunkAccess, carving);
+        GenProfiler.stop("chunk.applyCarvers.otg", tOtgCarvers);
 
         //applyNonOTGCarvers(seed, biomeManager, chunkAccess, carving);
 
@@ -235,7 +250,9 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
         WorldgenRandom worldgenRandom = new WorldgenRandom(new LegacyRandomSource(RandomSupport.generateUniqueSeed()));
         int i2 = 8;
         ChunkPos chunkPos = chunkAccess.getPos();
+        long tNoiseChunk = GenProfiler.start();
         NoiseChunk noiseChunk = chunkAccess.getOrCreateNoiseChunk(chunkAccess2 -> this.createNoiseChunk(chunkAccess2, structureManager, Blender.of(worldGenRegion), randomState, worldGenRegion.registryAccess()));
+        GenProfiler.stop("chunk.applyCarvers.getOrCreateNoiseChunk", tNoiseChunk);
         CarvingMask carvingMask = ((ProtoChunk) chunkAccess).getOrCreateCarvingMask(carving);
         Aquifer aquifer = noiseChunk.aquifer();
         CarvingContext carvingContext = new CarvingContext(this.horribleDelegateForCarvers, worldGenRegion.registryAccess(), chunkAccess.getHeightAccessorForGeneration(), noiseChunk, randomState, this.settings.value().surfaceRule());
@@ -243,7 +260,9 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
             for (int k2 = -8; k2 <= 8; ++k2) {
                 ChunkPos chunkPos2 = new ChunkPos(chunkPos.x + j2, chunkPos.z + k2);
                 ChunkAccess chunkAccess22 = worldGenRegion.getChunk(chunkPos2.x, chunkPos2.z);
-                BiomeGenerationSettings biomeGenerationSettings = chunkAccess22.carverBiome(() -> this.getBiomeGenerationSettings(this.biomeSource.getNoiseBiome(QuartPos.fromBlock(chunkPos2.getMinBlockX()), 0, QuartPos.fromBlock(chunkPos2.getMinBlockZ()), randomState.sampler())));
+                // Surface lookup on purpose: a y-aware lookup at y=0 would
+                // resolve to a cave biome and change which carvers run.
+                BiomeGenerationSettings biomeGenerationSettings = chunkAccess22.carverBiome(() -> this.getBiomeGenerationSettings(this.biomeSource.getSurfaceNoiseBiome(QuartPos.fromBlock(chunkPos2.getMinBlockX()), QuartPos.fromBlock(chunkPos2.getMinBlockZ()))));
                 Iterable<Holder<ConfiguredWorldCarver<?>>> iterable = biomeGenerationSettings.getCarvers(carving);
                 int m = 0;
                 for (Holder<ConfiguredWorldCarver<?>> carver : iterable) {
@@ -254,13 +273,16 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
                         ConfiguredWorldCarver<?> configuredWorldCarver = carver.value();
                         worldgenRandom.setLargeFeatureSeed(seed + (long) m, chunkPos2.x, chunkPos2.z);
                         if (configuredWorldCarver.isStartChunk(worldgenRandom)) {
+                            long tCarve = GenProfiler.start();
                             configuredWorldCarver.carve(carvingContext, chunkAccess, biomeManager2::getBiome, worldgenRandom, aquifer, chunkPos2, carvingMask);
+                            GenProfiler.stop("chunk.applyCarvers.nonOTG", tCarve);
                         }
                         ++m;
                     }
                 }
             }
         }
+        GenProfiler.stop("chunk.applyCarvers", tCarvers);
     }
 
     private void handleOTGCarvers(long seed, ChunkAccess chunkAccess, GenerationStep.Carving carving) {
@@ -337,6 +359,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
                             this.internalGenerator,
                             this.preset.getPresetConfig().getCarverSettings().getVanillaCaveDensityScale(),
                             this.preset.getPresetConfig().getCarverSettings().getVanillaCaveDepthGradient(),
+                            this.preset.getPresetConfig().getCarverSettings().isVanillaAquifersEnabled(),
                             this.settings.value(),
                             registryAccess,
                             this.seed
@@ -368,6 +391,7 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
             Executor executor, Blender blender, RandomState randomState, StructureManager structureManager,
             ChunkAccess chunkAccess
     ) {
+        long tFill = GenProfiler.start();
         ChunkCoordinate chunkCoord = ChunkCoordinate.fromChunkCoords(chunkAccess.getPos().x, chunkAccess.getPos().z);
 
         LevelAccessor levelAccessor = ((StructureManagerAccessor) structureManager).getLevel();
@@ -384,21 +408,28 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
 
         ChunkAccess cachedChunk = this.shadowChunkGenerator.getChunkWithWait(chunkCoord);
         if (cachedChunk != null) {
+            GenProfiler.count("shadow.cacheHit");
             // Copy the cached chunk data to the new chunk.
+            long tCopy = GenProfiler.start();
             this.shadowChunkGenerator.fillWorldGenChunkFromShadowChunk(chunkAccess, cachedChunk);
+            GenProfiler.stop("shadow.copyCachedChunk", tCopy);
         } else if (isVanillaCavesEnabled()) {
+            GenProfiler.count("shadow.cacheMiss");
             // Vanilla noise cave path: fill the chunk via vanilla's NoiseChunk machinery, with
             // OTG terrain at the slopedCheese slot of the router. Structure terrain adaptation
             // comes from the real Beardifier (instead of OTG's NOISE_WEIGHT_TABLE approximation)
             // and per-biome water levels from the fluid picker.
             OTGNoiseRouterFactory.OTGNoiseCaveContext ctx = ensureNoiseCaveContext(levelAccessor.registryAccess());
+            long tNoiseChunk = GenProfiler.start();
             NoiseChunk noiseChunk = chunkAccess.getOrCreateNoiseChunk(
                     c -> this.createNoiseChunk(c, structureManager, blender, randomState, levelAccessor.registryAccess())
             );
-            OTGNoiseCaveFiller.fill(noiseChunk, chunkAccess, buffer, ctx.runtimeSettings());
+            GenProfiler.stop("chunk.fillFromNoise.getOrCreateNoiseChunk", tNoiseChunk);
+            OTGNoiseCaveFiller.fill(noiseChunk, chunkAccess, buffer, ctx.runtimeSettings(), this.internalGenerator);
             this.internalGenerator.doSurfaceAndGroundControlForChunk(otgWorldInfo, buffer, getRandomFromChunkCoord(chunkCoord));
             this.shadowChunkGenerator.setChunkGenerated(chunkCoord);
         } else {
+            GenProfiler.count("shadow.cacheMiss");
             // Setup jigsaw data
             ObjectList<JigsawStructureData> structures = new ObjectArrayList<>(10);
             ChunkPos pos = chunkAccess.getPos();
@@ -424,9 +455,19 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
             this.internalGenerator.populateNoise(otgWorldInfo, buffer, buffer.getChunkCoordinate(), structures, random);
             this.shadowChunkGenerator.setChunkGenerated(chunkCoord);
         }
+        GenProfiler.stop("chunk.fillFromNoise", tFill);
+
+        // Periodic profile dump so long generation sessions can be analyzed from the log.
+        long chunksCompleted = GenProfiler.chunkCompleted();
+        if (chunksCompleted > 0 && chunksCompleted % PROFILE_REPORT_CHUNK_INTERVAL == 0
+                && OTG.getEngine().getLogger().getLogCategoryEnabled(LogCategory.PERFORMANCE)) {
+            OTG.getEngine().getLogger().info(LogCategory.PERFORMANCE, "%s", GenProfiler.report());
+        }
 
         return CompletableFuture.completedFuture(chunkAccess);
     }
+
+    private static final int PROFILE_REPORT_CHUNK_INTERVAL = 512;
 
 
 
@@ -467,6 +508,16 @@ public class OTGFabricChunkGenerator extends ChunkGenerator {
     }
 
     private int sampleHeightmap(int x, int z, @Nullable BlockState[] blockStates, @Nullable Predicate<BlockState> predicate)
+    {
+        long tSample = GenProfiler.start();
+        try {
+            return doSampleHeightmap(x, z, blockStates, predicate);
+        } finally {
+            GenProfiler.stop("chunk.sampleHeightmap", tSample);
+        }
+    }
+
+    private int doSampleHeightmap(int x, int z, @Nullable BlockState[] blockStates, @Nullable Predicate<BlockState> predicate)
     {
         // Get all of the coordinate starts and positions
         int xStart = Math.floorDiv(x, 4);

@@ -14,6 +14,11 @@ import java.util.List;
 
 final class PresetCommand {
 
+    static final CommandInfo INFO = new CommandInfo(
+        "preset",
+        "Shows info about the current world's preset.",
+        "/otg preset [list]");
+
     static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("preset")
             .executes(PresetCommand::executeInfo)

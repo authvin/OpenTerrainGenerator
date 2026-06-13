@@ -25,6 +25,7 @@ import com.pg85.otg.util.OTGMaterialReader;
 import com.pg85.otg.util.bo3.Rotation;
 import com.pg85.otg.util.logging.LogCategory;
 import com.pg85.otg.util.logging.LogLevel;
+import com.pg85.otg.util.profiling.GenProfiler;
 
 import java.nio.file.Path;
 import java.text.MessageFormat;
@@ -158,7 +159,9 @@ public class OTGChunkDecorator implements IChunkDecorator
 			// slow down any multithreaded chunk decoration implementation.
 			synchronized(asynChunkDecorationLock)
 			{
+				long tBo4 = GenProfiler.start();
 				plotAndSpawnBO4s(structureCache, worldGenRegion, ChunkCoordinate.fromChunkCoords(chunkCoord.getChunkX(), chunkCoord.getChunkZ()), chunkCoord, otgRootFolder, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);
+				GenProfiler.stop("decorate.plotAndSpawnBO4s", tBo4);
 			}
 		}
 
@@ -172,13 +175,16 @@ public class OTGChunkDecorator implements IChunkDecorator
 		}
 		
 		long startTimeAll = System.currentTimeMillis();
+		long tQueue = GenProfiler.start();
 		// Resource sequence
 		for (ConfigFunction<BiomeSettings> res : biomeConfig.getResourceQueue())
 		{
 			long startTime = System.currentTimeMillis();
+			long tRes = GenProfiler.start();
 			if (res instanceof ICustomObjectResource)
 			{
 				((ICustomObjectResource)res).processForChunkDecoration(structureCache, worldGenRegion, this.rand, otgRootFolder, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);
+				GenProfiler.stop("decorate.resource." + res.getClass().getSimpleName(), tRes);
 				if(OTGLog.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
 				{
 					OTGLog.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Processing resource " + res.toString() + " in biome " + biomeConfig.getIdentitySettings().getBiomeName() + " took " + (System.currentTimeMillis() - startTime) + " Ms.");
@@ -187,6 +193,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 			else if (res instanceof ICustomStructureResource)
 			{
 				((ICustomStructureResource)res).processForChunkDecoration(structureCache, worldGenRegion, this.rand, otgRootFolder, customObjectManager, materialReader, customObjectResourcesManager, modLoadedChecker);
+				GenProfiler.stop("decorate.resource." + res.getClass().getSimpleName(), tRes);
 				if(OTGLog.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
 				{
 					OTGLog.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Processing resource " + res.toString() + " in biome " + biomeConfig.getIdentitySettings().getBiomeName() + " took " + (System.currentTimeMillis() - startTime) + " Ms.");
@@ -195,6 +202,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 			else if (res instanceof IBasicResource)
 			{
 				((IBasicResource)res).processForChunkDecoration(worldGenRegion, this.rand);
+				GenProfiler.stop("decorate.resource." + res.getClass().getSimpleName(), tRes);
 				if(OTGLog.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTime) > 50)
 				{
 					OTGLog.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Processing resource " + res.toString() + " in biome " + biomeConfig.getIdentitySettings().getBiomeName() + " took " + (System.currentTimeMillis() - startTime) + " Ms.");
@@ -215,6 +223,7 @@ public class OTGChunkDecorator implements IChunkDecorator
 				}
 			}
 		}
+		GenProfiler.stop("decorate.resourceQueue", tQueue);
 		if(OTGLog.getLogCategoryEnabled(LogCategory.PERFORMANCE) && (System.currentTimeMillis() - startTimeAll) > 50)
 		{
 			OTGLog.log(LogLevel.WARN, LogCategory.PERFORMANCE, "Warning: Processing resources in biome " + biomeConfig.getIdentitySettings().getBiomeName() + " took " + (System.currentTimeMillis() - startTimeAll) + " Ms.");

@@ -32,8 +32,14 @@ final class MapCommand {
     private static final int COLOR_BLACK = 0x000000;
     private static final int COLOR_GRAY  = 0x808080;
 
+    static final CommandInfo INFO = new CommandInfo(
+        "map",
+        "Renders a biome or terrain map image of the current world.",
+        "/otg map <biomes|terrain> [width] [height]");
+
     static LiteralArgumentBuilder<CommandSourceStack> register() {
         return Commands.literal("map")
+            .executes(ctx -> CommandHelper.showUsage(ctx, INFO))
             .then(Commands.literal("biomes")
                 .executes(ctx -> executeMap(ctx, true, DEFAULT_SIZE, DEFAULT_SIZE))
                 .then(Commands.argument("width", IntegerArgumentType.integer(64, MAX_SIZE))

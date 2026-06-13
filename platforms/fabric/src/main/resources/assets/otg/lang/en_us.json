@@ -1,5 +1,5 @@
 {
-  "generator.otg.default":        "OTG Default",
+  "generator.otg.default_preset":        "OTG Default",
   "generator.otg.alienjungle":    "Alien Jungle",
   "generator.otg.bb":             "Biome Bundle",
   "generator.otg.biome_bundle":   "Biome Bundle",
