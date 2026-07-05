@@ -191,6 +191,21 @@ public class BiomeConfigWriter {
                 "like the blocks found in the Mesa biomes.",
                 "You can also use Iceberg to get iceberg generation like in vanilla frozen oceans. Iceberg accepts a normal SAGC string: \"Iceberg <SAGC>\", so you can use normal SAGC with it.");
 
+        writer.putSetting(SurfaceSettings.CAVE_SURFACE_AND_GROUND_CONTROL, biomeConfig.getSurfaceSettings().getCaveSurfaceRules(),
+                "Surface rules for cave interiors, applied to cave floors and ceilings found",
+                "underground (below the surface band). Works in any biome:",
+                "- In a cave biome (listed in the preset's CaveBiomes): applied wherever that cave",
+                "  biome is placed, deeper than CaveBiomeDepthBelowSurface. The cave biome's rules",
+                "  always win there, even when empty.",
+                "- In a normal biome: applied to caves under that biome wherever no cave biome",
+                "  applies (above CaveBiomeDepthBelowSurface, or everywhere when the preset has",
+                "  no CaveBiomes).",
+                "Blocks go through this biome's ReplacedBlocks.",
+                "Syntax: FloorBlockName,FloorDepth[,CeilingBlockName,CeilingDepth]",
+                "Example: " + SurfaceSettings.CAVE_SURFACE_AND_GROUND_CONTROL + ": minecraft:moss_block,2,minecraft:moss_block,1",
+                "  Cave floors get 2 layers of moss, cave ceilings 1 layer.",
+                "Depth is in blocks, max 16. Leave empty for plain stone caves.");
+
         writer.putSetting(SurfaceSettings.REPLACED_BLOCKS, biomeConfig.getSurfaceSettings().getReplacedBlocks(),
                 "Replace Variable: (blockFrom,blockTo[:blockDataTo][,minHeight,maxHeight])", "Example :",
                 "  ReplacedBlocks: (GRASS,DIRT,100,127),(GRAVEL,GLASS)",

@@ -99,6 +99,9 @@ public class IcebergSurfaceGenerator extends MultipleLayersSurfaceGenerator
 		boolean useSandStoneForGround = false;
 		boolean biomeGroundBlockIsSand = surfaceSettings.getDefaultGroundBlock().isMaterial(LocalMaterials.SAND);
 		boolean layerGroundBlockIsSand = layer != null && layer.groundBlock.isMaterial(LocalMaterials.SAND);
+		// See SimpleSurfaceGenerator.spawnColumn: below this Y air gaps are caves.
+		final int surfaceGateY = generatingChunk.getSurfaceGateY(internalX, internalZ);
+		boolean passedFirstAirGap = false;
 		LocalMaterialData blockOnCurrentPos;
 		LocalMaterialData blockOnPreviousPos = null;
 
@@ -144,6 +147,15 @@ public class IcebergSurfaceGenerator extends MultipleLayersSurfaceGenerator
 			{
 				// Reset when air is found
 				groundLayerDepth = -1;
+				if (blockOnPreviousPos != null && !blockOnPreviousPos.isEmptyOrAir())
+				{
+					passedFirstAirGap = true;
+					// Solid block above this air is a cave ceiling when below the surface band.
+					if (y + 1 < surfaceGateY && !blockOnPreviousPos.isLiquid())
+					{
+						onCaveCeiling(generatingChunk, chunkBuffer, biome, xInWorld, y + 1, zInWorld);
+					}
+				}
 			}
 			// The water block is much less likely to be replaced so lookups should be quicker,
 			// do a != waterblockreplaced rather than an == stoneblockreplaced. Since we know
@@ -153,8 +165,21 @@ public class IcebergSurfaceGenerator extends MultipleLayersSurfaceGenerator
 			// same biome water block as surface/ground/stone block.
 			// TODO: If other mods have problems bc of replaced blocks in the chunk during ReplaceBiomeBlocks,
 			// do replaceblock for stone/water here instead of when initially filling the chunk.
-			else if(!blockOnCurrentPos.equals(surfaceSettings.getWaterBlockReplaced(y)))
+			// Never touch liquids: with noise caves and aquifers the chunk can contain
+			// water and lava mid-column (see SimpleSurfaceGenerator.spawnColumn).
+			else if(!blockOnCurrentPos.isLiquid() && !blockOnCurrentPos.equals(surfaceSettings.getWaterBlockReplaced(y)))
 			{
+				// Below the surface band, an air-to-solid transition is a cave floor,
+				// not a new surface (see SimpleSurfaceGenerator.spawnColumn).
+				if (passedFirstAirGap && y < surfaceGateY && groundLayerDepth == -1)
+				{
+					if (blockOnPreviousPos != null && blockOnPreviousPos.isEmptyOrAir())
+					{
+						onCaveFloor(generatingChunk, chunkBuffer, biome, xInWorld, y, zInWorld);
+					}
+					blockOnPreviousPos = blockOnCurrentPos;
+					continue;
+				}
 				// Place surface/ground down to a certain depth per column,
 				// determined via noise. groundLayerDepth == 0 means we're
 				// done until we hit an air block, in which case reset.
@@ -314,7 +339,7 @@ public class IcebergSurfaceGenerator extends MultipleLayersSurfaceGenerator
 	public String toString()
 	{
 		StringBuilder stringBuilder = new StringBuilder();
-		if(this.layers.size() > 0)
+		if(!this.layers.isEmpty())
 		{
 			for (MultipleLayersSurfaceGeneratorLayer groundLayer : this.layers)
 			{
@@ -330,7 +355,7 @@ public class IcebergSurfaceGenerator extends MultipleLayersSurfaceGenerator
 			// Delete last ", "
 			stringBuilder.deleteCharAt(stringBuilder.length() - 2);
 		}
-		return "Iceberg " + stringBuilder.toString();
+		return "Iceberg " + stringBuilder;
 	}
 
 	public static IcebergSurfaceGenerator getFor(String settingValue, IMaterialReader materialReader) throws InvalidConfigException

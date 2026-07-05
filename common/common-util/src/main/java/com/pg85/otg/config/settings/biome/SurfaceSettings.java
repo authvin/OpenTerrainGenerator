@@ -12,6 +12,7 @@ import com.pg85.otg.interfaces.IBiome;
 import com.pg85.otg.interfaces.ISurfaceGenerator;
 import com.pg85.otg.interfaces.ISurfaceGeneratorNoiseProvider;
 import com.pg85.otg.config.biome.StoneLayerFunction;
+import com.pg85.otg.gen.surface.CaveSurfaceRules;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.biome.StoneLayerStack;
 import com.pg85.otg.util.gen.ChunkBuffer;
@@ -29,6 +30,7 @@ import java.util.List;
 @AllArgsConstructor
 public class SurfaceSettings extends ConfigSection {
     private final ISurfaceGenerator surfaceGenerator;
+    private final CaveSurfaceRules caveSurfaceRules;
     private final ReplaceBlockMatrix replacedBlocks;
     private final BlockSettings blockSettings;
     private final int configWaterLevelMax;
@@ -59,12 +61,12 @@ public class SurfaceSettings extends ConfigSection {
     }
 
     public static final Setting<Integer> WATER_LEVEL_MAX = Settings.intSetting(
-            "WaterLevelMax", 63, Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1,
+            "WaterLevelMax", 63, Constants.WORLD_START_MIN_Y, Constants.WORLD_END_MAX_Y,
             t -> ((SurfaceSettings) t).getConfigWaterLevelMax(),
             "Set water level. Every empty block under this level down to min will be fill water or another block from WaterBlock."
     );
     public static final Setting<Integer> WATER_LEVEL_MIN = Settings.intSetting(
-            "WaterLevelMin", 0, Constants.WORLD_DEPTH, Constants.WORLD_HEIGHT - 1,
+            "WaterLevelMin", 0, Constants.WORLD_START_MIN_Y, Constants.WORLD_END_MAX_Y,
             t -> ((SurfaceSettings) t).getConfigWaterLevelMin(),
             "Set water level. Every empty block over this level up to max will be fill water or another block from WaterBlock."
     );
@@ -166,12 +168,31 @@ public class SurfaceSettings extends ConfigSection {
             "You can also use Iceberg to get iceberg generation like in vanilla frozen oceans. Iceberg accepts a normal SAGC string: \"Iceberg <SAGC>\", so you can use normal SAGC with it."
     );
 
+    public static final Setting<CaveSurfaceRules> CAVE_SURFACE_AND_GROUND_CONTROL = Settings.caveSurfaceRulesSetting(
+            "CaveSurfaceAndGroundControl",
+            section -> ((SurfaceSettings) section).getCaveSurfaceRules(),
+            "Surface rules for cave interiors, applied to cave floors and ceilings found",
+            "underground (below the surface band). Works in any biome:",
+            "- In a cave biome (listed in the preset's CaveBiomes): applied wherever that cave",
+            "  biome is placed, deeper than CaveBiomeDepthBelowSurface. The cave biome's rules",
+            "  always win there, even when empty.",
+            "- In a normal biome: applied to caves under that biome wherever no cave biome",
+            "  applies (above CaveBiomeDepthBelowSurface, or everywhere when the preset has",
+            "  no CaveBiomes).",
+            "Blocks go through this biome's ReplacedBlocks.",
+            "Syntax: FloorBlockName,FloorDepth[,CeilingBlockName,CeilingDepth]",
+            "Example: CaveSurfaceAndGroundControl: minecraft:moss_block,2,minecraft:moss_block,1",
+            "  Cave floors get 2 layers of moss, cave ceilings 1 layer.",
+            "Depth is in blocks, max 16. Leave empty for plain stone caves."
+    );
+
     public static SurfaceSettings getSurfaceSettings(SettingsMap settingsReader,
                                                      BlockSettings presetBlocks, TerrainSettings presetTerrain,
                                                      List<StoneLayerFunction> biomeStoneLayerFunctions) {
         SurfaceSettingsBuilder builder = SurfaceSettings.builder();
 
         builder.surfaceGenerator(settingsReader.getSetting(SURFACE_GENERATOR));
+        builder.caveSurfaceRules(settingsReader.getSetting(CAVE_SURFACE_AND_GROUND_CONTROL));
         builder.replacedBlocks(settingsReader.getSetting(REPLACED_BLOCKS));
         builder.blockSettings(presetBlocks);
 
@@ -244,6 +265,16 @@ public class SurfaceSettings extends ConfigSection {
     }
     public LocalMaterialData getGroundBlockAtHeight(ISurfaceGeneratorNoiseProvider noiseProvider, int x, int y, int z) {
         return surfaceGenerator.getGroundBlockAtHeight(noiseProvider,this,  x, y, z);
+    }
+
+    public LocalMaterialData getCaveFloorBlockReplaced(int y) {
+        LocalMaterialData block = caveSurfaceRules.floorBlock();
+        return replacedBlocks.replacesBlock(block) ? replacedBlocks.replaceBlock(y, block) : block;
+    }
+
+    public LocalMaterialData getCaveCeilingBlockReplaced(int y) {
+        LocalMaterialData block = caveSurfaceRules.ceilingBlock();
+        return replacedBlocks.replacesBlock(block) ? replacedBlocks.replaceBlock(y, block) : block;
     }
 
     public LocalMaterialData getSurfaceBlockReplaced(int y) {

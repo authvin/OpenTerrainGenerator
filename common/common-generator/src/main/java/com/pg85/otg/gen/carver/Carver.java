@@ -237,6 +237,9 @@ public abstract class Carver {
             int relMinZ,
             int relMaxZ
     ) {
+        // Full box scan (like MC 1.12's water check): interior columns must be checked at
+        // every Y too, or carve spheres breach shallow water bodies (rivers, lakes, swamps)
+        // from the side or below and leave hanging water.
         for (int i = relMinX; i < relMaxX; ++i) {
             for (int j = relMinZ; j < relMaxZ; ++j) {
                 for (int k = minY - 1; k <= maxY + 1; ++k) {
@@ -247,26 +250,11 @@ public abstract class Carver {
                     ).isMaterial(LocalMaterials.WATER)) {
                         return true;
                     }
-
-                    if (k != maxY + 1 && !this.isOnBoundary(
-                            relMinX,
-                            relMaxX,
-                            relMinZ,
-                            relMaxZ,
-                            i,
-                            j
-                    )) {
-                        k = maxY;
-                    }
                 }
             }
         }
 
         return false;
-    }
-
-    private boolean isOnBoundary(int minX, int maxX, int minZ, int maxZ, int x, int z) {
-        return x == minX || x == maxX - 1 || z == minZ || z == maxZ - 1;
     }
 
     protected boolean canCarveBranch(

@@ -328,7 +328,11 @@ public class MesaSurfaceGenerator implements ISurfaceGenerator
 		
 		int minHeight = generatingChunk.getWorldHeight().minY();
 		LocalMaterialData worldMaterial = null;
-		
+		// See SimpleSurfaceGenerator.spawnColumn: below this Y air gaps are caves,
+		// no surface re-application.
+		final int surfaceGateY = generatingChunk.getSurfaceGateY(x, z);
+		boolean passedFirstAirGap = false;
+
 		for (int y = maxHeight; y >= minHeight; y--)
 		{
 			if (
@@ -355,6 +359,10 @@ public class MesaSurfaceGenerator implements ISurfaceGenerator
 				if(worldMaterial.isEmptyOrAir())
 				{
 					groundLayerDepth = -1;
+					if (y < highestBlockInColumn)
+					{
+						passedFirstAirGap = true;
+					}
 				}
 
 				// The water block is much less likely to be replaced so lookups should be quicker,
@@ -365,8 +373,16 @@ public class MesaSurfaceGenerator implements ISurfaceGenerator
 				// same biome water block as surface/ground/stone block.
 				// TODO: If other mods have problems bc of replacedblocks in the chunk during ReplaceBiomeBlocks, 
 				// do replaceblock for stone/water here instead of when initially filling the chunk.				
-				else if(!worldMaterial.equals(surfaceSettings.getWaterBlockReplaced(y)))
+				// Never touch liquids: with noise caves and aquifers the chunk can contain
+				// water and lava mid-column (see SimpleSurfaceGenerator.spawnColumn).
+				else if(!worldMaterial.isLiquid() && !worldMaterial.equals(surfaceSettings.getWaterBlockReplaced(y)))
 				{
+					// Below the surface band, an air-to-solid transition is a cave floor,
+					// not a new surface (see SimpleSurfaceGenerator.spawnColumn).
+					if (passedFirstAirGap && y < surfaceGateY && groundLayerDepth == -1)
+					{
+						continue;
+					}
 					if (groundLayerDepth == -1)
 					{
 						belowSand = false;

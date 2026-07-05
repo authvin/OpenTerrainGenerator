@@ -60,9 +60,14 @@ public class SimpleSurfaceGenerator implements ISurfaceGenerator
 		boolean biomeGroundBlockIsSand = surfaceSettings.getDefaultGroundBlock().isMaterial(LocalMaterials.SAND);
 		boolean layerGroundBlockIsSand = layer != null && layer.groundBlock.isMaterial(LocalMaterials.SAND);
 		final int currentWaterLevel = generatingChunk.getWaterLevel(internalX, internalZ);
+		// Below this Y, air gaps are caves: no surface/ground re-application, cave
+		// floor/ceiling hooks fire instead. The first solid run from the column top is
+		// always surface, however deep (CHC canyons).
+		final int surfaceGateY = generatingChunk.getSurfaceGateY(internalX, internalZ);
+		boolean passedFirstAirGap = false;
 		LocalMaterialData blockOnCurrentPos;
 		LocalMaterialData blockOnPreviousPos = null;
-		
+
 		int highestBlockInColumn = chunkBuffer.getHighestBlockForColumn(internalX, internalZ);
 		for (int y = highestBlockInColumn; y >= generatingChunk.getWorldHeight().minY(); y--)
 		{
@@ -78,19 +83,37 @@ public class SimpleSurfaceGenerator implements ISurfaceGenerator
 				{
 					// Reset when air is found
 					groundLayerDepth = -1;
+					if (blockOnPreviousPos != null && !blockOnPreviousPos.isEmptyOrAir())
+					{
+						passedFirstAirGap = true;
+						// Solid block above this air is a cave ceiling when below the surface band.
+						if (y + 1 < surfaceGateY && !blockOnPreviousPos.isLiquid())
+						{
+							onCaveCeiling(generatingChunk, chunkBuffer, biome, xInWorld, y + 1, zInWorld);
+						}
+					}
 				}
-				// The water block is much less likely to be replaced so lookups should be quicker,
-				// do a != waterblockreplaced rather than an == stoneblockreplaced. Since we know
-				// there can be only air, (replaced) water and stone in the chunk atm (unless some 
-				// other mod did funky magic, which might cause problems).
-				// TODO: This'll cause issues with surfaceandgroundcontrol if users configure the 
-				// same biome water block as surface/ground/stone block.				
-				// TODO: If other mods have problems bc of replaced blocks in the chunk during ReplaceBiomeBlocks, 
-				// do replaceblock for stone/water here instead of when initially filling the chunk.
-				else if(!blockOnCurrentPos.equals(surfaceSettings.getWaterBlockReplaced(y)))
+				// Never touch liquids: with noise caves and aquifers the chunk can contain
+				// water and lava mid-column; overwriting them with surface/ground blocks
+				// creates dirt sheets on aquifer lava. The waterblockreplaced check stays
+				// for presets that replace water with a non-liquid block.
+				else if(!blockOnCurrentPos.isLiquid() && !blockOnCurrentPos.equals(surfaceSettings.getWaterBlockReplaced(y)))
 				{
+					// Below the surface band, an air-to-solid transition is a cave floor,
+					// not a new surface: leave the stone alone and fire the cave hook.
+					// groundLayerDepth != -1 means a surface run that started above the
+					// band is still finishing; let it complete.
+					if (passedFirstAirGap && y < surfaceGateY && groundLayerDepth == -1)
+					{
+						if (blockOnPreviousPos != null && blockOnPreviousPos.isEmptyOrAir())
+						{
+							onCaveFloor(generatingChunk, chunkBuffer, biome, xInWorld, y, zInWorld);
+						}
+						blockOnPreviousPos = blockOnCurrentPos;
+						continue;
+					}
 					// Place surface/ground down to a certain depth per column,
-					// determined via noise. groundLayerDepth == 0 means we're 
+					// determined via noise. groundLayerDepth == 0 means we're
 					// done until we hit an air block, in which case reset.
 					if (groundLayerDepth == -1)
 					{
@@ -242,6 +265,80 @@ public class SimpleSurfaceGenerator implements ISurfaceGenerator
 				blockOnPreviousPos = blockOnCurrentPos;
 			}
 		}
+	}
+
+	/**
+	 * Called for the top solid block of a cave floor (solid block with air directly above)
+	 * found below the surface band during the column scan. Applies the
+	 * CaveSurfaceAndGroundControl floor rule of the cave biome at the position, or of the
+	 * surface biome where no cave biome applies.
+	 */
+	protected void onCaveFloor(GeneratingChunk generatingChunk, ChunkBuffer chunkBuffer, IBiome biome, int xInWorld, int y, int zInWorld)
+	{
+		SurfaceSettings settings = caveRuleSettings(generatingChunk, biome, xInWorld, y, zInWorld);
+		CaveSurfaceRules rules = settings.getCaveSurfaceRules();
+		if (!rules.hasFloor())
+		{
+			return;
+		}
+		int internalX = xInWorld & 0xf;
+		int internalZ = zInWorld & 0xf;
+		int minY = generatingChunk.getWorldHeight().minY();
+		for (int depth = 0; depth < rules.floorDepth(); depth++)
+		{
+			int targetY = y - depth;
+			if (targetY < minY || notValidReplaceTarget(chunkBuffer.getBlock(internalX, targetY, internalZ)))
+			{
+				break;
+			}
+			chunkBuffer.setBlock(internalX, targetY, internalZ, settings.getCaveFloorBlockReplaced(targetY));
+		}
+	}
+
+	/**
+	 * Called for the bottom solid block of a cave ceiling (solid block with air directly
+	 * below) found below the surface band during the column scan. Applies the
+	 * CaveSurfaceAndGroundControl ceiling rule of the cave biome at the position, or of the
+	 * surface biome where no cave biome applies.
+	 */
+	protected void onCaveCeiling(GeneratingChunk generatingChunk, ChunkBuffer chunkBuffer, IBiome biome, int xInWorld, int y, int zInWorld)
+	{
+		SurfaceSettings settings = caveRuleSettings(generatingChunk, biome, xInWorld, y, zInWorld);
+		CaveSurfaceRules rules = settings.getCaveSurfaceRules();
+		if (!rules.hasCeiling())
+		{
+			return;
+		}
+		int internalX = xInWorld & 0xf;
+		int internalZ = zInWorld & 0xf;
+		int maxY = generatingChunk.getWorldHeight().maxY();
+		for (int depth = 0; depth < rules.ceilingDepth(); depth++)
+		{
+			int targetY = y + depth;
+			if (targetY > maxY || notValidReplaceTarget(chunkBuffer.getBlock(internalX, targetY, internalZ)))
+			{
+				break;
+			}
+			chunkBuffer.setBlock(internalX, targetY, internalZ, settings.getCaveCeilingBlockReplaced(targetY));
+		}
+	}
+
+	// The settings owning the cave rules at a position: the cave biome's when one applies
+	// (its rules AND its ReplacedBlocks, even when empty, so cave biome regions never
+	// inherit the surface biome's cave styling), otherwise the surface biome's own.
+	private static SurfaceSettings caveRuleSettings(GeneratingChunk generatingChunk, IBiome biome, int xInWorld, int y, int zInWorld)
+	{
+		SurfaceSettings caveBiomeSettings = generatingChunk.getCaveBiomeSurfaceSettings(xInWorld, y, zInWorld);
+		return caveBiomeSettings != null ? caveBiomeSettings : biome.getBiomeSettings().getSurfaceSettings();
+	}
+
+	// Cave rules replace solid ground only; stop at the next opening (air/liquid) and
+	// never eat through bedrock.
+	private static boolean notValidReplaceTarget(LocalMaterialData material)
+	{
+		return material.isEmptyOrAir()
+				|| material.isLiquid()
+				|| material.isMaterial(LocalMaterials.BEDROCK);
 	}
 
 	@Override

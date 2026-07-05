@@ -113,8 +113,10 @@ final class SettingsCommand {
     /** Writes a single biome config; returns the output path on success, null on failure (failure already reported). */
     private static Path writeBiome(CommandSourceStack src, Preset preset, BiomeConfig bc) {
         String biomeName = bc.getConfigName();
+        Path presetPath = preset.getPresetFolder();
+        Path configPath = presetPath.relativize(bc.getConfigPath());
         try {
-            Path outFile = prepareOutputFile(preset.getFolderName(), biomeName.replace(' ', '_') + ".bc");
+            Path outFile = prepareOutputFile(preset.getFolderName(), configPath);
             SimpleSettingsMap map = new SimpleSettingsMap(biomeName, outFile);
             bc.writeConfigSettings(map);
             FileSettingsWriter.writeToFile(map, outFile.toFile(), ConfigMode.WriteAll);
@@ -165,7 +167,7 @@ final class SettingsCommand {
     /** Writes a single preset config; returns the output path on success, null on failure (failure already reported). */
     private static Path writePreset(CommandSourceStack src, Preset preset) {
         try {
-            Path outFile = prepareOutputFile(preset.getFolderName(), "PresetConfig.ini");
+            Path outFile = prepareOutputFile(preset.getFolderName(), Path.of("PresetConfig.ini"));
             SimpleSettingsMap map = new SimpleSettingsMap(preset.getFolderName(), outFile);
             preset.getPresetConfig().writeConfigSettings(map);
             FileSettingsWriter.writeToFile(map, outFile.toFile(), ConfigMode.WriteAll);
@@ -248,7 +250,7 @@ final class SettingsCommand {
         }
 
         try {
-            Path outFile = prepareOutputFile(preset.getFolderName(), config.getFile().getName());
+            Path outFile = prepareOutputFile(preset.getFolderName(), config.getFile().toPath());
             FileSettingsWriterBO4.writeToFile(
                 config,
                 outFile.toFile(),
@@ -316,10 +318,14 @@ final class SettingsCommand {
         return CommandHelper.getGenerator(ctx.getSource().getLevel()).getPreset();
     }
 
-    private static Path prepareOutputFile(String presetFolder, String filename) throws IOException {
-        Path dir = OTG.getEngine().getOTGRootFolder().resolve("output").resolve(presetFolder);
-        Files.createDirectories(dir);
-        return dir.resolve(filename);
+    private static Path prepareOutputFile(String presetFolder, Path configPathInFolder) throws IOException {
+        Path dir = OTG.getEngine()
+                .getOTGRootFolder()
+                .resolve("output")
+                .resolve(presetFolder)
+                .resolve(configPathInFolder);
+        Files.createDirectories(dir.getParent());
+        return dir;
     }
 
     // -------------------------------------------------------------------------

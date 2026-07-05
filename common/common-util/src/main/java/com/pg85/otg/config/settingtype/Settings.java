@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.function.Function;
 
 import com.pg85.otg.config.settings.ConfigSection;
+import com.pg85.otg.gen.surface.CaveSurfaceRules;
 import com.pg85.otg.interfaces.ISurfaceGenerator;
 import com.pg85.otg.util.Color;
 import com.pg85.otg.util.biome.ColorSet;
@@ -14,7 +15,7 @@ import com.pg85.otg.util.materials.MaterialSet;
 
 /**
  * Acts as a factory for creating settings. Classes holding settings must
- * extends this class and call the appropriate methods to create settings.
+ * extend this class and call the appropriate methods to create settings.
  *
  * <p>We might eventually want the class to keep track of all settings
  * created. For now, it just creates instances of the appropriate settings
@@ -221,5 +222,15 @@ public abstract class Settings
 	public static Setting<ISurfaceGenerator> surfaceGeneratorSetting(String name, Function<ConfigSection, ISurfaceGenerator> getter, String ...comments)
 	{
 		return new SurfaceGeneratorSetting(name, getter, comments);
+	}
+
+	/**
+	 * Creates a setting that represents {@link CaveSurfaceRules}.
+	 * @param name Name of the setting.
+	 * @return The newly created setting.
+	 */
+	public static Setting<CaveSurfaceRules> caveSurfaceRulesSetting(String name, Function<ConfigSection, CaveSurfaceRules> getter, String ...comments)
+	{
+		return new CaveSurfaceRulesSetting(name, getter, comments);
 	}
 }

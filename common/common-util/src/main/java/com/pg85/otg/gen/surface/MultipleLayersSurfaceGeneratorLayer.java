@@ -4,7 +4,7 @@ import com.pg85.otg.config.settings.biome.SurfaceSettings;
 import com.pg85.otg.util.biome.ReplaceBlockMatrix;
 import com.pg85.otg.util.materials.LocalMaterialData;
 
-class MultipleLayersSurfaceGeneratorLayer implements Comparable<MultipleLayersSurfaceGeneratorLayer>
+public class MultipleLayersSurfaceGeneratorLayer implements Comparable<MultipleLayersSurfaceGeneratorLayer>
 {
 	protected final LocalMaterialData surfaceBlock;
 	protected final LocalMaterialData underWaterSurfaceBlock;

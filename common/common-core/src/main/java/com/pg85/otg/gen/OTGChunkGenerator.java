@@ -9,7 +9,10 @@ import com.pg85.otg.gen.biome.CachedBiomeProvider;
 import com.pg85.otg.gen.carver.Carver;
 import com.pg85.otg.gen.carver.CaveCarver;
 import com.pg85.otg.gen.carver.RavineCarver;
+import com.pg85.otg.config.settings.biome.SurfaceSettings;
+import com.pg85.otg.config.settings.preset.GenerationSettings;
 import com.pg85.otg.gen.noise.BlendedBiomeParams;
+import com.pg85.otg.gen.noise.CaveBiomeSelector;
 import com.pg85.otg.gen.noise.OctavePerlinNoiseSampler;
 import com.pg85.otg.gen.noise.TerrainNoisePipeline;
 import com.pg85.otg.gen.noise.legacy.NoiseGeneratorPerlinMesaBlocks;
@@ -27,6 +30,7 @@ import lombok.Getter;
 
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.List;
 import java.util.Random;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
@@ -710,8 +714,31 @@ This should stop the inner loop, as well as avoid millions of allocations
                 d1 * 2.0D,
                 1.0D
         ));
-        GeneratingChunk generatingChunk =
-                new GeneratingChunk(random, waterLevel, this.biomeBlocksNoise.get(), OTGWorldInfo);
+        // Blended center height per 4x4 noise column, replicated per block; the surface pass
+        // uses it to tell near-surface air gaps (overhangs) from underground caves.
+        double[] centerHeight = new double[Constants.CHUNK_SIZE * Constants.CHUNK_SIZE];
+        int chunkNoiseX = Math.floorDiv(chunkCoord.getBlockX(), 4);
+        int chunkNoiseZ = Math.floorDiv(chunkCoord.getBlockZ(), 4);
+        for (int noiseX = 0; noiseX < 4; noiseX++) {
+            for (int noiseZ = 0; noiseZ < 4; noiseZ++) {
+                double columnCenterHeight =
+                        getColumnCenterHeightInBlocks(chunkNoiseX + noiseX, chunkNoiseZ + noiseZ);
+                for (int pieceX = 0; pieceX < 4; pieceX++) {
+                    for (int pieceZ = 0; pieceZ < 4; pieceZ++) {
+                        centerHeight[(noiseZ * 4 + pieceZ) + (noiseX * 4 + pieceX) * Constants.CHUNK_SIZE] =
+                                columnCenterHeight;
+                    }
+                }
+            }
+        }
+        GeneratingChunk generatingChunk = new GeneratingChunk(
+                random,
+                waterLevel,
+                this.biomeBlocksNoise.get(),
+                centerHeight,
+                createCaveBiomeSettingsProvider(centerHeight, chunkCoord),
+                OTGWorldInfo
+        );
         IBiome biome;
         for (int x = 0; x < Constants.CHUNK_SIZE; x++) {
             for (int z = 0; z < Constants.CHUNK_SIZE; z++) {
@@ -729,6 +756,60 @@ This should stop the inner loop, as well as avoid millions of allocations
             }
         }
         GenProfiler.stop("terrain.surfaceAndGround", tSagc);
+    }
+
+    // Resolved lazily (needs the seed, set after construction). One slot per CaveBiomes
+    // entry, in order, so selector indexes match the platform biome provider's cave biome
+    // placement; unresolvable names keep their slot as null (no rules).
+    private volatile SurfaceSettings[] caveBiomeSurfaceSettings;
+
+    private SurfaceSettings[] getCaveBiomeSurfaceSettings() {
+        SurfaceSettings[] resolved = this.caveBiomeSurfaceSettings;
+        if (resolved == null) {
+            List<String> caveBiomeNames =
+                    this.preset.getPresetConfig().getGenerationSettings().getCaveBiomes();
+            resolved = new SurfaceSettings[caveBiomeNames.size()];
+            for (int i = 0; i < caveBiomeNames.size(); i++) {
+                BiomeSettings biomeConfig = this.preset.getBiomeConfig(caveBiomeNames.get(i));
+                resolved[i] = biomeConfig == null ? null : biomeConfig.getSurfaceSettings();
+            }
+            this.caveBiomeSurfaceSettings = resolved;
+        }
+        return resolved;
+    }
+
+    /**
+     * Provider for the cave biome's SurfaceSettings at a position, for the surface pass'
+     * cave floor/ceiling hooks (CaveSurfaceAndGroundControl + its ReplacedBlocks). Mirrors
+     * the platform biome provider's cave biome placement: same selector, same depth gate
+     * below the blended center height. Null when the preset has no cave biomes.
+     */
+    private ICaveBiomeSettingsProvider createCaveBiomeSettingsProvider(double[] centerHeight, ChunkCoordinate chunkCoord) {
+        SurfaceSettings[] caveSettings = getCaveBiomeSurfaceSettings();
+        if (caveSettings.length == 0) {
+            return null;
+        }
+        GenerationSettings generationSettings =
+                this.preset.getPresetConfig().getGenerationSettings();
+        CaveBiomeSelector selector = CaveBiomeSelector.fromBlockSizes(
+                this.seed,
+                generationSettings.getCaveBiomeRegionSize(),
+                generationSettings.getCaveBiomeRegionHeight(),
+                caveSettings.length
+        );
+        int depthBelowSurface = generationSettings.getCaveBiomeDepthBelowSurface();
+        int minBlockX = chunkCoord.getBlockX();
+        int minBlockZ = chunkCoord.getBlockZ();
+        return (blockX, blockY, blockZ) -> {
+            // Same gate as OTGFabricBiomeProvider.getCaveBiome, quantized to quarts so the
+            // rules match the biome actually placed at the position.
+            double columnCenterHeight =
+                    centerHeight[(blockZ - minBlockZ) + (blockX - minBlockX) * Constants.CHUNK_SIZE];
+            if (((blockY >> 2) << 2) >= columnCenterHeight - depthBelowSurface) {
+                return null;
+            }
+            return caveSettings[selector.sample(blockX >> 2, blockY >> 2, blockZ >> 2)];
+        };
     }
 
     // Used by sagc for generating surface/ground block patterns

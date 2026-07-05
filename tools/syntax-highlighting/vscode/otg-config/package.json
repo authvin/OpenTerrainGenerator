@@ -1,0 +1,43 @@
+{
+    "name": "otg-config-syntax",
+    "displayName": "OpenTerrainGenerator Config Syntax",
+    "description": "Syntax highlighting for OTG .bc and .ini config files",
+    "version": "0.1.0",
+    "publisher": "openterraingenerator",
+    "engines": {
+        "vscode": "^1.60.0"
+    },
+    "categories": [
+        "Programming Languages"
+    ],
+    "contributes": {
+        "languages": [
+            {
+                "id": "otg-config",
+                "aliases": [
+                    "OTG Config",
+                    "otg"
+                ],
+                "extensions": [
+                    ".bc",
+                    ".bo2",
+                    ".bo3",
+                    ".bo4"
+                ],
+                "filenamePatterns": [
+                    "**/Presets/**/*.ini",
+                    "**/DimensionConfigs/**/*.ini",
+                    "**/OpenTerrainGenerator/**/*.ini"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "otg-config",
+                "scopeName": "source.otg-config",
+                "path": "./syntaxes/otg-config.tmLanguage.json"
+            }
+        ]
+    }
+}

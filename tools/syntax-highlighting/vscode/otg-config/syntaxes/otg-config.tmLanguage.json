@@ -1,0 +1,70 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "OTG Config",
+    "scopeName": "source.otg-config",
+    "patterns": [
+        { "include": "#comment" },
+        { "include": "#function" },
+        { "include": "#setting" }
+    ],
+    "repository": {
+        "comment": {
+            "match": "#.*$",
+            "name": "comment.line.number-sign.otg-config"
+        },
+        "setting": {
+            "begin": "^\\s*([A-Za-z0-9_]+)\\s*(:)",
+            "beginCaptures": {
+                "1": { "name": "entity.name.tag.setting.otg-config" },
+                "2": { "name": "punctuation.separator.key-value.otg-config" }
+            },
+            "end": "$",
+            "patterns": [
+                { "include": "#value" }
+            ]
+        },
+        "function": {
+            "begin": "^\\s*([A-Za-z0-9_]+)\\s*(\\()",
+            "beginCaptures": {
+                "1": { "name": "entity.name.function.otg-config" },
+                "2": { "name": "punctuation.section.arguments.begin.otg-config" }
+            },
+            "end": "(\\))|$",
+            "endCaptures": {
+                "1": { "name": "punctuation.section.arguments.end.otg-config" }
+            },
+            "patterns": [
+                { "include": "#value" },
+                {
+                    "match": ",",
+                    "name": "punctuation.separator.comma.otg-config"
+                },
+                {
+                    "match": "\\(|\\)",
+                    "name": "punctuation.section.arguments.otg-config"
+                }
+            ]
+        },
+        "value": {
+            "patterns": [
+                { "include": "#comment" },
+                {
+                    "match": "\\b(?i:true|false)\\b",
+                    "name": "constant.language.boolean.otg-config"
+                },
+                {
+                    "match": "0x[0-9A-Fa-f]+",
+                    "name": "constant.numeric.hex.otg-config"
+                },
+                {
+                    "match": "-?\\b\\d+(\\.\\d+)?%?",
+                    "name": "constant.numeric.otg-config"
+                },
+                {
+                    "match": "\\b[a-z0-9_.-]+:[a-z0-9_./-]+(\\[[^\\]]*\\])?",
+                    "name": "string.unquoted.resource-location.otg-config"
+                }
+            ]
+        }
+    }
+}
